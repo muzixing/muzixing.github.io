@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/index.html</loc>
-<lastmod>2013-11-27T18:05:31-00:00</lastmod>
+<lastmod>2013-11-27T19:43:47-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/archives.html</loc>
-<lastmod>2013-11-27T18:05:31-00:00</lastmod>
+<lastmod>2013-11-27T19:43:47-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/tags.html</loc>
-<lastmod>2013-11-27T18:05:31-00:00</lastmod>
+<lastmod>2013-11-27T19:43:47-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/categories.html</loc>
-<lastmod>2013-11-27T18:05:31-00:00</lastmod>
+<lastmod>2013-11-27T19:43:47-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -39,28 +39,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://muzixing.github.io/duo-jia-pian-qi-dao-sheng-li-title-shi-zhen-yao-da.html</loc>
+<loc>http://muzixing.github.io/pages/2013/11/22/duo-jia-pian-qi-dao-sheng-li-title-shi-zhen-yao-da.html</loc>
 <lastmod>2013-11-22T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/wo-ru-ci-zhi-zhao-di-jian-chi-zhao-neng-bu-neng-cheng-gong-ci.html</loc>
+<loc>http://muzixing.github.io/pages/2013/11/22/wo-ru-ci-zhi-zhao-di-jian-chi-zhao-neng-bu-neng-cheng-gong-ci.html</loc>
 <lastmod>2013-11-22T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/zhe-shi-biao-ti-title.html</loc>
+<loc>http://muzixing.github.io/pages/2013/11/22/zhe-shi-biao-ti-title.html</loc>
 <lastmod>2013-11-22T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/li-cheng-de-di-ge-bo-wen.html</loc>
+<loc>http://muzixing.github.io/pages/2013/11/17/li-cheng-de-di-ge-bo-wen.html</loc>
 <lastmod>2013-11-17T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
@@ -75,7 +75,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/category/personal.html</loc>
-<lastmod>2013-11-17T00:00:00-00:00</lastmod>
+<lastmod>2013-11-22T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
