@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/index.html</loc>
-<lastmod>2013-11-28T16:29:57-00:00</lastmod>
+<lastmod>2013-11-28T22:19:10-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/archives.html</loc>
-<lastmod>2013-11-28T16:29:57-00:00</lastmod>
+<lastmod>2013-11-28T22:19:10-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/tags.html</loc>
-<lastmod>2013-11-28T16:29:57-00:00</lastmod>
+<lastmod>2013-11-28T22:19:10-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/categories.html</loc>
-<lastmod>2013-11-28T16:29:57-00:00</lastmod>
+<lastmod>2013-11-28T22:19:10-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -39,50 +39,29 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/11/22/duo-jia-pian-qi-dao-sheng-li-title-shi-zhen-yao-da.html</loc>
-<lastmod>2013-11-22T00:00:00-00:00</lastmod>
+<loc>http://muzixing.github.io/pages/2013/11/28/yuan-chuang-poxyun-xing-ji-zhi-byli-cheng.html</loc>
+<lastmod>2013-11-28T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/11/22/wo-ru-ci-zhi-zhao-di-jian-chi-zhao-neng-bu-neng-cheng-gong-ci.html</loc>
-<lastmod>2013-11-22T00:00:00-00:00</lastmod>
-<changefreq>monthly</changefreq>
-<priority>0.7</priority>
-</url>
-
-<url>
-<loc>http://muzixing.github.io/pages/2013/11/22/zhe-shi-biao-ti-title.html</loc>
-<lastmod>2013-11-22T00:00:00-00:00</lastmod>
-<changefreq>monthly</changefreq>
-<priority>0.7</priority>
-</url>
-
-<url>
-<loc>http://muzixing.github.io/pages/2013/11/17/li-cheng-de-di-ge-bo-wen.html</loc>
-<lastmod>2013-11-17T00:00:00-00:00</lastmod>
-<changefreq>monthly</changefreq>
-<priority>0.7</priority>
-</url>
-
-<url>
-<loc>http://muzixing.github.io/category/misc.html</loc>
-<lastmod>2013-11-22T00:00:00-00:00</lastmod>
+<loc>http://muzixing.github.io/category/tech.html</loc>
+<lastmod>2013-11-28T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/category/personal.html</loc>
-<lastmod>2013-11-22T00:00:00-00:00</lastmod>
+<loc>http://muzixing.github.io/tag/sdn.html</loc>
+<lastmod>2013-11-28T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/author/muzi.html</loc>
-<lastmod>2013-11-22T00:00:00-00:00</lastmod>
+<lastmod>2013-11-28T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
