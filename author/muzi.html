@@ -62,7 +62,7 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html"><h1>［原］poxdesk实现拓扑显示</h1></a>
+            <a href="../pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html"><h1>【原创】scapy简单教程</h1></a>
 2013-11-29
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
@@ -72,7 +72,57 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h3>POXDESK实现拓扑的显示</h3>
+        <div><p>如果你是网络研究的爱好者，有一个工具是对你很有用的，那就是scapy!</p>
+<p>scapy能够封装出目前网络上绝大多数（不确定是不是全部）的数据包，如IP，ARP,ICMP。有了这些数据包，你再也不需要为如何产生某些数据包而烦恼了。</p>
+<h3>首先我们需要先安装scapy</h3>
+<p>具体可以自行google,baidu,或者查看：http://www.secdev.org/projects/scapy/doc/installation.html</p>
+<h3>构建一个简单的IP包</h3>
+<div class="highlight"><pre><span class="n">ip_paket</span> <span class="o">=</span> <span class="n">IP</span><span class="p">(</span><span class="n">dst</span> <span class="o">=</span> <span class="s">&#39;10.0.0.1&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>这样你就可以构造出一个IP包了。括弧里面填写的内容就是相关字段的内容。</p>
+<h3>查看字段</h3>
+<p>如果你想知道有那些字段，那么你就需要用到ls()命令。如：</p>
+<div class="highlight"><pre><span class="n">ls</span><span class="err">（</span><span class="n">IP</span><span class="err">）</span>
+</pre></div>
+
+
+<p>运行结果：</p>
+<p><img alt="ls" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=a1592a2c0cf41bd5de53e8f161e1f0f6/d31b0ef41bd5ad6e0183a9ed83cb39dbb6fd3cbb.jpg?referer=d6124b2ee9c4b7456d8382267c5a&amp;x=.jpg" /></p>
+<p>ls在scapy中可以直接对任何结构体进行解析。可以把数据包的内容展现在你面前。</p>
+<h5>我们还可以直接查看某一个字段</h5>
+<p><img alt="view" src="http://c.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=2b5a4b2cb251f819f525034fea8f3bd0/b21bb051f81986182432228348ed2e738bd4e644.jpg?referer=1ab2a90a249759ee134755fb425a&amp;x=.jpg" /></p>
+<p>Payload为数据包的净荷，可以由以下的代码可以查看payload。</p>
+<p><img alt="PAYLOAD" src="http://a.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=ee699c54f4246b607f0eb271dbc36b71/6a63f6246b600c33d7241ccf184c510fd9f9a15c.jpg?referer=fd54aeb5b0b7d0a222de31ad0f32&amp;x=.jpg" /></p>
+<p>我们继续感受一下scapy的便捷。</p>
+<h5>我们也可以看看scapy的封装解封装能力！</h5>
+<p><img alt="packet" src="http://h.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=fc0780c7f536afc30a0c3f6083229af9/79f0f736afc37931f51d4b2ee9c4b74543a91144.jpg?referer=5649b43f6c061d95245102085f5b&amp;x=.jpg" /></p>
+<h5>数据包的发送与接收：</h5>
+<p><img alt="send" src="http://d.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=7f8a8529d01b0ef468e8985bedff20e7/7c1ed21b0ef41bd5762625f353da81cb39db3d44.jpg?referer=a279f262b119ebc4996f43a97b5b&amp;x=.jpg" /></p>
+<p>我们可以发现第一次发送的时候，在选路过程中，收到了27个数据包回复。接下来就越来越少，最后只剩下一个了。
+ <img alt="type" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=15a850b1cb177f3e1434fc0840f44afa/a686c9177f3e67090d5d87f839c79f3df8dc555c.jpg?referer=1067c2cde4cd7b89b07b0fb39332&amp;x=.jpg" />
+我们可以看到是echo_reply的类型。</p>
+<p>原创作品，转载请说明。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html"><h2>［原］poxdesk实现拓扑显示</h2></a>
+        <div class= "well small"> 2013-11-29
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>POXDESK实现拓扑的显示</h3>
 <p>今天实习第二天，开始深入逐渐玩POX跟mininet！之前只是会基本的操作，慢慢的要更加了解！今天早上就实现了一下poxdesk的功能！</p>
 <h4>操作步骤如下：</h4>
 <div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/noxrepo/</span><span class="n">pox</span>
@@ -82,47 +132,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/MurphyMc/</span><span class="n">poxdesk</span>
 <span class="n">cd</span> <span class="n">poxdesk</span>
 <span class="n">wget</span> <span class="n">http:</span><span class="sr">//</span><span class="n">downloads</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="sr">/qooxdoo/</span><span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span><span class="o">.</span><span class="n">zip</span>
-<span class="n">unzip</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span><span class="o">.</span><span class="n">zip</span>
-<span class="n">mv</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span> <span class="sx">qx</span>
-<span class="sx">cd poxdesk</span>
-<span class="o">./</span><span class="n">generate</span><span class="o">.</span><span class="n">py</span>
-<span class="n">cd</span> <span class="o">..</span><span class="sr">/../</span><span class="o">..</span>
-<span class="o">./</span><span class="n">pox</span><span class="o">.</span><span class="n">py</span> <span class="n">samples</span><span class="o">.</span><span class="n">pretty_log</span> <span class="n">web</span> <span class="n">messenger</span> <span class="n">messenger</span><span class="o">.</span><span class="n">log_service</span> <span class="n">messenger</span><span class="o">.</span><span class="n">ajax_transport</span> <span class="n">openflow</span><span class="o">.</span><span class="n">of_service</span> <span class="n">poxdesk</span>
-</pre></div>
-
-
-<p>按照步骤去操作就可以安装poxdesk了！但是还需要注意的是：</p>
-<h5>1：打开POX的时候需要打开discovery.py所以最后一句应该为：</h5>
-<div class="highlight"><pre><span class="o">./</span><span class="n">pox</span><span class="o">.</span><span class="n">py</span> <span class="n">samples</span><span class="o">.</span><span class="n">pretty_log</span> <span class="n">web</span> <span class="n">messenger</span> <span class="n">messenger</span><span class="o">.</span><span class="n">log_service</span> <span class="n">messenger</span><span class="o">.</span><span class="n">ajax_transport</span> <span class="n">openflow</span><span class="o">.</span><span class="n">of_service</span> <span class="n">poxdesk</span> <span class="n">poxdesk</span><span class="o">.</span><span class="n">discovery</span>
-</pre></div>
-
-
-<p>Samples.pretty.log是一个组件，可以让pox开启的时候有字体有颜色，不添加也可以，但是界面比较难看。</p>
-<h5>2:mininet需要打开，并与pox 连接：</h5>
-<div class="highlight"><pre><span class="n">Sudo</span> <span class="n">mn</span> <span class="err">–</span><span class="n">controller</span><span class="o">=</span><span class="n">remote</span><span class="p">,</span><span class="n">ip</span><span class="o">=</span><span class="mf">127.0.0.1</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">6633</span>
-</pre></div>
-
-
-<p>127.0.0.1是本机的IP，端口号默认6633，可不写
-为了画出跟更好看，更复杂的拓扑，我们需要在命令之后加上这样一句话：</p>
-<div class="highlight"><pre><span class="o">--</span><span class="n">topo</span><span class="o">=</span><span class="n">tree</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">m</span>
-</pre></div>
-
-
-<p>即为：</p>
-<div class="highlight"><pre><span class="n">Sudo</span> <span class="n">mn</span> <span class="err">–</span><span class="n">controller</span><span class="o">=</span><span class="n">remote</span><span class="p">,</span><span class="n">ip</span><span class="o">=</span><span class="mf">127.0.0.1</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">6633</span> <span class="o">--</span><span class="n">topo</span><span class="o">=</span><span class="n">tree</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">m</span>
-</pre></div>
-
-
-<p>n为层级，m为每一个层级下面有几个孩子</p>
-<h5>3：建立完连接之后，在浏览器中登录http://127.0.0.1:8000/poxdesk .</h5>
-<p><img alt="poxdesk" src="http://h.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=146a5049c88065387feaa416a7e6d079/b17eca8065380cd7165a77eaa344ad3459828175.jpg?referer=49627d21fffaaf51ddf4b48fef2b&amp;x=.jpg" /></p>
-<p>点击网页左下角的图标pox,可以打开许多小框。</p>
-<p><img alt="poxdesk_1" src="http://a.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=29f290f839c79f3d8be1e4358a9abc2c/71cf3bc79f3df8dc31cf5a96cf11728b461028c3.jpg?referer=ef7cef1340a7d933e6bfd04388c1&amp;x=.jpg" /></p>
-<p><img alt="topo" src="http://f.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=d527662f347adab439d01b46bbefc221/8718367adab44aed034d6be3b11c8701a18bfbb2.jpg?referer=74d0dd5a57fbb2fb6d3c6d224550&amp;x=.jpg" /></p></div>
-        <hr />
-    </div>
-		
+<span class="n">unzip</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html">read more</a></div>
+    </div>	
+				
 
  
         
