@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/index.html</loc>
-<lastmod>2013-11-29T16:24:52-00:00</lastmod>
+<lastmod>2013-11-29T16:49:11-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/archives.html</loc>
-<lastmod>2013-11-29T16:24:52-00:00</lastmod>
+<lastmod>2013-11-29T16:49:11-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/tags.html</loc>
-<lastmod>2013-11-29T16:24:52-00:00</lastmod>
+<lastmod>2013-11-29T16:49:11-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/categories.html</loc>
-<lastmod>2013-11-29T16:24:52-00:00</lastmod>
+<lastmod>2013-11-29T16:49:11-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2013-11-26T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://muzixing.github.io/pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html</loc>
+<lastmod>2013-11-29T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -57,6 +64,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2013-11-28T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
+</url>
+
+<url>
+<loc>http://muzixing.github.io/category/misc.html</loc>
+<lastmod>2013-11-29T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
 </url>
 
 <url>
