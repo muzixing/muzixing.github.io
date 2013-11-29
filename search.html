@@ -1,165 +1,75 @@
-<!DOCTYPE html>
-<html lang="zh">
 <head>
-    <meta charset="utf-8">
-    <title>Code the world</title>
-    <meta name="description" content="">
-    <meta name="author" content="muzi">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
-    <!--[if lt IE 9]>
-    <script src="/theme/html5.js"></script>
-    <![endif]-->
-
-    <!-- Le styles -->
-    <link href="/theme/bootstrap.min.css" rel="stylesheet">
-    <link href="/theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="/theme/local.css" rel="stylesheet">
-    <link href="/theme/pygments.css" rel="stylesheet">
-
+<meta charset="utf-8">
+<title>站内搜索</title>
 </head>
+  <body>
+<style>
+#search-box {
+    position: relative;
+    width: 50%;
+    margin: 0;
+    padding: 1em;
+}
 
-<body>
+#search-form {
+    height: 30px;
+    border: 1px solid #999;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background-color: #fff;
+    overflow: hidden;
+}
 
-<div class="navbar">
-    <div class="navbar-inner">
-    <div class="container">
+#search-text {
+    font-size: 14px;
+    color: #ddd;
+    border-width: 0;
+    background: transparent;
+}
 
-         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-             <span class="icon-bar"></span>
-             <span class="icon-bar"></span>
-             <span class="icon-bar"></span>
-         </a>
-
-        <a class="brand" href="">Code the world</a>
-
-        <div class="nav-collapse">
-        <ul class="nav">
-            
-            <li><a href="/pages/about.html">about</a></li>
-        </ul>
-        </div>
-        
-    </div>
-    </div>
+#search-box input[type="text"] {
+    width: 90%;
+    padding: 4px 0 12px 1em;
+    color: #333;
+    outline: none;
+}
+</style>
+<div id='search-box'>
+  <form action='/search.html' id='search-form' method='get' target='_top'>
+    <input id='search-text' name='q' placeholder='Search' type='text'/>
+  </form>
 </div>
+<div id="cse" style="width: 100%;">Loading</div>
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript"> 
+  google.load('search', '1', {language : 'zh-CN', style : google.loader.themes.V2_DEFAULT});
+  google.setOnLoadCallback(function() {
+    var customSearchOptions = {};  var customSearchControl = new google.search.CustomSearchControl(
+      '012982755945402637510:n-kn9yflnfu', customSearchOptions);
+    customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+    var options = new google.search.DrawOptions();
+    options.enableSearchResultsOnly(); 
+    customSearchControl.draw('cse', options);
+    function parseParamsFromUrl() {
+      var params = {};
+      var parts = window.location.search.substr(1).split('\x26');
+      for (var i = 0; i < parts.length; i++) {
+        var keyValuePair = parts[i].split('=');
+        var key = decodeURIComponent(keyValuePair[0]);
+        params[key] = keyValuePair[1] ?
+            decodeURIComponent(keyValuePair[1].replace(/\+/g, ' ')) :
+            keyValuePair[1];
+      }
+      return params;
+    }
 
-<div class="container">
-    <div class="content">
-    <div class="row">
-
-        <div class="span9">
-    <div class='article'>
-        <div class="content-title">
-            <h1>Search</h1>
-Tue 26 November 2013
-
-by <a class="url fn" href="/author/muzi.html">muzi</a>
- 
-
-
-        </div>
-	
-        <div><script>
-  (function() {
-    var cx = '012982755945402637510:n-kn9yflnfu';
-    var gcse = document.createElement('script');
-    gcse.type = 'text/javascript';
-    gcse.async = true;
-    gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
-        '//www.google.com/cse/cse.js?cx=' + cx;
-    var s = document.getElementsByTagName('script')[0];
-    s.parentNode.insertBefore(gcse, s);
-  })();
+    var urlParams = parseParamsFromUrl();
+    var queryParamName = "q";
+    if (urlParams[queryParamName]) {
+      customSearchControl.execute(urlParams[queryParamName]);
+    }
+  }, true);
 </script>
-
-<p><gcse:search></gcse:search></p></div>
-	
-        <hr>
-    	   
-        <h2>Comments</h2>
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'muzixinggithubio'; 
-    var disqus_title = 'Search';
-
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    </div>
-        </div>
-        
-        <div class="span3">
-
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header"> 
-                Site
-                </li>
-            
-                <li><a href="/">Archives</a>
-                <li><a href="/tags.html">Tags</a>
-                <li><a href="/" rel="alternate">Atom feed</a></li>
-            </ul>
-            </div>
-
-
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header"> 
-                Categories
-                </li>
-                
-                <li><a href="/category/misc.html">misc</a></li>
-                <li><a href="/category/personal.html">personal</a></li>
-                   
-            </ul>
-            </div>
-
-
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header"> 
-                Links
-                </li>
-            
-                <li><a href="http://getpelican.com/">Pelican</a></li>
-                <li><a href="http://python.org/">Python.org</a></li>
-                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
-                <li><a href="#">You can modify those links in your config file</a></li>
-            </ul>
-            </div>
-
-
-            <div class="social">
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header"> 
-                Social
-                </li>
-           
-                <li><a href="https://github.com/muzixing">github</a></li>
-                <li><a href="http://350959853.qzone.qq.com">QQ空间</a></li>
-            </ul>
-            </div>
-            </div>
-
-        </div>  
-    </div>     </div> 
-<footer>
-<br />
-<p><a href="">Code the world</a> &copy; muzi 2012</p>
-</footer>
-
-</div> <!-- /container -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
-<script>var _gaq=[['_setAccount','UA-45955656-1'],['_trackPageview']];(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s)}(document,'script'))</script>
- 
 </body>
 </html>
