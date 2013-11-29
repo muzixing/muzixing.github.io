@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2013/11/28/yuan-chuang-poxyun-xing-ji-zhi-byli-cheng.html"><h1>【原创】POX运行机制 　　by李呈</h1></a>
-2013-11-28
+            <a href="../pages/2013/11/29/poxdeskshi-xian-tuo-bu-xian-shi.html"><h1>poxdesk实现拓扑显示</h1></a>
+2013-11-29
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,71 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h3>Pox以及组件的启动</h3>
+        <div><h3>POXDESK实现拓扑的显示</h3>
+<p>今天实习第二天，开始深入逐渐玩POX跟mininet！之前只是会基本的操作，慢慢的要更加了解！今天早上就实现了一下poxdesk的功能！</p>
+<h4>操作步骤如下：</h4>
+<div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/noxrepo/</span><span class="n">pox</span>
+<span class="n">cd</span> <span class="n">pox</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="n">betta</span>
+<span class="n">cd</span> <span class="n">ext</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/MurphyMc/</span><span class="n">poxdesk</span>
+<span class="n">cd</span> <span class="n">poxdesk</span>
+<span class="n">wget</span> <span class="n">http:</span><span class="sr">//</span><span class="n">downloads</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="sr">/qooxdoo/</span><span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span><span class="o">.</span><span class="n">zip</span>
+<span class="n">unzip</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span><span class="o">.</span><span class="n">zip</span>
+<span class="n">mv</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span> <span class="sx">qx</span>
+<span class="sx">cd poxdesk</span>
+<span class="o">./</span><span class="n">generate</span><span class="o">.</span><span class="n">py</span>
+<span class="n">cd</span> <span class="o">..</span><span class="sr">/../</span><span class="o">..</span>
+<span class="o">./</span><span class="n">pox</span><span class="o">.</span><span class="n">py</span> <span class="n">samples</span><span class="o">.</span><span class="n">pretty_log</span> <span class="n">web</span> <span class="n">messenger</span> <span class="n">messenger</span><span class="o">.</span><span class="n">log_service</span> <span class="n">messenger</span><span class="o">.</span><span class="n">ajax_transport</span> <span class="n">openflow</span><span class="o">.</span><span class="n">of_service</span> <span class="n">poxdesk</span>
+</pre></div>
+
+
+<p>按照步骤去操作就可以安装poxdesk了！但是还需要注意的是：</p>
+<h5>1：打开POX的时候需要打开discovery.py所以最后一句应该为：</h5>
+<div class="highlight"><pre><span class="o">./</span><span class="n">pox</span><span class="o">.</span><span class="n">py</span> <span class="n">samples</span><span class="o">.</span><span class="n">pretty_log</span> <span class="n">web</span> <span class="n">messenger</span> <span class="n">messenger</span><span class="o">.</span><span class="n">log_service</span> <span class="n">messenger</span><span class="o">.</span><span class="n">ajax_transport</span> <span class="n">openflow</span><span class="o">.</span><span class="n">of_service</span> <span class="n">poxdesk</span> <span class="n">poxdesk</span><span class="o">.</span><span class="n">discovery</span>
+</pre></div>
+
+
+<p>Samples.pretty.log是一个组件，可以让pox开启的时候有字体有颜色，不添加也可以，但是界面比较难看。</p>
+<h5>2:mininet需要打开，并与pox 连接：</h5>
+<div class="highlight"><pre><span class="n">Sudo</span> <span class="n">mn</span> <span class="err">–</span><span class="n">controller</span><span class="o">=</span><span class="n">remote</span><span class="p">,</span><span class="n">ip</span><span class="o">=</span><span class="mf">127.0.0.1</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">6633</span>
+</pre></div>
+
+
+<p>127.0.0.1是本机的IP，端口号默认6633，可不写
+为了画出跟更好看，更复杂的拓扑，我们需要在命令之后加上这样一句话：</p>
+<div class="highlight"><pre><span class="o">--</span><span class="n">topo</span><span class="o">=</span><span class="n">tree</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">m</span>
+</pre></div>
+
+
+<p>即为：</p>
+<div class="highlight"><pre><span class="n">Sudo</span> <span class="n">mn</span> <span class="err">–</span><span class="n">controller</span><span class="o">=</span><span class="n">remote</span><span class="p">,</span><span class="n">ip</span><span class="o">=</span><span class="mf">127.0.0.1</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">6633</span> <span class="o">--</span><span class="n">topo</span><span class="o">=</span><span class="n">tree</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">m</span>
+</pre></div>
+
+
+<p>n为层级，m为每一个层级下面有几个孩子</p>
+<h5>3：建立完连接之后，在浏览器中登录http://127.0.0.1:8000/poxdesk .</h5>
+<p><img alt="poxdesk" src="E:\SDN\个人主页相册\poxdesk.png" title="poxdesk" /></p>
+<p>点击网页左下角的图标pox,可以打开许多小框。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2013/11/28/yuan-chuang-poxyun-xing-ji-zhi-byli-cheng.html"><h2>【原创】POX运行机制 　　by李呈</h2></a>
+        <div class= "well small"> 2013-11-28
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>Pox以及组件的启动</h3>
 <p>配图版请浏览：http://user.qzone.qq.com/350959853/blog/1376471361</p>
 <p>SDNAP链接： http://www.sdnap.com/sdnap-post/2058.html </p>
 <h5>1：启动pox.py。</h5>
@@ -91,512 +155,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h6>1：把pox和ext两个文件夹的路径加入系统path中。</h6>
 <h6>2：由_do_ import添加各个模块</h6>
 <h6>3：_do_launch去启动各个模块，启动pox</h6>
-<h6>4：定义Options和POXoptions两个类，用于定义选项</h6>
-<h6>5：定义了其他预启动项，如写日记等等。</h6>
-<p>核心的启动代码是以下的代码：</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">boot</span> <span class="p">():</span>
-  <span class="s">&quot;&quot;&quot;</span>
-<span class="s">  Start up POX.</span>
-<span class="s">  &quot;&quot;&quot;</span>
-
-  <span class="c1"># Add pox directory to path</span>
-  <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="nb">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;pox&#39;</span><span class="p">)))</span>
-  <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="nb">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;ext&#39;</span><span class="p">)))</span>
-
-  <span class="n">try:</span>
-    <span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-
-    <span class="c1"># Always load cli (first!)</span>
-    <span class="c1">#TODO: Can we just get rid of the normal options yet?</span>
-    <span class="n">pre</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="k">while</span> <span class="n">len</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-      <span class="k">if</span> <span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;-&quot;</span><span class="p">):</span>
-        <span class="n">pre</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">argv</span><span class="o">.</span><span class="nb">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-      <span class="k">else</span><span class="p">:</span>
-        <span class="n">break</span>
-    <span class="n">argv</span> <span class="o">=</span> <span class="n">pre</span> <span class="o">+</span> <span class="s">&quot;py --disable&quot;</span><span class="o">.</span><span class="nb">split</span><span class="p">()</span> <span class="o">+</span> <span class="n">argv</span>
-
-    <span class="k">if</span> <span class="n">_do_launch</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-      <span class="n">_post_startup</span><span class="p">()</span>
-      <span class="n">core</span><span class="o">.</span><span class="n">goUp</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-      <span class="k">return</span>
-
-  <span class="n">except</span> <span class="n">SystemExit:</span>
-    <span class="k">return</span>
-  <span class="n">except:</span>
-    <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-    <span class="k">return</span>
-
-  <span class="k">if</span> <span class="n">_main_thread_function:</span>
-    <span class="n">_main_thread_function</span><span class="p">()</span>
-  <span class="k">else</span><span class="p">:</span>
-    <span class="c1">#core.acquire()</span>
-    <span class="n">try:</span>
-      <span class="k">while</span> <span class="n">core</span><span class="o">.</span><span class="n">running:</span>
-        <span class="nb">time</span><span class="o">.</span><span class="nb">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-    <span class="n">except:</span>
-      <span class="n">pass</span>
-    <span class="c1">#core.scheduler._thread.join() # Sleazy</span>
-
- <span class="n">try:</span>
-    <span class="n">pox</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
- <span class="n">except:</span>
-    <span class="n">pass</span>
-</pre></div>
-
-
-<p><strong>_do_launch()启动了pox及相关组件。之后通过_post_startup()启动openflow.of_01。core.goUp则启动了core里面的登记Debug信息和事件机制。
-core.py里面最后一句：core=POXCore(),使得整个类有了实例化，在外部调用时，直接使用core。</strong></p>
-<h3>组件加载</h3>
-<p>在启动pox的时候，相应会启动pox的许多组件，而不是单一的仅仅启动一个pox的主程序。启动了相关组件之后，才能去管理各个组件，并通过handler去管理消息队列中的不同的事件，实现事件的管理。组件的加载与初始化在boot()文件里的_do_launch()函数里，代码如下：</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">_do_launch</span> <span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-  <span class="n">component_order</span> <span class="o">=</span> <span class="o">[]</span>
-  <span class="n">components</span> <span class="o">=</span> <span class="p">{}</span>
-
-  <span class="n">curargs</span> <span class="o">=</span> <span class="p">{}</span>
-  <span class="n">pox_options</span> <span class="o">=</span> <span class="n">curargs</span>
-
-  <span class="k">for</span> <span class="n">arg</span> <span class="n">in</span> <span class="n">argv:</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">arg</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;-&quot;</span><span class="p">):</span>
-      <span class="k">if</span> <span class="n">arg</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">components:</span>
-        <span class="n">components</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">=</span> <span class="o">[]</span>
-      <span class="n">curargs</span> <span class="o">=</span> <span class="p">{}</span>
-      <span class="n">components</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curargs</span><span class="p">)</span>
-      <span class="n">component_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-      <span class="n">arg</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s">&quot;-&quot;</span><span class="p">)</span><span class="o">.</span><span class="nb">split</span><span class="p">(</span><span class="s">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-      <span class="n">arg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;-&quot;</span><span class="p">,</span> <span class="s">&quot;_&quot;</span><span class="p">)</span>
-      <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="n">arg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">True</span><span class="p">)</span>
-      <span class="n">curargs</span><span class="p">[</span><span class="n">arg</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">arg</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-  <span class="n">_options</span><span class="o">.</span><span class="n">process_options</span><span class="p">(</span><span class="n">pox_options</span><span class="p">)</span>
-  <span class="n">_pre_startup</span><span class="p">()</span>
-
-  <span class="n">inst</span> <span class="o">=</span> <span class="p">{}</span>
-  <span class="k">for</span> <span class="n">name</span> <span class="n">in</span> <span class="n">component_order:</span>
-    <span class="n">cname</span> <span class="o">=</span> <span class="n">name</span>
-    <span class="n">inst</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">inst</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="nb">split</span><span class="p">(</span><span class="s">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">launch</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="s">&quot;launch&quot;</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="n">r</span> <span class="o">=</span> <span class="n">_do_import</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">r</span> <span class="n">is</span> <span class="n">False:</span> <span class="k">return</span> <span class="n">False</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="n">r</span>
-    <span class="c1">#print(&quot;&gt;&gt;&quot;,name)</span>
-</pre></div>
-
-
-<p>首先创建component_order的列表，用于存放组件的名称。然后再逐个启动，初始化。</p>
-<p>第<strong>162</strong>行，讲名字分为两部分。</p>
-<p><strong>163</strong>行则决定了启动的默认顺序。</p>
-<div class="highlight"><pre><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="nb">split</span><span class="p">(</span><span class="s">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">launch</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="s">&quot;launch&quot;</span>
-</pre></div>
-
-
-<p>使用_do_import()函数将相关组件模块引入。</p>
-<p>第<strong>171</strong>行：</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="n">launch</span> <span class="n">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">__dict__:</span>
-</pre></div>
-
-
-<p>检查launch是否属于sys.modules这个字典。而__dict__是python里面的特性字典，，用于存放类的实例的所有特性。</p>
-<p>第<strong>172</strong>行：</p>
-<div class="highlight"><pre> <span class="n">f</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">launch</span><span class="p">]</span><span class="err">从模块中，实例化函数。</span>
-</pre></div>
-
-
-<p>第<strong>199</strong>行 初始化函数：</p>
-<div class="highlight"><pre>  <span class="n">try:</span>
-    <span class="n">f</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
-</pre></div>
-
-
-<h3>举例：</h3>
-<p>L2_learning作为pox里面最重要的一个二层组件之一，再适合不过了。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">launch</span> <span class="p">(</span><span class="n">transparent</span><span class="o">=</span><span class="n">False</span><span class="p">,</span> <span class="n">hold_down</span><span class="o">=</span><span class="n">_flood_delay</span><span class="p">):</span>
-  <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    Starts an L2 learning switch.</span>
-<span class="s">  &quot;&quot;&quot;</span>
-    <span class="n">try:</span>
-        <span class="n">global</span> <span class="n">_flood_delay</span>
-        <span class="n">_flood_delay</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">hold_down</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
-        <span class="n">assert</span> <span class="n">_flood_delay</span> <span class="o">&gt;=</span> <span class="mi">0</span>
-    <span class="n">except:</span>
-        <span class="n">raise</span> <span class="n">RuntimeError</span><span class="p">(</span><span class="s">&quot;Expected hold-down to be a number&quot;</span><span class="p">)</span>
-
-    <span class="n">core</span><span class="o">.</span><span class="n">registerNew</span><span class="p">(</span><span class="n">l2_learning</span><span class="p">,</span> <span class="n">str_to_bool</span><span class="p">(</span><span class="n">transparent</span><span class="p">))</span>
-</pre></div>
-
-
-<p>可以看到launch()函数里面仅有一句话是可执行的：</p>
-<div class="highlight"><pre><span class="n">core</span><span class="o">.</span><span class="n">registerNew</span><span class="p">(</span><span class="n">l2</span><span class="o">\</span><span class="n">_learning</span><span class="p">,</span> <span class="n">str</span><span class="o">\</span><span class="n">_to</span><span class="o">\</span><span class="n">_bool</span><span class="p">(</span><span class="n">transparent</span><span class="p">))</span>
-</pre></div>
-
-
-<p>让我们去看一看core.registerNew()这个函数。</p>
-<div class="highlight"><pre>  <span class="n">def</span> <span class="n">registerNew</span> <span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">__componentClass</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-    <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    Give it a class (and optional __init__ arguments), and it will</span>
-<span class="s">    create an instance and register it using the class name.  If the</span>
-<span class="s">    instance has a _core_name property, it will use that instead.</span>
-<span class="s">    It returns the new instance.</span>
-<span class="s">    core.registerNew(FooClass, arg) is roughly equivalent to</span>
-<span class="s">    core.register(&quot;</span><span class="n">FooClass</span><span class="s">&quot;, FooClass(arg)).</span>
-<span class="s">    &quot;&quot;&quot;</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="n">__componentClass</span><span class="o">.</span><span class="n">__name__</span>
-    <span class="n">obj</span> <span class="o">=</span> <span class="n">__componentClass</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&#39;_core_name&#39;</span><span class="p">):</span>
-      <span class="c1"># Default overridden</span>
-      <span class="n">name</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_core_name</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">obj</span>
-</pre></div>
-
-
-<p>可执行语句很少，基本上注释已经完全涵盖了这个函数的作用。主要是在pox注册一个新的线程，如果已存在名字则重载，返回新的实例。同时我们看到在这个函数里面使用到了register()函数，函数定义如下：</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">register</span> <span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
-    <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    Makes the object &quot;</span><span class="n">component</span><span class="s">&quot; available as pox.core.core.name.</span>
-
-<span class="s">    If only one argument is specified, the given argument is registered</span>
-<span class="s">    using its class name as the name.</span>
-<span class="s">    &quot;&quot;&quot;</span>
-    <span class="c1">#TODO: weak references?</span>
-    <span class="k">if</span> <span class="n">component</span> <span class="n">is</span> <span class="n">None:</span>
-      <span class="n">component</span> <span class="o">=</span> <span class="n">name</span>
-      <span class="n">name</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
-      <span class="k">if</span> <span class="n">hasattr</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s">&#39;_core_name&#39;</span><span class="p">):</span>
-        <span class="c1"># Default overridden</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">_core_name</span>
-
-    <span class="k">if</span> <span class="n">name</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">components:</span>
-      <span class="nb">log</span><span class="o">.</span><span class="nb">warn</span><span class="p">(</span><span class="s">&quot;Warning: Registered &#39;%s&#39; multipled times&quot;</span> <span class="nv">%</span> <span class="err">(</span><span class="nv">name</span><span class="p">,))</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">component</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">raiseEventNoErrors</span><span class="p">(</span><span class="n">ComponentRegistered</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span><span class="p">)</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">_try_waiters</span><span class="p">()</span>
-</pre></div>
-
-
-<p>Register()实现了在初始化的时候，将相关组件加入到了pox.core.core之中。Core raise了一个ComponentRegistered事件，componentRegistered类定义如下，接着进入等待阶段。</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">ComponentRegistered</span> <span class="p">(</span><span class="n">Event</span><span class="p">):</span>
-  <span class="s">&quot;&quot;&quot;</span>
-<span class="s">  This is raised by core whenever a new component is registered.</span>
-<span class="s">  By watching this, a component can monitor whether other components it</span>
-<span class="s">  depends on are available.</span>
-<span class="s">  &quot;&quot;&quot;</span>
-  <span class="n">def</span> <span class="n">__init__</span> <span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span><span class="p">):</span>
-    <span class="n">Event</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">component</span> <span class="o">=</span> <span class="n">component</span>
-</pre></div>
-
-
-<p>进行到这里，我们需要做的还有一件事，就是将组件的event_handler与相应的events绑定到一起。
-那么在哪里实现了这一个绑定关系呢？</p>
-<h3>事件绑定</h3>
-<p>在每一个组件里面都会有初始函数，而每一个初始函数里面多包含事件绑定的开始们那就是listenTo()函数：</p>
-<div class="highlight"><pre>  <span class="n">def</span> <span class="n">__init__</span> <span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">transparent</span><span class="p">):</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">listenTo</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">openflow</span><span class="p">)</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">transparent</span> <span class="o">=</span> <span class="n">transparent</span>
-</pre></div>
-
-
-<p>listenTo()函数在哪里出现呢？寻找之后，你会发现他出现在一个非常重要的文件——revent.py里面。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">listenTo</span> <span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kv</span><span class="p">):</span>
-    <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    Automatically subscribe to events on source.</span>
-
-<span class="s">    This method tries to bind all _handle_ methods on self to events</span>
-<span class="s">    on source.  Kind of the opposite of addListeners().</span>
-
-<span class="s">    See also: addListeners(), autoBindEvents()</span>
-<span class="s">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">autoBindEvents</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kv</span><span class="p">)</span>
-</pre></div>
-
-
-<p>继续调用autoBindEvents()函数实现绑定。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">autoBindEvents</span> <span class="p">(</span><span class="n">sink</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">False</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
-  <span class="s">&quot;&quot;&quot;</span>
-<span class="s">  Automatically set up listeners on sink for events raised by source.</span>
-
-<span class="s">  Often you have a &quot;</span><span class="n">sink</span><span class="s">&quot; object that is interested in multiple events</span>
-<span class="s">  raised by some other &quot;</span><span class="n">source</span><span class="s">&quot; object.  This method makes setting that</span>
-<span class="s">  up easy.</span>
-<span class="s">  You name handler methods on the sink object in a special way.  For</span>
-<span class="s">  example, lets say you have an object mySource which raises events of</span>
-<span class="s">  types FooEvent and BarEvent.  You have an object mySink which wants to</span>
-<span class="s">  listen to these events.  To do so, it names its handler methods</span>
-<span class="s">  &quot;</span><span class="n">_handle_FooEvent</span><span class="s">&quot; and &quot;</span><span class="n">_handle_BarEvent</span><span class="s">&quot;.  It can then simply call</span>
-<span class="s">  autoBindEvents(mySink, mySource), and the handlers are set up.</span>
-
-<span class="s">  You can also set a prefix which changes how the handlers are to be named.</span>
-<span class="s">  For example, autoBindEvents(mySink, mySource, &quot;</span><span class="n">source1</span><span class="s">&quot;) would use a</span>
-<span class="s">  handler named &quot;</span><span class="n">_handle_source1_FooEvent</span><span class="s">&quot;.</span>
-
-<span class="s">  &quot;</span><span class="n">weak</span><span class="s">&quot; has the same meaning as with addListener().</span>
-
-<span class="s">  Returns the added listener IDs (so that you can remove them later).</span>
-<span class="s">  &quot;&quot;&quot;</span>
-  <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">prefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;_&#39;</span><span class="p">:</span> <span class="n">prefix</span> <span class="o">=</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">prefix</span>
-  <span class="k">if</span> <span class="n">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s">&#39;_eventMixin_events&#39;</span><span class="p">)</span> <span class="n">is</span> <span class="n">False:</span>
-    <span class="c1"># If source does not declare that it raises any events, do nothing</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Warning: source class %s doesn&#39;t specify any events!&quot;</span> <span class="nv">%</span> <span class="err">(</span>
-          <span class="nv">source</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,))</span>
-    <span class="k">return</span> <span class="o">[]</span>
-
-  <span class="n">events</span> <span class="o">=</span> <span class="p">{}</span>
-  <span class="k">for</span> <span class="n">e</span> <span class="n">in</span> <span class="n">source</span><span class="o">.</span><span class="n">_eventMixin_events:</span>
-    <span class="k">if</span> <span class="n">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">==</span> <span class="n">str:</span>
-      <span class="n">events</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
-    <span class="k">else</span><span class="p">:</span>
-      <span class="n">events</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
-
-  <span class="n">listeners</span> <span class="o">=</span> <span class="o">[]</span>
-  <span class="c1"># for each method in sink</span>
-  <span class="k">for</span> <span class="n">m</span> <span class="n">in</span> <span class="n">dir</span><span class="p">(</span><span class="n">sink</span><span class="p">):</span>
-    <span class="c1"># get the method object</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="n">getattr</span><span class="p">(</span><span class="n">sink</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
-      <span class="c1"># if it has the revent prefix signature, </span>
-      <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;_handle&quot;</span> <span class="o">+</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span><span class="p">):</span>
-        <span class="n">event</span> <span class="o">=</span> <span class="sr">m[8+len(prefix):]</span>
-        <span class="c1"># and it is one of the events our source triggers</span>
-        <span class="k">if</span> <span class="n">event</span> <span class="n">in</span> <span class="n">events:</span>
-          <span class="c1"># append the listener</span>
-          <span class="n">listeners</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">addListener</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="n">event</span><span class="p">],</span> <span class="n">a</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">,</span>
-                                              <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">))</span>
-          <span class="c1">#print(&quot;autoBind: &quot;,source,m,&quot;to&quot;,sink)</span>
-        <span class="n">elif</span> <span class="n">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="s">&quot;_&quot;</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">event:</span>
-          <span class="k">print</span><span class="p">(</span><span class="s">&quot;Warning: %s found in %s, but %s not raised by %s&quot;</span> <span class="nv">%</span>
-                <span class="err">(</span><span class="nv">m</span><span class="p">,</span> <span class="n">sink</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span>
-                 <span class="n">source</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
-
-  <span class="k">return</span> <span class="n">listeners</span>
-</pre></div>
-
-
-<p>从注释中我们可以看出这个函数的作用:
-无非就是讲handler端的sink和event的source连接起来，方式为：</p>
-<div class="highlight"><pre> <span class="n">listeners</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">addListener</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="n">event</span><span class="p">],</span> <span class="n">a</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">,</span>
-                                          <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">))</span>
-</pre></div>
-
-
-<p>其中用到的addListener()是这个连接的关键，代码如下：</p>
-<div class="highlight"><pre>  <span class="n">def</span> <span class="n">addListener</span> <span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">eventType</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">once</span><span class="o">=</span><span class="n">False</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">False</span><span class="p">,</span>
-                   <span class="n">priority</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">byName</span><span class="o">=</span><span class="n">False</span><span class="p">):</span>
-    <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    Add an event handler for an event triggered by this object (subscribe).</span>
-
-<span class="s">    eventType : event class object (e.g. ConnectionUp). If byName is True,</span>
-<span class="s">                should be a string (e.g. &quot;</span><span class="n">ConnectionUp</span><span class="s">&quot;) </span>
-<span class="s">    handler : function/method to be invoked when event is raised </span>
-<span class="s">    once : if True, this handler is removed after being fired once</span>
-<span class="s">    weak : If handler is a method on object A, then listening to an event</span>
-<span class="s">           on object B will normally make B have a reference to A, so A</span>
-<span class="s">           can not be released until after B is released or the listener</span>
-<span class="s">           is removed.</span>
-<span class="s">           If weak is True, there is no relationship between the lifetimes</span>
-<span class="s">           of the publisher and subscriber.</span>
-<span class="s">    priority : The order in which to call event handlers if there are</span>
-<span class="s">               multiple for an event type.  Should probably be an integer,</span>
-<span class="s">               where higher means to call it earlier.  Do not specify if</span>
-<span class="s">               you don&#39;t care.</span>
-<span class="s">    byName : True if eventType is a string name, else an Event subclass</span>
-
-<span class="s">    Raises an exception unless eventType is in the source&#39;s</span>
-<span class="s">    _eventMixin_events set (or, alternately, _eventMixin_events must</span>
-<span class="s">    be True).</span>
-
-<span class="s">    The return value can be used for removing the listener.</span>
-<span class="s">    &quot;&quot;&quot;</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_init</span><span class="p">()</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_events</span> <span class="n">is</span> <span class="ow">not</span> <span class="n">True</span>
-        <span class="ow">and</span> <span class="n">eventType</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_events</span><span class="p">):</span>
-      <span class="c1"># eventType wasn&#39;t found</span>
-      <span class="n">fail</span> <span class="o">=</span> <span class="n">True</span>
-      <span class="k">if</span> <span class="n">byName:</span>
-        <span class="c1"># if we were supposed to find the event by name, see if one of the</span>
-        <span class="c1"># event names matches</span>
-        <span class="k">for</span> <span class="n">e</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_events:</span>
-          <span class="k">if</span> <span class="n">issubclass</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">Event</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="n">eventType:</span>
-              <span class="n">eventType</span> <span class="o">=</span> <span class="n">e</span>
-              <span class="n">fail</span> <span class="o">=</span> <span class="n">False</span>
-              <span class="n">break</span>
-      <span class="k">if</span> <span class="n">fail:</span>
-        <span class="n">raise</span> <span class="n">RuntimeError</span><span class="p">(</span><span class="s">&quot;Event %s not defined on object of type %s&quot;</span>
-                           <span class="nv">%</span> <span class="err">(</span><span class="nv">eventType</span><span class="p">,</span> <span class="n">type</span><span class="p">(</span><span class="n">self</span><span class="p">)))</span>
-    <span class="k">if</span> <span class="n">eventType</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers:</span>
-      <span class="c1"># if no handlers are already registered, initialize</span>
-      <span class="n">handlers</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers</span><span class="p">[</span><span class="n">eventType</span><span class="p">]</span> <span class="o">=</span> <span class="o">[]</span>
-      <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers</span><span class="p">[</span><span class="n">eventType</span><span class="p">]</span> <span class="o">=</span> <span class="n">handlers</span>
-    <span class="k">else</span><span class="p">:</span>
-      <span class="n">handlers</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers</span><span class="p">[</span><span class="n">eventType</span><span class="p">]</span>
-
-    <span class="n">eid</span> <span class="o">=</span> <span class="n">_generateEventID</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">weak:</span> <span class="n">handler</span> <span class="o">=</span> <span class="n">CallProxy</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="p">(</span><span class="n">eventType</span><span class="p">,</span> <span class="n">eid</span><span class="p">))</span>
-
-    <span class="n">entry</span> <span class="o">=</span> <span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">once</span><span class="p">,</span> <span class="n">eid</span><span class="p">)</span>
-
-    <span class="n">handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">priority</span> <span class="n">is</span> <span class="ow">not</span> <span class="n">None:</span>
-      <span class="c1"># If priority is specified, sort the event handlers</span>
-      <span class="n">handlers</span><span class="o">.</span><span class="nb">sort</span><span class="p">(</span><span class="nb">reverse</span> <span class="o">=</span> <span class="n">True</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="p">(</span><span class="n">eventType</span><span class="p">,</span><span class="n">eid</span><span class="p">)</span>
-</pre></div>
-
-
-<p>第400行的if建立一个与eventType对应的handlers：</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="n">eventType</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers:</span>
-  <span class="c1"># if no handlers are already registered, initialize</span>
-  <span class="n">handlers</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers</span><span class="p">[</span><span class="n">eventType</span><span class="p">]</span> <span class="o">=</span> <span class="o">[]</span>
-  <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers</span><span class="p">[</span><span class="n">eventType</span><span class="p">]</span> <span class="o">=</span> <span class="n">handlers</span>
-<span class="k">else</span><span class="p">:</span>
-  <span class="n">handlers</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers</span><span class="p">[</span><span class="n">eventType</span><span class="p">]</span>
-</pre></div>
-
-
-<p>第413行：</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="n">priority</span> <span class="n">is</span> <span class="ow">not</span> <span class="n">None:</span>
-  <span class="c1"># If priority is specified, sort the event handlers</span>
-  <span class="n">handlers</span><span class="o">.</span><span class="nb">sort</span><span class="p">(</span><span class="nb">reverse</span> <span class="o">=</span> <span class="n">True</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-
-<span class="k">return</span> <span class="p">(</span><span class="n">eventType</span><span class="p">,</span><span class="n">eid</span><span class="p">)</span>
-</pre></div>
-
-
-<p>将带有handler和eid等信息的entry添加到handlers队列中，priority决定这个handlers在处理时的优先级，若无特殊优先级，则按正常顺序放在队尾。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">_eventMixin_init</span> <span class="p">(</span><span class="n">self</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">hasattr</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="s">&quot;_eventMixin_events&quot;</span><span class="p">):</span>
-        <span class="n">setattr</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="s">&quot;_eventMixin_events&quot;</span><span class="p">,</span> <span class="n">True</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">hasattr</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="s">&quot;_eventMixin_handlers&quot;</span><span class="p">):</span>
-        <span class="n">setattr</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="s">&quot;_eventMixin_handlers&quot;</span><span class="p">,</span> <span class="p">{})</span>
-</pre></div>
-
-
-<p>在_eventMixin_init()函数里，我们发现在这里我们setattr()了一个_eventMixin_events的特性和_eventMixin_handlers的列表。</p>
-<p>这些数据在autoBindEvents()里面有使用到：</p>
-<div class="highlight"><pre>  <span class="k">if</span> <span class="n">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s">&#39;_eventMixin_events&#39;</span><span class="p">)</span> <span class="n">is</span> <span class="n">False:</span>
-    <span class="c1"># If source does not declare that it raises any events, do nothing</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Warning: source class %s doesn&#39;t specify any events!&quot;</span> <span class="nv">%</span> <span class="err">(</span>
-          <span class="nv">source</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,))</span>
-    <span class="k">return</span> <span class="o">[]</span>
-</pre></div>
-
-
-<p>一个很重要的问题是，handlers在哪里？没有handlers就无法就行连接，更不用说接下来的事件处理了。我们来再看一次autoBindEvents()函数，我们观察到source.我们去查看source这个类就会发现问题的答案在哪里了。</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Source</span> <span class="p">(</span><span class="n">EventMixin</span><span class="p">):</span>
-  <span class="c1"># Defining this variable tells the revent library what kind of events</span>
-  <span class="c1"># this source can raise.</span>
-  <span class="n">_eventMixin_events</span> <span class="o">=</span> <span class="n">set</span><span class="p">([</span><span class="n">ComponentRegistered</span><span class="p">])</span>
-
-  <span class="n">def</span> <span class="n">__init__</span> <span class="p">(</span><span class="n">self</span><span class="p">):</span>
-    <span class="n">foo</span><span class="p">()</span>
-
-  <span class="n">def</span> <span class="n">foo</span> <span class="p">(</span><span class="n">self</span><span class="p">):</span>
-    <span class="c1"># We can raise events as follows:</span>
-    <span class="n">component</span> <span class="o">=</span> <span class="s">&quot;fake_pox_component&quot;</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">raiseEvent</span><span class="p">(</span><span class="n">ComponentRegistered</span><span class="p">(</span><span class="n">component</span><span class="p">))</span>
-
-    <span class="c1"># In the above invocation, the argument is an instance of</span>
-    <span class="c1"># ComponentRegistered (which is a subclass of Event).  The following is</span>
-    <span class="c1"># functionally equivalent, but has the nice property that </span>
-    <span class="c1"># ComponentRegistered is never instantiated if there are no listeners.</span>
-    <span class="c1">#self.raiseEvent(ComponentRegistered, component)</span>
-    <span class="c1"># In both cases, &quot;component&quot; is passed to the __init__ method for the</span>
-    <span class="c1"># ComponentRegistered class.</span>
-
-    <span class="c1"># The above method invocation will raise an exception if an event</span>
-    <span class="c1"># handler rauses an exception.  To project yourself from exceptions in</span>
-    <span class="c1"># handlers, see raiseEventNoErrors().</span>
-</pre></div>
-
-
-<p>Source类中调用了raiseEvent()函数，我们再去查看raiseEvent()函数。
-在这个函数里面我们找到了handlers的赋值（提取）语句：</p>
-<div class="highlight"><pre><span class="c1"># Create a copy so that it can be modified freely during event</span>
-<span class="c1"># processing.  It might make sense to change this.</span>
-<span class="n">handlers</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">eventType</span><span class="p">,</span> <span class="o">[]</span><span class="p">)</span>
-</pre></div>
-
-
-<p>整个事件绑定的过程大概可以总结如下：
-在事件发生段，即源端在产生事件的时候要raise一个event, 监听端使用监听函数如：ListenTo()不断监听端口，有消息进来，则建立连接，存于对应字典，同时将handler注册到_eventMixin_handlers这个列表中。</p>
-<h3>事件处理：</h3>
-<p>事件处理的函数主要有：raiseEventsNoErrors()和raiseEvents()函数。
-但是raiseEventsNoErrors() 函数里面其主要的语句一样是使得最终的条件满足从而调用raiseEvents()函数，所以让我们来看一看raiseEvents()函数的注释：</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">raiseEvent</span> <span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-    <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    Raises an event.</span>
-<span class="s">    If &quot;</span><span class="n">event</span><span class="s">&quot; is an Event type, it will be initialized with args and kw,</span>
-<span class="s">    but only if there are actually listeners.</span>
-<span class="s">    Returns the event object, unless it was never created (because there</span>
-<span class="s">    were no listeners) in which case returns None.</span>
-<span class="s">    &quot;&quot;&quot;</span>
-</pre></div>
-
-
-<p>主要的作用是raise一个event，这个显而易见。</p>
-<div class="highlight"><pre><span class="c1"># Create a copy so that it can be modified freely during event</span>
-<span class="c1"># processing.  It might make sense to change this.</span>
-<span class="n">handlers</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">eventType</span><span class="p">,</span> <span class="o">[]</span><span class="p">)</span>
-<span class="k">for</span> <span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">once</span><span class="p">,</span> <span class="n">eid</span><span class="p">)</span> <span class="n">in</span> <span class="n">handlers:</span>
-  <span class="k">if</span> <span class="n">classCall:</span>
-    <span class="n">rv</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">_invoke</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
-  <span class="k">else</span><span class="p">:</span>
-    <span class="n">rv</span> <span class="o">=</span> <span class="n">handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
-  <span class="k">if</span> <span class="n">once:</span> <span class="n">self</span><span class="o">.</span><span class="n">removeListener</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span>
-  <span class="k">if</span> <span class="n">rv</span> <span class="n">is</span> <span class="n">None:</span> <span class="k">continue</span>
-  <span class="k">if</span> <span class="n">rv</span> <span class="n">is</span> <span class="n">False:</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">removeListener</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span>
-  <span class="k">if</span> <span class="n">rv</span> <span class="n">is</span> <span class="n">True:</span>
-    <span class="k">if</span> <span class="n">classCall:</span> <span class="n">event</span><span class="o">.</span><span class="n">halt</span> <span class="o">=</span> <span class="n">True</span>
-    <span class="n">break</span>
-  <span class="k">if</span> <span class="n">type</span><span class="p">(</span><span class="n">rv</span><span class="p">)</span> <span class="o">==</span> <span class="n">tuple:</span>
-    <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">rv</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">rv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">True:</span>
-      <span class="n">self</span><span class="o">.</span><span class="n">removeListener</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">rv</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">rv</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-      <span class="k">if</span> <span class="n">classCall:</span> <span class="n">event</span><span class="o">.</span><span class="n">halt</span> <span class="o">=</span> <span class="n">True</span>
-      <span class="n">break</span>
-    <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">rv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-      <span class="k">if</span> <span class="n">classCall:</span> <span class="n">event</span><span class="o">.</span><span class="n">halt</span> <span class="o">=</span> <span class="n">True</span>
-      <span class="n">break</span>
-  <span class="c1">#if classCall and hasattr(event, &quot;halt&quot;) and event.halt:</span>
-  <span class="k">if</span> <span class="n">classCall</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">halt:</span>
-    <span class="n">break</span>
-<span class="k">return</span> <span class="n">event</span>
-</pre></div>
-
-
-<p>L278:</p>
-<div class="highlight"><pre><span class="n">handlers</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">_eventMixin_handlers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">eventType</span><span class="p">,</span> <span class="o">[]</span><span class="p">)</span>
-</pre></div>
-
-
-<p>从handlers中按照eventType提取出handler,然后对handler遍历。如果once =true(L284)则把监听器去除，即将handler移除。最后入伙遭遇停止标记event.halt则退出循环。事件处理队列终止。</p>
-<h3>后续</h3>
-<p>之后再读了北邮泛网无线教育部重点实验室李德民学长的一篇关于pox的文章（Ref: http://lidemin.pw/190）之后再写了一点东西如下：
-在启动pox以及各个组件的时候，core=POXCore()的实例化中有提到：</p>
-<p>这个scheduler是上文一直都没有提到的。
-Core.scheduler线程的动作如下：
-第一次连接时，建立socket连接，实例化一个connection的类。
-接下来的通信过程就需要进一步的学习才能写出来了。</p>
-<h3>感想:</h3>
-<p>自己还是太年轻，太浮夸，从来没有好好看过代码，好好研究过POX的运行机制，还好有实验室的学长写过的一些文章可以读，然后自己照着做一遍，做完之后会有深刻的理解，但是目前，整一个Openflow协议在动态过程中的通信流程并不是特别了解。下一阶段的学习目标是把Openflow协议的通信过程学习一遍，结合之前画过的静态的数据结果，我相信效果应该会很好。Openflow协议的扩展也在很努力地做，有了这些基础之后，如何求改协议，比以前已经变得轻松多了。在此感谢两位学长留下的财富。</p>
-<p>参考文献：</p>
-<p>李德民学长主页:http://lidemin.pw/190</p>
-<p>赵伟辰学长主页:http://richardzhao.me/?p=594</p></div>
-        <hr />
-    </div>
-		
+<h6>4 ...</h6> <a class="btn btn-info xsmall" href="../pages/2013/11/28/yuan-chuang-poxyun-xing-ji-zhi-byli-cheng.html">read more</a></div>
+    </div>	
+				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
