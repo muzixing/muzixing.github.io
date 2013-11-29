@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>Code the world</title>
+    <meta name="description" content="">
+    <meta name="author" content="muzi">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="../theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../theme/local.css" rel="stylesheet">
+    <link href="../theme/pygments.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="..">Code the world</a>
+
+        <div class="nav-collapse">
+
+        <ul class="nav">
+            
+            <li><a href="../pages/about.html">About</a></li>
+        </ul>
+	<form class="navbar-search pull-right" action="/search.html">
+    	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
+</form>
+
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+        
+
+        
+
+
+    <div class='article'>
+        <div class="content-title">
+            <a href="../pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html"><h1>【原创】scapy简单教程</h1></a>
+2013-11-29
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ 
+        </div>
+        
+        <div><p>如果你是网络研究的爱好者，有一个工具是对你很有用的，那就是scapy!</p>
+<p>scapy能够封装出目前网络上绝大多数（不确定是不是全部）的数据包，如IP，ARP,ICMP。有了这些数据包，你再也不需要为如何产生某些数据包而烦恼了。</p>
+<h3>首先我们需要先安装scapy</h3>
+<p>具体可以自行google,baidu,或者查看：http://www.secdev.org/projects/scapy/doc/installation.html</p>
+<h3>构建一个简单的IP包</h3>
+<div class="highlight"><pre><span class="n">ip_paket</span> <span class="o">=</span> <span class="n">IP</span><span class="p">(</span><span class="n">dst</span> <span class="o">=</span> <span class="s">&#39;10.0.0.1&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>这样你就可以构造出一个IP包了。括弧里面填写的内容就是相关字段的内容。</p>
+<h3>查看字段</h3>
+<p>如果你想知道有那些字段，那么你就需要用到ls()命令。如：</p>
+<div class="highlight"><pre><span class="n">ls</span><span class="err">（</span><span class="n">IP</span><span class="err">）</span>
+</pre></div>
+
+
+<p>运行结果：</p>
+<p><img alt="ls" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=a1592a2c0cf41bd5de53e8f161e1f0f6/d31b0ef41bd5ad6e0183a9ed83cb39dbb6fd3cbb.jpg?referer=d6124b2ee9c4b7456d8382267c5a&amp;x=.jpg" /></p>
+<p>ls在scapy中可以直接对任何结构体进行解析。可以把数据包的内容展现在你面前。</p>
+<h5>我们还可以直接查看某一个字段</h5>
+<p><img alt="view" src="http://c.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=2b5a4b2cb251f819f525034fea8f3bd0/b21bb051f81986182432228348ed2e738bd4e644.jpg?referer=1ab2a90a249759ee134755fb425a&amp;x=.jpg" /></p>
+<p>Payload为数据包的净荷，可以由以下的代码可以查看payload。</p>
+<p><img alt="PAYLOAD" src="http://a.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=ee699c54f4246b607f0eb271dbc36b71/6a63f6246b600c33d7241ccf184c510fd9f9a15c.jpg?referer=fd54aeb5b0b7d0a222de31ad0f32&amp;x=.jpg" /></p>
+<p>我们继续感受一下scapy的便捷。</p>
+<h5>我们也可以看看scapy的封装解封装能力！</h5>
+<p><img alt="packet" src="http://h.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=fc0780c7f536afc30a0c3f6083229af9/79f0f736afc37931f51d4b2ee9c4b74543a91144.jpg?referer=5649b43f6c061d95245102085f5b&amp;x=.jpg" /></p>
+<h5>数据包的发送与接收：</h5>
+<p><img alt="send" src="http://d.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=7f8a8529d01b0ef468e8985bedff20e7/7c1ed21b0ef41bd5762625f353da81cb39db3d44.jpg?referer=a279f262b119ebc4996f43a97b5b&amp;x=.jpg" /></p>
+<p>我们可以发现第一次发送的时候，在选路过程中，收到了27个数据包回复。接下来就越来越少，最后只剩下一个了。
+ <img alt="type" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=15a850b1cb177f3e1434fc0840f44afa/a686c9177f3e67090d5d87f839c79f3df8dc555c.jpg?referer=1067c2cde4cd7b89b07b0fb39332&amp;x=.jpg" />
+我们可以看到是echo_reply的类型。</p>
+<p>原创作品，转载请说明。</p></div>
+        <hr />
+    </div>
+		
+<div class="pagination">
+<ul>
+    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
+
+    <li class="active"><a href="../tag/scapy.html">1</a></li>
+
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
+
+</ul>
+</div>
+ 
+  
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="../archives.html">Archives</a>
+                <li><a href="../tags.html">Tags</a>
+                <li><a href="http://muzixing.github.io/" rel="alternate">Atom feed</a></li>
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="../category/tech.html">Tech</a></li>
+                   
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Links
+                </li>
+            
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+            </ul>
+            </div>
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="https://github.com/muzixing">github</a></li>
+                <li><a href="http://350959853.qzone.qq.com">qzone</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="..">Code the world</a> &copy; muzi 2012</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+<script>var _gaq=[['_setAccount','UA-45955656-1'],['_trackPageview']];(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s)}(document,'script'))</script>
+ 
+</body>
+</html>

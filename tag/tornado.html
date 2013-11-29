@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>Code the world</title>
+    <meta name="description" content="">
+    <meta name="author" content="muzi">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="../theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../theme/local.css" rel="stylesheet">
+    <link href="../theme/pygments.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="..">Code the world</a>
+
+        <div class="nav-collapse">
+
+        <ul class="nav">
+            
+            <li><a href="../pages/about.html">About</a></li>
+        </ul>
+	<form class="navbar-search pull-right" action="/search.html">
+    	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
+</form>
+
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+        
+
+        
+
+
+    <div class='article'>
+        <div class="content-title">
+            <a href="../pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html"><h1>基于tornado的简单socket通信建立</h1></a>
+2013-11-29
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ 
+        </div>
+        
+        <div><p>配图版请查看：http://user.qzone.qq.com/350959853/blog/1375093527</p>
+<h3>安装tornado</h3>
+<p>这里有比较全的介绍，写得非常好。http://sebug.net/paper/books/tornado/</p>
+<h3>hello world</h3>
+<p>首先，下载安装好tornado之后，我们就可以去使用tornado里面的库了。
+照着官网的简单的例子抄了一遍，写了一个hello world!</p>
+<p><img alt="hello" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=1382f91cba99a9013f355b332dae7b46/e824b899a9014c0862b40dad087b02087bf4f42e.jpg?referer=77791a7ef01fbe094549f72434e4&amp;x=.jpg" /></p>
+<p>显示效果如下：</p>
+<p><img alt="res" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=0683c331b1de9c82a265f98a5cbaf137/d009b3de9c82d15858647eb9820a19d8bd3e42d7.jpg?referer=68d8807dd488d43fa9bea5c2aecd&amp;x=.jpg" /></p>
+<h3>基于tornado的简单的socket连接通信实现</h3>
+<p>代码如下：</p>
+<div class="highlight"><pre><span class="nb">import</span> <span class="n">errno</span>
+<span class="nb">import</span> <span class="n">functools</span>
+<span class="n">from</span> <span class="n">tornado</span><span class="o">.</span><span class="n">ioloop</span> <span class="nb">import</span> <span class="n">IOLoop</span>
+<span class="nb">import</span> <span class="nb">socket</span>
+<span class="nb">import</span> <span class="nb">time</span>
+<span class="nb">import</span> <span class="n">Queue</span>
+
+<span class="n">sock</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">socket</span>    <span class="p">(</span><span class="nb">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span><span class="nb">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1">#sock.setsockopt    (socket.SOL_SOCKET,socket.SO_REUSEADDR,1)</span>
+<span class="n">sock</span><span class="o">.</span><span class="n">setblocking</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">server_address</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span><span class="mi">12346</span><span class="p">)</span>
+<span class="n">sock</span><span class="o">.</span><span class="nb">bind</span><span class="p">(</span><span class="n">server_address</span><span class="p">)</span>
+<span class="n">sock</span><span class="o">.</span><span class="nb">listen</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">fd_map</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">message_queue_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">fd</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="nb">fileno</span><span class="p">()</span>
+<span class="n">fd_map</span><span class="p">[</span><span class="n">fd</span><span class="p">]</span><span class="o">=</span><span class="n">sock</span>
+
+<span class="n">ioloop</span> <span class="o">=</span> <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+
+<span class="n">def</span> <span class="n">handle_client</span><span class="p">(</span><span class="n">cli_addr</span><span class="p">,</span><span class="n">fd</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">event</span> <span class="p">,</span> <span class="n">IOLoop</span><span class="o">.</span><span class="n">WRITE</span>
+    <span class="n">s</span><span class="o">=</span><span class="n">fd_map</span><span class="p">[</span><span class="n">fd</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">event</span><span class="o">&amp;</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">READ:</span> <span class="c1">#receive the data</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="nb">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data:</span>
+            <span class="k">print</span><span class="s">&quot;receive %s from %s&quot;</span> <span class="nv">%</span><span class="err">(</span><span class="nv">data</span><span class="p">,</span><span class="n">cli_addr</span><span class="p">)</span> 
+            <span class="n">ioloop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">WRITE</span><span class="p">)</span>
+            <span class="n">message_queue_map</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;closing %s  &quot;</span> <span class="nv">%cli_addr</span>
+            <span class="n">ioloop</span><span class="o">.</span><span class="n">remove_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+            <span class="n">s</span><span class="o">.</span><span class="nb">close</span><span class="p">()</span>
+            <span class="n">del</span> <span class="n">message_queue_map</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">event</span> <span class="o">&amp;</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">WRITE:</span>
+        <span class="n">try:</span>
+            <span class="n">next_msg</span><span class="o">=</span> <span class="n">message_queue_map</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">get_nowait</span>   <span class="p">()</span>
+        <span class="n">except</span> <span class="n">Queue</span><span class="o">.</span><span class="n">Empty:</span>
+            <span class="k">print</span><span class="s">&quot;%s Queue Empty&quot;</span><span class="nv">%</span> <span class="nv">cli_addr</span>
+            <span class="n">ioloop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span>   <span class="c1">#CHANGE THE SITUATION</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="s">&quot;sending %s to %s &quot;</span> <span class="nv">%</span> <span class="err">(</span><span class="nv">next_msg</span><span class="p">,</span>   <span class="n">cli_addr</span><span class="p">)</span>
+            <span class="n">s</span><span class="o">.</span><span class="nb">send</span><span class="p">(</span><span class="n">next_msg</span><span class="p">)</span>
+            <span class="n">ioloop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span><span class="c1">#</span>
+    <span class="k">if</span> <span class="n">event</span> <span class="o">&amp;</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">ERROR:</span>
+        <span class="k">print</span><span class="s">&quot;%s EXCEPTION ON&quot;</span><span class="nv">%cli_addr</span>
+        <span class="n">ioloop</span><span class="o">.</span><span class="n">remove_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+        <span class="n">s</span><span class="o">.</span><span class="nb">close</span><span class="p">()</span>
+        <span class="n">del</span> <span class="n">message_queue_map</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+
+<span class="n">def</span> <span class="n">handle_server</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="n">event</span><span class="p">):</span>
+    <span class="n">s</span><span class="o">=</span><span class="n">fd_map</span><span class="p">[</span><span class="n">fd</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">event</span> <span class="o">&amp;</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">READ:</span>
+        <span class="n">get_connection</span><span class="p">,</span><span class="n">cli_addr</span> <span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="nb">accept</span><span class="p">()</span>
+        <span class="k">print</span><span class="s">&quot;connection %s &quot;</span><span class="nv">%cli_addr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">get_connection</span><span class="o">.</span><span class="n">setblocking</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">get_connection_fd</span> <span class="o">=</span> <span class="n">get_connection</span><span class="o">.</span><span class="nb">fileno</span><span class="p">()</span>
+        <span class="n">fd_map</span><span class="p">[</span><span class="n">get_connection_fd</span><span class="p">]</span><span class="o">=</span><span class="n">get_connection</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span>  <span class="p">(</span><span class="n">handle_client</span><span class="p">,</span><span class="n">cli_addr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">ioloop</span><span class="o">.</span><span class="n">add_handler</span>  <span class="p">(</span><span class="n">get_connection_fd</span><span class="p">,</span><span class="n">handle</span><span class="p">,</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span>
+        <span class="n">message_queue_map</span><span class="p">[</span><span class="n">get_connection</span><span class="p">]</span><span class="o">=</span><span class="n">Queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+<span class="n">io_loop</span><span class="o">=</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="n">io_loop</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="n">handle_server</span><span class="p">,</span><span class="n">io_loop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span>
+<span class="n">try:</span>
+    <span class="n">io_loop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">except</span> <span class="n">KeyboardInterrupt:</span>
+    <span class="k">print</span> <span class="s">&quot;exit&quot;</span>
+    <span class="n">io_loop</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+
+
+<p>首先，我们的目的是利用tornado的库函数，去实现简单的也是很重要的socket通信。</p>
+<h4>第一步：</h4>
+<p>我们需要建立一个半连接的socket，也就是，本机开了一个socket，等待对方来匹配，连接通信。这一点是非常必要的！</p>
+<h4>第二步：</h4>
+<p>我们需要定义两个函数，一个是作为tcpserver的函数，另一个是作为client的函数。相对来说，server的要简单一些，因为只需要接受即可。在图中为handle_serve（）函数。比较困难的是handle_client（）函数，因为需要考虑的问题比较多！第一个需要考虑的是收到的数据是否为空的问题，非空之后，需要将其打印出来，并将源数据发送回去。当然，具体的操作可以由编程者决定，原样返还是比较简单的操作。同时，我们还需要关注的是，这些处理的过程中，需要关注的socket的读写状态！当数据包到来时，我们应该为可读状态，讲数据读出之后，要记得把socket的状态改为可写，等待数据的写入。</p>
+<h4>第三步：</h4>
+<p>资源的释放。当程序执行完毕时，我们需要对系统调用的程序进行释放。<strong>32</strong>行的else就是其中一个操作。最后的ioloop.stop()也是必须的！</p>
+<p>实验结果如下：</p>
+<p><img alt="result" src="http://a.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=2fcd8e17050828386c0ddc1188a2d83c/9f2f070828381f30e196a8a1ab014c086e06f02e.jpg?referer=909062360ef3d7ca55e10b4630e4&amp;x=.jpg" /></p>
+<p>基于这个简单的通信，我们可以去创建更大规模的通信，实现更为复杂的传输。如SDN中controller与交换机之间的通信。</p></div>
+        <hr />
+    </div>
+		
+<div class="pagination">
+<ul>
+    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
+
+    <li class="active"><a href="../tag/tornado.html">1</a></li>
+
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
+
+</ul>
+</div>
+ 
+  
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="../archives.html">Archives</a>
+                <li><a href="../tags.html">Tags</a>
+                <li><a href="http://muzixing.github.io/" rel="alternate">Atom feed</a></li>
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="../category/tech.html">Tech</a></li>
+                   
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Links
+                </li>
+            
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+            </ul>
+            </div>
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="https://github.com/muzixing">github</a></li>
+                <li><a href="http://350959853.qzone.qq.com">qzone</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="..">Code the world</a> &copy; muzi 2012</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+<script>var _gaq=[['_setAccount','UA-45955656-1'],['_trackPageview']];(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s)}(document,'script'))</script>
+ 
+</body>
+</html>
