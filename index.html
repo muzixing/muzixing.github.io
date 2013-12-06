@@ -73,8 +73,10 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         </div>
         
         <div><h3>你知道的mininet</h3>
-<p>相信很多研究SDN的朋友都知道mininet，也是用过mininet。但是恐怕大多数人都只是局限于workthough的水平（链接：http://mininet.org/walkthrough/），搭建更多的，灵活的拓扑还是有一定的难度。</p>
+<p>相信很多研究SDN的朋友都知道mininet，也是用过mininet。但是恐怕大多数人都只是局限于workthough的水平.链接：http://mininet.org/walkthrough/</p>
+<p>搭建更多的，灵活的拓扑还是有一定的难度。</p>
 <p>上一次实验的时候，看了一下spirent testceter的一套测试拓扑，从中受益，学了一点。现在写出来分享一下。</p>
+<p>如果你想快速建立拓扑，请直接拉到最后一个标题</p>
 <h3>教你搭建你自己的任意拓扑</h3>
 <p>首先把需要用到的相关模块import进来。</p>
 <div class="highlight"><pre><span class="sr">/#!/</span><span class="n">usr</span><span class="sr">/bin/</span><span class="n">python</span>
@@ -93,8 +95,12 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>re模块提供python正则表达式的支持，我们会看到我们定义的checkIntf()函数会使用到正则表达式。</p>
 <p>接着要从mininet中import进来很多文件，</p>
 <ul>
-<li><strong>CLI是命令行服务的文件。</strong></li>
-<li><strong>log是一些记录</strong></li>
+<li>
+<p><strong>CLI是命令行服务的文件。</strong></p>
+</li>
+<li>
+<p><strong>log是一些记录</strong></p>
+</li>
 <li>
 <p><strong>net里面包含了最重要的类，Mininet类，这是定义一个网络的类</strong></p>
 <div class="highlight"><pre><span class="n">class</span> <span class="n">Mininet</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
@@ -123,8 +129,10 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 </pre></div>
 
 
-<p>以上的函数已经足够你构建一个足够复杂的，足够灵活的网络了。
-* <strong>link里面的Intf是一个接口函数</strong></p>
+<p>以上的函数已经足够你构建一个足够复杂的，足够灵活的网络了。</p>
+</li>
+<li>
+<p><strong>link里面的Intf是一个接口函数</strong></p>
 <div class="highlight"><pre><span class="n">class</span> <span class="n">Intf</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
 
     <span class="s">&quot;Basic interface object that can configure itself.&quot;</span>
@@ -155,11 +163,16 @@ mininet中便捷使用是， --tree(n,m),可以生成n层的m叉树。</p>
 </pre></div>
 
 
-<p>默认的控制器是本地控制器。ip =127.0.0.1。注意，你可以自己定义你的控制器的名字，这一点是很有趣的，比如我的控制器就叫做：muziController，搞技术的时候，也要考虑技术的感受，不要老搞，要轻松一下嘛。
-<em> <strong>node里面的OVSKernelSwitch定义OVS交换机的类，至关重要。</strong></em> 
-    class OVSLegacyKernelSwitch( Switch ):
-        def <strong>init</strong>( self, name, dp=None, **kwargs ):
-实际上它直接集继承了Switch类，Switch类是一个更加简单的基类，提供了交换机所需要的相关功能。</p>
+<p>默认的控制器是本地控制器。ip =127.0.0.1。注意，你可以自己定义你的控制器的名字，这一点是很有趣的，比如我的控制器就叫做：muziController，搞技术的时候，也要考虑技术的感受，不要老搞，要轻松一下嘛。</p>
+</li>
+<li>
+<p><strong>node里面的OVSKernelSwitch定义OVS交换机的类，至关重要。</strong></p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">OVSLegacyKernelSwitch</span><span class="p">(</span> <span class="n">Switch</span> <span class="p">):</span>
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">dp</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">):</span>
+</pre></div>
+
+
+<p>实际上它直接集继承了Switch类，Switch类是一个更加简单的基类，提供了交换机所需要的相关功能。</p>
 <div class="highlight"><pre><span class="n">class</span> <span class="n">OVSSwitch</span><span class="p">(</span> <span class="n">Switch</span> <span class="p">):</span>
 </pre></div>
 
