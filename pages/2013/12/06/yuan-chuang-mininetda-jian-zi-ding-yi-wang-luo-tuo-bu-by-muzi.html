@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="./theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="./theme/bootstrap.min.css" rel="stylesheet">
-    <link href="./theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="./theme/local.css" rel="stylesheet">
-    <link href="./theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href=".">Code the world</a>
+        <a class="brand" href="../../../..">Code the world</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="./pages/about.html">About</a></li>
+            <li><a href="../../../../pages/about.html">About</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html"><h1>【原创】mininet搭建自定义网络拓扑 by muzi</h1></a>
+            <h1>【原创】mininet搭建自定义网络拓扑 by muzi</h1>
 2013-12-06
 
-by <a class="url fn" href="./author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><h3>你知道的mininet</h3>
 <p>相信很多研究SDN的朋友都知道mininet，也是用过mininet。但是恐怕大多数人都只是局限于workthough的水平（链接：http://mininet.org/walkthrough/），搭建更多的，灵活的拓扑还是有一定的难度。</p>
 <p>上一次实验的时候，看了一下spirent testceter的一套测试拓扑，从中受益，学了一点。现在写出来分享一下。</p>
@@ -237,167 +231,23 @@ mininet中便捷使用是， --tree(n,m),可以生成n层的m叉树。</p>
     <span class="n">CLI</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>     <span class="sr">//</span><span class="err">等待键入命令</span>
     <span class="n">net</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>   <span class="sr">//</span><span class="err">关闭</span><span class="n">net</span>
 </pre></div></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = '【原创】mininet搭建自定义网络拓扑 by muzi';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html"><h2>基于tornado的简单socket通信建立</h2></a>
-        <div class= "well small"> 2013-11-29
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>配图版请查看：http://user.qzone.qq.com/350959853/blog/1375093527</p>
-<h3>安装tornado</h3>
-<p>这里有比较全的介绍，写得非常好。http://sebug.net/paper/books/tornado/</p>
-<h3>hello world</h3>
-<p>首先，下载安装好tornado之后，我们就可以去使用tornado里面的库了。
-照着官网的简单的例子抄了一遍，写了一个hello world!</p>
-<p><img alt="hello" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=1382f91cba99a9013f355b332dae7b46/e824b899a9014c0862b40dad087b02087bf4f42e.jpg?referer=77791a7ef01fbe094549f72434e4&amp;x=.jpg" /></p>
-<p>显示效果如下：</p>
-<p><img alt="res" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=0683c331b1de9c82a265f98a5cbaf137/d009b3de9c82d15858647eb9820a19d8bd3e42d7.jpg?referer=68d8807dd488d43fa9bea5c2aecd&amp;x=.jpg" /></p>
-<h3>基于tornado的简单的socket连接通信实现</h3>
-<p>代码如下：</p>
-<div class="highlight"><pre><span class="nb">import</span> <span class="n">errno</span>
-<span class="nb">import</span> <span class="n">functools</span>
-<span class="n">from</span> <span class="n">tornado</span><span class="o">.</span><span class="n">ioloop</span> <span class="nb">import</span> <span class="n">IOLoop</span>
-<span class="nb">import</span> <span class="nb">socket</span>
-<span class="nb">import</span> <span class="nb">time</span>
-<span class="nb">import</span> <span class="n">Queue</span>
-
-<span class="n">sock</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">socket</span>    <span class="p">(</span><span class="nb">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span><span class="nb">socket ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/11/29/nge-zheng-shu-qiu-qi-zhong-ren-yi-n-1ge-shu-de-cheng-ji-zhong-de-zui-da-de-ge-jin-yong-chu-fa.html"><h2>N个整数，求其中任意N-1个数的乘积中的最大的一个(禁用除法)</h2></a>
-        <div class= "well small"> 2013-11-29
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>刚才看程序员面试宝典的时候看到这个有趣的题目，也是google2007年的笔试题目。<strong>只能用乘法，不能用除法。</strong></p>
-<p>看了网上一些扯到不行算法之后，我决定把我自己的想法写一下，不一定对。</p>
-<p>PS：好久没写C++,语法都忘了，跟python语法混乱了……哎。。</p>
-<h3>整个问题只会有一下3种情况</h3>
-<ul>
-<li>
-<p>有两个0，最大必为0。</p>
-</li>
-<li>
-<p>数组全非负，最好办，在没有两个及以上的0的情况下，把最小的剔除即可。</p>
-</li>
-<li>
-<p>数组有正有负，有0，最困难。</p>
-</li>
-</ul>
-<p>具体代码如下：</p>
-<div class="highlight"><pre><span class="sr">//</span><span class="err">数组</span><span class="n">a</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
-<span class="sr">//</span><span class="err">——————————————————————————————————————————————</span>
-<span class="nb">int</span> <span class="n">min1</span> <span class="o">=</span> <span class="o">-</span><span class="mi">65534</span><span class="p">,</span><span class="n">min2</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">No</span><span class="p">,</span><span class="n">No_1</span><span class="p">,</span><span class="n">No_2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span><span class="n">total</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">z_num</span><span class="o">=-</span><span class="mi">1</span><span class="p">;</span><span class="sr">//</span><span class="err">初始化参数；</span>
-<span class="k">for</span><span class="p">(</span><span class="nb">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;(</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">)</span><span class="o">||</span><span class="p">(</span><span class="n">j</span><span class="o">&lt;</span><span class="mi">1 ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/11/29/nge-zheng-shu-qiu-qi-zhong-ren-yi-n-1ge-shu-de-cheng-ji-zhong-de-zui-da-de-ge-jin-yong-chu-fa.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html"><h2>【原创】scapy简单教程</h2></a>
-        <div class= "well small"> 2013-11-29
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>如果你是网络研究的爱好者，有一个工具是对你很有用的，那就是scapy!</p>
-<p>scapy能够封装出目前网络上绝大多数（不确定是不是全部）的数据包，如IP，ARP,ICMP。有了这些数据包，你再也不需要为如何产生某些数据包而烦恼了。</p>
-<h3>首先我们需要先安装scapy</h3>
-<p>具体可以自行google,baidu,或者查看：http://www.secdev.org/projects/scapy/doc/installation.html</p>
-<h3>构建一个简单的IP包</h3>
-<div class="highlight"><pre><span class="n">ip_paket</span> <span class="o">=</span> <span class="n">IP</span><span class="p">(</span><span class="n">dst</span> <span class="o">=</span> <span class="s">&#39;10.0.0.1&#39;</span><span class="p">)</span>
-</pre></div>
-
-
-<p>这样你就可以构造出一个IP包了。括弧里面填写的内容就是相关字段的内容。</p>
-<h3>查看字段</h3>
-<p>如果你想知道有那些字段，那么你就需要用到ls()命令。如：</p>
-<div class="highlight"><pre><span class="n">ls</span><span class="err">（</span><span class="n">IP</span><span class="err">）</span>
-</pre></div>
-
-
-<p>运行结果：</p>
-<p><img alt="ls" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=a1592a2c0cf41bd5de53e8f161e1f0f6/d31b0ef41bd5ad6e0183a9ed83cb39dbb6fd3cbb.jpg?referer=d6124b2ee9c4b7456d8382267c5a&amp;x=.jpg" /></p>
-<p>ls在scapy中可以直接对任何结构体进行解析。可以把数据包的内容展现在你面前。</p>
-<h5>我们还可以直接查看某一个字段</h5>
-<p><img alt="view" src="http://c.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=2b5a4b2cb251f819f525034fea8f3bd0/b21bb051f81986182432228348ed2e738bd4e644.jpg?referer=1ab2a90a249759ee134755fb425a&amp;x=.jpg" /></p>
-<p>Payload为数据包的净荷，可以由以下的代码可以查看payload。</p>
-<p><img alt="PAYLOAD" src="http://a.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=ee699c54f4246b607f0eb271dbc36b71/6a63f6246b600c33d7241ccf184c510fd9f9a15c.jpg?referer=fd54aeb5b0b7d0a222de31ad0f32&amp;x=.jpg" /></p>
-<p>我们继续感受一下scapy的便捷。</p>
-<h5>我们也可以看看scapy的封装解封装能力！</h5>
-<p><img alt="packet" src="http://h.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=fc0780c7f536afc30a0c3f6083229af9/79f0f736afc37931f51d4b2ee9c4b74543a91144.jpg?referer=5649b43f6c061d95245102085f5b&amp;x=.jpg" /></p>
-<h5>数据包的发送与接收 ...</h5> <a class="btn btn-info xsmall" href="./pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html"><h2>［原］poxdesk实现拓扑显示</h2></a>
-        <div class= "well small"> 2013-11-29
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>POXDESK实现拓扑的显示</h3>
-<p>今天实习第二天，开始深入逐渐玩POX跟mininet！之前只是会基本的操作，慢慢的要更加了解！今天早上就实现了一下poxdesk的功能！</p>
-<h4>操作步骤如下：</h4>
-<div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/noxrepo/</span><span class="n">pox</span>
-<span class="n">cd</span> <span class="n">pox</span>
-<span class="n">git</span> <span class="n">checkout</span> <span class="n">betta</span>
-<span class="n">cd</span> <span class="n">ext</span>
-<span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/MurphyMc/</span><span class="n">poxdesk</span>
-<span class="n">cd</span> <span class="n">poxdesk</span>
-<span class="n">wget</span> <span class="n">http:</span><span class="sr">//</span><span class="n">downloads</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="sr">/qooxdoo/</span><span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span><span class="o">.</span><span class="n">zip</span>
-<span class="n">unzip</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="./index.html">1</a></li>
-    <li class=""><a href="./index2.html">2</a></li>
-
-    <li class="next"><a href="./index2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -408,8 +258,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="./archives.html">Archives</a>
-                <li><a href="./tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <li><a href="http://muzixing.github.io/" rel="alternate">Atom feed</a></li>
             </ul>
             </div>
@@ -421,7 +271,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="./category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -457,7 +307,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href=".">Code the world</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Code the world</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
