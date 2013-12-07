@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html"><h1>【原创】mininet搭建自定义网络拓扑 by muzi</h1></a>
-2013-12-06
+            <a href="./pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html"><h1>【原创】SDN下的分布式广播风暴解决方案</h1></a>
+2013-12-07
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
  
@@ -72,7 +72,63 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h3>你知道的mininet</h3>
+        <div><h3>前言</h3>
+<p>这是很久以前的成果了，那时候我才大三上。为了学习sdn,openflow等知识，北邮科研楼628的一群哥们儿，想着各种新奇的东西去解决已有的问题。</p>
+<p>有一天，我们遇到了网络风暴，但是我们觉得STP有点复杂，而且，确实也不愿意去学。那么，就自己写一个解决方案吧。于是，下面的小代码产生了。</p>
+<h3>核心思想</h3>
+<p>其实特别简单，一句话：<strong>不让同一个数据包从第二个端口进入，即仅允许数据包从第一个进来的端口进入。</strong></p>
+<p>也就是说，我确保了，同一个数据包，不会从别的交换机从非第一次的in_port进入本交换机，那就不会有环路，也就解决了风暴，而且，同一个端口允许进入，不影响主机继续发送广播包。</p>
+<h3>具体实现</h3>
+<p>这个就需要我们建立一个macToport的表，在python里面数据结构字典来实现。使用src_mac作为key，记录值为[dstip,port,time]</p>
+<div class="highlight"><pre><span class="n">self</span><span class="o">.</span><span class="n">macToPort</span> <span class="o">=</span> <span class="p">{</span><span class="n">srcMAC:</span><span class="p">[</span><span class="n">dst_ip</span><span class="p">,</span><span class="n">in_port</span><span class="p">,</span><span class="nb">time</span><span class="p">]}</span>
+</pre></div>
+
+
+<p>这个字典记录了用数据包的mac地址记录了数据包的目标ip,入口端口，到达时间三个信息，其实如果为了更好的对应，我们应该使用上xid,让<strong>（src_mac,xid）</strong>去唯一确定一个数据包。</p>
+<p>相应的处理逻辑如下，我们可以把他写成一个函数去调用，调用位置应处于packet_in的处理逻辑里面。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">anti_brocast</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">isMulticast</span><span class="p">():</span><span class="sr">//</span><span class="err">如果是广播性质，则处理</span>
+      <span class="k">if</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="k">next</span><span class="p">,</span><span class="n">arp</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="k">next</span><span class="o">.</span><span class="n">opcode</span> <span class="o">==</span> <span class="n">arp</span><span class="o">.</span><span class="n">REQUEST</span><span class="p">):</span><span class="sr">//</span><span class="err">假设所有的通信之前都有</span><span class="n">arp</span><span class="err">，即广播风暴只能由</span><span class="n">ARP</span><span class="err">引起，已经</span><span class="n">arp</span><span class="err">之后是不会出现</span><span class="n">storm</span><span class="err">的。</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="k">next</span><span class="o">.</span><span class="n">hwsrc</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">packetToPort</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="k">next</span><span class="o">.</span><span class="n">protodst</span>   <span class="o">==</span><span class="n">self</span><span class="o">.</span><span class="n">packetToPort</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="n">src</span><span class="p">][</span><span class="mi">0</span><span class="p">]):</span><span class="sr">//</span><span class="err">如果</span><span class="n">src_mac</span><span class="err">在表内，且</span><span class="n">dst_ip</span><span class="err">相同</span><span class="p">,</span><span class="err">我们默认这是会产生风暴的同一个流的广播包。</span>
+        <span class="c1">#如果如端口不是原先的记录中端口，即第一次端口，则丢弃，否则flood.</span>
+          <span class="k">if</span><span class="p">(</span><span class="n">inport</span> <span class="o">!=</span> <span class="n">self</span><span class="o">.</span><span class="n">packetToPort</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="n">src</span><span class="p">][</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">drop</span><span class="p">()</span><span class="c1">#if not the specially inport,then drop it.</span>
+            <span class="k">return</span>
+          <span class="k">else</span><span class="p">:</span>
+            <span class="n">flood</span><span class="p">(</span><span class="s">&quot;Another Arp_Request from %s -- flooding,we set limit_time to drop it&quot;</span> <span class="nv">%</span> <span class="err">(</span><span class="nv">packet</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Another muticast packet form %s at %i port in %i &quot;</span><span class="nv">%</span><span class="err">(</span><span class="nv">packet</span><span class="o">.</span><span class="n">src</span><span class="p">,</span><span class="n">inport</span><span class="p">,</span><span class="n">dpid</span><span class="p">))</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span><span class="c1">#如果没有在字典中，那么记住它！</span>
+          <span class="n">self</span><span class="o">.</span><span class="n">packetToPort</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="n">src</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="k">next</span><span class="o">.</span><span class="n">protodst</span><span class="p">,</span><span class="n">inport</span><span class="p">,</span><span class="n">TimeToArrive</span><span class="p">]</span><span class="c1">#record and lock the port</span>
+          <span class="n">self</span><span class="o">.</span><span class="n">macToPort</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="n">src</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="n">inport</span><span class="p">,</span><span class="n">TimeToArrive</span><span class="p">]</span><span class="c1">#update the L2 table.</span>
+          <span class="k">print</span><span class="p">(</span><span class="s">&quot;update the table entry of %s at %i in %i ,&quot;</span><span class="nv">%</span><span class="err">(</span><span class="nv">packet</span><span class="o">.</span><span class="n">src</span><span class="p">,</span><span class="n">inport</span><span class="p">,</span><span class="n">dpid</span><span class="p">))</span>
+          <span class="n">flood</span><span class="p">()</span>
+      <span class="k">return</span>
+</pre></div>
+
+
+<p>这是一个极其简单的逻辑，但是可以解决ARP的风暴，也就是说解决了很大程度上的广播风暴。相比于STP，这个小逻辑是不是更清爽呢？</p>
+<h3>后续</h3>
+<p>SDN也许还没有明确的定义，明确的方向，但是不可否认的是，SDN的诞生，openflow的诞生，给解决某些问题提供了新的方案，我想这也是一种创新吧。希望读完这篇博文能给你一些小启发。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html"><h2>【原创】mininet搭建自定义网络拓扑 by muzi</h2></a>
+        <div class= "well small"> 2013-12-06
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>你知道的mininet</h3>
 <p>相信很多研究SDN的朋友都知道mininet，也是用过mininet。但是恐怕大多数人都只是局限于workthough的水平.链接：http://mininet.org/walkthrough/</p>
 <p>搭建更多的，灵活的拓扑还是有一定的难度。</p>
 <p>上一次实验的时候，看了一下spirent testceter的一套测试拓扑，从中受益，学了一点。现在写出来分享一下。</p>
@@ -86,175 +142,9 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">log</span> <span class="nb">import</span> <span class="n">setLogLevel</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span><span class="n">error</span>
 <span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">net</span> <span class="nb">import</span> <span class="n">Mininet</span>
 <span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">link</span> <span class="nb">import</span> <span class="n">Intf</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">topolib</span> <span class="nb">import</span> <span class="n">TreeTopo</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">util</span> <span class="nb">import</span> <span class="n">quietRun</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">node</span> <span class="nb">import</span> <span class="n">RemoteController</span><span class="p">,</span> <span class="n">OVSKernelSwitch</span>
-</pre></div>
-
-
-<p>re模块提供python正则表达式的支持，我们会看到我们定义的checkIntf()函数会使用到正则表达式。</p>
-<p>接着要从mininet中import进来很多文件，</p>
-<ul>
-<li>
-<p><strong>CLI是命令行服务的文件。</strong></p>
-</li>
-<li>
-<p><strong>log是一些记录</strong></p>
-</li>
-<li>
-<p><strong>net里面包含了最重要的类，Mininet类，这是定义一个网络的类</strong></p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Mininet</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
-<span class="s">&quot;Network emulation with hosts spawned in network    namespaces.&quot;</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">topo</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">switch</span><span class="o">=</span><span class="n">OVSKernelSwitch</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">Host</span><span class="p">,</span>
-          <span class="n">controller</span><span class="o">=</span><span class="n">Controller</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">Link</span><span class="p">,</span> <span class="n">intf</span><span class="o">=</span><span class="n">Intf</span><span class="p">,</span>
-          <span class="n">build</span><span class="o">=</span><span class="n">True</span><span class="p">,</span> <span class="n">xterms</span><span class="o">=</span><span class="n">False</span><span class="p">,</span> <span class="n">cleanup</span><span class="o">=</span><span class="n">False</span><span class="p">,</span> <span class="n">ipBase</span><span class="o">=</span><span class="s">&#39;10.0.0.0/8&#39;</span><span class="p">,</span>
-          <span class="n">inNamespace</span><span class="o">=</span><span class="n">False</span><span class="p">,</span>
-          <span class="n">autoSetMacs</span><span class="o">=</span><span class="n">False</span><span class="p">,</span> <span class="n">autoStaticArp</span><span class="o">=</span><span class="n">False</span><span class="p">,</span> <span class="n">autoPinCpus</span><span class="o">=</span><span class="n">False</span><span class="p">,</span>
-          <span class="n">listenPort</span><span class="o">=</span><span class="n">None</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>以上的参数是基本的参数，也是最重要的参数。除了这些数据成员，Mininet类还有一些重要函数如：</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">addHost</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cls</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
-
-<span class="n">def</span> <span class="n">addSwitch</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cls</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
-
-<span class="n">def</span> <span class="n">addController</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;c0&#39;</span><span class="p">,</span> <span class="n">controller</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
-
-<span class="n">def</span> <span class="n">ping</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">hosts</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">None</span> <span class="p">):</span>
-
-<span class="n">def</span> <span class="n">addLink</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">,</span> <span class="n">port1</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">port2</span><span class="o">=</span><span class="n">None</span><span class="p">,</span>
-         <span class="n">cls</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>以上的函数已经足够你构建一个足够复杂的，足够灵活的网络了。</p>
-</li>
-<li>
-<p><strong>link里面的Intf是一个接口函数</strong></p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Intf</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
-
-    <span class="s">&quot;Basic interface object that can configure itself.&quot;</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>这个类可以用于定义一个网络接口，如：定义虚拟机某个网卡与mininet中某交换机的某网卡相连，这样我们就可以使用一些打流工具，如<strong>spirent的testcenter</strong>给虚拟机的网卡打流，从而引导到mininet构建的网络中，达到打流的目的。</p>
-<p>默认情况下，port可以不填，mininet会自动分配。</p>
-</li>
-<li>
-<p><strong>TreeTopo是支持快速生成一个网络树的函数</strong></p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">TreeTopo</span><span class="p">(</span> <span class="n">Topo</span> <span class="p">):</span>
-    <span class="s">&quot;Topology for a tree network with a given depth and fanout.&quot;</span>    
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fanout</span><span class="o">=</span><span class="mi">2</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>depth 定义的是树的深度，fanout是每一层的分支数。
-mininet中便捷使用是， --tree(n,m),可以生成n层的m叉树。</p>
-</li>
-<li>
-<p><strong>node里面的RemoteConTroller类定义远程连接的控制器</strong></p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">RemoteController</span><span class="p">(</span> <span class="n">Controller</span> <span class="p">):</span>
-<span class="s">&quot;Controller running outside of Mininet&#39;s control.&quot;</span>
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ip</span><span class="o">=</span><span class="s">&#39;127.0.0.1&#39;</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">6633</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</pre></div>
-
-
-<p>默认的控制器是本地控制器。ip =127.0.0.1。注意，你可以自己定义你的控制器的名字，这一点是很有趣的，比如我的控制器就叫做：muziController，搞技术的时候，也要考虑技术的感受，不要老搞，要轻松一下嘛。</p>
-</li>
-<li>
-<p><strong>node里面的OVSKernelSwitch定义OVS交换机的类，至关重要。</strong></p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">OVSLegacyKernelSwitch</span><span class="p">(</span> <span class="n">Switch</span> <span class="p">):</span>
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">dp</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>实际上它直接集继承了Switch类，Switch类是一个更加简单的基类，提供了交换机所需要的相关功能。</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">OVSSwitch</span><span class="p">(</span> <span class="n">Switch</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>OVSSwitch（)也继承Switch基类。而superclass:Switch继承的是Node，可以在他的init函数中看出他可以使用哪些参数。你可以设置dpid，很重要的一个属性。</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Switch</span><span class="p">(</span> <span class="n">Node</span> <span class="p">):</span>
-    <span class="s">&quot;&quot;&quot;A Switch is a Node that is running (or has execed?)</span>
-<span class="s">    an OpenFlow switch.&quot;&quot;&quot;</span>
-
-    <span class="n">portBase</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Switches start with port 1 in OpenFlow</span>
-    <span class="n">dpidLen</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># digits in dpid passed to switch</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">dpid</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">listenPort</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
-</pre></div>
-
-
-</li>
-</ul>
-<p>了解完这些重要的代码，我们就是可以开始构建我们的拓扑了。</p>
-<h3>创建接口检查函数</h3>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">checkIntf</span><span class="p">(</span><span class="n">intf</span><span class="p">):</span>
-    <span class="c1">#make sure intface exists and is not configured.</span>
-    <span class="k">if</span><span class="p">(</span><span class="s">&#39; %s:&#39;</span><span class="nv">%</span> <span class="nv">intf</span><span class="p">)</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">quietRun</span><span class="p">(</span><span class="s">&#39;ip link show&#39;</span><span class="p">):</span>
-        <span class="n">error</span><span class="p">(</span><span class="s">&#39;Error:&#39;</span><span class="p">,</span> <span class="n">intf</span><span class="p">,</span> <span class="s">&#39;does not exist!\n&#39;</span> <span class="p">)</span>
-        <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">ips</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span> <span class="n">r</span><span class="s">&#39;\d+\.\d+\.\d+\.\d+&#39;</span><span class="p">,</span> <span class="n">quietRun</span>   <span class="p">(</span> <span class="s">&#39;ifconfig &#39;</span> <span class="o">+</span> <span class="n">intf</span> <span class="p">)</span> <span class="p">)</span>
-    <span class="k">if</span> <span class="n">ips:</span>
-        <span class="n">error</span><span class="p">(</span><span class="s">&quot;Error:&quot;</span><span class="p">,</span> <span class="n">intf</span><span class="p">,</span> <span class="s">&#39;has an IP address,&#39;</span>
-            <span class="s">&#39;and is probably in use!\n&#39;</span><span class="p">)</span>
-        <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-
-
-<p>在创建拓扑前，我们必须要做的第一件事情就是了解那些接口是存在的，且没有被定义初始化，也就是，没有被使用的，这些资源是可调用资源。具体代码如上。</p>
-<h3>创建拓扑</h3>
-<p>为了不打破思维的连续性，以下内容由注释先生解说。谢谢收看本期内容，再见。</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">setLogLevel</span><span class="p">(</span><span class="s">&quot;info&quot;</span><span class="p">)</span>
-    <span class="n">OVSKernelSwitch</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span> <span class="sr">//</span><span class="err">开启一个网络</span>
-    <span class="n">intfName_1</span> <span class="o">=</span> <span class="s">&quot;eth2&quot;</span>     <span class="sr">//</span><span class="err">将虚拟机</span><span class="n">eth2</span><span class="err">赋值给为变量</span><span class="n">intfName_1</span>
-    <span class="n">intfName_3</span> <span class="o">=</span> <span class="s">&quot;eth3&quot;</span>
-    <span class="n">info</span><span class="p">(</span><span class="s">&quot;****checking****&quot;</span><span class="p">,</span> <span class="n">intfName_1</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span><span class="p">)</span>
-    <span class="n">checkIntf</span><span class="p">(</span><span class="n">intfName_1</span><span class="p">)</span>    <span class="sr">//</span><span class="err">检查是否可用</span>
-    <span class="n">info</span><span class="p">(</span><span class="s">&quot;****checking****&quot;</span><span class="p">,</span> <span class="n">intfName_3</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span><span class="p">)</span>
-    <span class="n">checkIntf</span><span class="p">(</span><span class="n">intfName_3</span><span class="p">)</span>
-
-    <span class="n">info</span><span class="p">(</span><span class="s">&quot;****creating network****\n&quot;</span><span class="p">)</span>
-    <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">listenPort</span> <span class="o">=</span> <span class="mi">6633</span><span class="p">)</span>   <span class="sr">//</span><span class="err">创建一个</span><span class="n">Mininet</span><span class="err">的实例，端口为</span><span class="mi">6633</span>
-
-    <span class="n">mycontroller</span> <span class="o">=</span> <span class="n">RemoteController</span><span class="p">(</span><span class="s">&quot;muziController&quot;</span><span class="p">,</span>   <span class="n">ip</span> <span class="o">=</span> <span class="s">&quot;192.168.0.1&quot;</span><span class="p">)</span><span class="sr">//</span><span class="err">创建远程控制器，</span><span class="n">ip</span><span class="o">=</span><span class="mf">192.168.0.1</span><span class="err">，端口是</span><span class="mi">6633</span><span class="err">。</span>
-
-    <span class="n">switch_1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s1&#39;</span><span class="p">)</span>   <span class="sr">//</span><span class="err">在</span><span class="n">net</span><span class="err">里添加交换机</span><span class="n">s1</span><span class="p">,</span><span class="n">mininet</span><span class="err">中规则为：如果不填充</span><span class="n">dpid</span><span class="err">参数，则</span><span class="n">dpid</span><span class="err">参数默认取</span><span class="n">sn</span><span class="err">的</span><span class="n">n</span><span class="o">.</span><span class="err">即</span><span class="n">s1</span><span class="err">的</span><span class="n">dpid</span><span class="err">为</span><span class="mi">1</span><span class="err">。</span> 
-    <span class="n">switch_2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s2&#39;</span><span class="p">)</span>
-    <span class="n">switch_3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s3&#39;</span><span class="p">)</span>
-    <span class="n">switch_4</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s4&#39;</span><span class="p">)</span>
-
-    <span class="n">net</span><span class="o">.</span><span class="n">controllers</span> <span class="o">=</span> <span class="p">[</span><span class="n">mycontroller</span><span class="p">]</span> <span class="sr">//</span><span class="err">将远程控制器添加到网络中</span>
-
-
-    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_1</span><span class="p">,</span> <span class="n">switch_2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="c1"># node1,   node2, port1, port2</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_2</span><span class="p">,</span> <span class="n">switch_3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="sr">//</span><span class="err">将</span><span class="n">s2</span><span class="err">的</span><span class="mi">2</span><span class="err">端口跟</span><span class="n">s3</span><span class="err">的</span><span class="mi">1</span><span class="err">端口连接起来。（物理连接）</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_1</span><span class="p">,</span> <span class="n">switch_4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-
-    <span class="sr">//</span><span class="err">需要注意的是，以上连接的链路是一个环形的链路，在没有解决风暴的情况下，会出问题。</span>  
-    <span class="n">info</span><span class="p">(</span><span class="s">&quot;*****Adding hardware interface &quot;</span><span class="p">,</span>     <span class="n">intfName_1</span><span class="p">,</span> <span class="s">&quot;to switch:&quot;</span> <span class="p">,</span><span class="n">switch_1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span><span class="p">)</span>
-    <span class="n">info</span><span class="p">(</span><span class="s">&quot;*****Adding hardware interface &quot;</span><span class="p">,</span>     <span class="n">intfName_3</span><span class="p">,</span> <span class="s">&quot;to switch:&quot;</span> <span class="p">,</span><span class="n">switch_3</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span><span class="p">)</span>
-
-    <span class="n">_intf_1</span> <span class="o">=</span> <span class="n">Intf</span><span class="p">(</span><span class="n">intfName_1</span><span class="p">,</span> <span class="n">node</span> <span class="o">=</span> <span class="n">switch_1</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span>  <span class="mi">1</span><span class="p">)</span><span class="sr">//</span><span class="err">将</span><span class="n">intfName_1</span><span class="err">和</span><span class="n">s1</span><span class="err">的端口</span><span class="mi">1</span><span class="err">相连，形成一个接口</span><span class="n">_intf_1</span>
-    <span class="n">_intf_3</span> <span class="o">=</span> <span class="n">Intf</span><span class="p">(</span><span class="n">intfName_3</span><span class="p">,</span> <span class="n">node</span> <span class="o">=</span> <span class="n">switch_3</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span>  <span class="mi">2</span><span class="p">)</span>
-
-    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_4</span><span class="p">,</span> <span class="n">switch_3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="sr">//</span><span class="err">为什么放在这里呢？因为</span><span class="n">mininet</span><span class="err">中允许的端口分配方式是从小到大分配，所以，</span><span class="n">s3</span><span class="err">的</span><span class="mi">3</span><span class="err">端口的配置应该放在</span><span class="n">s3</span><span class="err">的</span><span class="mi">2</span><span class="err">端口之后，虽然难看，但是必须这么做，当然你也可以从新分配端口，只要保证端口是从小到大分配就好了。</span>
-
-    <span class="n">info</span><span class="p">(</span><span class="s">&quot;Node: you may need to reconfigure the     interfaces for the Mininet hosts:\n&quot;</span><span class="p">,</span>   <span class="n">net</span><span class="o">.</span><span class="n">hosts</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span><span class="p">)</span>
-
-    <span class="n">net</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>  <span class="sr">//</span><span class="err">启动</span><span class="n">net</span>
-    <span class="n">CLI</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>     <span class="sr">//</span><span class="err">等待键入命令</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>   <span class="sr">//</span><span class="err">关闭</span><span class="n">net</span>
-</pre></div></div>
-        <hr />
-    </div>
-		
+<span class="n">from</span> <span class="n">mininet ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -370,34 +260,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <h5>我们也可以看看scapy的封装解封装能力！</h5>
 <p><img alt="packet" src="http://h.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=fc0780c7f536afc30a0c3f6083229af9/79f0f736afc37931f51d4b2ee9c4b74543a91144.jpg?referer=5649b43f6c061d95245102085f5b&amp;x=.jpg" /></p>
 <h5>数据包的发送与接收 ...</h5> <a class="btn btn-info xsmall" href="./pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html"><h2>［原］poxdesk实现拓扑显示</h2></a>
-        <div class= "well small"> 2013-11-29
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>POXDESK实现拓扑的显示</h3>
-<p>今天实习第二天，开始深入逐渐玩POX跟mininet！之前只是会基本的操作，慢慢的要更加了解！今天早上就实现了一下poxdesk的功能！</p>
-<h4>操作步骤如下：</h4>
-<div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/noxrepo/</span><span class="n">pox</span>
-<span class="n">cd</span> <span class="n">pox</span>
-<span class="n">git</span> <span class="n">checkout</span> <span class="n">betta</span>
-<span class="n">cd</span> <span class="n">ext</span>
-<span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/MurphyMc/</span><span class="n">poxdesk</span>
-<span class="n">cd</span> <span class="n">poxdesk</span>
-<span class="n">wget</span> <span class="n">http:</span><span class="sr">//</span><span class="n">downloads</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="sr">/qooxdoo/</span><span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span><span class="o">.</span><span class="n">zip</span>
-<span class="n">unzip</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

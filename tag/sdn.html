@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html"><h1>［原］poxdesk实现拓扑显示</h1></a>
-2013-11-29
+            <a href="../pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html"><h1>【原创】SDN下的分布式广播风暴解决方案</h1></a>
+2013-12-07
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,63 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h3>POXDESK实现拓扑的显示</h3>
+        <div><h3>前言</h3>
+<p>这是很久以前的成果了，那时候我才大三上。为了学习sdn,openflow等知识，北邮科研楼628的一群哥们儿，想着各种新奇的东西去解决已有的问题。</p>
+<p>有一天，我们遇到了网络风暴，但是我们觉得STP有点复杂，而且，确实也不愿意去学。那么，就自己写一个解决方案吧。于是，下面的小代码产生了。</p>
+<h3>核心思想</h3>
+<p>其实特别简单，一句话：<strong>不让同一个数据包从第二个端口进入，即仅允许数据包从第一个进来的端口进入。</strong></p>
+<p>也就是说，我确保了，同一个数据包，不会从别的交换机从非第一次的in_port进入本交换机，那就不会有环路，也就解决了风暴，而且，同一个端口允许进入，不影响主机继续发送广播包。</p>
+<h3>具体实现</h3>
+<p>这个就需要我们建立一个macToport的表，在python里面数据结构字典来实现。使用src_mac作为key，记录值为[dstip,port,time]</p>
+<div class="highlight"><pre><span class="n">self</span><span class="o">.</span><span class="n">macToPort</span> <span class="o">=</span> <span class="p">{</span><span class="n">srcMAC:</span><span class="p">[</span><span class="n">dst_ip</span><span class="p">,</span><span class="n">in_port</span><span class="p">,</span><span class="nb">time</span><span class="p">]}</span>
+</pre></div>
+
+
+<p>这个字典记录了用数据包的mac地址记录了数据包的目标ip,入口端口，到达时间三个信息，其实如果为了更好的对应，我们应该使用上xid,让<strong>（src_mac,xid）</strong>去唯一确定一个数据包。</p>
+<p>相应的处理逻辑如下，我们可以把他写成一个函数去调用，调用位置应处于packet_in的处理逻辑里面。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">anti_brocast</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">isMulticast</span><span class="p">():</span><span class="sr">//</span><span class="err">如果是广播性质，则处理</span>
+      <span class="k">if</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="k">next</span><span class="p">,</span><span class="n">arp</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="k">next</span><span class="o">.</span><span class="n">opcode</span> <span class="o">==</span> <span class="n">arp</span><span class="o">.</span><span class="n">REQUEST</span><span class="p">):</span><span class="sr">//</span><span class="err">假设所有的通信之前都有</span><span class="n">arp</span><span class="err">，即广播风暴只能由</span><span class="n">ARP</span><span class="err">引起，已经</span><span class="n">arp</span><span class="err">之后是不会出现</span><span class="n">storm</span><span class="err">的。</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="k">next</span><span class="o">.</span><span class="n">hwsrc</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">packetToPort</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">packet</span><span class="o">.</span><span class="k">next</span><span class="o">.</span><span class="n">protodst</span>   <span class="o">==</span><span class="n">self</span><span class="o">.</span><span class="n">packetToPort</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="n">src</span><span class="p">][</span><span class="mi">0</span><span class="p">]):</span><span class="sr">//</span><span class="err">如果</span><span class="n">src_mac</span><span class="err">在表内，且</span><span class="n">dst_ip</span><span class="err">相同</span><span class="p">,</span><span class="err">我们默认这是会产生风暴的同一个流的广播包。</span>
+        <span class="c1">#如果如端口不是原先的记录中端口，即第一次端口，则丢弃，否则flood.</span>
+          <span class="k">if</span><span class="p">(</span><span class="n">inport</span> <span class="o">!=</span> <span class="n">self</span><span class="o">.</span><span class="n">packetToPort</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="n">src</span><span class="p">][</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">drop</span><span class="p">()</span><span class="c1">#if not the specially inport,then drop it.</span>
+            <span class="k">return</span>
+          <span class="k">else</span><span class="p">:</span>
+            <span class="n">flood</span><span class="p">(</span><span class="s">&quot;Another Arp_Request from %s -- flooding,we set limit_time to drop it&quot;</span> <span class="nv">%</span> <span class="err">(</span><span class="nv">packet</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Another muticast packet form %s at %i port in %i &quot;</span><span class="nv">%</span><span class="err">(</span><span class="nv">packet</span><span class="o">.</span><span class="n">src</span><span class="p">,</span><span class="n">inport</span><span class="p">,</span><span class="n">dpid</span><span class="p">))</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span><span class="c1">#如果没有在字典中，那么记住它！</span>
+          <span class="n">self</span><span class="o">.</span><span class="n">packetToPort</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="n">src</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="k">next</span><span class="o">.</span><span class="n">protodst</span><span class="p">,</span><span class="n">inport</span><span class="p">,</span><span class="n">TimeToArrive</span><span class="p">]</span><span class="c1">#record and lock the port</span>
+          <span class="n">self</span><span class="o">.</span><span class="n">macToPort</span><span class="p">[</span><span class="n">packet</span><span class="o">.</span><span class="n">src</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="n">inport</span><span class="p">,</span><span class="n">TimeToArrive</span><span class="p">]</span><span class="c1">#update the L2 table.</span>
+          <span class="k">print</span><span class="p">(</span><span class="s">&quot;update the table entry of %s at %i in %i ,&quot;</span><span class="nv">%</span><span class="err">(</span><span class="nv">packet</span><span class="o">.</span><span class="n">src</span><span class="p">,</span><span class="n">inport</span><span class="p">,</span><span class="n">dpid</span><span class="p">))</span>
+          <span class="n">flood</span><span class="p">()</span>
+      <span class="k">return</span>
+</pre></div>
+
+
+<p>这是一个极其简单的逻辑，但是可以解决ARP的风暴，也就是说解决了很大程度上的广播风暴。相比于STP，这个小逻辑是不是更清爽呢？</p>
+<h3>后续</h3>
+<p>SDN也许还没有明确的定义，明确的方向，但是不可否认的是，SDN的诞生，openflow的诞生，给解决某些问题提供了新的方案，我想这也是一种创新吧。希望读完这篇博文能给你一些小启发。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html"><h2>［原］poxdesk实现拓扑显示</h2></a>
+        <div class= "well small"> 2013-11-29
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>POXDESK实现拓扑的显示</h3>
 <p>今天实习第二天，开始深入逐渐玩POX跟mininet！之前只是会基本的操作，慢慢的要更加了解！今天早上就实现了一下poxdesk的功能！</p>
 <h4>操作步骤如下：</h4>
 <div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/noxrepo/</span><span class="n">pox</span>
@@ -82,47 +138,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/MurphyMc/</span><span class="n">poxdesk</span>
 <span class="n">cd</span> <span class="n">poxdesk</span>
 <span class="n">wget</span> <span class="n">http:</span><span class="sr">//</span><span class="n">downloads</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="sr">/qooxdoo/</span><span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span><span class="o">.</span><span class="n">zip</span>
-<span class="n">unzip</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span><span class="o">.</span><span class="n">zip</span>
-<span class="n">mv</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span> <span class="sx">qx</span>
-<span class="sx">cd poxdesk</span>
-<span class="o">./</span><span class="n">generate</span><span class="o">.</span><span class="n">py</span>
-<span class="n">cd</span> <span class="o">..</span><span class="sr">/../</span><span class="o">..</span>
-<span class="o">./</span><span class="n">pox</span><span class="o">.</span><span class="n">py</span> <span class="n">samples</span><span class="o">.</span><span class="n">pretty_log</span> <span class="n">web</span> <span class="n">messenger</span> <span class="n">messenger</span><span class="o">.</span><span class="n">log_service</span> <span class="n">messenger</span><span class="o">.</span><span class="n">ajax_transport</span> <span class="n">openflow</span><span class="o">.</span><span class="n">of_service</span> <span class="n">poxdesk</span>
-</pre></div>
-
-
-<p>按照步骤去操作就可以安装poxdesk了！但是还需要注意的是：</p>
-<h5>1：打开POX的时候需要打开discovery.py所以最后一句应该为：</h5>
-<div class="highlight"><pre><span class="o">./</span><span class="n">pox</span><span class="o">.</span><span class="n">py</span> <span class="n">samples</span><span class="o">.</span><span class="n">pretty_log</span> <span class="n">web</span> <span class="n">messenger</span> <span class="n">messenger</span><span class="o">.</span><span class="n">log_service</span> <span class="n">messenger</span><span class="o">.</span><span class="n">ajax_transport</span> <span class="n">openflow</span><span class="o">.</span><span class="n">of_service</span> <span class="n">poxdesk</span> <span class="n">poxdesk</span><span class="o">.</span><span class="n">discovery</span>
-</pre></div>
-
-
-<p>Samples.pretty.log是一个组件，可以让pox开启的时候有字体有颜色，不添加也可以，但是界面比较难看。</p>
-<h5>2:mininet需要打开，并与pox 连接：</h5>
-<div class="highlight"><pre><span class="n">Sudo</span> <span class="n">mn</span> <span class="err">–</span><span class="n">controller</span><span class="o">=</span><span class="n">remote</span><span class="p">,</span><span class="n">ip</span><span class="o">=</span><span class="mf">127.0.0.1</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">6633</span>
-</pre></div>
-
-
-<p>127.0.0.1是本机的IP，端口号默认6633，可不写
-为了画出跟更好看，更复杂的拓扑，我们需要在命令之后加上这样一句话：</p>
-<div class="highlight"><pre><span class="o">--</span><span class="n">topo</span><span class="o">=</span><span class="n">tree</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">m</span>
-</pre></div>
-
-
-<p>即为：</p>
-<div class="highlight"><pre><span class="n">Sudo</span> <span class="n">mn</span> <span class="err">–</span><span class="n">controller</span><span class="o">=</span><span class="n">remote</span><span class="p">,</span><span class="n">ip</span><span class="o">=</span><span class="mf">127.0.0.1</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">6633</span> <span class="o">--</span><span class="n">topo</span><span class="o">=</span><span class="n">tree</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">m</span>
-</pre></div>
-
-
-<p>n为层级，m为每一个层级下面有几个孩子</p>
-<h5>3：建立完连接之后，在浏览器中登录http://127.0.0.1:8000/poxdesk .</h5>
-<p><img alt="poxdesk" src="http://h.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=146a5049c88065387feaa416a7e6d079/b17eca8065380cd7165a77eaa344ad3459828175.jpg?referer=49627d21fffaaf51ddf4b48fef2b&amp;x=.jpg" /></p>
-<p>点击网页左下角的图标pox,可以打开许多小框。</p>
-<p><img alt="poxdesk_1" src="http://a.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=29f290f839c79f3d8be1e4358a9abc2c/71cf3bc79f3df8dc31cf5a96cf11728b461028c3.jpg?referer=ef7cef1340a7d933e6bfd04388c1&amp;x=.jpg" /></p>
-<p><img alt="topo" src="http://f.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=d527662f347adab439d01b46bbefc221/8718367adab44aed034d6be3b11c8701a18bfbb2.jpg?referer=74d0dd5a57fbb2fb6d3c6d224550&amp;x=.jpg" /></p></div>
-        <hr />
-    </div>
-		
+<span class="n">unzip</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html">read more</a></div>
+    </div>	
+				
 
  
         
