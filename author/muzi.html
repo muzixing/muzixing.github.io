@@ -62,7 +62,7 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2013/12/12/wo-ceng-jing-qi-ci-bi-shi-zi-ji-de-ling-hun.html"><h1>我曾经七次鄙视自己的灵魂</h1></a>
+            <a href="../pages/2013/12/12/yuan-chuang-openflowxie-yi-tong-xin-liu-cheng-jie-du.html"><h1>【原创】Openflow协议通信流程解读</h1></a>
 2013-12-12
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
@@ -72,16 +72,496 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h3>第一次，当它本可进取时，却故作谦卑；</h3>
+        <div><h2>前言</h2>
+<p>接触了这么久的SDN，Openflow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对Openflow协议通信流程的一些理解。</p>
+<h2>SDN中Switch和controller</h2>
+<p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
+<h3>switch组成与传统交换机的差异</h3>
+<h5>switch组成</h5>
+<p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
+<ul>
+<li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
+<li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
+</ul>
+<h5>of中sw与传统交换机的差异</h5>
+<ul>
+<li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
+<li>运行of协议，实现许多路由器的功能，比如组播。</li>
+<li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
+</ul>
+<h5>openflow的switch可以从以下方式获得</h5>
+<ul>
+<li>实体of交换机，目前市场上有一些厂商已经制造出of交换机，但是普遍反映价格较贵！性能最好。</li>
+<li>在实体机上安装OVS，OVS可以使计算机变成一个openflow交换机。性能相对稳定。</li>
+<li>使用mininet模拟环境。可以搭建许多交换机，任意拓扑，搭建拓扑具体教程本博客有一篇。性能依赖虚拟机的性能。</li>
+</ul>
+<h3>controller组成</h3>
+<p>控制器有许多种，不同的语言，如python写的pox,ryu，如java写的floodlight等等。从功能层面controller分为以下几个模块：</p>
+<ul>
+<li>底层通信模块：openflow中目前controller与switch之间使用的是socket连接，所以控制器底层的通信是socket。</li>
+<li>openflow协议。socket收到的数据的处理规则需按照openflow协议去处理。</li>
+<li>上层应用：根据openflow协议处理后的数据，开发上层应用，比如pox中就l2_learning,l3_learning等应用。更多的应用需要用户自己去开发。</li>
+</ul>
+<h2>Openflow通信流程</h2>
+<p>以下教程环境为：mininet+自编简单控制器</p>
+<h3>建立连接</h3>
+<p>首先启动mininet，mininet会自行启动一个default拓扑，你也可以自己建立你的拓扑。sw建立完成之后，会像controllerIP:controllerport发送数据。</p>
+<p>controller启动之后，监听指定端口，默认6633，但是好像以后的都改了，因为该端口被其他协议占用。</p>
+<p>3次握手之后，建立连接，这个是底层的通信，是整一套系统的基础设施。</p>
+<h3>OFPT_HELLO</h3>
+<p>创建socket之后，sw跟controller会彼此发送hello数据包。</p>
+<ul>
+<li>目的：协议协商。</li>
+<li>内容：本方支持的最高版本的协议</li>
+<li>成果：使用双方都支持的最低版本协议。</li>
+<li>成功：建立连接</li>
+<li>失败：OFPT_ERROR  (TYPE:OFPT_HELLO_FAILED,CODE =0),终止连接。</li>
+</ul>
+<h3>OFPT_ERROR</h3>
+<p>说到OFPT_ERROR,我们不妨先了解一下。</p>
+<div class="highlight"><pre><span class="n">ofp_error_type</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPET_HELLO_FAILED&quot;</span><span class="p">,</span>
+                   <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPET_BAD_REQUEST&quot;</span><span class="p">,</span>
+                   <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPET_BAD_ACTION&quot;</span><span class="p">,</span>
+                   <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPET_FLOW_MOD_FAILED&quot;</span><span class="p">,</span>
+                   <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPET_PORT_MOD_FAILED&quot;</span><span class="p">,</span>
+                   <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPET_QUEUE_OP_FAILED&quot;</span><span class="p">}</span>
+</pre></div>
+
+
+<p>错误类型如上所示。对应的type还会有对应的code.所以报错的格式为：</p>
+<div class="highlight"><pre><span class="n">OFPT_ERROR</span>
+<span class="n">TYPE:</span> 
+<span class="n">CODE:</span>
+<span class="p">[</span><span class="n">PAYLOAD</span><span class="p">]</span><span class="err">具体的错误信息。</span>
+</pre></div>
+
+
+<p>如 TYPE:0 CODE:0为：<strong><em>*OFPHFC_INCOMPATIBLE</em></strong>*</p>
+<p>具体对应的关系，请自行查看OF协议。</p>
+<h3>OFPT_ECHO</h3>
+<ul>
+<li>分类：对称信息 OFPT_ECHO_REQUEST, OFPT_ECHO_REPLY</li>
+<li>作用：查询连接状态，确保通信通畅。</li>
+</ul>
+<p>当没有其他的数据包进行交换时，controller会定期循环给sw发送OFPT_ECHO_REQUEST。</p>
+<h3>OFPT_FEATURES</h3>
+<p>当sw跟controller完成连接之后，控制器会向交换机下发OFPT_FEATYRES_REQUEST的数据包，目的是请求交换机的信息。</p>
+<ul>
+<li>发送时间：连接建立完成之后</li>
+<li>发送数据：OFPT_FEATURES_REQUEST</li>
+<li>对称数据：OFPT_FEATURES_REPLY</li>
+<li>目的：获取交换机的信息</li>
+</ul>
+<h5>OFPT_FEATURES_REQUEST</h5>
+<ul>
+<li>TYPE=5</li>
+<li>Without data</li>
+</ul>
+<h5>OFPT_FEATURES_REPLY</h5>
+<ul>
+<li>TYPE =6</li>
+<li>[0:8]为header</li>
+<li>[8:32]长度24byte为sw的features</li>
+<li>
+<p>[32:]长度与端口数成正比，存放port的信息。每一个port信息长度为48byte。</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_features_reply</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow Switch Features Reply&quot;</span>
+    <span class="n">fields_desc</span><span class="o">=</span><span class="p">[</span> <span class="n">BitFieldLenField</span><span class="p">(</span><span class="s">&#39;datapath_id&#39;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">length_of</span><span class="o">=</span><span class="s">&#39;varfield&#39;</span><span class="p">),</span>
+                  <span class="n">BitFieldLenField</span><span class="p">(</span><span class="s">&#39;n_buffers&#39;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">length_of</span><span class="o">=</span><span class="s">&#39;varfield&#39;</span><span class="p">),</span>
+                  <span class="n">XByteField</span><span class="p">(</span><span class="s">&quot;n_tables&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                  <span class="n">X3BytesField</span><span class="p">(</span><span class="s">&quot;pad&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                  <span class="c1">#features</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;NOT DEFINED&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_ARP_MATCH_IP&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>  <span class="c1">#1&lt;&lt;7 Match IP address in ARP packets</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_QUEUE_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>   <span class="c1">#1&lt;&lt;6 Queue statistics</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_IP_STREAM&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>     <span class="c1">#1&lt;&lt;5 Can reassemble IP fragments</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_RESERVED&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>      <span class="c1">#1&lt;&lt;4 Reserved, must be zero</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_STP&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>           <span class="c1">#1&lt;&lt;3 802.1d spanning tree</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_PORT_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>    <span class="c1">#1&lt;&lt;2 Port statistics</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_TABLE_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>   <span class="c1">#1&lt;&lt;1 Table statistics</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_FLOW_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>    <span class="c1">#1&lt;&lt;0 Flow statistics</span>
+                  <span class="n">BitFieldLenField</span><span class="p">(</span><span class="s">&#39;actions&#39;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">length_of</span><span class="o">=</span><span class="s">&#39;varfield&#39;</span><span class="p">),</span>
+                <span class="p">]</span>
+<span class="n">bind_layers</span><span class="p">(</span> <span class="n">ofp_header</span><span class="p">,</span> <span class="n">ofp_features_reply</span><span class="p">,</span> <span class="n">type</span><span class="o">=</span><span class="mi">6</span> <span class="p">)</span>
+</pre></div>
+
+
+</li>
+</ul>
+<p>以上的结构是交换机的features,紧跟在后面的是端口的结构：</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_phy_port</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow Port&quot;</span>
+    <span class="n">fields_desc</span><span class="o">=</span><span class="p">[</span> <span class="n">ShortEnumField</span><span class="p">(</span><span class="s">&quot;port_no&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ofp_port</span><span class="p">),</span>
+                  <span class="n">MACField</span><span class="p">(</span><span class="s">&quot;hw_addr&quot;</span><span class="p">,</span> <span class="s">&quot;00:00:00:00:00:00&quot;</span><span class="p">),</span>
+                  <span class="n">StrFixedLenField</span><span class="p">(</span><span class="s">&quot;port_name&quot;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="nb">length</span><span class="o">=</span><span class="mi">16</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;not_defined&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPC_NO_PACKET_IN&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPC_NO_FWD&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPC_NO_FLOOD&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPC_NO_RECV_STP&quot;</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPC_NO_RECV&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPC_NO_STP&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPC_PORT_DOWN&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+
+                  <span class="c1">#uint32_t for state</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;else&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">31</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPS_LINK_DOWN&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+
+                  <span class="c1">#uint32_t for Current features</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;not_defined&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_PAUSE_ASYM&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_PAUSE&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_AUTONEG&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_FIBER&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_COPPER&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_10GB_FD&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_1GB_FD&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_1GB_HD&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_100MB_FD&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_100MB_HD&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_10MB_FD&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPF_10MB_HD&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+
+                  <span class="c1">#uint32_t for features being advised by the port</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;advertised&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+
+                  <span class="c1">#uint32_t for features supported by the port</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;supported&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+
+                  <span class="c1">#uint32_t for features advertised by peer</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;peer&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">)]</span>
+</pre></div>
+
+
+<p>交换机和端口的配置信息在整一个通信过程起着至关的作用，因为所有关于的操作都需要从features里面提取相关的信息，如<strong>dpid,port_no</strong>，等在整个通信过程中多次被用到的重要数据。所以，对这两个数据结构了然于心，对于研究openflow来说，至关重要。每一次交换机连到控制器，都会收到控制器的features_request,当sw将自己的features回复给控制器之后，控制器就对交换机有了一个全面的了解，从而为后面的控制提供的控制信息。</p>
+<h3>OFPT_PACKET_IN</h3>
+<p>在控制器获取完交换机的特性之后，交换机开始处理数据。</p>
+<p>对于进入交换机而没有匹配流表，不知道如何操作的数据包，交换机会将其封装在packet_in中发给controller。包含在packet_in中的数据可能是很多种类型，arp和icmp是最常见的类型。</p>
+<p>当然产生packet_in的原因不止一种，产生packet_in的原因主要有一下两种：</p>
+<ul>
+<li><strong>OFPR_NO_MATCH</strong></li>
+<li><strong>OFPR_ACTION</strong></li>
+</ul>
+<p>无法匹配的数据包会产生packet_in,action也可以指定将数据包发给packet_in,也就是说我们可以利用这一点，将需要的数据包发给控制器。</p>
+<p>packet_in事件之后，一般会触发两类事件：</p>
+<ul>
+<li><strong>packet_out</strong></li>
+<li><strong>flow_mod</strong></li>
+</ul>
+<p>如果是广播包，如arp，控制器一般会将其包装起来，封装成packet_out数据包，将其发给交换机，让其flood,flood操作是将数据包往除去in_port以外的所有端口发送数据包。</p>
+<h3>OFPT_PACKET_OUT</h3>
+<p>很多人不是特别了解packet_out的作用。</p>
+<ul>
+<li>作用：通过控制器发送交换机希望发送的数据</li>
+<li>例子：arp在广播的时候，在ofsw中不能直接将arp广播，而是，将其封装在packet_out里面，交换机泛洪的是packet_out。</li>
+</ul>
+<p>我个人观点，这个数据包，是一个兼容性之的数据包，为了实现信令，不得不处理arp，但是arp又不能直接处理，所以将其封装在packet_out,从而能够在of的sw中传播，从而在openflow里实现arp等IP网的功能。</p>
+<h3>OFPT_FLOW_MOD</h3>
+<p>OFPT_FLOW_MOD是整一个Openflow协议中最重要的数据结构，没有之一。</p>
+<p>OFPT_FLOW_MOD由<strong>header+match+flow_mod+action[]</strong>组成。为了操作简单，以下的结构是将wildcards和match分开的形式，形成两个结构，在编程的时候能更方便一些。由于这个数据包很重要，所以，我将把这个数据包仔细拆分解读。</p>
+<div class="highlight"><pre><span class="n">flow_mod</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span><span class="nb">length</span><span class="o">=</span><span class="mi">72</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_wildcards</span><span class="p">(</span><span class="n">OFPFW_NW_TOS</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">OFPFW_DL_VLAN_PCP</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">OFPFW_NW_DST_MASK</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                  <span class="n">OFPFW_NW_SRC_MASK</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                  <span class="n">OFPFW_TP_DST</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">OFPFW_TP_SRC</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">OFPFW_NW_PROTO</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">OFPFW_DL_TYPE</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">OFPFW_DL_VLAN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">OFPFW_IN_PORT</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">OFPFW_DL_DST</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">OFPFW_DL_SRC</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">\</span>
+           <span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_match</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">in_port</span><span class="p">,</span>
+                         <span class="n">dl_src</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                         <span class="n">dl_dst</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">dst</span><span class="p">,</span>
+                         <span class="n">dl_type</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                         <span class="n">dl_vlan</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">vlan</span><span class="p">,</span>
+                         <span class="n">nw_tos</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">tos</span><span class="p">,</span>
+                         <span class="n">nw_proto</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">proto</span><span class="p">,</span>
+                         <span class="n">nw_src</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                         <span class="n">nw_dst</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">dst</span><span class="p">,</span>
+                         <span class="n">tp_src</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                         <span class="n">tp_dst</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span><span class="o">\</span>
+           <span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_mod</span><span class="p">(</span><span class="n">cookie</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                            <span class="n">command</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                            <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                            <span class="n">hard_timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+                            <span class="n">out_port</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+                            <span class="n">buffer_id</span><span class="o">=</span><span class="n">buffer_id</span><span class="p">,</span>
+                            <span class="n">flags</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<h4><strong>OFP_HEADER</strong></h4>
+<p>header是所有数据包的报头，有三个参数：</p>
+<ul>
+<li>type:类型</li>
+<li>length:整个数据包的长度</li>
+<li>xid：数据包的编号</li>
+</ul>
+<p>比如ofp_flow_mod的type就是14，具体的哪一种数据的类型将在文章最后给出。length最基本长度为72，每一个action长度为8。所以长度必定为8的倍数才是一个正确的数据长度。</p>
+<h4>WILDCARDS</h4>
+<p>这是从match域提取出来的前32bit。</p>
+<p><strong>在of1.0中这里的0，1意义跟我们平时接触的如子网掩码等意义相反</strong>，如OFPFW_NW_DST_MASK=0则表示全匹配目标IP。如果为63，则表示不匹配IP。为什么拿这个举例？原因就在于，他的长度是6bit，最大是63，需要将数值转变成对应2进制数值才是我们想要的匹配规则，且注意，1是忽略，0是匹配。如果wildcards全0，则表示由match精确指定，即所有12元组都匹配。</p>
+<p>当然高兴的是，在1.3的时候，这个逻辑改成了正常的与逻辑。即1为使能匹配，0为默认不匹配。</p>
+<h4>MATCH</h4>
+<p>这个数据结构会出现在机会所有重要的数据包中，因为他存的就是控制信息。</p>
+<p>如有packet_in引发的下发流表，则match部分应对应填上对应的数据，这样下发的流表才是正确的。</p>
+<p>但是在下发的时候还需要注意许多细节，比如：</p>
+<ul>
+<li><strong>并不是所有的数据包都有vlan_tag</strong>。如0x0800就是纯IP，并没有携带vlan_tag，所以填充式应根据packet_in的具体情况填充。</li>
+<li><strong>并不是所有的数据都有四层端口</strong>，所以四层的源端口，目的端口都不是任何时候都能由packet_in去填充的。不去管就好了，默认的会填充一个默认值，匹配的时候不去匹配4层端口就没有问题。</li>
+</ul>
+<h4>FLOW_MOD</h4>
+<p>这里面的信息也是至关重要的。</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_flow_mod</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow Flow Modify&quot;</span>
+    <span class="n">fields_desc</span><span class="o">=</span><span class="p">[</span> <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;cookie&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="c1">#Opaque controller-issued identifier</span>
+                  <span class="n">ShortEnumField</span><span class="p">(</span><span class="s">&quot;command&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ofp_flow_mod_command</span><span class="p">),</span>
+                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;idle_timeout&quot;</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>
+                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;hard_timeout&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;priority&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                  <span class="n">IntField</span><span class="p">(</span><span class="s">&quot;buffer_id&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;out_port&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                  <span class="c1">#flags are important, the 1&lt;&lt;0 bit is OFPFF_SEND_FLOW_REM, send OFPT_FLOW_REMOVED</span>
+                  <span class="c1">#1&lt;&lt;1 bit is OFPFF_CHECK_OVERLAP, checking if the entries&#39; field overlaps(among same priority)  </span>
+                  <span class="c1">#1&lt;&lt;2 bit is OFPFF_EMERG, used only switch disconnected with controller) </span>
+                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;flags&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+</pre></div>
+
+
+<h5>command里面的类型决定了flow_mod的操作是添加，修改还是删除等。类型如下</h5>
+<div class="highlight"><pre><span class="n">ofp_flow_mod_command</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPFC_ADD&quot;</span><span class="p">,</span>            <span class="c1"># New flow</span>
+                         <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPFC_MODIFY&quot;</span><span class="p">,</span>         <span class="c1"># Modify all matching flows</span>
+                         <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPFC_MODIFY_STRICT&quot;</span><span class="p">,</span>  <span class="c1"># Modify entry strictly matching wildcards</span>
+                         <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPFC_DELETE&quot;</span><span class="p">,</span>         <span class="c1"># Delete all matching flows</span>
+                         <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPFC_DELETE_STRICT&quot;</span><span class="p">}</span>  <span class="c1"># Strictly match wildcards and priority</span>
+</pre></div>
+
+
+<p><strong>例如：如果要添加一条新流，command=0。</strong></p>
+<h5>两个时间参数idle_timeout &amp; idle_timeout：</h5>
+<ul>
+<li><strong>idle_timeout:如值为10，则某条流在10秒之内没有被匹配，则删除，可以称之为活跃时间吧。</strong></li>
+<li><strong>hard_timeout:如值为30，则30秒到达的时候，一定删除这条流，即使他还活跃，即被匹配。</strong></li>
+</ul>
+<h5>priority</h5>
+<p>priority是流的优先级的字段，<strong>字数越大则优先级越高，存放在号数越小的table中</strong>。</p>
+<h5>buffer_id</h5>
+<p>由交换机指定的buffei_id,准确的说是由dpid指定的。如果是手动下发的流，<strong>buffer_id应填-1</strong>，即0xffff,告诉交换机这个数据包并没有缓存在队列中。</p>
+<h5>out_port</h5>
+<p>指定流的出口，但是这个出口并不是直接指导流转发的，至少我是这么觉得，指导流转发的出口会在action里面添加，这个端口是为了在flow_removed的时候查询，并返回控制器的作用。（求纠正！）</p>
+<p>有一些端口是很特殊的，如flood，local等。具体分类如下：</p>
+<div class="highlight"><pre><span class="n">ofp_port</span> <span class="o">=</span> <span class="p">{</span> <span class="mh">0xff00</span><span class="p">:</span> <span class="s">&quot;OFPP_MAX&quot;</span><span class="p">,</span>
+             <span class="mh">0xfff8</span><span class="p">:</span> <span class="s">&quot;OFPP_IN_PORT&quot;</span><span class="p">,</span>
+             <span class="mh">0xfff9</span><span class="p">:</span> <span class="s">&quot;OFPP_TABLE&quot;</span><span class="p">,</span>
+             <span class="mh">0xfffa</span><span class="p">:</span> <span class="s">&quot;OFPP_NORMAL&quot;</span><span class="p">,</span>
+             <span class="mh">0xfffb</span><span class="p">:</span> <span class="s">&quot;OFPP_FLOOD&quot;</span><span class="p">,</span>
+             <span class="mh">0xfffc</span><span class="p">:</span> <span class="s">&quot;OFPP_ALL&quot;</span><span class="p">,</span>
+             <span class="mh">0xfffd</span><span class="p">:</span> <span class="s">&quot;OFPP_CONTROLLER&quot;</span><span class="p">,</span>
+             <span class="mh">0xfffe</span><span class="p">:</span> <span class="s">&quot;OFPP_LOCAL&quot;</span><span class="p">,</span>
+             <span class="mh">0xffff</span><span class="p">:</span> <span class="s">&quot;OFPP_NONE&quot;</span><span class="p">}</span>
+</pre></div>
+
+
+<p>如果你不知道端口是多少，最好填flood,也就是0xfffb。</p>
+<h5>flags</h5>
+<p>在上面的注释中也说得比较清楚了。如果没有特殊用处，<strong>请将他置1</strong>，因为这样能让交换机在删除一条流的时候给交换机上报flow_removed信息。</p>
+<h3>ACTION</h3>
+<p>action是openflow里面最重要的结构。对，他也是最重要的。每一条流都必须指定必要的action,不然匹配上之后，<strong>没有指定action，交换机会默认执行drop操作。</strong></p>
+<p>action有2种类型：</p>
+<ul>
+<li>
+<p><strong>必备行动: Forward  and Drop</strong></p>
+</li>
+<li>
+<p><strong>选择行动:FLOOD,NALMAL 等</strong></p>
+</li>
+</ul>
+<p>如添加output就是一个必须要添加的action.每一个action最好有一个action_header(),然后再接一个实体。如：</p>
+<div class="highlight"><pre><span class="n">ofp_action_header</span><span class="p">(</span><span class="n">type</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">ofp_action_output</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span><span class="n">oxfffb</span><span class="p">,</span><span class="n">len</span> <span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+
+
+<p>具体的action类型如下：</p>
+<div class="highlight"><pre><span class="n">ofp_action_type</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPAT_OUTPUT&quot;</span><span class="p">,</span>
+                    <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_VLAN_VID&quot;</span><span class="p">,</span>
+                    <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_VLAN_PCP&quot;</span><span class="p">,</span>
+                    <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPAT_STRIP_VLAN&quot;</span><span class="p">,</span>
+                    <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_DL_SRC&quot;</span><span class="p">,</span>
+                    <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_DL_DST&quot;</span><span class="p">,</span>
+                    <span class="mi">6</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_NW_SRC&quot;</span><span class="p">,</span>
+                    <span class="mi">7</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_NW_DST&quot;</span><span class="p">,</span>
+                    <span class="mi">8</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_NW_TOS&quot;</span><span class="p">,</span>
+                    <span class="mi">9</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_TP_SRC&quot;</span><span class="p">,</span>
+                    <span class="mi">10</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_TP_DST&quot;</span><span class="p">,</span>
+                    <span class="mi">11</span><span class="p">:</span> <span class="s">&quot;OFPAT_ENQUEUE&quot;</span>
+                    <span class="p">}</span>
+</pre></div>
+
+
+<p>action不仅仅会出现在flow_mod中，也会出现在如stats_reply中。</p>
+<h3>OFPT_BARRIER_REQUEST  &amp;&amp; REPLY</h3>
+<p>这个数据包可以的作用很简单，交换机在收到OFPT_BARRIER_REQUEST的时候，会回复控制器一个OFPT_BARRIER_REPLY。我们默认数据下发的顺序不会在传输中发生变化，在进入消息队列之后处理也是按照FIFO进行的，那么只要在flow_mod之后发送这个数据，当收到reply之后，交换机默认flow已经写成功。也许你会问他只是保证了flow_mod命令执行了，写入的结果如何并没有保证，如何确定确实写入流表了呢？</p>
+<ul>
+<li>如果非逻辑错误，那么交换机在处理flow_mod的时候会报错。所以我们会知道写入结果。</li>
+<li>如果是逻辑错误，那么会写进去，但是逻辑错误应该是人的问题，所以barrier还是有他的功能的。</li>
+</ul>
+<h3>OFPT_FLOW_REMOVED</h3>
+<p>如果flow_mod的flags填成1，则该流在失效之后会回复控制器一条OFPT_FLOW_REMOVED信息。</p>
+<ul>
+<li>结构：header()/wildcards()/match()/flow_removed()</li>
+<li>
+<p>作用：在流失效的时候回复控制器，并携带若干统计数据。</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_flow_removed</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+  <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Openflow flow removed&quot;</span>
+  <span class="n">fields_desc</span> <span class="o">=</span> <span class="p">[</span> <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;cookie&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;priority&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;reason&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                  <span class="n">ByteField</span><span class="p">(</span><span class="s">&quot;pad&quot;</span><span class="p">,</span> <span class="n">None</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;duration_sec&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;duration_nsec&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;idle_timeout&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
+                  <span class="n">ByteField</span><span class="p">(</span><span class="s">&quot;pad&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                  <span class="n">ByteField</span><span class="p">(</span><span class="s">&quot;pad&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;packet_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;byte_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+                <span class="p">]</span>
+</pre></div>
+
+
+</li>
+</ul>
+<p>其实的duration_sec是流存在的时间，单位为秒，duration_nsec单位为纳秒。</p>
+<h3>OFPT_STATS_REQUEST &amp;&amp; REPLY</h3>
+<p>以上的数据都是通信过程中必须的部分。还有一些数据包是为了某些目的而设计的，如OFPT_STATS_REQUEST &amp;&amp; REPLY可以获得统计信息，我们可以利用统计信息做的事情就太多了。如：<strong>负载平衡</strong>， 流量监控等基于流量的操作。</p>
+<h4>OFPT_STATS_REQUEST</h4>
+<p>OFPT_STATS_REQUEST类型有很多，回复的类型也很多。</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_stats_request</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow Stats Request&quot;</span>
+    <span class="n">fields_desc</span><span class="o">=</span><span class="p">[</span> <span class="n">ShortEnumField</span><span class="p">(</span><span class="s">&quot;type&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ofp_stats_types</span><span class="p">),</span>
+                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;flag&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+</pre></div>
+
+
+<h5>Type</h5>
+<ul>
+<li>0:请求交换机版本信息，制造商家等信息。</li>
+<li>1:单流请求信息</li>
+<li>2:多流请求信息</li>
+<li>3:流表请求信息</li>
+<li>4:端口信息请求</li>
+<li>5:队列请求信息</li>
+<li>
+<p>6:vendor请求信息，有时候没有定义。</p>
+<div class="highlight"><pre>   <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_stats_request</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">0</span><span class="p">),</span>                            <span class="c1">#Type of  OFPST_DESC (0) </span>
+            <span class="mi">1</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span> <span class="mi">56</span><span class="p">)</span><span class="sr">/of.ofp_stats_request(type =1)/o</span><span class="n">fp_flow_wildcards</span><span class="sr">/ofp_match/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_flow_stats_request</span><span class="p">(</span><span class="n">out_port</span> <span class="o">=</span> <span class="n">ofp_flow_mod</span><span class="o">.</span><span class="n">out_port</span><span class="p">),</span>                  <span class="c1">#flow stats</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span><span class="mi">56</span><span class="p">)</span><span class="sr">/of.ofp_stats_request(type = 2)/o</span><span class="n">fp_flow_wildcards</span><span class="sr">/of.ofp_match/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_aggregate_stats_request</span><span class="p">(),</span>                                  <span class="c1"># aggregate stats request</span>
+            <span class="mi">3</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_stats_request</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">3</span><span class="p">),</span>                            <span class="c1">#Type of  OFPST_TABLE (0) </span>
+            <span class="mi">4</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span><span class="mi">20</span><span class="p">)</span><span class="sr">/of.ofp_stats_request(type = 4)/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_port_stats_request</span><span class="p">(</span><span class="n">port_no</span> <span class="o">=</span> <span class="n">port</span><span class="p">),</span>   <span class="c1"># port stats request    </span>
+            <span class="mi">5</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span><span class="mi">20</span><span class="p">)</span><span class="sr">/of.ofp_stats_request(type =5)/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_queue_stats_request</span><span class="p">(),</span> <span class="c1">#queue request</span>
+            <span class="mi">6</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_stats_request</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mh">0xffff</span><span class="p">)</span>                        <span class="c1">#vendor request</span>
+        <span class="p">}</span>
+</pre></div>
+
+
+</li>
+</ul>
+<h4>OFPT_STATS_REPLY</h4>
+<p>每一种请求信息都会对应一种回复信息。我们只介绍最重要的<strong>flow_stats_reply</strong>。</p>
+<ul>
+<li>结构：<strong>header(type=17)/reply_header()/flow_stats/wildcards/match/
+flow_stats_data</strong></li>
+<li>作用：携带流的统计信息，如通过的数据包个数，字节数。</li>
+</ul>
+<p><strong>ofp_flow_stats(body[4:8])</strong>里面会有的<strong>table_id</strong>字段表明该流存放在哪一个流表里。</p>
+<p><strong>flow_stats_data里面有packet_count和byte_count是最有价值的字段，流量统计就是由这两个字段提供的信息。</strong></p>
+<p>如想统计某条流的速率：<strong>前后两个reply的字节数相减除以duration_time只差就可以求得速率</strong></p>
+<p>由速率我们可以做很多基于流量的app，如<strong>流量监控，负载均衡</strong>等等。</p>
+<p>值得注意的是，在这些数据之后，其实还有一些<strong>action</strong>,但是目前我还没有查看这些action到底是干什么用的。</p>
+<h2>后续</h2>
+<p>写到这里，我使用到的数据包都写了一遍，其他的报文其实道理也是一样的。如<strong>OFPT_GET_CONFIG_REQUEST和REPLY</strong>，道理应该和stats一样，只是数据结构不一样罢了。不再多说。</p>
+<p>最后把我们用的一些比较多的信息帖出来让大家更好的学习。</p>
+<h3>ERROR</h3>
+<p>在调试的过程中遇到错误是再所难免的，前面也提到了error的结构。这里就贴一下type跟code吧。</p>
+<div class="highlight"><pre><span class="n">ofp_error_type</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPET_HELLO_FAILED&quot;</span><span class="p">,</span>
+                   <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPET_BAD_REQUEST&quot;</span><span class="p">,</span>
+                   <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPET_BAD_ACTION&quot;</span><span class="p">,</span>
+                   <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPET_FLOW_MOD_FAILED&quot;</span><span class="p">,</span>
+                   <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPET_PORT_MOD_FAILED&quot;</span><span class="p">,</span>
+                   <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPET_QUEUE_OP_FAILED&quot;</span><span class="p">}</span>
+</pre></div>
+
+
+<h4>相关的code：</h4>
+<div class="highlight"><pre><span class="n">ofp_hello_failed_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPHFC_INCOMPATIBLE&quot;</span><span class="p">,</span>
+                          <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPHFC_EPERM&quot;</span><span class="p">}</span>
+
+<span class="n">ofp_bad_request_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_VERSION&quot;</span><span class="p">,</span>
+                         <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_TYPE&quot;</span><span class="p">,</span>
+                         <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_STAT&quot;</span><span class="p">,</span>
+                         <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_VENDOR&quot;</span><span class="p">,</span>
+                         <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_SUBTYPE&quot;</span><span class="p">,</span>
+                         <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPBRC_EPERM&quot;</span><span class="p">,</span>
+                         <span class="mi">6</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_LEN&quot;</span><span class="p">,</span>
+                         <span class="mi">7</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BUFFER_EMPTY&quot;</span><span class="p">,</span>
+                         <span class="mi">8</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BUFFER_UNKNOWN&quot;</span><span class="p">}</span>
+
+<span class="n">ofp_bad_action_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_TYPE&quot;</span><span class="p">,</span>
+                        <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_LEN&quot;</span><span class="p">,</span>
+                        <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_VENDOR&quot;</span><span class="p">,</span>
+                        <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_VENDOR_TYPE&quot;</span><span class="p">,</span>
+                        <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_OUT_PORT&quot;</span><span class="p">,</span>
+                        <span class="mi">6</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_ARGUMENT&quot;</span><span class="p">,</span>
+                        <span class="mi">7</span><span class="p">:</span> <span class="s">&quot;OFPBAC_EPERM&quot;</span><span class="p">,</span>          <span class="c1">#permissions error</span>
+                        <span class="mi">8</span><span class="p">:</span> <span class="s">&quot;OFPBAC_TOOMANY&quot;</span><span class="p">,</span>
+                        <span class="mi">9</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_QUEUE&quot;</span><span class="p">}</span>
+
+<span class="n">ofp_flow_mod_failed_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_ALL_TABLES_FULL&quot;</span><span class="p">,</span>
+                             <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_OVERLAP&quot;</span><span class="p">,</span>
+                             <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_EPERM&quot;</span><span class="p">,</span>
+                             <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_BAD_EMERG_TIMEOUT&quot;</span><span class="p">,</span>
+                             <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_BAD_COMMAND&quot;</span><span class="p">,</span>
+                             <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_UNSUPPORT&quot;</span><span class="p">}</span>
+
+<span class="n">ofp_port_mod_failed_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPPMFC_BAD_PORT&quot;</span><span class="p">,</span>
+                             <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPPFMC_BAD_HW_ADDR&quot;</span><span class="p">}</span>
+
+<span class="n">ofp_queue_op_failed_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPQOFC_BAD_PORT&quot;</span><span class="p">,</span>
+                             <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPQOFC_BAD_QUEUE&quot;</span><span class="p">}</span>
+</pre></div>
+
+
+<p>这些数据结构，以及代码很多能在github上找到。有一些是我的师傅:http://richardzhao.me/</p>
+<p>写的，谢谢他跟他兄弟，我的另一个师傅kimi带我走进Openflow的世界。当然这里面也有很多事我自己写的。</p>
+<h3>整篇文档均为牧紫星原创，转载请声明告知。希望能给你带来一些帮助。</h3></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2013/12/11/wo-ceng-jing-qi-ci-bi-shi-zi-ji-de-ling-hun.html"><h2>我曾经七次鄙视自己的灵魂</h2></a>
+        <div class= "well small"> 2013-12-11
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>第一次，当它本可进取时，却故作谦卑；</h3>
 <h3>第二次，当它在空虚时，用爱欲来填充；</h3>
 <h3>第三次，在困难和容易之间，它选择了容易；</h3>
 <h3>第四次，它犯了错，却借由别人也会犯错来宽慰自己；</h3>
 <h3>第五次，它自由软弱，却把它认为是生命的坚韧；</h3>
 <h3>第六次，当它鄙夷一张丑恶的嘴脸时，却不知那正是自己面具中的一副；</h3>
-<h3>第七次，它侧身于生活的污泥中，虽不甘心，却又畏首畏尾。</h3></div>
-        <hr />
-    </div>
-		
+<h3>第七次，它侧身于生活的污泥中，虽不甘心，却又畏首畏尾。</h3> <a class="btn btn-info xsmall" href="../pages/2013/12/11/wo-ceng-jing-qi-ci-bi-shi-zi-ji-de-ling-hun.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -165,42 +645,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">net</span> <span class="nb">import</span> <span class="n">Mininet</span>
 <span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">link</span> <span class="nb">import</span> <span class="n">Intf</span>
 <span class="n">from</span> <span class="n">mininet ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html"><h2>基于tornado的简单socket通信建立</h2></a>
-        <div class= "well small"> 2013-11-29
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>配图版请查看：http://user.qzone.qq.com/350959853/blog/1375093527</p>
-<h3>安装tornado</h3>
-<p>这里有比较全的介绍，写得非常好。http://sebug.net/paper/books/tornado/</p>
-<h3>hello world</h3>
-<p>首先，下载安装好tornado之后，我们就可以去使用tornado里面的库了。
-照着官网的简单的例子抄了一遍，写了一个hello world!</p>
-<p><img alt="hello" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=1382f91cba99a9013f355b332dae7b46/e824b899a9014c0862b40dad087b02087bf4f42e.jpg?referer=77791a7ef01fbe094549f72434e4&amp;x=.jpg" /></p>
-<p>显示效果如下：</p>
-<p><img alt="res" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=0683c331b1de9c82a265f98a5cbaf137/d009b3de9c82d15858647eb9820a19d8bd3e42d7.jpg?referer=68d8807dd488d43fa9bea5c2aecd&amp;x=.jpg" /></p>
-<h3>基于tornado的简单的socket连接通信实现</h3>
-<p>代码如下：</p>
-<div class="highlight"><pre><span class="nb">import</span> <span class="n">errno</span>
-<span class="nb">import</span> <span class="n">functools</span>
-<span class="n">from</span> <span class="n">tornado</span><span class="o">.</span><span class="n">ioloop</span> <span class="nb">import</span> <span class="n">IOLoop</span>
-<span class="nb">import</span> <span class="nb">socket</span>
-<span class="nb">import</span> <span class="nb">time</span>
-<span class="nb">import</span> <span class="n">Queue</span>
-
-<span class="n">sock</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">socket</span>    <span class="p">(</span><span class="nb">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span><span class="nb">socket ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
