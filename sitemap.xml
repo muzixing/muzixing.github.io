@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/index.html</loc>
-<lastmod>2013-12-14T22:20:27-00:00</lastmod>
+<lastmod>2013-12-19T14:57:44-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/archives.html</loc>
-<lastmod>2013-12-14T22:20:27-00:00</lastmod>
+<lastmod>2013-12-19T14:57:44-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/tags.html</loc>
-<lastmod>2013-12-14T22:20:27-00:00</lastmod>
+<lastmod>2013-12-19T14:57:44-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/categories.html</loc>
-<lastmod>2013-12-14T22:20:27-00:00</lastmod>
+<lastmod>2013-12-19T14:57:44-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -39,7 +39,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/12/12/yuan-chuang-openflowxie-yi-tong-xin-liu-cheng-jie-du.html</loc>
+<loc>http://muzixing.github.io/pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html</loc>
 <lastmod>2013-12-12T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
