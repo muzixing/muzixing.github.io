@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html"><h1>【原创】OpenFlow通信流程解读</h1></a>
-2013-12-12
+            <a href="./pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html"><h1>【原创】SDN控制器开发教程——打造属于你自己的控制器</h1></a>
+2013-12-17
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
  
@@ -72,128 +72,307 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h1>前言</h1>
-<p>接触了这么久的SDN，OpenFlow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对OpenFlow协议通信流程的一些理解。</p>
-<h1>SDN中Switch和controller</h1>
-<p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
-<h2>switch组成与传统交换机的差异</h2>
-<h3>switch组成</h3>
-<p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
+        <div><hr />
+<h1>前言</h1>
+<p>SDN(Software Defined Network)这些年越来越火。当我还是大三的小朋友的时候，我的学长带我走进了OpenFlow的世界。一年里，我慢慢学会了许多东西，研究过pox,写过mininet自定义拓扑，画过OpenFlow的数据结构，做过HTTP的流量引导，广播风暴解除等许多小东西。在SDN这条道路上越走越远，也希望有一天，我能在这个领域有所成就，做出一点自己的贡献。</p>
+<p>暑假的时候开始来工信部电信研究院实习，开始跟着学长一起开发，后来学长去美帝了，我继续完成剩下的工作。为了实现demo，我们顺便写了一个小小的控制器，其本质很简单，也许简单到你都不屑一顾。但是这个过程，我们需要从底层通信开始搭建，一直到最后的上层应用，无论哪一个环节，都会涉及到。到最后你会发现，其实也许这个控制器并没有太大的用处，但是更多的是这个过程中你学到的知识，那是使用别人开发的控制器说不能得到的宝贵知识。</p>
+<hr />
+<h1>你能得到的</h1>
 <ul>
-<li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
-<li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
+<li>底层通信：基于Tornado架构的socket通信的搭建</li>
+<li>OpenFlow协议数据结构细节</li>
+<li>通信流程的事件处理</li>
+<li>若干网络协议的熟悉与掌握。</li>
+<li>最重要的，你自己从无到有，经历了一个开发过程，所有出现的你想到的想不到的问题，你都需要自己去解决。你会在解决问题的过程中收获太多太多你想不到的财富。</li>
+<li>自信！你可以大声对自己说，我可以！我可以做很多事情，因为我遇到了很多困难，但是我最终成功了！也许很简单，但是不是每一个人都能坚持去完成一个创新工作！<strong>有想法的人太多，持之以恒的人也很多，但是又想法，有持之以恒的人不多。我可以试着努力成为那样的人！</strong></li>
 </ul>
-<h3>of中sw与传统交换机的差异</h3>
+<hr />
+<h1>在下面的内容你会接触到的名词</h1>
 <ul>
-<li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
-<li>运行of协议，实现许多路由器的功能，比如组播。</li>
-<li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
+<li>socket</li>
+<li>tronado</li>
+<li>scapy</li>
+<li>mininet</li>
 </ul>
-<h3>OpenFlow的switch可以从以下方式获得</h3>
+<p>任何需要更多了解的请自行百度，google。</p>
+<hr />
+<h1>底层通信</h1>
+<p>我们的控制器的底层通信是由socket通信搭建的。以下关于socket通信的内容均摘自：http://blog.csdn.net/xiaoweige207/article/details/6211577</p>
+<p>如果你想更详细地学习socket通信，可以去这个地址查看，也可以自行google。如果你已经了解socket通信，请跳到后面查看。</p>
+<hr />
+<h2>socket的基本操作</h2>
+<p>socket操作模式：open -&gt;write/read -&gt;close</p>
+<p>基于这个模式，我们需要用到一下的函数。</p>
 <ul>
-<li>实体of交换机，目前市场上有一些厂商已经制造出of交换机，但是普遍反映价格较贵！性能最好。</li>
-<li>在实体机上安装OVS，OVS可以使计算机变成一个OpenFlow交换机。性能相对稳定。</li>
-<li>使用mininet模拟环境。可以搭建许多交换机，任意拓扑，搭建拓扑具体教程本博客有一篇。性能依赖虚拟机的性能。</li>
+<li>socket()函数</li>
+<li>bind()函数</li>
+<li>listen()、connect()函数</li>
+<li>accept()函数</li>
+<li>read()、write()函数等</li>
+<li>close()函数</li>
 </ul>
-<h2>controller组成</h2>
-<p>控制器有许多种，不同的语言，如python写的pox,ryu，如java写的floodlight等等。从功能层面controller分为以下几个模块：</p>
-<ul>
-<li>底层通信模块：OpenFlow中目前controller与switch之间使用的是socket连接，所以控制器底层的通信是socket。</li>
-<li>OpenFlow协议。socket收到的数据的处理规则需按照OpenFlow协议去处理。</li>
-<li>上层应用：根据OpenFlow协议处理后的数据，开发上层应用，比如pox中就l2_learning,l3_learning等应用。更多的应用需要用户自己去开发。</li>
-</ul>
-<h1>OpenFlow通信流程</h1>
-<p>以下教程环境为：mininet+自编简单控制器+scapy封装</p>
-<h2>建立连接</h2>
-<p>首先启动mininet，mininet会自行启动一个default拓扑，你也可以自己建立你的拓扑。sw建立完成之后，会像controllerIP:controllerport发送数据。</p>
-<p>controller启动之后，监听指定端口，默认6633，但是好像以后的都改了，因为该端口被其他协议占用。</p>
-<p>3次握手之后，建立连接，这个是底层的通信，是整一套系统的基础设施。</p>
-<h2>OFPT_HELLO</h2>
-<p>创建socket之后，sw跟controller会彼此发送hello数据包。</p>
-<ul>
-<li>目的：协议协商。</li>
-<li>内容：本方支持的最高版本的协议</li>
-<li>成果：使用双方都支持的最低版本协议。</li>
-<li>成功：建立连接</li>
-<li>失败：OFPT_ERROR  (TYPE:OFPT_HELLO_FAILED,CODE =0),终止连接。</li>
-</ul>
-<h2>OFPT_ERROR</h2>
-<p>说到OFPT_ERROR,我们不妨先了解一下。</p>
-<div class="highlight"><pre><span class="n">ofp_error_type</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPET_HELLO_FAILED&quot;</span><span class="p">,</span>
-                   <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPET_BAD_REQUEST&quot;</span><span class="p">,</span>
-                   <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPET_BAD_ACTION&quot;</span><span class="p">,</span>
-                   <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPET_FLOW_MOD_FAILED&quot;</span><span class="p">,</span>
-                   <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPET_PORT_MOD_FAILED&quot;</span><span class="p">,</span>
-                   <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPET_QUEUE_OP_FAILED&quot;</span><span class="p">}</span>
+<h3>socket()函数</h3>
+<div class="highlight"><pre><span class="nb">int</span> <span class="nb">socket</span><span class="p">(</span><span class="nb">int</span> <span class="n">domain</span><span class="p">,</span> <span class="nb">int</span> <span class="n">type</span><span class="p">,</span> <span class="nb">int</span> <span class="n">protocol</span><span class="p">);</span>
 </pre></div>
 
 
-<p>错误类型如上所示。对应的type还会有对应的code.所以报错的格式为：</p>
-<div class="highlight"><pre><span class="n">OFPT_ERROR</span>
-<span class="n">TYPE:</span> 
-<span class="n">CODE:</span>
-<span class="p">[</span><span class="n">PAYLOAD</span><span class="p">]</span><span class="err">具体的错误信息。</span>
-</pre></div>
-
-
-<p>如 TYPE:0 CODE:0为：<strong>OFPHFC_INCOMPATIBLE</strong></p>
-<p>具体对应的关系，请自行查看OF协议。</p>
-<h2>OFPT_ECHO</h2>
+<p>这个函数相当于文件打开操作，会创建一个socket，返回的一个和文件描述符类似的标示符，这个标示符唯一对应一个socket。</p>
+<p><strong>参数：</strong></p>
+<blockquote>
 <ul>
-<li>分类：对称信息 OFPT_ECHO_REQUEST, OFPT_ECHO_REPLY</li>
-<li>作用：查询连接状态，确保通信通畅。</li>
-</ul>
-<p>当没有其他的数据包进行交换时，controller会定期循环给sw发送OFPT_ECHO_REQUEST。</p>
-<h2>OFPT_FEATURES</h2>
-<p>当sw跟controller完成连接之后，控制器会向交换机下发OFPT_FEATYRES_REQUEST的数据包，目的是请求交换机的信息。</p>
-<ul>
-<li>发送时间：连接建立完成之后</li>
-<li>发送数据：OFPT_FEATURES_REQUEST</li>
-<li>对称数据：OFPT_FEATURES_REPLY</li>
-<li>目的：获取交换机的信息</li>
-</ul>
-<h3>OFPT_FEATURES_REQUEST</h3>
-<ul>
-<li>TYPE=5</li>
-<li>Without data</li>
-</ul>
-<h3>OFPT_FEATURES_REPLY</h3>
-<ul>
-<li>TYPE =6</li>
-<li>[0:8]为header</li>
-<li>[8:32]长度24byte为sw的features</li>
 <li>
-<p>[32:]长度与端口数成正比，存放port的信息。每一个port信息长度为48byte。</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_features_reply</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow Switch Features Reply&quot;</span>
-    <span class="n">fields_desc</span><span class="o">=</span><span class="p">[</span> <span class="n">BitFieldLenField</span><span class="p">(</span><span class="s">&#39;datapath_id&#39;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">length_of</span><span class="o">=</span><span class="s">&#39;varfield&#39;</span><span class="p">),</span>
-                  <span class="n">BitFieldLenField</span><span class="p">(</span><span class="s">&#39;n_buffers&#39;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">length_of</span><span class="o">=</span><span class="s">&#39;varfield&#39;</span><span class="p">),</span>
-                  <span class="n">XByteField</span><span class="p">(</span><span class="s">&quot;n_tables&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-                  <span class="n">X3BytesField</span><span class="p">(</span><span class="s">&quot;pad&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-                  <span class="c1">#features</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;NOT DEFINED&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_ARP_MATCH_IP&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>  <span class="c1">#1&lt;&lt;7 Match IP address in ARP packets</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_QUEUE_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>   <span class="c1">#1&lt;&lt;6 Queue statistics</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_IP_STREAM&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>     <span class="c1">#1&lt;&lt;5 Can reassemble IP fragments</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_RESERVED&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>      <span class="c1">#1&lt;&lt;4 Reserved, must be zero</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_STP&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>           <span class="c1">#1&lt;&lt;3 802.1d spanning tree</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_PORT_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>    <span class="c1">#1&lt;&lt;2 Port statistics</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_TABLE_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>   <span class="c1">#1&lt;&lt;1 Table statistics</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_FLOW_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>    <span class="c1">#1&lt;&lt;0 Flow statistics</span>
-                  <span class="n">BitFieldLenField</span><span class="p">(</span><span class="s">&#39;actions&#39;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">length_of</span><span class="o">=</span><span class="s">&#39;varfield&#39;</span><span class="p">),</span>
-                <span class="p">]</span>
-<span class="n">bind_layers</span><span class="p">(</span> <span class="n">ofp_header</span><span class="p">,</span> <span class="n">ofp_features_reply</span><span class="p">,</span> <span class="n">type</span><span class="o">=</span><span class="mi">6</span> <span class="p">)</span>
-</pre></div>
-
-
+<p>domain：即协议域，又称为协议族（family）。常用的协议族有，AF_INET、AF_INET6、AF_LOCAL（或称AF_UNIX，Unix域socket）、AF_ROUTE等等。协议族决定了socket的地址类型，在通信中必须采用对应的地址，如AF_INET决定了要用ipv4地址（32位的）与端口号（16位的）的组合、AF_UNIX决定了要用一个绝对路径名作为地址。</p>
+</li>
+<li>
+<p>type：指定socket类型。常用的socket类型有，SOCK_STREAM、SOCK_DGRAM、SOCK_RAW、SOCK_PACKET、SOCK_SEQPACKET等等（socket的类型有哪些？）。</p>
+</li>
+<li>
+<p>protocol：故名思意，就是指定协议。常用的协议有，IPPROTO_TCP、IPPTOTO_UDP、IPPROTO_SCTP、IPPROTO_TIPC等，它们分别对应TCP传输协议、UDP传输协议、STCP传输协议、TIPC传输协议。</p>
 </li>
 </ul>
-<p>以上的结构是交换机的features,紧跟在后面的是端口的结构：</p>
+</blockquote>
+<p><strong>注意：并不是上面的type和protocol可以随意组合的，如SOCK_STREAM不可以跟IPPROTO_UDP组合。当protocol为0时，会自动选择type类型对应的默认协议。</strong></p>
+<p>当我们调用socket创建一个socket时，返回的socket描述字它存在于协议族（address family，AF_XXX）空间中，但没有一个具体的地址。如果想要给它赋值一个地址，就必须调用bind()函数，否则就当调用connect()、listen()时系统会自动随机分配一个端口。</p>
+<h3>bind()函数</h3>
+<p>正如上面所说bind()函数把一个地址族中的特定地址赋给socket。例如对应AF_INET、AF_INET6就是把一个ipv4或ipv6地址和端口号组合赋给socket。</p>
+<p>int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+函数的三个参数分别为：</p>
+<ul>
+<li>sockfd：即socket描述字，它是通过socket()函数创建了，唯一标识一个socket。bind()函数就是将给这个描述字绑定一个名字。</li>
+<li>addr：一个const struct sockaddr *指针，指向要绑定给sockfd的协议地址。这个地址结构根据地址创建socket时的地址协议族的不同而不同。</li>
+</ul>
+<p><strong>通常服务器在启动的时候都会绑定一个众所周知的地址（如ip地址+端口号），用于提供服务，客户就可以通过它来接连服务器；而客户端就不用指定，有系统自动分配一个端口号和自身的ip地址组合。</strong>这就是为什么通常服务器端在listen之前会调用bind()，而客户端就不会调用，而是在connect()时由系统随机生成一个。</p>
+<p><strong>TIP:</strong>（具体请看链接）</p>
+<p><strong>在将一个地址绑定到socket的时候，请先将主机字节序转换成为网络字节序，而不要假定主机字节序跟网络字节序一样使用的是Big-Endian。由于这个问题曾引发过血案！公司项目代码中由于存在这个问题，导致了很多莫名其妙的问题，所以请谨记对主机字节序不要做任何假定，务必将其转化为网络字节序再赋给socket。</strong></p>
+<h3>listen()、connect()函数</h3>
+<p>如果作为一个服务器，在调用socket()、bind()之后就会调用listen()来监听这个socket，如果客户端这时调用connect()发出连接请求，服务器端就会接收到这个请求。</p>
+<div class="highlight"><pre><span class="nb">int</span> <span class="nb">listen</span><span class="p">(</span><span class="nb">int</span> <span class="n">sockfd</span><span class="p">,</span> <span class="nb">int</span> <span class="n">backlog</span><span class="p">);</span>
+<span class="nb">int</span> <span class="nb">connect</span><span class="p">(</span><span class="nb">int</span> <span class="n">sockfd</span><span class="p">,</span> <span class="n">const</span> <span class="n">struct</span> <span class="n">sockaddr</span> <span class="o">*</span><span class="n">addr</span><span class="p">,</span> <span class="n">socklen_t</span> <span class="n">addrlen</span><span class="p">);</span>
+</pre></div>
+
+
+<p>listen 函数的第一个参数即为要监听的socket描述字，第二个参数为相应socket可以排队的最大连接个数。socket()函数创建的socket默认是一个主动类型的，listen函数将socket变为被动类型的，等待客户的连接请求。</p>
+<p>connect 函数的第一个参数即为客户端的socket描述字，第二参数为服务器的socket地址，第三个参数为socket地址的长度。客户端通过调用connect函数来建立与TCP服务器的连接。</p>
+<h3>accept()函数</h3>
+<p>TCP服务器端依次调用socket()、bind()、listen()之后，就会监听指定的socket地址了。TCP客户端依次调用socket()、connect()之后就想TCP服务器发送了一个连接请求。TCP服务器监听到这个请求之后，就会调用accept()函数取接收请求，这样连接就建立好了。之后就可以开始网络I/O操作了，即类同于普通文件的读写I/O操作。</p>
+<p>int accept(int sockfd, struct sockaddr <em>addr, socklen_t </em>addrlen);
+accept函数的第一个参数为服务器的socket描述字，第二个参数为指向struct sockaddr *的指针，用于返回客户端的协议地址，第三个参数为协议地址的长度。如果accpet成功，那么其返回值是由内核自动生成的一个全新的描述字，代表与返回客户的TCP连接。</p>
+<p><strong>注意：</strong>accept的第一个参数为服务器的socket描述字，是服务器开始调用socket()函数生成的，称为监听socket描述字；而accept函数返回的是已连接的socket描述字。一个服务器通常通常仅仅只创建一个监听socket描述字，它在该服务器的生命周期内一直存在。内核为每个由服务器进程接受的客户连接创建了一个已连接socket描述字，当服务器完成了对某个客户的服务，相应的已连接socket描述字就被关闭。</p>
+<h3>read()、write()等函数</h3>
+<p>主要的网络IO函数有如下：</p>
+<ul>
+<li>read()/write()</li>
+<li>recv()/send()</li>
+<li>readv()/writev()</li>
+<li>recvmsg()/sendmsg()</li>
+<li>recvfrom()/sendto()</li>
+</ul>
+<p>在tronado中我们使用的是read()/write()</p>
+<p>read函数是负责从fd中读取内容.当读成功时，read返回实际所读的字节数，如果返回的值是0表示已经读到文件的结束了，小于0表示出现了错误。如果错误为EINTR说明读是由中断引起的，如果是ECONNREST表示网络连接出了问题。</p>
+<p>write函数将buf中的nbytes字节内容写入文件描述符fd.成功时返回写的字节数。失败时返回-1，并设置errno变量。 在网络程序中，当我们向套接字文件描述符写时有俩种可能。1)write的返回值大于0，表示写了部分或者是全部的数据。2)返回的值小于0，此时出现了错误。我们要根据错误类型来处理。如果错误为EINTR表示在写的时候出现了中断错误。如果为EPIPE表示网络连接出现了问题(对方已经关闭了连接)。</p>
+<h3>close()函数</h3>
+<p>在服务器与客户端建立连接之后，会进行一些读写操作，完成了读写操作就要关闭相应的socket描述字，好比操作完打开的文件要调用fclose关闭打开的文件。</p>
+<div class="highlight"><pre><span class="nb">int</span> <span class="nb">close</span><span class="p">(</span><span class="nb">int</span> <span class="n">fd</span><span class="p">);</span>
+</pre></div>
+
+
+<p>close一个TCP socket的缺省行为时把该socket标记为以关闭，然后立即返回到调用进程。该描述字不能再由调用进程使用，也就是说不能再作为read或write的第一个参数。</p>
+<p><strong>注意：</strong>close操作只是使相应socket描述字的引用计数-1，只有当引用计数为0的时候，才会触发TCP客户端向服务器发送终止连接请求。</p>
+<hr />
+<h2>Tornado</h2>
+<p>我们的底层是利用tornado搭建的。tornado是什么？请看：http://www.tornadoweb.cn/</p>
+<p>如果你没有写过tornado，建议去tornado官网上把简单的demo做一做。也可以在本站学习tornado,站内搜索可以找到。</p>
+<p>首先我们把需要的文件import进来：</p>
+<div class="highlight"><pre><span class="nb">import</span> <span class="n">errno</span>
+<span class="nb">import</span> <span class="n">functools</span>
+<span class="nb">import</span> <span class="n">tornado</span><span class="o">.</span><span class="n">ioloop</span> <span class="n">as</span> <span class="n">ioloop</span>
+<span class="nb">import</span> <span class="nb">socket</span>
+<span class="nb">import</span> <span class="n">Queue</span>
+<span class="nb">import</span> <span class="nb">time</span>
+</pre></div>
+
+
+<blockquote>
+<ul>
+<li>
+<p>error是系统错误处理。</p>
+</li>
+<li>
+<p>functools一个python的模块，我们需要用到的是他的partial函数。</p>
+</li>
+</ul>
+</blockquote>
+<div class="highlight"><pre><span class="o">**</span><span class="n">partial</span><span class="err">函数</span><span class="o">**</span>
+
+<span class="err">通过为已经存在的某个函数指定数个参数，生成一个新的函数，这个函数只需要传入剩余未指定的参数就能实现原函数的全部功能，这被称为偏函数。</span><span class="n">Python</span><span class="err">内置的</span><span class="n">functools</span><span class="err">模块提供了一个函数</span><span class="n">partial</span><span class="err">，可以为任意函数生成偏函数</span>
+
+    <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">func</span><span class="p">[,</span> <span class="o">*</span><span class="n">args</span><span class="p">][,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">])</span>
+</pre></div>
+
+
+<blockquote>
+<ul>
+<li>
+<p>在整个底层通信中我们需要用到tornado的ioloop去进行系统IO的调用，去对socket的内容读取和写入。</p>
+</li>
+<li>
+<p>调用系统socket</p>
+</li>
+<li>
+<p>import缓存队列,用于存储待发送</p>
+</li>
+<li>
+<p>系统时间</p>
+</li>
+</ul>
+</blockquote>
+<h3>创建new_sock函数</h3>
+<p>其实这个函数只是为了建立多个socket的时候省一些代码，直接调用总比一条一条配置要快一些。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">new_sock</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
+    <span class="n">sock</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">socket</span><span class="p">(</span><span class="nb">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="nb">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">sock</span><span class="o">.</span><span class="nb">setsockopt</span><span class="p">(</span><span class="nb">socket</span><span class="o">.</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="nb">socket</span><span class="o">.</span><span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">sock</span><span class="o">.</span><span class="n">setblocking</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sock</span>
+</pre></div>
+
+
+<p>目的：返回一个IPV4,字符串格式的的socket。第二句不需要管，我也不是很懂。第一个参数是普通socket的意思。具体的可以去这里查看：http://blog.csdn.net/chary8088/article/details/2486377</p>
+<h3>main函数</h3>
+<div class="highlight"><pre><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">sock</span> <span class="o">=</span> <span class="n">new_sock</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">sock</span><span class="o">.</span><span class="nb">bind</span><span class="p">((</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">6634</span><span class="p">))</span>
+    <span class="n">sock</span><span class="o">.</span><span class="nb">listen</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+
+    <span class="n">io_loop</span> <span class="o">=</span> <span class="n">ioloop</span><span class="o">.</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+
+    <span class="n">callback</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">sock</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">sock</span><span class="p">,</span> <span class="n">sock</span><span class="o">.</span><span class="nb">getsockname</span><span class="p">()</span>
+    <span class="n">io_loop</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">sock</span><span class="o">.</span><span class="nb">fileno</span><span class="p">(),</span> <span class="n">callback</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span>
+    <span class="n">try:</span>
+        <span class="n">io_loop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">except</span> <span class="n">KeyboardInterrupt:</span>
+        <span class="n">io_loop</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s">&quot;quit&quot;</span>
+</pre></div>
+
+
+<p>目的是创建一个socket。将其绑定在6634端口上，IP地址为本机地址。然后listen(30),30是允许最大的连接数，我们可以将其增大一点，以适应许多的交换机连接控制器。</p>
+<p>调用tornado.ioloop去创建一个IOLoop的实例。</p>
+<p>callback函数中是通过epoll方式实现并发。将sock作为agent的指定参数，生成一个可调用的partial对象，赋值给callback,作用相当于函数，实际上就是把sock作为参数传送给了agent函数。</p>
+<div class="highlight"><pre><span class="n">io_loop</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">sock</span><span class="o">.</span><span class="nb">fileno</span><span class="p">(),</span> <span class="n">callback</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span>
+</pre></div>
+
+
+<p>添加一个句柄处理这个socket。标示为fileno(),处理内容为callback中内容。初始状态为READ(可读)。</p>
+<p>最后一个逻辑是启动ioloop,如果键入停止，则stop()。</p>
+<h3>accept数据</h3>
+<p>当我们建立起一个半连接的server_socket之后，我们需要去收取socket的数据。这个时候我们就需要调用到accept函数。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">agent</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">events</span><span class="p">):</span>
+    <span class="c1">#print fd, sock, events</span>
+    <span class="n">try:</span>
+        <span class="n">connection</span><span class="p">,</span> <span class="n">address</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="nb">accept</span><span class="p">()</span>
+    <span class="n">except</span> <span class="nb">socket</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="n">e:</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="n">in</span> <span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">EWOULDBLOCK</span><span class="p">,</span> <span class="n">errno</span><span class="o">.</span><span class="n">EAGAIN</span><span class="p">):</span>
+            <span class="n">raise</span>
+        <span class="k">return</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">setblocking</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">handle_connection</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+    <span class="n">fd_map</span><span class="p">[</span><span class="n">connection</span><span class="o">.</span><span class="nb">fileno</span><span class="p">()]</span> <span class="o">=</span> <span class="n">connection</span>
+    <span class="n">client_handle</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">client_handler</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+    <span class="n">io_loop</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="nb">fileno</span><span class="p">(),</span> <span class="n">client_handle</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;i n agent: new switch&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="o">.</span><span class="nb">fileno</span><span class="p">(),</span> <span class="n">client_handle</span>
+    <span class="n">message_queue_map</span><span class="p">[</span><span class="n">connection</span><span class="p">]</span> <span class="o">=</span> <span class="n">Queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+</pre></div>
+
+
+<p>我们为了统一处理，定义agent函数。accept函数在agent中调用，同时在agent中也有except处理。</p>
+<div class="highlight"><pre><span class="n">connection</span><span class="p">,</span> <span class="n">address</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="nb">accept</span><span class="p">()</span>
+</pre></div>
+
+
+<p>socket.accept()是由数据和地址组成的。connection.setblocking(0)定义阻塞方式为无阻塞，收到数据位空时，马上返回0，而不是继续等待。</p>
+<p>调用handle_connection()</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">handle_connection</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;1 connection,&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">address</span>
+</pre></div>
+
+
+<p>起作用很简单，打印一些关键信息。<strong>将其放在main函数之前就好。</strong></p>
+<p>同时我们还需要建立一个字典用于保存connection中的数据，key为connection.fileno(),即使用connection的文件标示符。</p>
+<p>下一句使用到的函数：</p>
+<h3>client_handler(address, fd, events)</h3>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">client_handler</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">events</span><span class="p">):</span>
+    <span class="n">sock</span> <span class="o">=</span> <span class="n">fd_map</span><span class="p">[</span><span class="n">fd</span><span class="p">]</span>  <span class="c1">#以fd为标示符，从map中读取相应的connection数据，即收取到的字符流</span>
+    <span class="k">if</span> <span class="n">events</span> <span class="o">&amp;</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">READ:</span><span class="c1">#如果状态是可读的</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="nb">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>    <span class="c1">#收取1024字节数据，长度可调。</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>            <span class="c1">#非阻塞情况下如果收到的是空数据，则取消句柄</span>
+            <span class="k">print</span> <span class="s">&quot;connection dropped&quot;</span>
+            <span class="n">io_loop</span><span class="o">.</span><span class="n">remove_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">8</span><span class="p">:</span>           <span class="c1">#openflow报文最短是8字节，即报头8字节</span>
+            <span class="k">print</span> <span class="s">&quot;not a openflow message&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">8</span><span class="p">:</span>
+                <span class="n">rmsg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span>  <span class="c1">#封装ofp_header</span>
+                <span class="n">body</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">:]</span>                  <span class="c1">#取出body</span>
+            <span class="k">else</span><span class="p">:</span>  
+                <span class="n">rmsg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span><span class="n">xid</span> <span class="o">=</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">xid</span><span class="p">)</span>   
+            <span class="n">message_queue_map</span><span class="p">[</span><span class="n">sock</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>    <span class="c1">#将msg放入发送队列</span>
+            <span class="n">io_loop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">WRITE</span><span class="p">)</span><span class="c1">#更改IOloop的状态。</span>
+
+    <span class="k">if</span> <span class="n">events</span> <span class="o">&amp;</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">WRITE:</span>   <span class="c1">#如果以上的操作可以执行完，则ioloop状态转变为可写。</span>
+        <span class="n">try:</span>
+            <span class="n">next_msg</span> <span class="o">=</span> <span class="n">message_queue_map</span><span class="p">[</span><span class="n">sock</span><span class="p">]</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()</span><span class="c1">#将队列中的数据取出来</span>
+        <span class="n">except</span> <span class="n">Queue</span><span class="o">.</span><span class="n">Empty:</span>
+            <span class="c1">#print &quot;%s queue empty&quot; % str(address)</span>
+            <span class="n">io_loop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span><span class="c1">#取完数据之后恢复可读状态，等待数据。</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#print &#39;sending &quot;%s&quot; to %s&#39; % (of.ofp_header(next_msg).type,    address)</span>
+            <span class="n">sock</span><span class="o">.</span><span class="nb">send</span><span class="p">(</span><span class="n">next_msg</span><span class="p">)</span><span class="c1">#发送给dpid</span>
+</pre></div>
+
+
+<p>这个函数是最重要，也是最核心的函数。其主要作用是对socket进行读写操作。先读后写，正常打开socket的写保护，保证文件锁的顺序，不会出现错误。</p>
+<p>这里的重点是ioloop的状态转变，从read初始状态到改变成write，把所有发给改dpid的数据发送完，然后再把ioloop的状态恢复为可读状态，程序执行过程中不断在等待数据到来。可读状态时，则读取数据，对数据进行操作。最后还需要将ioloop状态改为write，使能数据写入。</p>
+<p>代码中提到数据结构message_queue_map[sock]，我们需要在程序中定义一个数据结构:</p>
+<div class="highlight"><pre><span class="n">message_queue_map</span><span class="o">=</span><span class="p">{}</span>
+</pre></div>
+
+
+<p>放在import之后就可以了。</p>
+<p>回到<strong>accept</strong>函数：最后一句就是给message_queue_map[connection]初始成一个队列。</p>
+<p>至此底层的socket算是搭建完成。</p>
+<hr />
+<h1>事件处理——OpenFlow协议</h1>
+<p>当底层通信搭建完成了之后，我们就需要对收到的数据进行一些处理，这些处理的规则就是OpenFlow协议。</p>
+<p>如何能实现事件处理？你需要做两件事情：</p>
+<ul>
+<li>编写一个静态库，用于定义OpenFlow数据结构。</li>
+<li>按照OpenFlow协议处理socket收取到数据，即事件处理。</li>
+</ul>
+<p>首先，我们需要一个静态库，里面是关于OpenFlow中使用到的报文的定义。</p>
+<h2>scapy</h2>
+<p>我们使用scapy来对数据进行封装和解封装。什么是scapy?http://www.secdev.org/projects/scapy/</p>
+<p>本博客中也有scapy的简单教程：http://www.muzixing.com/pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html</p>
+<p>如果你想详细地了解openflow的数据结构，我建议你照着协议重新画一遍，或者到sdnap.com上搜索一篇叫：openflow美丽的数据结构的文章，稍后也将在搬到本博客。画完之后，我们再使用scapy去定义这些数据结构，经历了这些学习之后，你会对openflow协议有一个非常清晰明了的认识。</p>
+<p>scapy的封装非常简单。</p>
+<p>如定义ofp_header:</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_header</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow Header &quot;</span>
+    <span class="n">fields_desc</span><span class="o">=</span><span class="p">[</span> <span class="n">XByteField</span><span class="p">(</span><span class="s">&quot;version&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                  <span class="n">ByteEnumField</span><span class="p">(</span><span class="s">&quot;type&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ofp_type</span><span class="p">),</span>
+                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;length&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                  <span class="n">IntField</span><span class="p">(</span><span class="s">&quot;xid&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="p">]</span>
+</pre></div>
+
+
+<p>再如，定义ofp_phy_port</p>
 <div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_phy_port</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
     <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow Port&quot;</span>
     <span class="n">fields_desc</span><span class="o">=</span><span class="p">[</span> <span class="n">ShortEnumField</span><span class="p">(</span><span class="s">&quot;port_no&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ofp_port</span><span class="p">),</span>
                   <span class="n">MACField</span><span class="p">(</span><span class="s">&quot;hw_addr&quot;</span><span class="p">,</span> <span class="s">&quot;00:00:00:00:00:00&quot;</span><span class="p">),</span>
                   <span class="n">StrFixedLenField</span><span class="p">(</span><span class="s">&quot;port_name&quot;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="nb">length</span><span class="o">=</span><span class="mi">16</span><span class="p">),</span>
+
                   <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;not_defined&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span>
                   <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPC_NO_PACKET_IN&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
                   <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPPC_NO_FWD&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
@@ -233,311 +412,589 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 </pre></div>
 
 
-<p>交换机和端口的配置信息在整一个通信过程起着至关的作用，因为所有关于的操作都需要从features里面提取相关的信息，如<strong>dpid,port_no</strong>，等在整个通信过程中多次被用到的重要数据。所以，对这两个数据结构了然于心，对于研究OpenFlow来说，至关重要。每一次交换机连到控制器，都会收到控制器的features_request,当sw将自己的features回复给控制器之后，控制器就对交换机有了一个全面的了解，从而为后面的控制提供的控制信息。</p>
-<h2>OFPT_PACKET_IN</h2>
-<p>在控制器获取完交换机的特性之后，交换机开始处理数据。</p>
-<p>对于进入交换机而没有匹配流表，不知道如何操作的数据包，交换机会将其封装在packet_in中发给controller。包含在packet_in中的数据可能是很多种类型，arp和icmp是最常见的类型。</p>
-<p>当然产生packet_in的原因不止一种，产生packet_in的原因主要有一下两种：</p>
+<p>这里面的每一个字段，你都需要照着OpenFlow协议一个个定义。你可能会用到的函数有：</p>
 <ul>
-<li><strong>OFPR_NO_MATCH</strong></li>
-<li><strong>OFPR_ACTION</strong></li>
+<li><strong>Bitfield("name",default_value,length)</strong></li>
+<li><strong>XByteField("name",default_value)  length =8</strong></li>
+<li><strong>X3ByteField("name",default_value)  length =3X8=24</strong></li>
+<li><strong>ByteEnumField("name", default_value, type)  length=8</strong></li>
+<li><strong>IntField("name",default_value)   length =32</strong></li>
+<li><strong>ShortField("name",default_value) length =16</strong></li>
+<li><strong>MACField("name",default_value)  format:"00:00:00:00:00:00"</strong></li>
+<li><strong>ShortEnumField("name", default_value, type)</strong></li>
+<li><strong>StrFixedLenField("name", default_value, length)</strong></li>
+<li><strong>IPField("name",default_value)format ="0.0.0.0"</strong></li>
 </ul>
-<p>无法匹配的数据包会产生packet_in,action也可以指定将数据包发给packet_in,也就是说我们可以利用这一点，将需要的数据包发给控制器。</p>
-<p>packet_in事件之后，一般会触发两类事件：</p>
+<p>还有其他的封装函数，理解起来也很简单，按照以上函数的逻辑去理解其他的函数应该没有问题。</p>
+<p>如果你想让自己学到更多，那么自己重新写一遍这些数据结构吧。如果你想直接用，你可以到我的github上去下载Controller中的libopenflow.py文件。里面已经写了很多。你可以去这里查看：https://github.com/muzixing/Controller/blob/master/libopenflow.py</p>
+<p>假设你已经写了一些数据包，比如：</p>
 <ul>
-<li><strong>packet_out</strong></li>
-<li><strong>flow_mod</strong></li>
+<li>header</li>
+<li>error</li>
+<li>hello</li>
+<li>features</li>
+<li>flow_mod</li>
+<li>packet_in</li>
+<li>packet_out</li>
 </ul>
-<p>如果是广播包，如arp，控制器一般会将其包装起来，封装成packet_out数据包，将其发给交换机，让其flood,flood操作是将数据包往除去in_port以外的所有端口发送数据包。</p>
-<h2>OFPT_PACKET_OUT</h2>
-<p>很多人不是特别了解packet_out的作用。</p>
-<ul>
-<li>作用：通过控制器发送交换机希望发送的数据</li>
-<li>例子：arp在广播的时候，在ofsw中不能直接将arp广播，需要上报控制器，控制器下发packet_out，指定交换机对该数据包做泛洪操作。</li>
-</ul>
-<p>PS：前一个版本此处有误：特此声明。packet_out的作用在与指导交换机做flood操作，并把ARP包广播出去，packet_out本身并不携带arp数据包。</p>
-<h2>OFPT_FLOW_MOD</h2>
-<p>OFPT_FLOW_MOD是整一个OpenFlow协议中最重要的数据结构，没有之一。</p>
-<p>OFPT_FLOW_MOD由<strong>header+match+flow_mod+action[]</strong>组成。为了操作简单，以下的结构是将wildcards和match分开的形式，形成两个结构，在编程的时候能更方便一些。由于这个数据包很重要，所以，我将把这个数据包仔细拆分解读。</p>
-<div class="highlight"><pre><span class="n">flow_mod</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span><span class="nb">length</span><span class="o">=</span><span class="mi">72</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_wildcards</span><span class="p">(</span><span class="n">OFPFW_NW_TOS</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                  <span class="n">OFPFW_DL_VLAN_PCP</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                  <span class="n">OFPFW_NW_DST_MASK</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                                  <span class="n">OFPFW_NW_SRC_MASK</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                                  <span class="n">OFPFW_TP_DST</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                  <span class="n">OFPFW_TP_SRC</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                  <span class="n">OFPFW_NW_PROTO</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                  <span class="n">OFPFW_DL_TYPE</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                  <span class="n">OFPFW_DL_VLAN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                  <span class="n">OFPFW_IN_PORT</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                  <span class="n">OFPFW_DL_DST</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                  <span class="n">OFPFW_DL_SRC</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">\</span>
-           <span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_match</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">in_port</span><span class="p">,</span>
-                         <span class="n">dl_src</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
-                         <span class="n">dl_dst</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">dst</span><span class="p">,</span>
-                         <span class="n">dl_type</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
-                         <span class="n">dl_vlan</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">vlan</span><span class="p">,</span>
-                         <span class="n">nw_tos</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">tos</span><span class="p">,</span>
-                         <span class="n">nw_proto</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">proto</span><span class="p">,</span>
-                         <span class="n">nw_src</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
-                         <span class="n">nw_dst</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">dst</span><span class="p">,</span>
-                         <span class="n">tp_src</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                         <span class="n">tp_dst</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span><span class="o">\</span>
-           <span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_mod</span><span class="p">(</span><span class="n">cookie</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                            <span class="n">command</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                            <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-                            <span class="n">hard_timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
-                            <span class="n">out_port</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
-                            <span class="n">buffer_id</span><span class="o">=</span><span class="n">buffer_id</span><span class="p">,</span>
-                            <span class="n">flags</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<p>那么你可以进行下一步了。因为这些数据包是完成数据交换，即下发正确流表需要的最少的报文。</p>
+<h2>事件处理</h2>
+<p>可能很多高级的控制器都有自己定义的事件处理，我编程也是菜鸟水平，暂且以为这是对socket中收取的数据的处理吧，应该就是所谓的事件处理。</p>
+<h3>处理规则</h3>
+<p><strong>OpenFlow1.0</strong></p>
+<p>我们从socket中读取数据流，并使用scapy对数据进行封装和解封装，使用到的静态库就是上一小节提到的libopenflow。</p>
+<p>对socket数据的处理，需要在client_handler中去处理。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">client_handler</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">events</span><span class="p">):</span>
+    <span class="n">sock</span> <span class="o">=</span> <span class="n">fd_map</span><span class="p">[</span><span class="n">fd</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">events</span> <span class="o">&amp;</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">READ:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="nb">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;connection dropped&quot;</span>
+            <span class="n">io_loop</span><span class="o">.</span><span class="n">remove_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">8</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;not a openflow message&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">8</span><span class="p">:</span>
+                <span class="n">rmsg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span>
+                <span class="n">body</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">:]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rmsg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>               <span class="c1"># 判断header中类型。</span>
+                <span class="k">print</span> <span class="s">&quot;OFPT_HELLO&quot;</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>    <span class="c1">#发送ofp_features_request</span>
+                <span class="k">print</span> <span class="s">&quot;OFPT_FEATURES_REQUEST&quot;</span>
+                <span class="n">io_loop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">WRITE</span><span class="p">)</span>
+                <span class="n">message_queue_map</span><span class="p">[</span><span class="n">sock</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="c1">#hello放入发送队列</span>
+                <span class="n">message_queue_map</span><span class="p">[</span><span class="n">sock</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>  <span class="c1">#ofp_features_request放入队列。</span>
+    <span class="k">if</span> <span class="n">events</span> <span class="o">&amp;</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">WRITE:</span>
+            <span class="n">try:</span>
+                <span class="n">next_msg</span> <span class="o">=</span> <span class="n">message_queue_map</span><span class="p">[</span><span class="n">sock</span><span class="p">]</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()</span>
+            <span class="n">except</span> <span class="n">Queue</span><span class="o">.</span><span class="n">Empty:</span>
+                <span class="c1">#print &quot;%s queue empty&quot; % str(address)</span>
+                <span class="n">io_loop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#print &#39;sending &quot;%s&quot; to %s&#39; % (of.ofp_header(next_msg).type, address)</span>
+                <span class="n">sock</span><span class="o">.</span><span class="nb">send</span><span class="p">(</span><span class="n">next_msg</span><span class="p">)</span>  <span class="c1">#发送数据。</span>
 </pre></div>
 
 
-<h3><strong>OFP_HEADER</strong></h3>
-<p>header是所有数据包的报头，有三个参数：</p>
-<ul>
-<li>type:类型</li>
-<li>length:整个数据包的长度</li>
-<li>xid：数据包的编号</li>
-</ul>
-<p>比如ofp_flow_mod的type就是14，具体的哪一种数据的类型将在文章最后给出。length最基本长度为72，每一个action长度为8。所以长度必定为8的倍数才是一个正确的数据长度。</p>
-<h3>WILDCARDS</h3>
-<p>这是从match域提取出来的前32bit。</p>
-<p><strong>在of1.0中这里的0，1意义跟我们平时接触的如子网掩码等意义相反</strong>，如OFPFW_NW_DST_MASK=0则表示全匹配目标IP。如果为63，则表示不匹配IP。为什么拿这个举例？原因就在于，他的长度是6bit，最大是63，需要将数值转变成对应2进制数值才是我们想要的匹配规则，且注意，1是忽略，0是匹配。如果wildcards全0，则表示由match精确指定，即所有12元组都匹配。</p>
-<p>当然高兴的是，在1.3的时候，这个逻辑改成了正常的与逻辑。即1为使能匹配，0为默认不匹配。</p>
-<h3>MATCH</h3>
-<p>这个数据结构会出现在机会所有重要的数据包中，因为他存的就是控制信息。</p>
-<p>如有packet_in引发的下发流表，则match部分应对应填上对应的数据，这样下发的流表才是正确的。</p>
-<p>但是在下发的时候还需要注意许多细节，比如：</p>
-<ul>
-<li><strong>并不是所有的数据包都有vlan_tag</strong>。如0x0800就是纯IP，并没有携带vlan_tag，所以填充式应根据packet_in的具体情况填充。</li>
-<li><strong>并不是所有的数据都有四层端口</strong>，所以四层的源端口，目的端口都不是任何时候都能由packet_in去填充的。不去管就好了，默认的会填充一个默认值，匹配的时候不去匹配4层端口就没有问题。</li>
-</ul>
-<h3>FLOW_MOD</h3>
-<p>这里面的信息也是至关重要的。</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_flow_mod</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow Flow Modify&quot;</span>
-    <span class="n">fields_desc</span><span class="o">=</span><span class="p">[</span> <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;cookie&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="c1">#Opaque controller-issued identifier</span>
-                  <span class="n">ShortEnumField</span><span class="p">(</span><span class="s">&quot;command&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ofp_flow_mod_command</span><span class="p">),</span>
-                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;idle_timeout&quot;</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>
-                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;hard_timeout&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;priority&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-                  <span class="n">IntField</span><span class="p">(</span><span class="s">&quot;buffer_id&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;out_port&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-                  <span class="c1">#flags are important, the 1&lt;&lt;0 bit is OFPFF_SEND_FLOW_REM, send OFPT_FLOW_REMOVED</span>
-                  <span class="c1">#1&lt;&lt;1 bit is OFPFF_CHECK_OVERLAP, checking if the entries&#39; field overlaps(among same priority)  </span>
-                  <span class="c1">#1&lt;&lt;2 bit is OFPFF_EMERG, used only switch disconnected with controller) </span>
-                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;flags&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+<p>我们需要将目光注意到这段代码：</p>
+<div class="highlight"><pre><span class="k">if</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>               <span class="c1"># 判断header中类型。</span>
+    <span class="k">print</span> <span class="s">&quot;OFPT_HELLO&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>    <span class="c1">#发送ofp_features_request</span>
+    <span class="k">print</span> <span class="s">&quot;OFPT_FEATURES_REQUEST&quot;</span>
+    <span class="n">io_loop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">WRITE</span><span class="p">)</span>
+    <span class="n">message_queue_map</span><span class="p">[</span><span class="n">sock</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="c1">#hello放入发送队列</span>
+    <span class="n">message_queue_map</span><span class="p">[</span><span class="n">sock</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>  <span class="c1">#ofp_features_request放入队列。</span>
 </pre></div>
 
 
-<h4>command里面的类型决定了flow_mod的操作是添加，修改还是删除等。类型如下</h4>
-<div class="highlight"><pre><span class="n">ofp_flow_mod_command</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPFC_ADD&quot;</span><span class="p">,</span>            <span class="c1"># New flow</span>
-                         <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPFC_MODIFY&quot;</span><span class="p">,</span>         <span class="c1"># Modify all matching flows</span>
-                         <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPFC_MODIFY_STRICT&quot;</span><span class="p">,</span>  <span class="c1"># Modify entry strictly matching wildcards</span>
-                         <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPFC_DELETE&quot;</span><span class="p">,</span>         <span class="c1"># Delete all matching flows</span>
-                         <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPFC_DELETE_STRICT&quot;</span><span class="p">}</span>  <span class="c1"># Strictly match wildcards and priority</span>
+<p>首先，rmsg是取前8字节封装的header(),根据不一样的type触发事件，并对事件进行处理。</p>
+<p>下面的代码给出了一些type的处理逻辑：</p>
+<div class="highlight"><pre><span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;OFPT_ERROR&quot;</span>
+    <span class="n">of</span><span class="o">.</span><span class="n">ofp_error_msg</span><span class="p">(</span><span class="n">body</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span> <span class="c1">#当报错的时候我们应该把错误打印出来，以便解决错误</span>
+<span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;OFPT_ECHO_REQUEST&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">xid</span><span class="o">=</span><span class="n">rmsg</span><span class="o">.</span><span class="n">xid</span><span class="p">)</span>
+    <span class="n">message_queue_map</span><span class="p">[</span><span class="n">sock</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+    <span class="n">io_loop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">WRITE</span><span class="p">)</span>
+<span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;OFPT_ECHO_REPLY&quot;</span>
+<span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;OFPT_VENDOR&quot;</span>
+<span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;OFPT_FEATURES_REQUEST&quot;</span>
 </pre></div>
 
 
-<p><strong>例如：如果要添加一条新流，command=0。</strong></p>
-<h4>两个时间参数idle_timeout &amp; idle_timeout：</h4>
-<ul>
-<li><strong>idle_timeout:如值为10，则某条流在10秒之内没有被匹配，则删除，可以称之为活跃时间吧。</strong></li>
-<li><strong>hard_timeout:如值为30，则30秒到达的时候，一定删除这条流，即使他还活跃，即被匹配。</strong></li>
-</ul>
-<h4>priority</h4>
-<p>priority是流的优先级的字段，<strong>字数越大则优先级越高，存放在号数越小的table中</strong>。</p>
-<h4>buffer_id</h4>
-<p>由交换机指定的buffei_id,准确的说是由dpid指定的。如果是手动下发的流，<strong>buffer_id应填-1</strong>，即0xffff,告诉交换机这个数据包并没有缓存在队列中。</p>
-<h4>out_port</h4>
-<p>指定流的出口，但是这个出口并不是直接指导流转发的，至少我是这么觉得，指导流转发的出口会在action里面添加，这个端口是为了在flow_removed的时候查询，并返回控制器的作用。（求纠正！）</p>
-<p>有一些端口是很特殊的，如flood，local等。具体分类如下：</p>
-<div class="highlight"><pre><span class="n">ofp_port</span> <span class="o">=</span> <span class="p">{</span> <span class="mh">0xff00</span><span class="p">:</span> <span class="s">&quot;OFPP_MAX&quot;</span><span class="p">,</span>
-             <span class="mh">0xfff8</span><span class="p">:</span> <span class="s">&quot;OFPP_IN_PORT&quot;</span><span class="p">,</span>
-             <span class="mh">0xfff9</span><span class="p">:</span> <span class="s">&quot;OFPP_TABLE&quot;</span><span class="p">,</span>
-             <span class="mh">0xfffa</span><span class="p">:</span> <span class="s">&quot;OFPP_NORMAL&quot;</span><span class="p">,</span>
-             <span class="mh">0xfffb</span><span class="p">:</span> <span class="s">&quot;OFPP_FLOOD&quot;</span><span class="p">,</span>
-             <span class="mh">0xfffc</span><span class="p">:</span> <span class="s">&quot;OFPP_ALL&quot;</span><span class="p">,</span>
-             <span class="mh">0xfffd</span><span class="p">:</span> <span class="s">&quot;OFPP_CONTROLLER&quot;</span><span class="p">,</span>
-             <span class="mh">0xfffe</span><span class="p">:</span> <span class="s">&quot;OFPP_LOCAL&quot;</span><span class="p">,</span>
-             <span class="mh">0xffff</span><span class="p">:</span> <span class="s">&quot;OFPP_NONE&quot;</span><span class="p">}</span>
+<h3>OFPT_FEATURES_REPLY的处理</h3>
+<p>接下来是一个非常重要的报文的处理：ofp_features_reply的封装与解析</p>
+<div class="highlight"><pre><span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;OFPT_FEATURES_REPLY&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_features_reply</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">24</span><span class="p">])</span>                     <span class="c1">#length of reply msg</span>
+    <span class="n">sock_dpid</span><span class="p">[</span><span class="n">fd</span><span class="p">]</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath_id</span>                          <span class="c1">#sock_dpid[fd] comes from here.</span>
+
+    <span class="n">port_info_raw</span> <span class="o">=</span> <span class="n">str</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">24</span><span class="p">:])</span>                              <span class="c1">#we change it into str so we can manipulate it.</span>
+    <span class="n">port_info</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">print</span> <span class="s">&quot;port number:&quot;</span><span class="p">,</span><span class="n">len</span><span class="p">(</span><span class="n">port_info_raw</span><span class="p">)</span><span class="o">/</span><span class="mi">48</span><span class="p">,</span> <span class="s">&quot;total length:&quot;</span><span class="p">,</span> <span class="n">len</span><span class="p">(</span><span class="n">port_info_raw</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">range</span><span class="p">(</span><span class="n">len</span><span class="p">(</span><span class="n">port_info_raw</span><span class="p">)</span><span class="o">/</span><span class="mi">48</span><span class="p">):</span>
+        <span class="n">port</span><span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_phy_port</span><span class="p">(</span><span class="n">port_info_raw</span><span class="p">[</span><span class="mi">0</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="mi">48</span><span class="p">:</span><span class="mi">48</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="mi">48</span><span class="p">])</span>
+        <span class="k">print</span> <span class="n">port</span><span class="o">.</span><span class="n">port_no</span>
+        <span class="n">port_info</span><span class="p">[</span><span class="n">port</span><span class="o">.</span><span class="n">port_no</span><span class="p">]</span><span class="o">=</span> <span class="n">port</span>                           <span class="c1">#save port_info by port_no</span>
+
+    <span class="n">features_info</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath_id</span><span class="p">]</span> <span class="o">=</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">port_info</span><span class="p">)</span>            <span class="c1">#features_info[dpid] = (sw_features, port_info{})</span>
 </pre></div>
 
 
-<p>如果你不知道端口是多少，最好填flood,也就是0xfffb。</p>
-<h4>flags</h4>
-<p>在上面的注释中也说得比较清楚了。如果没有特殊用处，<strong>请将他置1</strong>，因为这样能让交换机在删除一条流的时候给交换机上报flow_removed信息。</p>
-<h2>ACTION</h2>
-<p>action是OpenFlow里面最重要的结构。对，他也是最重要的。每一条流都必须指定必要的action,不然匹配上之后，<strong>没有指定action，交换机会默认执行drop操作。</strong></p>
-<p>action有2种类型：</p>
+<p>首先我们需要将获取到的数据判断类型，将前8字节封装成header，通过查看header（）.type来决定如何处理。当type=6时，这个报文对应的类型是ofp_features_reply。通过协议中的数据结构定义，我们知道他的结构是由switch的features和port的features组成。</p>
+<div class="highlight"><pre><span class="n">msg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_features_reply</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">24</span><span class="p">])</span>
+</pre></div>
+
+
+<p>body是data[8:]的字节流，即除去header部分的内容。body[0:24]的内容是switch_features的内容。将其使用我们自己定义的of.ofp_features_reply()去封装，将得到一个ofp_features_reply()的结构体。从而我们可以查看和修改相应属性。</p>
+<div class="highlight"><pre><span class="n">sock_dpid</span><span class="p">[</span><span class="n">fd</span><span class="p">]</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath_id</span>
+</pre></div>
+
+
+<p>同时，我们应该注意到一个很重要的参数：<strong>datapath_id</strong></p>
+<p>每一个交换机对应一个<strong>datapath_id</strong>，我们需要通过datapath_id(以下简称:dpid)对交换机发送消息。当然每一个交换机跟控制器之间都有一个socket连接，每一个socket连接都会有一个fd标志。我们需要建立一个字典去存储这些对应关系：</p>
+<div class="highlight"><pre><span class="n">sock_dpid</span><span class="o">=</span><span class="p">{}</span>
+</pre></div>
+
+
+<p>其key-value对应对如上所示。将其放在import之后即可，即作为全局变量存在。</p>
+<p>为什么需要建立这么一个字典呢？原因我总结如下：</p>
 <ul>
 <li>
-<p><strong>必备行动: Forward  and Drop</strong></p>
+<p>每一个交换机与控制器连接的时候都会建立一个socket连接，但不限于一个socket连接，所以fd并不是唯一一个，但是dpid是唯一的，所以更精确的说法是通过dpid去下发命令，而不是socket下发命令。所以我们需要得到dpid,最简单的存储就是使用fd去对应。</p>
 </li>
 <li>
-<p><strong>选择行动:FLOOD,NALMAL 等</strong></p>
+<p>以后的若干报文需要使用到dpid字段，使用fd为key存储起来，使用时读取更加方便。</p>
 </li>
 </ul>
-<p>如添加output就是一个必须要添加的action.每一个action最好有一个action_header(),然后再接一个实体。如：</p>
-<div class="highlight"><pre><span class="n">ofp_action_header</span><span class="p">(</span><span class="n">type</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">ofp_action_output</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span><span class="n">oxfffb</span><span class="p">,</span><span class="n">len</span> <span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-</pre></div>
-
-
-<p>具体的action类型如下：</p>
-<div class="highlight"><pre><span class="n">ofp_action_type</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPAT_OUTPUT&quot;</span><span class="p">,</span>
-                    <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_VLAN_VID&quot;</span><span class="p">,</span>
-                    <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_VLAN_PCP&quot;</span><span class="p">,</span>
-                    <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPAT_STRIP_VLAN&quot;</span><span class="p">,</span>
-                    <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_DL_SRC&quot;</span><span class="p">,</span>
-                    <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_DL_DST&quot;</span><span class="p">,</span>
-                    <span class="mi">6</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_NW_SRC&quot;</span><span class="p">,</span>
-                    <span class="mi">7</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_NW_DST&quot;</span><span class="p">,</span>
-                    <span class="mi">8</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_NW_TOS&quot;</span><span class="p">,</span>
-                    <span class="mi">9</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_TP_SRC&quot;</span><span class="p">,</span>
-                    <span class="mi">10</span><span class="p">:</span> <span class="s">&quot;OFPAT_SET_TP_DST&quot;</span><span class="p">,</span>
-                    <span class="mi">11</span><span class="p">:</span> <span class="s">&quot;OFPAT_ENQUEUE&quot;</span>
-                    <span class="p">}</span>
-</pre></div>
-
-
-<p>action不仅仅会出现在flow_mod中，也会出现在如stats_reply中。</p>
-<h2>OFPT_BARRIER_REQUEST  &amp;&amp; REPLY</h2>
-<p>这个数据包可以的作用很简单，交换机在收到OFPT_BARRIER_REQUEST的时候，会回复控制器一个OFPT_BARRIER_REPLY。我们默认数据下发的顺序不会在传输中发生变化，在进入消息队列之后处理也是按照FIFO进行的，那么只要在flow_mod之后发送这个数据，当收到reply之后，交换机默认flow已经写成功。也许你会问他只是保证了flow_mod命令执行了，写入的结果如何并没有保证，如何确定确实写入流表了呢？</p>
-<ul>
-<li>如果非逻辑错误，那么交换机在处理flow_mod的时候会报错。所以我们会知道写入结果。</li>
-<li>如果是逻辑错误，那么会写进去，但是逻辑错误应该是人的问题，所以barrier还是有他的功能的。</li>
-</ul>
-<h2>OFPT_FLOW_REMOVED</h2>
-<p>如果flow_mod的flags填成1，则该流在失效之后会回复控制器一条OFPT_FLOW_REMOVED信息。</p>
-<ul>
-<li>结构：header()/wildcards()/match()/flow_removed()</li>
-<li>
-<p>作用：在流失效的时候回复控制器，并携带若干统计数据。</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_flow_removed</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
-  <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow flow removed&quot;</span>
-  <span class="n">fields_desc</span> <span class="o">=</span> <span class="p">[</span> <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;cookie&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;priority&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">),</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;reason&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
-                  <span class="n">ByteField</span><span class="p">(</span><span class="s">&quot;pad&quot;</span><span class="p">,</span> <span class="n">None</span><span class="p">),</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;duration_sec&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;duration_nsec&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;idle_timeout&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
-                  <span class="n">ByteField</span><span class="p">(</span><span class="s">&quot;pad&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-                  <span class="n">ByteField</span><span class="p">(</span><span class="s">&quot;pad&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;packet_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
-                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;byte_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+<p>我们先来了解一下features到底有什么字段：</p>
+<div class="highlight"><pre><span class="c1"># No. 6</span>
+<span class="c1"># [header|features_reply|port]</span>
+<span class="n">class</span> <span class="n">ofp_features_reply</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow Switch Features Reply&quot;</span>
+    <span class="n">fields_desc</span><span class="o">=</span><span class="p">[</span> <span class="n">BitField</span><span class="p">(</span><span class="s">&#39;datapath_id&#39;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&#39;n_buffers&#39;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+                  <span class="n">XByteField</span><span class="p">(</span><span class="s">&quot;n_tables&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                  <span class="n">X3BytesField</span><span class="p">(</span><span class="s">&quot;pad&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                  <span class="c1">#features</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;NOT_DEFINED&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_ARP_MATCH_IP&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>  <span class="c1">#1&lt;&lt;7 Match IP address in ARP packets</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_QUEUE_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>   <span class="c1">#1&lt;&lt;6 Queue statistics</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_IP_STREAM&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>     <span class="c1">#1&lt;&lt;5 Can reassemble IP fragments</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_RESERVED&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>      <span class="c1">#1&lt;&lt;4 Reserved, must be zero</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_STP&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>           <span class="c1">#1&lt;&lt;3 802.1d spanning tree</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_PORT_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>    <span class="c1">#1&lt;&lt;2 Port statistics</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_TABLE_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>   <span class="c1">#1&lt;&lt;1 Table statistics</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&quot;OFPC_FLOW_STATS&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>    <span class="c1">#1&lt;&lt;0 Flow statistics</span>
+                  <span class="n">BitField</span><span class="p">(</span><span class="s">&#39;actions&#39;</span><span class="p">,</span> <span class="n">None</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+                  <span class="c1">#port info can be resoved at TCP server</span>
                 <span class="p">]</span>
+<span class="n">bind_layers</span><span class="p">(</span> <span class="n">ofp_header</span><span class="p">,</span> <span class="n">ofp_features_reply</span><span class="p">,</span> <span class="n">type</span><span class="o">=</span><span class="mi">6</span> <span class="p">)</span>
+</pre></div>
+
+
+<p>从上面的数据结构中，我们可以知道，features部分有许多功能的使能位。这些都是<strong>极其重要的信息</strong>。我们需要根据这些信息来确定到底使用什么动作，什么样的动作能起效。如OFPC_FLOW_STATS位如果没有使能，则在switch在交换数据的时候，并不会去记录流的统计信息。也就是说，我们如果想要读取统计信息，那么这个位必须为1！当然大概率下，switch默认的状态是统计各项数据的。如果发现得不到数据，你可以查看features的内容进行确认。如果没有使能，则需要通过OFPT_SET_CONFIG去配置。</p>
+<p>回到type=6的处理代码段：</p>
+<div class="highlight"><pre> <span class="n">port_info_raw</span> <span class="o">=</span> <span class="n">str</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">24</span><span class="p">:])</span>                              <span class="c1">#we change it into str so we can manipulate it.</span>
+        <span class="n">port_info</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">print</span> <span class="s">&quot;port number:&quot;</span><span class="p">,</span><span class="n">len</span><span class="p">(</span><span class="n">port_info_raw</span><span class="p">)</span><span class="o">/</span><span class="mi">48</span><span class="p">,</span> <span class="s">&quot;total length:&quot;</span><span class="p">,</span> <span class="n">len</span><span class="p">(</span><span class="n">port_info_raw</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">range</span><span class="p">(</span><span class="n">len</span><span class="p">(</span><span class="n">port_info_raw</span><span class="p">)</span><span class="o">/</span><span class="mi">48</span><span class="p">):</span>
+            <span class="n">port</span><span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_phy_port</span><span class="p">(</span><span class="n">port_info_raw</span><span class="p">[</span><span class="mi">0</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="mi">48</span><span class="p">:</span><span class="mi">48</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="mi">48</span><span class="p">])</span>
+            <span class="k">print</span> <span class="n">port</span><span class="o">.</span><span class="n">port_no</span>
+            <span class="n">port_info</span><span class="p">[</span><span class="n">port</span><span class="o">.</span><span class="n">port_no</span><span class="p">]</span><span class="o">=</span> <span class="n">port</span>                           <span class="c1">#save port_info by port_no</span>
+</pre></div>
+
+
+<p>其意义在于将后面的字节流按port信息长度48bytes去切割，并封装成of.ofp_phy_port。
+同时将port保存在port_info字典中，key为port.port_no。</p>
+<p>最后我们需要将这些重要的信息存储起来：</p>
+<div class="highlight"><pre><span class="n">features_info</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath_id</span><span class="p">]</span> <span class="o">=</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">port_info</span><span class="p">)</span>
+</pre></div>
+
+
+<p>features_info字典我们需要在主文件中去声明，将其放在import之后，作为全局变量存在。</p>
+<p>这些重要信息存储起来以便接下来的操作使用。</p>
+<p>type=7,8,9的类型在这里就不一一作介绍，如果你需要用到她们，你可以自己去写出相应的处理逻辑，其依据就是OpenFlow协议1.0。</p>
+<h3>OFPT_PACKET_IN的处理</h3>
+<p>跳过了7，8，9三个类型的处理，我们下面讲的是非常重要的type=10的处理。</p>
+<p>packet_in的type=10,其作用如果不清楚，请查看协议，或者查看本博客《OpenFlow协议通信流程解读》，相信读完之后，你会有一个清晰的认识。</p>
+<p>packet_in 报文上来之后，由于他本身携带的数据的类型的不确定性，所以处理起来也相对比较麻烦。</p>
+<p>首先我们需要将其分为两类：</p>
+<ul>
+<li>具有广播性质的数据如：ARP</li>
+<li>普通数据通信报文：如IP</li>
+</ul>
+<p>这两者将触发不一样的处理机制，前者会触发packet_out,而后者会触发flow_mod。</p>
+<h3>OFPT_PACKET_OUT</h3>
+<p>当第一个数据包上来的时候，我们默认主机发送的是ARP包，这样我们可以省去很多不必要的逻辑，当然这些逻辑在进一步完善的时候需要添加。</p>
+<div class="highlight"><pre><span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="n">pkt_in_msg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_packet_in</span><span class="p">(</span><span class="n">body</span><span class="p">)</span> <span class="c1">#首先将其封装成packet_in数据格式</span>
+                <span class="n">raw</span> <span class="o">=</span> <span class="n">pkt_in_msg</span><span class="o">.</span><span class="n">load</span>       
+                <span class="n">pkt_parsed</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">Ether</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span><span class="c1">#将payload封装成Ether格式</span>
+                <span class="n">pkt</span> <span class="o">=</span><span class="n">rmsg</span><span class="sr">/pkt_in_msg/</span><span class="n">pkt_parsed</span>  <span class="c1">#将结构体重组</span>
+                <span class="n">dpid</span> <span class="o">=</span> <span class="n">sock_dpid</span><span class="p">[</span><span class="n">fd</span><span class="p">]</span>  <span class="c1">#if there is not the key of sock_dpid[fd] ,it will be an error.</span>
+
+                <span class="k">if</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="n">of</span><span class="o">.</span><span class="n">ARP</span><span class="p">):</span>
+
+                    <span class="n">pkt_out_</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">()</span><span class="sr">/of.ofp_pktout_header()/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_action_output</span><span class="p">()</span>
+                    <span class="n">pkt_out_</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="mh">0xfffb</span>
+                    <span class="n">pkt_out_</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">=</span> <span class="n">pkt_in_msg</span><span class="o">.</span><span class="n">buffer_id</span>
+                    <span class="n">pkt_out_</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">in_port</span> <span class="o">=</span> <span class="n">pkt_in_msg</span><span class="o">.</span><span class="n">in_port</span>
+                    <span class="n">pkt_out_</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">actions_len</span> <span class="o">=</span> <span class="mi">8</span>
+                    <span class="n">pkt_out_</span><span class="o">.</span><span class="nb">length</span> <span class="o">=</span> <span class="mi">24</span>
+
+                    <span class="n">io_loop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">WRITE</span><span class="p">)</span>
+                    <span class="n">message_queue_map</span><span class="p">[</span><span class="n">sock</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">pkt_out_</span><span class="p">))</span>
+</pre></div>
+
+
+<p>首先我们需要的对数据封装，首先把整个body封装成packet_in报文，然后将packet_in的装载，此处为load,为什么不是payload呢？payloadd是净荷，下一级是有结构的数据。而load也是净荷，但是此处应是字节流。（不是很了解，求大神纠正）</p>
+<p>将packet_in的load封装成Ether()格式的报文，即pkt_parsed。Ether()是scapy提供的封装函数。同时，<strong>通过fd，读取出对应的dpid.</strong>同时我们需要将rmsg,pkt_in_msg,pkt_parsed三者组合起来，组装成pkt。用于后面flow_mod的使用。</p>
+<p>若payload的类型是ARP,则会触发pkt_out。pkt_out的结构是：</p>
+<div class="highlight"><pre><span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">()</span><span class="sr">/of.ofp_pktout_header()/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_action_output</span><span class="p">()</span>
+</pre></div>
+
+
+<p>然后我们再将必要的信息，如发送的端口：0xfffb，也就是FLOOD端口。这个数据包的意义在于：通知交换机可以对这个包进行广播。下一个交换机收到ARP之后，进行同样的操作，出发packet_in事件，然后下发packet_out指令。直到找到arp的回应。</p>
+<p>当处理完ARP之后，packet_in会触发ofp_flow_mod操作。</p>
+<h3>OFPT_FLOW_MOD的处理</h3>
+<p>这一小节是一个特别重要的小节，是整一个控制器通信部分最核心的部分！</p>
+<p>首先，packet_in报上来的报文可能有很多类型，可能是二层的，可能是三层的，可能是四层。有可能是纯IP的，有可能是带有VLAN tags的IP，也有可能是TCP等等。所以我们需要针对不同的类型的数据进行不同的操作。</p>
+<p>我们在这里只处理四种类型的数据：</p>
+<ul>
+<li>四层报文：0x8100带有vlan tags的TCP,UDP,SCTP</li>
+<li>四层报文：0x800纯IP的TCP,UDP,SCTP</li>
+<li>三层报文：0x8100带有vlan tags的IP</li>
+<li>三层报文：0x0800纯IP</li>
+</ul>
+<p>由于处理逻辑相对比较复杂，代码量也比较多，所以我们新建一个F_mod的文件，在文件中定义一个flow_mod(packet_in)的函数。用于处理flow_mod事件。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">flow_mod</span><span class="p">(</span><span class="n">pkt</span><span class="p">):</span>
+    <span class="n">pkt_parsed</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="c1">#读取三层即以上数据。</span>
+    <span class="k">if</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="n">of</span><span class="o">.</span><span class="n">IP</span><span class="p">)</span> <span class="ow">or</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="n">of</span><span class="o">.</span><span class="n">IP</span><span class="p">):</span>
+    <span class="c1">########################TCP OR UDP OR SCTP(L4)#####################</span>
+        <span class="k">if</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="n">of</span><span class="o">.</span><span class="n">TCP</span><span class="p">)</span> <span class="ow">or</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="n">of</span><span class="o">.</span><span class="n">UDP</span><span class="p">)</span> <span class="ow">or</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="n">of</span><span class="o">.</span><span class="n">SCTP</span><span class="p">)</span> <span class="p">:</span>
+            <span class="k">if</span>  <span class="n">pkt_parsed</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span><span class="mh">0x8100</span><span class="p">:</span><span class="c1">#带有vlan_tags</span>
+                <span class="n">flow_mod</span> <span class="o">=</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_wildcards</span><span class="p">(</span><span class="n">OFPFW_NW_TOS</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_DL_VLAN_PCP</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_NW_DST_MASK</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_NW_SRC_MASK</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_TP_DST</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_TP_SRC</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_NW_PROTO</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_DL_TYPE</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_DL_VLAN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_IN_PORT</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_DL_DST</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                  <span class="n">OFPFW_DL_SRC</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">\</span>
+                           <span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_match</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">pkt</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">in_port</span><span class="p">,</span>
+                                         <span class="n">dl_src</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                                         <span class="n">dl_dst</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">dst</span><span class="p">,</span>
+                                         <span class="n">dl_type</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                                         <span class="n">dl_vlan</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">vlan</span><span class="p">,</span>
+                                         <span class="n">nw_tos</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">tos</span><span class="p">,</span>
+                                         <span class="n">nw_proto</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">proto</span><span class="p">,</span>
+                                         <span class="n">nw_src</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                                         <span class="n">nw_dst</span><span class="o">=</span><span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">dst</span><span class="p">,</span>
+                                         <span class="n">tp_src</span> <span class="o">=</span> <span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">sport</span><span class="p">,</span>
+                                         <span class="n">tp_dst</span> <span class="o">=</span> <span class="n">pkt_parsed</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">dport</span><span class="p">)</span><span class="o">\</span>
+                           <span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_mod</span><span class="p">(</span><span class="n">cookie</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                            <span class="n">command</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                            <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                                            <span class="n">hard_timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+                                            <span class="n">out_port</span><span class="o">=</span><span class="mh">0xfffb</span><span class="p">,</span>
+                                            <span class="n">buffer_id</span><span class="o">=</span><span class="n">pkt</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
+                                            <span class="n">flags</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">flow_mod_msg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span><span class="nb">length</span><span class="o">=</span><span class="mi">88</span><span class="p">,</span><span class="n">xid</span><span class="o">=</span><span class="n">pkt</span><span class="o">.</span><span class="n">xid</span><span class="p">)</span><span class="sr">/flow_mod/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_action_header</span><span class="p">(</span><span class="n">type</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_action_output</span><span class="p">(</span><span class="n">type</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mh">0xfffb</span><span class="p">,</span> <span class="n">len</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">flow_mod_msg</span>
+</pre></div>
+
+
+<p><strong>header</strong></p>
+<p>首先我们需要注意到的是flow_mod的header里面的信息。没有任何action时的flow_mod长度为72。前8bytes是header,接下来4个bytes是wildcards，再接下来36bytes是match，最后的24字节是flow_mod的数据。这些长度值都是应该熟记于心的，如果你认真研究过协议的话。</p>
+<p>如果需要添加action，则每增加一个action,长度都会增加8，所以最后的长度必定是8的倍数。正常情况下，建议加上action_header()。如action_output()，则需要添加action_header(type=0)。注意：header中的length必须要填！如果不填，则会包长度错误。血的教训在这里！</p>
+<p><strong>wildcards</strong></p>
+<p>在OpenFlow1.0中，wildcards的性质与常规认知相反，并不是子网掩码性质的直接与，而是中断屏蔽向量形式的逻辑。即1为屏蔽，0为默认匹配。所以wildcards的填写将决定你最后的流能不能通。</p>
+<p><strong>match</strong></p>
+<p><strong>match域最重要，这是一个流的属性。我们使用packet_in的信息去填充即可。如in_port=pkt.payload.in_port。</strong></p>
+<p><strong>flow_mod</strong></p>
+<p>flow_mod域需要填的东西主要有以下几个：</p>
+<ul>
+<li>command</li>
+<li>idle_timeout</li>
+<li>hard_timeout</li>
+<li>out_port</li>
+<li>buffer_id</li>
+<li>flags</li>
+</ul>
+<p>让我们来仔细分析这些字段都有哪些用处。</p>
+<ul>
+<li>command 是flow_mod的动作类型。command=0-&gt;add ......command =3-&gt;action=del</li>
+<li>idle_timeout 流活跃匹配时间。可设置为0</li>
+<li>hard_timeout   流存在时间，为0时表示永久存在。</li>
+<li>out_port       目前我们还无法获取端口，所以取值为0xfffb，即泛洪。</li>
+<li>buffer_id      使用packet_in的buffer_id</li>
+<li>flags          填1，指明流删除时需要回报一个flow_removed信息。</li>
+</ul>
+<p>填写完这些关键信息之后，我们的flow_mod报文基本成型，此时报文长度72bytes。我已经记得很清楚这些长度了，再说一遍，header中的length一定要填对！</p>
+<p><strong>action</strong></p>
+<p>接下来就是action的填写。每一条流表都需要携带action，若没有指定的action则默认将执行drop操作。</p>
+<p>action_header()中我们需要填type。如果是添指定out_port则type=0。其他的类型查看协议填写既可。添加完action_header()之后，紧跟其后的是动作实体：如ofp_action_output(type =0,port=port,len =8)。</p>
+<p>action有许多，如可以设置vlan,剔除vlan等操作。我们可以通过action实现需要功能，特别是在1.3版本中。</p>
+<p>至此，四层的带vlan_tags的flom_mod封装完成。</p>
+<p>同理，三层IP，或者不带四层端口的数据，我们在填充时，可以将四层的端口项设0，同时在wildcards中将四层端口屏蔽。</p>
+<p>match中</p>
+<div class="highlight"><pre><span class="n">tp_src</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="n">tp_dst</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+
+
+<p>wildcards中</p>
+<div class="highlight"><pre><span class="n">OFPFW_TP_DST</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="n">OFPFW_TP_SRC</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+</pre></div>
+
+
+<p>至此我们已经把三层到4层的带vlan_tags的flow_mod封装好。</p>
+<p>同理对于<strong>Ether中type=0x800</strong>的不带vlan tags的数据，我们无法从packet_in中提取vlan。所以vlan字段我们可以不去填充，默认的会填充某一个默认值。当然我们需要把wildcards中的OFPFW_DL_VLAN置1。</p>
+<p>也就是说到目前为止，以上提到的四种类型的报文对应的flow_mod我们都已经有能力封装好。</p>
+<p>在rmsg.type==10:的逻辑下,添加如</p>
+<div class="highlight"><pre><span class="err">else:</span>
+    <span class="err">msg</span> <span class="err">=</span> <span class="err">F_mod.flow_mod(pkt)</span>
+    <span class="err">message_queue_map[sock].put(str(msg))</span>
+    <span class="err">io_loop.update_handler(fd,</span> <span class="err">io_loop.WRITE)</span>
+</pre></div>
+
+
+<p>F_mod是你自己写的文件，文件中定义def flow_mod()函数。当然在文件头部，我们需要</p>
+<div class="highlight"><pre><span class="nb">import</span> <span class="n">F</span><span class="o">\</span><span class="n">_mod</span>
+</pre></div>
+
+
+<p>至此packet_in触发的事件大体处理完成。</p>
+<p><strong>不出意外的话，这个时候如果打流，是可以通的！</strong></p>
+<p>但是我们还需要注意到一点：<strong>我们还没有将下发的流表保存起来。</strong></p>
+<p>所以马上建立一个列表：</p>
+<div class="highlight"><pre><span class="n">flow_cache</span> <span class="o">=</span> <span class="o">[]</span>
+</pre></div>
+
+
+<p>同时在将上面一段代码改为：</p>
+<div class="highlight"><pre><span class="err">else:</span>
+    <span class="err">msg</span> <span class="err">=</span> <span class="err">F_mod.flow_mod(pkt)</span>
+    <span class="err">flow_cache[fd].append=(time.time(),msg)</span>
+    <span class="err">message_queue_map[sock].put(str(msg))</span>
+    <span class="err">io_loop.update_handler(fd,</span> <span class="err">io_loop.WRITE)</span>
+</pre></div>
+
+
+<h3>OFPT_STATS_REQUEST的处理</h3>
+<p>当流表下发成功之后，我们可以通过OFPT_STATS_REQUEST去获取流的统计信息。这是许多业务的基础。没有流量统计信息，就没有操作的基础。所以这一小节是自编控制器的提升功能，也是必要功能。</p>
+<p>OFPT_STATS_REQUEST</p>
+<ul>
+<li>
+<p>type=16</p>
+</li>
+<li>
+<p>不同的请求对应不同的数据结构。</p>
+<div class="highlight"><pre><span class="n">ofp_stats_types</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPST_DESC&quot;</span><span class="p">,</span>
+                    <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPST_FLOW&quot;</span><span class="p">,</span>
+                    <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPST_AGGREGATE&quot;</span><span class="p">,</span>
+                    <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPST_TABLE&quot;</span><span class="p">,</span>
+                    <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPST_PORT&quot;</span><span class="p">,</span>
+                    <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPST_QUEUE&quot;</span><span class="p">,</span>
+                    <span class="mh">0xffff</span><span class="p">:</span> <span class="s">&quot;OFPST_VENDOR&quot;</span><span class="p">}</span>
 </pre></div>
 
 
 </li>
 </ul>
-<p>其实的duration_sec是流存在的时间，单位为秒，duration_nsec单位为纳秒。</p>
-<h2>OFPT_STATS_REQUEST &amp;&amp; REPLY</h2>
-<p>以上的数据都是通信过程中必须的部分。还有一些数据包是为了某些目的而设计的，如OFPT_STATS_REQUEST &amp;&amp; REPLY可以获得统计信息，我们可以利用统计信息做的事情就太多了。如：<strong>负载平衡</strong>， 流量监控等基于流量的操作。</p>
-<h3>OFPT_STATS_REQUEST</h3>
-<p>OFPT_STATS_REQUEST类型有很多，回复的类型也很多。</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">ofp_stats_request</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;OpenFlow Stats Request&quot;</span>
-    <span class="n">fields_desc</span><span class="o">=</span><span class="p">[</span> <span class="n">ShortEnumField</span><span class="p">(</span><span class="s">&quot;type&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ofp_stats_types</span><span class="p">),</span>
-                  <span class="n">ShortField</span><span class="p">(</span><span class="s">&quot;flag&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
-</pre></div>
-
-
-<h4>Type</h4>
-<ul>
-<li>0:请求交换机版本信息，制造商家等信息。</li>
-<li>1:单流请求信息</li>
-<li>2:多流请求信息</li>
-<li>3:流表请求信息</li>
-<li>4:端口信息请求</li>
-<li>5:队列请求信息</li>
-<li>
-<p>6:vendor请求信息，有时候没有定义。</p>
-<div class="highlight"><pre>   <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_stats_request</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">0</span><span class="p">),</span>                            <span class="c1">#Type of  OFPST_DESC (0) </span>
+<p>好吧，我们努力把这6个都是实现吧。很明显，处理完这六个类型的操作，最好写成一个独立的小文件。</p>
+<p>我们可以写一个文件：stats_request，然后import 进来。</p>
+<p>在文件里面我们需要定义这样一个函数：</p>
+<div class="highlight"><pre><span class="nb">import</span> <span class="n">libopenflow</span> <span class="n">as</span> <span class="n">of</span>
+<span class="n">def</span> <span class="nb">send</span><span class="p">(</span><span class="n">Type</span><span class="p">,</span> <span class="n">flow_1</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span><span class="n">None</span><span class="p">):</span>
+    <span class="n">flow</span> <span class="o">=</span><span class="n">str</span><span class="p">(</span><span class="n">flow_1</span><span class="p">)</span>
+    <span class="n">ofp_flow_wildcards</span><span class="o">=</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_wildcards</span><span class="p">(</span><span class="n">flow</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">12</span><span class="p">])</span>
+    <span class="n">ofp_match</span> <span class="o">=</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_match</span><span class="p">(</span><span class="n">flow</span><span class="p">[</span><span class="mi">12</span><span class="p">:</span><span class="mi">48</span><span class="p">])</span>
+    <span class="n">ofp_flow_mod</span> <span class="o">=</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_mod</span><span class="p">(</span><span class="n">flow</span><span class="p">[</span><span class="mi">48</span><span class="p">:</span><span class="mi">72</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span><span class="o">&gt;=</span><span class="mi">88</span><span class="p">:</span>
+        <span class="n">action_header</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_action_header</span><span class="p">(</span><span class="n">flow</span><span class="p">[</span><span class="mi">72</span><span class="p">:</span><span class="mi">80</span><span class="p">])</span>
+        <span class="n">action_output</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_action_output</span><span class="p">(</span><span class="n">flow</span><span class="p">[</span><span class="mi">80</span><span class="p">:</span><span class="mi">88</span><span class="p">])</span>
+    <span class="c1">#we need to send the stats request packets periodically</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_stats_request</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">0</span><span class="p">),</span>                            <span class="c1">#Type of  OFPST_DESC (0) </span>
             <span class="mi">1</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span> <span class="mi">56</span><span class="p">)</span><span class="sr">/of.ofp_stats_request(type =1)/o</span><span class="n">fp_flow_wildcards</span><span class="sr">/ofp_match/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_flow_stats_request</span><span class="p">(</span><span class="n">out_port</span> <span class="o">=</span> <span class="n">ofp_flow_mod</span><span class="o">.</span><span class="n">out_port</span><span class="p">),</span>                  <span class="c1">#flow stats</span>
             <span class="mi">2</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span><span class="mi">56</span><span class="p">)</span><span class="sr">/of.ofp_stats_request(type = 2)/o</span><span class="n">fp_flow_wildcards</span><span class="sr">/of.ofp_match/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_aggregate_stats_request</span><span class="p">(),</span>                                  <span class="c1"># aggregate stats request</span>
             <span class="mi">3</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_stats_request</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">3</span><span class="p">),</span>                            <span class="c1">#Type of  OFPST_TABLE (0) </span>
             <span class="mi">4</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span><span class="mi">20</span><span class="p">)</span><span class="sr">/of.ofp_stats_request(type = 4)/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_port_stats_request</span><span class="p">(</span><span class="n">port_no</span> <span class="o">=</span> <span class="n">port</span><span class="p">),</span>   <span class="c1"># port stats request    </span>
             <span class="mi">5</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span><span class="mi">20</span><span class="p">)</span><span class="sr">/of.ofp_stats_request(type =5)/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_queue_stats_request</span><span class="p">(),</span> <span class="c1">#queue request</span>
             <span class="mi">6</span><span class="p">:</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_stats_request</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mh">0xffff</span><span class="p">)</span>                        <span class="c1">#vendor request</span>
-        <span class="p">}</span>
+        <span class="p">}</span> 
+    <span class="k">return</span> <span class="n">msg</span><span class="p">[</span><span class="n">Type</span><span class="p">]</span>
 </pre></div>
 
 
-</li>
-</ul>
-<h3>OFPT_STATS_REPLY</h3>
-<p>每一种请求信息都会对应一种回复信息。我们只介绍最重要的<strong>flow_stats_reply</strong>。</p>
+<p>首先我们可以看到函数有3个参数。Type,flow_1,port=None。Type是stats_request的类型，flow_1对应某条流表。这条流表，我们可以从之前的flow_cache中提取。也可以自己填充，这就需要自己在主文件中自己写一个逻辑了，使用raw_input()应该就可以设计出一个逻辑，用于手动发请求统计信息。我们这里选择最简单的，把flow_cache[fd]中所有的存在的流都用于填充stats_request()，即向所有活跃着的流都发送统计信息请求。</p>
+<p>在主文件的if events &amp; io_loop.WRITE:之前，与之对齐写下如下代码：</p>
+<div class="highlight"><pre><span class="k">if</span> <span class="n">ready</span> <span class="ow">and</span> <span class="nb">time</span><span class="o">.</span><span class="nb">time</span><span class="p">()</span><span class="o">-</span><span class="n">pre_time</span> <span class="o">&gt;</span><span class="n">period:</span>  
+        <span class="k">print</span> <span class="s">&quot;send stats_requests&quot;</span>
+        <span class="k">for</span> <span class="n">flow</span> <span class="n">in</span> <span class="n">flow_cache</span><span class="p">[</span><span class="n">fd</span><span class="p">]:</span>
+            <span class="n">message_queue_map</span><span class="p">[</span><span class="n">sock</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">stats_request</span><span class="o">.</span><span class="nb">send</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">flow</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+
+            <span class="n">io_loop</span><span class="o">.</span><span class="n">update_handler</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">WRITE</span><span class="p">)</span>
+            <span class="n">pre_time</span> <span class="o">=</span><span class="nb">time</span><span class="o">.</span><span class="nb">time</span><span class="p">()</span>
+</pre></div>
+
+
+<p>pre_time,period和ready为全局变量，可以在features_reply逻辑之后添加代码：</p>
+<div class="highlight"><pre><span class="n">global</span> <span class="n">ready</span>    
+<span class="n">ready</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">pre_time</span><span class="o">=</span><span class="nb">time</span><span class="o">.</span><span class="nb">time</span><span class="p">()</span>
+</pre></div>
+
+
+<p>period可以任意设置，比如设置为3则为3秒发送一次stats_request。这样我们就可以实现循环发送stats_request了。</p>
+<p>回过来我们，我们关注一下我们发送的是什么东西。介绍一下type=1，到底发送了什么。</p>
+<div class="highlight"><pre><span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="nb">length</span> <span class="o">=</span> <span class="mi">56</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_stats_request</span><span class="p">(</span><span class="n">type</span> <span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">\</span>
+        <span class="sr">/ofp_flow_wildcards/o</span><span class="n">fp_match</span><span class="o">\</span>
+        <span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_stats_request</span><span class="p">(</span><span class="n">out_port</span> <span class="o">=</span> <span class="n">ofp_flow_mod</span><span class="o">.</span><span class="n">out_port</span><span class="p">)</span>
+</pre></div>
+
+
+<p>header之后紧跟着ofp_stats_request(type=1)，代表这个request是请求flow的信息。紧接着是熟悉的wildcards和match。最后是消息实体ofp_flow_stats_request(out_port=port)</p>
+<p>在这里有一些信息我们并没有填出来，但是他们非常重要。比如ofp_flow_stats_request()中<strong>table_id 我们需要通过table对应的request去获取，如果没有获取，可以填0xff,即没有限制。对于out_port也是一样，如果无法获取port,则可以填0xffff,即None。同样表示无限制。</strong></p>
+<p>其他的类型就不一一介绍了，细心去看协议都可以写出来。</p>
+<h3>OFPT_STATS_REPLY的处理</h3>
+<p>交换机收到stats_request之后，会按照匹配结果向控制器返回stats_reply。同样的，有多少种stats_request就会对应有多少种stats_reply。</p>
+<p>所以reply的处理也是一件很重要的事情。</p>
+<div class="highlight"><pre><span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">17</span> <span class="ow">and</span> <span class="n">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">&gt;</span> <span class="mi">12</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;OFPT_STATS_REPLY&quot;</span>
+                <span class="n">reply_header</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_stats_reply</span><span class="p">(</span><span class="n">body</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">reply_header</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">reply_desc</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_desc_stats</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">4</span><span class="p">:])</span>
+                    <span class="n">reply</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+                <span class="n">elif</span> <span class="n">reply_header</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">92</span><span class="p">:</span>
+                    <span class="n">reply_body_data1</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_stats</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span>
+                    <span class="n">reply_body_wildcards</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_wildcards</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">12</span><span class="p">])</span>
+                    <span class="n">reply_body_match</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_match</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">12</span><span class="p">:</span><span class="mi">48</span><span class="p">])</span>
+
+                    <span class="n">reply_body_data2</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_stats_data</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">48</span><span class="p">:</span><span class="mi">92</span><span class="p">])</span>
+
+                    <span class="n">reply_body_action</span> <span class="o">=</span> <span class="o">[]</span>
+                    <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">92</span><span class="p">:])</span><span class="o">&gt;</span><span class="mi">8</span><span class="p">:</span>                         <span class="c1">#it is very important!</span>
+                        <span class="n">num</span> <span class="o">=</span> <span class="n">len</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">92</span><span class="p">:])</span><span class="o">/</span><span class="mi">8</span>
+                        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+                            <span class="n">reply_body_action</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_action_output</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">92</span><span class="o">+</span><span class="n">x</span><span class="o">*</span><span class="mi">8</span><span class="p">:</span><span class="mi">100</span><span class="o">+</span><span class="n">x</span><span class="o">*</span><span class="mi">8</span><span class="p">]))</span>
+
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">reply_header</span><span class="sr">/reply_body_data1/</span><span class="n">reply_body_wildcards</span><span class="sr">/reply_body_match/</span><span class="n">reply_body_data2</span>
+                    <span class="n">msg</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<p>代码很长，我们先重点讲一下，我们刚才发送的type=1的flow_stats_request对应的reply应该如何解析。首先我们需要按照数据结构将其分割成对应的：</p>
+<p>ofp_flow_stats()，ofp_wildcards(),ofp_match()和ofp_flow_stats_data()4部分。</p>
+<p>在第四部分中我们能得到很多信息，如流表生存时间，匹配上的字节数，包数目等关键信息。这些可以在《OpenFlow通信流程解读》中清楚了解到。同理我们将其他类型的报文处理写在了下面。</p>
+<div class="highlight"><pre>                <span class="n">elif</span> <span class="n">reply_header</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">reply_aggregate</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_aggregate_stats_reply</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">4</span><span class="p">:])</span>
+                    <span class="n">reply_aggregate</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+                <span class="n">elif</span> <span class="n">reply_header</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="c1">#table_stats</span>
+                    <span class="nb">length</span> <span class="o">=</span> <span class="n">rmsg</span><span class="o">.</span><span class="nb">length</span> <span class="o">-</span> <span class="mi">12</span>
+                    <span class="n">num</span> <span class="o">=</span> <span class="nb">length</span><span class="o">/</span><span class="mi">64</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+                        <span class="n">table_body</span> <span class="o">=</span> <span class="n">body</span><span class="p">[</span><span class="mi">4</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="mi">64</span><span class="p">:</span><span class="n">i</span><span class="o">*</span><span class="mi">64</span><span class="o">+</span><span class="mi">68</span><span class="p">]</span>
+                        <span class="n">reply_table_stats</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_table_stats</span><span class="p">(</span><span class="n">table_body</span><span class="p">[:</span><span class="mi">36</span><span class="p">])</span>
+                        <span class="n">table_wildcards</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_wildcards</span><span class="p">(</span><span class="n">table_body</span><span class="p">[</span><span class="mi">36</span><span class="p">:</span><span class="mi">40</span><span class="p">])</span>
+                        <span class="n">reply_table_stats_data</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_table_stats_data</span><span class="p">(</span><span class="n">table_body</span><span class="p">[</span><span class="mi">40</span><span class="p">:</span><span class="mi">64</span><span class="p">])</span>
+                        <span class="n">msg_tmp</span> <span class="o">=</span> <span class="n">reply_header</span><span class="sr">/reply_table_stats/</span><span class="n">table_wildcards</span><span class="o">/</span><span class="n">reply_table_stats_data</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">rmsg</span><span class="o">/</span><span class="n">msg_tmp</span>
+                    <span class="n">msg</span><span class="o">.</span><span class="n">show</span><span class="p">()</span> 
+                <span class="n">elif</span> <span class="n">reply_header</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="c1">#port stats reply</span>
+                    <span class="nb">length</span> <span class="o">=</span> <span class="n">rmsg</span><span class="o">.</span><span class="nb">length</span> <span class="o">-</span> <span class="mi">12</span>
+                    <span class="n">num</span> <span class="o">=</span> <span class="nb">length</span><span class="o">/</span><span class="mi">104</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+                        <span class="n">offset</span> <span class="o">=</span> <span class="mi">4</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="mi">104</span>
+                        <span class="n">reply_port_stats</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_port_stats_reply</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="n">offset:</span><span class="p">(</span><span class="n">offset</span><span class="o">+</span><span class="mi">104</span><span class="p">)])</span>
+                        <span class="n">msg_tmp</span> <span class="o">=</span> <span class="n">reply_header</span><span class="o">/</span><span class="n">reply_port_stats</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">rmsg</span><span class="o">/</span><span class="n">msg_tmp</span>
+                    <span class="n">msg</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+                <span class="n">elif</span> <span class="n">reply_header</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                    <span class="c1">#queue reply</span>
+                    <span class="nb">length</span> <span class="o">=</span> <span class="n">rmsg</span><span class="o">.</span><span class="nb">length</span> <span class="o">-</span> <span class="mi">12</span>
+                    <span class="n">num</span> <span class="o">=</span> <span class="nb">length</span><span class="o">/</span><span class="mi">32</span>
+                    <span class="k">if</span> <span class="n">num:</span>                     <span class="c1">#if the queue is empty ,you need to check it !</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+                            <span class="n">offset</span> <span class="o">=</span> <span class="mi">4</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="mi">32</span>
+                            <span class="n">queue_reply</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_queue_stats</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="n">offset:offset</span><span class="o">+</span><span class="mi">32</span><span class="p">])</span>
+                            <span class="n">msg_tmp</span> <span class="o">=</span> <span class="n">reply_header</span><span class="o">/</span><span class="n">queue_reply</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="n">rmsg</span><span class="o">/</span><span class="n">msg_tmp</span>
+                        <span class="n">msg</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+                <span class="n">elif</span> <span class="n">reply_header</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mh">0xffff</span><span class="p">:</span>
+                    <span class="c1">#vendor reply</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">rmsg</span><span class="sr">/reply_header/o</span><span class="n">f</span><span class="o">.</span><span class="n">ofp_vendor</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="mi">4</span><span class="p">:])</span>
+</pre></div>
+
+
+<p>table request可以获取table的内容，如table0中有多少流等等。</p>
+<p>port request可以获取端口上的信息。再这里不再展开，读者可自行研究。</p>
+<p>至此我们已经顺利处理完stats_reply的所有类型的数据。我们可以很好地利用统计信息去做文章，比如利用流量统计去做负载均衡的实验等等。</p>
+<h3>其他的报文</h3>
+<p>其他的报文相对于以上的报文不是特别重要，当然如果你有精力，那就把整个OpenFlow整个都实现。相信以上的实现之后，后面的也会变得特别简单。以下就举例介绍两个相对比较重要的报文。</p>
+<h4>barrier</h4>
+<p>我们无法获知流表下发是否已经写入成功。或者我们想确认某个指令下发到交换机，并已经执行成功，我们应该怎么去得到这个回执呢？</p>
+<p>这个时候你就需要使用到barrier。</p>
+<p>在你想确认的报文之后下发一条barrier_request，当交换机执行到barrier的时候，前面的指令都已经执行完。交换机会回复barrier_reply给控制器，通知已经执行完barrier，即前面的指令已经执行完。控制器默认前面的指令已经执行成功，因为错误的情况会报错。</p>
+<h4>flow_removed</h4>
+<p>这是一条貌似可有可无的报文，但是事实上非常重要。只要你在下发flow的时候将flags置1，那么当流表失效或者被删除时，switch就会上报一个flow_removed。我们怎么才能利用这个消息呢？</p>
+<p>我们可以把这个消息打印出来，去查看他的内容，看看各个字段是不是想要的值。因为曾经我们就是从这个报文的打印信息中发现我们的流没有下发对的。最后将最麻烦的问题解决了，所以这个报文可以好好利用，可以查看流表在switch上的情况。</p>
+<hr />
+<h1>上层应用</h1>
+<p>终于写完了底层通信部分。以上的部分已经可以保证一件事情，可以在非环形网中实现通信，因为环形网会存在网络风暴，而我们上面的代码并没有避免网络风暴的措施。所以说上面的控制器最好<strong>运行在一个树形的网络中，而不应该存在环路。</strong></p>
+<p>如何解决网络风暴？我们需要解决两个问题：</p>
 <ul>
-<li>结构：<strong>header(type=17)/reply_header()/flow_stats/wildcards/match/
-flow_stats_data</strong></li>
-<li>作用：携带流的统计信息，如通过的数据包个数，字节数。</li>
+<li>ARP泛洪时会引起的网络风暴</li>
+<li>正常通信时引起的环路风暴。</li>
 </ul>
-<p><strong>ofp_flow_stats(body[4:8])</strong>里面会有的<strong>table_id</strong>字段表明该流存放在哪一个流表里。</p>
-<p><strong>flow_stats_data里面有packet_count和byte_count是最有价值的字段，流量统计就是由这两个字段提供的信息。</strong></p>
-<p>如想统计某条流的速率：<strong>前后两个reply的字节数相减除以duration_time只差就可以求得速率</strong></p>
-<p>由速率我们可以做很多基于流量的app，如<strong>流量监控，负载均衡</strong>等等。</p>
-<p>值得注意的是，在这些数据之后，其实还有一些<strong>action</strong>,但是目前我还没有查看这些action到底是干什么用的。</p>
+<p>第一个容易解决，有一个最简单的办法就是在控制器上写一个小小的判断逻辑：如果某ARP报文的入口不是记录在字典中的入端口，则丢弃。这样保证同一个ARP包不会再次进入交换机，从而解决网络风暴。</p>
+<p>第二个主要解决方法是编写路由算路算法，算出路径，从而在下发流表的时候将原有的port=0xfffb,替换成算路算出来的端口。这样就可以解决这两个问题。同时也可以解决3层路由问题。</p>
+<p>更多的上层应用，这里不再介绍，有兴趣的读者可以自己继续研究。</p>
+<hr />
 <h1>后续</h1>
-<p>写到这里，我使用到的数据包都写了一遍，其他的报文其实道理也是一样的。如<strong>OFPT_GET_CONFIG_REQUEST和REPLY</strong>，道理应该和stats一样，只是数据结构不一样罢了。不再多说。</p>
-<p>最后把我们用的一些比较多的信息帖出来让大家更好的学习。</p>
-<h2>ERROR</h2>
-<p>在调试的过程中遇到错误是再所难免的，前面也提到了error的结构。这里就贴一下type跟code吧。</p>
-<h3>Type</h3>
-<div class="highlight"><pre><span class="n">ofp_error_type</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPET_HELLO_FAILED&quot;</span><span class="p">,</span>
-                   <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPET_BAD_REQUEST&quot;</span><span class="p">,</span>
-                   <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPET_BAD_ACTION&quot;</span><span class="p">,</span>
-                   <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPET_FLOW_MOD_FAILED&quot;</span><span class="p">,</span>
-                   <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPET_PORT_MOD_FAILED&quot;</span><span class="p">,</span>
-                   <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPET_QUEUE_OP_FAILED&quot;</span><span class="p">}</span>
-</pre></div>
-
-
-<h3>相关的code：</h3>
-<div class="highlight"><pre><span class="n">ofp_hello_failed_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPHFC_INCOMPATIBLE&quot;</span><span class="p">,</span>
-                          <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPHFC_EPERM&quot;</span><span class="p">}</span>
-
-<span class="n">ofp_bad_request_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_VERSION&quot;</span><span class="p">,</span>
-                         <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_TYPE&quot;</span><span class="p">,</span>
-                         <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_STAT&quot;</span><span class="p">,</span>
-                         <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_VENDOR&quot;</span><span class="p">,</span>
-                         <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_SUBTYPE&quot;</span><span class="p">,</span>
-                         <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPBRC_EPERM&quot;</span><span class="p">,</span>
-                         <span class="mi">6</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BAD_LEN&quot;</span><span class="p">,</span>
-                         <span class="mi">7</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BUFFER_EMPTY&quot;</span><span class="p">,</span>
-                         <span class="mi">8</span><span class="p">:</span> <span class="s">&quot;OFPBRC_BUFFER_UNKNOWN&quot;</span><span class="p">}</span>
-
-<span class="n">ofp_bad_action_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_TYPE&quot;</span><span class="p">,</span>
-                        <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_LEN&quot;</span><span class="p">,</span>
-                        <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_VENDOR&quot;</span><span class="p">,</span>
-                        <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_VENDOR_TYPE&quot;</span><span class="p">,</span>
-                        <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_OUT_PORT&quot;</span><span class="p">,</span>
-                        <span class="mi">6</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_ARGUMENT&quot;</span><span class="p">,</span>
-                        <span class="mi">7</span><span class="p">:</span> <span class="s">&quot;OFPBAC_EPERM&quot;</span><span class="p">,</span>          <span class="c1">#permissions error</span>
-                        <span class="mi">8</span><span class="p">:</span> <span class="s">&quot;OFPBAC_TOOMANY&quot;</span><span class="p">,</span>
-                        <span class="mi">9</span><span class="p">:</span> <span class="s">&quot;OFPBAC_BAD_QUEUE&quot;</span><span class="p">}</span>
-
-<span class="n">ofp_flow_mod_failed_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_ALL_TABLES_FULL&quot;</span><span class="p">,</span>
-                             <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_OVERLAP&quot;</span><span class="p">,</span>
-                             <span class="mi">2</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_EPERM&quot;</span><span class="p">,</span>
-                             <span class="mi">3</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_BAD_EMERG_TIMEOUT&quot;</span><span class="p">,</span>
-                             <span class="mi">4</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_BAD_COMMAND&quot;</span><span class="p">,</span>
-                             <span class="mi">5</span><span class="p">:</span> <span class="s">&quot;OFPFMFC_UNSUPPORT&quot;</span><span class="p">}</span>
-
-<span class="n">ofp_port_mod_failed_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPPMFC_BAD_PORT&quot;</span><span class="p">,</span>
-                             <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPPFMC_BAD_HW_ADDR&quot;</span><span class="p">}</span>
-
-<span class="n">ofp_queue_op_failed_code</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">&quot;OFPQOFC_BAD_PORT&quot;</span><span class="p">,</span>
-                             <span class="mi">1</span><span class="p">:</span> <span class="s">&quot;OFPQOFC_BAD_QUEUE&quot;</span><span class="p">}</span>
-</pre></div>
-
-
-<p>谢谢我的两个师傅richardzhao,kimi带我走进OpenFlow的世界。</p>
-<h3>整篇文档均为牧紫星原创，转载请声明告知。希望能给你带来一些帮助。</h3></div>
+<p>写了这么多，好累好累。但是感觉还不错，起码这四个月的成果算是写得差不多了。还有一些秘密不能写，也不该写，所以就没写。像以上的教程，耐心做下来其实还是很有趣的。其重点也许并不是做一个多么牛逼的控制器，而是通过这个过程，对OpenFlow的了解。SDNAP群里的一个群友说的挺对的：也许通过写一遍控制器代码是最好的学习方法。写完这个控制器之后，我可以从OpenFlow的事件处理，哪一个报文有多长，有多少字段，都有什么用，到底层通信的socket搭建说个大概，我很自信，我能完成这个工作！也许这个控制器很弱，很弱，他甚至没有把算路的功能给大家写出来！（当然已经实现了！哈哈！）也许相比于floodlight，opendaylight,contrial等牛逼的主流控制器都弱上不知道多少倍！甚至连比较的资格都没有！可是那又怎么样呢！我完成了他！一句一句写下来的不仅仅是代码，更是心血！</p>
+<p>从来没有这么认真地去完成一件事情！有时候人生就从某一件给你带来巨大成就感的事情开始有了转变！我始终相信，每一站，我都会努力做好着，而这一站，我收获了巨大的成功！我自己认为的巨大成功！没有什么嘉奖，没有什么的名誉！我只是很热爱，很兴奋地去做一件我很自豪的事情！<strong>没有什么事情比带着愉快的心情去做一件让自己充满自豪感的事情更幸福了！</strong></p>
+<p>很高兴我在年轻的时候选择了一个我目前看来很喜欢的方向，并在这条道路上越走越远！很高兴我能在SDNAP这个大家庭里遇到很多好玩的朋友，很多比我大很多很多的大哥，大叔！这里有很多我的老师，比如地球-某某，KKBluE,盛科-卫峰，无厘头等！在完成这个控制器的道路上他们给了我许多指导，特别是地球-某某老师。</p>
+<p>最后，当年那两个年轻有为的学长，如今一个在美团，一个在美帝的那两个熟悉的人。带我走进OpenFlow世界，同时这个控制器也是他们首先开始编写的。后来才由我来完成这个小小的控制器！谢谢学长！！</p>
+<p>差点忘了，一起奋斗的小伙伴，老伙伴！工信部的adam可是给我很多机会，给我很多帮助的博士哥！一起加班的时候聊天感觉特别好！！能一起奋斗努力完成一件事情真的太幸福了！！还有完成上层建筑的同事兼好朋友yzp学长！一起合作完成一件东西的感觉让我学会了合作，如果天气好，一起骑自行车下班聊天真的是一件特别惬意的事情！！跟你合作很愉快，哈哈！</p>
+<p><strong>谢谢一路上帮助我的人，明天你会看到更好的我！</strong></p>
+<hr /></div>
         <hr />
     </div>
 		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html"><h2>【原创】OpenFlow通信流程解读</h2></a>
+        <div class= "well small"> 2013-12-12
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h1>前言</h1>
+<p>接触了这么久的SDN，OpenFlow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对OpenFlow协议通信流程的一些理解。</p>
+<h1>SDN中Switch和controller</h1>
+<p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
+<h2>switch组成与传统交换机的差异</h2>
+<h3>switch组成</h3>
+<p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
+<ul>
+<li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
+<li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
+</ul>
+<h3>of中sw与传统交换机的差异</h3>
+<ul>
+<li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
+<li>运行of协议，实现许多路由器的功能，比如组播。</li>
+<li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
+</ul>
+<h3>OpenFlow的switch可以从以下方式获得</h3>
+<ul>
+<li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -615,44 +1072,13 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>这个字典记录了用数据包的mac地址记录了数据包的目标ip,入口端口，到达时间三个信息，其实如果为了更好的对应，我们应该使用上xid,让 ...</p> <a class="btn btn-info xsmall" href="./pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html"><h2>【原创】mininet搭建自定义网络拓扑 by muzi</h2></a>
-        <div class= "well small"> 2013-12-06
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>你知道的mininet</h3>
-<p>相信很多研究SDN的朋友都知道mininet，也是用过mininet。但是恐怕大多数人都只是局限于workthough的水平.链接：http://mininet.org/walkthrough/</p>
-<p>搭建更多的，灵活的拓扑还是有一定的难度。</p>
-<p>上一次实验的时候，看了一下spirent testceter的一套测试拓扑，从中受益，学了一点。现在写出来分享一下。</p>
-<p>如果你想快速建立拓扑，请直接拉到最后一个标题</p>
-<h3>教你搭建你自己的任意拓扑</h3>
-<p>首先把需要用到的相关模块import进来。</p>
-<div class="highlight"><pre><span class="sr">/#!/</span><span class="n">usr</span><span class="sr">/bin/</span><span class="n">python</span>
-
-<span class="nb">import</span> <span class="n">re</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">cli</span> <span class="nb">import</span> <span class="n">CLI</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">log</span> <span class="nb">import</span> <span class="n">setLogLevel</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span><span class="n">error</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">net</span> <span class="nb">import</span> <span class="n">Mininet</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">link</span> <span class="nb">import</span> <span class="n">Intf</span>
-<span class="n">from</span> <span class="n">mininet ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
     <li class="active"><a href="./index.html">1</a></li>
     <li class=""><a href="./index2.html">2</a></li>
+    <li class=""><a href="./index3.html">3</a></li>
 
     <li class="next"><a href="./index2.html">Next &rarr;</a></li>
 
