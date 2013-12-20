@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="./theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="./theme/bootstrap.min.css" rel="stylesheet">
-    <link href="./theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="./theme/local.css" rel="stylesheet">
-    <link href="./theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href=".">Code the world</a>
+        <a class="brand" href="../../../..">Code the world</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="./pages/about.html">About</a></li>
+            <li><a href="../../../../pages/about.html">About</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2013/12/20/openflow10shu-ju-jie-gou-tu-shi.html"><h1>OpenFlow1.0数据结构图示</h1></a>
+            <h1>OpenFlow1.0数据结构图示</h1>
 2013-12-20
 
-by <a class="url fn" href="./author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><p>每一次查看协议都是看到代码定义，总感觉不够清晰，那么自己去画一遍数据结构能给你带来很大的帮助！</p>
 <p>以下的图片是OpenFlow1.0的相关数据结构。希望能给你带来一点帮助。</p>
 <p><img alt="" src="http://b.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=db393793f0d3572c62e29cd9ba28121a/63d9f2d3572c11df7804df59612762d0f603c2f7.jpg?referer=cba40445dbf9d72a4e73242d2ead&amp;x=.jpg" /></p>
@@ -91,137 +85,23 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p><img alt="" src="http://g.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=d5cbada7a964034f0bcdc2039ff8080c/faedab64034f78f06906f9897b310a55b3191cbe.jpg?referer=8100bf6eba99a90162226e065c55&amp;x=.jpg" /></p>
 <p>也许还有一些没有花全。因为这个是我初学OpenFlow时候画的，若有错误，欢迎指正！</p>
 <p>如果你觉得我的小站还不错，可以帮忙宣传宣传咯。创建初期，积攒人气！</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = 'OpenFlow1.0数据结构图示';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html"><h2>【原创】SDN控制器开发教程——打造属于你自己的控制器</h2></a>
-        <div class= "well small"> 2013-12-17
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><hr />
-<h1>前言</h1>
-<p>SDN(Software Defined Network)这些年越来越火。当我还是大三的小朋友的时候，我的学长带我走进了OpenFlow的世界。一年里，我慢慢学会了许多东西，研究过pox,写过mininet自定义拓扑，画过OpenFlow的数据结构，做过HTTP的流量引导，广播风暴解除等许多小东西。在SDN这条道路上越走越远，也希望有一天，我能在这个领域有所成就，做出一点自己的贡献。</p>
-<p>暑假的时候开始来工信部电信研究院实习，开始跟着学长一起开发，后来学长去美帝了，我继续完成剩下的工作。为了实现demo，我们顺便写了一个小小的控制器，其本质很简单，也许简单到你都不屑一顾。但是这个过程，我们需要从底层通信开始搭建，一直到最后的上层应用，无论哪一个环节，都会涉及到。到最后你会发现，其实也许这个控制器并没有太大的用处，但是更多的是这个过程中你学到的知识，那是使用别人开发的控制器说不能得到的宝贵知识。</p>
-<hr />
-<h1>你能得到的</h1>
-<ul>
-<li>底层通信：基于Tornado架构的socket通信的搭建</li>
-<li>OpenFlow协议数据结构细节</li>
-<li>通信流程的事件处理</li>
-<li>若干网络协议的熟悉与掌握。</li>
-<li>最重要的，你自己从无到有，经历了一个开发过程，所有出现的你想到的想不到的问题，你都需要自己去解决。你会在解决问题的过程中收获太多太多你想不到的财富。</li>
-<li>自信！你可以大声对自己说 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html"><h2>【原创】OpenFlow通信流程解读</h2></a>
-        <div class= "well small"> 2013-12-12
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h1>前言</h1>
-<p>接触了这么久的SDN，OpenFlow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对OpenFlow协议通信流程的一些理解。</p>
-<h1>SDN中Switch和controller</h1>
-<p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
-<h2>switch组成与传统交换机的差异</h2>
-<h3>switch组成</h3>
-<p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
-<ul>
-<li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
-<li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
-</ul>
-<h3>of中sw与传统交换机的差异</h3>
-<ul>
-<li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
-<li>运行of协议，实现许多路由器的功能，比如组播。</li>
-<li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
-</ul>
-<h3>OpenFlow的switch可以从以下方式获得</h3>
-<ul>
-<li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/12/11/wo-ceng-jing-qi-ci-bi-shi-zi-ji-de-ling-hun.html"><h2>我曾经七次鄙视自己的灵魂</h2></a>
-        <div class= "well small"> 2013-12-11
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>第一次，当它本可进取时，却故作谦卑；</h3>
-<h3>第二次，当它在空虚时，用爱欲来填充；</h3>
-<h3>第三次，在困难和容易之间，它选择了容易；</h3>
-<h3>第四次，它犯了错，却借由别人也会犯错来宽慰自己；</h3>
-<h3>第五次，它自由软弱，却把它认为是生命的坚韧；</h3>
-<h3>第六次，当它鄙夷一张丑恶的嘴脸时，却不知那正是自己面具中的一副；</h3>
-<h3>第七次，它侧身于生活的污泥中，虽不甘心，却又畏首畏尾。</h3> <a class="btn btn-info xsmall" href="./pages/2013/12/11/wo-ceng-jing-qi-ci-bi-shi-zi-ji-de-ling-hun.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/12/10/yuan-yin.html"><h2>原因</h2></a>
-        <div class= "well small"> 2013-12-10
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h4>我站在未来看自己，</h4>
-<h4>我庆幸我的容颜，精神是青春骄傲的资本，</h4>
-<h4>这是我现在努力的理由。</h4>
-<h4>我站在现在看未来的，</h4>
-<h4>我希望我拥有我想要的理想，身躯，</h4>
-<h4>这是我现在奋斗的原因。</h4> <a class="btn btn-info xsmall" href="./pages/2013/12/10/yuan-yin.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="./index.html">1</a></li>
-    <li class=""><a href="./index2.html">2</a></li>
-    <li class=""><a href="./index3.html">3</a></li>
-
-    <li class="next"><a href="./index2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -232,8 +112,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="./archives.html">Archives</a>
-                <li><a href="./tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <li><a href="http://muzixing.github.io/" rel="alternate">Atom feed</a></li>
             </ul>
             </div>
@@ -245,8 +125,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="./category/life.html">life</a></li>
-                <li><a href="./category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -282,7 +162,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href=".">Code the world</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Code the world</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
