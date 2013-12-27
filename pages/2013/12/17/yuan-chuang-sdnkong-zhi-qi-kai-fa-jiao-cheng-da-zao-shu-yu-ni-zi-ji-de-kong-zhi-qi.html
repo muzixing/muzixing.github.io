@@ -38,7 +38,7 @@
 
         <ul class="nav">
             
-            <li><a href="../../../../pages/about.html">About</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -67,11 +67,11 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
         </div>
 	
         <div><hr />
-<h1>前言</h1>
+<h2>前言</h2>
 <p>SDN(Software Defined Network)这些年越来越火。当我还是大三的小朋友的时候，我的学长带我走进了OpenFlow的世界。一年里，我慢慢学会了许多东西，研究过pox,写过mininet自定义拓扑，画过OpenFlow的数据结构，做过HTTP的流量引导，广播风暴解除等许多小东西。在SDN这条道路上越走越远，也希望有一天，我能在这个领域有所成就，做出一点自己的贡献。</p>
 <p>暑假的时候开始来工信部电信研究院实习，开始跟着学长一起开发，后来学长去美帝了，我继续完成剩下的工作。为了实现demo，我们顺便写了一个小小的控制器，其本质很简单，也许简单到你都不屑一顾。但是这个过程，我们需要从底层通信开始搭建，一直到最后的上层应用，无论哪一个环节，都会涉及到。到最后你会发现，其实也许这个控制器并没有太大的用处，但是更多的是这个过程中你学到的知识，那是使用别人开发的控制器说不能得到的宝贵知识。</p>
 <hr />
-<h1>你能得到的</h1>
+<h2>你能得到的</h2>
 <ul>
 <li>底层通信：基于Tornado架构的socket通信的搭建</li>
 <li>OpenFlow协议数据结构细节</li>
@@ -81,7 +81,7 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 <li>自信！你可以大声对自己说，我可以！我可以做很多事情，因为我遇到了很多困难，但是我最终成功了！也许很简单，但是不是每一个人都能坚持去完成一个创新工作！<strong>有想法的人太多，持之以恒的人也很多，但是又想法，有持之以恒的人不多。我可以试着努力成为那样的人！</strong></li>
 </ul>
 <hr />
-<h1>在下面的内容你会接触到的名词</h1>
+<h2>在下面的内容你会接触到的名词</h2>
 <ul>
 <li>socket</li>
 <li>tronado</li>
@@ -90,11 +90,11 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 </ul>
 <p>任何需要更多了解的请自行百度，google。</p>
 <hr />
-<h1>底层通信</h1>
+<h2>底层通信</h2>
 <p>我们的控制器的底层通信是由socket通信搭建的。以下关于socket通信的内容均摘自：http://blog.csdn.net/xiaoweige207/article/details/6211577</p>
 <p>如果你想更详细地学习socket通信，可以去这个地址查看，也可以自行google。如果你已经了解socket通信，请跳到后面查看。</p>
 <hr />
-<h2>socket的基本操作</h2>
+<h3>socket的基本操作</h3>
 <p>socket操作模式：open -&gt;write/read -&gt;close</p>
 <p>基于这个模式，我们需要用到一下的函数。</p>
 <ul>
@@ -105,7 +105,7 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 <li>read()、write()函数等</li>
 <li>close()函数</li>
 </ul>
-<h3>socket()函数</h3>
+<h4>socket()函数</h4>
 <div class="highlight"><pre><span class="nb">int</span> <span class="nb">socket</span><span class="p">(</span><span class="nb">int</span> <span class="n">domain</span><span class="p">,</span> <span class="nb">int</span> <span class="n">type</span><span class="p">,</span> <span class="nb">int</span> <span class="n">protocol</span><span class="p">);</span>
 </pre></div>
 
@@ -127,7 +127,7 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 </blockquote>
 <p><strong>注意：并不是上面的type和protocol可以随意组合的，如SOCK_STREAM不可以跟IPPROTO_UDP组合。当protocol为0时，会自动选择type类型对应的默认协议。</strong></p>
 <p>当我们调用socket创建一个socket时，返回的socket描述字它存在于协议族（address family，AF_XXX）空间中，但没有一个具体的地址。如果想要给它赋值一个地址，就必须调用bind()函数，否则就当调用connect()、listen()时系统会自动随机分配一个端口。</p>
-<h3>bind()函数</h3>
+<h4>bind()函数</h4>
 <p>正如上面所说bind()函数把一个地址族中的特定地址赋给socket。例如对应AF_INET、AF_INET6就是把一个ipv4或ipv6地址和端口号组合赋给socket。</p>
 <p>int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 函数的三个参数分别为：</p>
@@ -138,7 +138,7 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 <p><strong>通常服务器在启动的时候都会绑定一个众所周知的地址（如ip地址+端口号），用于提供服务，客户就可以通过它来接连服务器；而客户端就不用指定，有系统自动分配一个端口号和自身的ip地址组合。</strong>这就是为什么通常服务器端在listen之前会调用bind()，而客户端就不会调用，而是在connect()时由系统随机生成一个。</p>
 <p><strong>TIP:</strong>（具体请看链接）</p>
 <p><strong>在将一个地址绑定到socket的时候，请先将主机字节序转换成为网络字节序，而不要假定主机字节序跟网络字节序一样使用的是Big-Endian。由于这个问题曾引发过血案！公司项目代码中由于存在这个问题，导致了很多莫名其妙的问题，所以请谨记对主机字节序不要做任何假定，务必将其转化为网络字节序再赋给socket。</strong></p>
-<h3>listen()、connect()函数</h3>
+<h4>listen()、connect()函数</h4>
 <p>如果作为一个服务器，在调用socket()、bind()之后就会调用listen()来监听这个socket，如果客户端这时调用connect()发出连接请求，服务器端就会接收到这个请求。</p>
 <div class="highlight"><pre><span class="nb">int</span> <span class="nb">listen</span><span class="p">(</span><span class="nb">int</span> <span class="n">sockfd</span><span class="p">,</span> <span class="nb">int</span> <span class="n">backlog</span><span class="p">);</span>
 <span class="nb">int</span> <span class="nb">connect</span><span class="p">(</span><span class="nb">int</span> <span class="n">sockfd</span><span class="p">,</span> <span class="n">const</span> <span class="n">struct</span> <span class="n">sockaddr</span> <span class="o">*</span><span class="n">addr</span><span class="p">,</span> <span class="n">socklen_t</span> <span class="n">addrlen</span><span class="p">);</span>
@@ -147,12 +147,12 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 
 <p>listen 函数的第一个参数即为要监听的socket描述字，第二个参数为相应socket可以排队的最大连接个数。socket()函数创建的socket默认是一个主动类型的，listen函数将socket变为被动类型的，等待客户的连接请求。</p>
 <p>connect 函数的第一个参数即为客户端的socket描述字，第二参数为服务器的socket地址，第三个参数为socket地址的长度。客户端通过调用connect函数来建立与TCP服务器的连接。</p>
-<h3>accept()函数</h3>
+<h4>accept()函数</h4>
 <p>TCP服务器端依次调用socket()、bind()、listen()之后，就会监听指定的socket地址了。TCP客户端依次调用socket()、connect()之后就想TCP服务器发送了一个连接请求。TCP服务器监听到这个请求之后，就会调用accept()函数取接收请求，这样连接就建立好了。之后就可以开始网络I/O操作了，即类同于普通文件的读写I/O操作。</p>
 <p>int accept(int sockfd, struct sockaddr <em>addr, socklen_t </em>addrlen);
 accept函数的第一个参数为服务器的socket描述字，第二个参数为指向struct sockaddr *的指针，用于返回客户端的协议地址，第三个参数为协议地址的长度。如果accpet成功，那么其返回值是由内核自动生成的一个全新的描述字，代表与返回客户的TCP连接。</p>
 <p><strong>注意：</strong>accept的第一个参数为服务器的socket描述字，是服务器开始调用socket()函数生成的，称为监听socket描述字；而accept函数返回的是已连接的socket描述字。一个服务器通常通常仅仅只创建一个监听socket描述字，它在该服务器的生命周期内一直存在。内核为每个由服务器进程接受的客户连接创建了一个已连接socket描述字，当服务器完成了对某个客户的服务，相应的已连接socket描述字就被关闭。</p>
-<h3>read()、write()等函数</h3>
+<h4>read()、write()等函数</h4>
 <p>主要的网络IO函数有如下：</p>
 <ul>
 <li>read()/write()</li>
@@ -164,7 +164,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <p>在tronado中我们使用的是read()/write()</p>
 <p>read函数是负责从fd中读取内容.当读成功时，read返回实际所读的字节数，如果返回的值是0表示已经读到文件的结束了，小于0表示出现了错误。如果错误为EINTR说明读是由中断引起的，如果是ECONNREST表示网络连接出了问题。</p>
 <p>write函数将buf中的nbytes字节内容写入文件描述符fd.成功时返回写的字节数。失败时返回-1，并设置errno变量。 在网络程序中，当我们向套接字文件描述符写时有俩种可能。1)write的返回值大于0，表示写了部分或者是全部的数据。2)返回的值小于0，此时出现了错误。我们要根据错误类型来处理。如果错误为EINTR表示在写的时候出现了中断错误。如果为EPIPE表示网络连接出现了问题(对方已经关闭了连接)。</p>
-<h3>close()函数</h3>
+<h4>close()函数</h4>
 <p>在服务器与客户端建立连接之后，会进行一些读写操作，完成了读写操作就要关闭相应的socket描述字，好比操作完打开的文件要调用fclose关闭打开的文件。</p>
 <div class="highlight"><pre><span class="nb">int</span> <span class="nb">close</span><span class="p">(</span><span class="nb">int</span> <span class="n">fd</span><span class="p">);</span>
 </pre></div>
@@ -173,7 +173,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <p>close一个TCP socket的缺省行为时把该socket标记为以关闭，然后立即返回到调用进程。该描述字不能再由调用进程使用，也就是说不能再作为read或write的第一个参数。</p>
 <p><strong>注意：</strong>close操作只是使相应socket描述字的引用计数-1，只有当引用计数为0的时候，才会触发TCP客户端向服务器发送终止连接请求。</p>
 <hr />
-<h2>Tornado</h2>
+<h3>Tornado</h3>
 <p>我们的底层是利用tornado搭建的。tornado是什么？请看：http://www.tornadoweb.cn/</p>
 <p>如果你没有写过tornado，建议去tornado官网上把简单的demo做一做。也可以在本站学习tornado,站内搜索可以找到。</p>
 <p>首先我们把需要的文件import进来：</p>
@@ -220,7 +220,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 </li>
 </ul>
 </blockquote>
-<h3>创建new_sock函数</h3>
+<h4>创建new_sock函数</h4>
 <p>其实这个函数只是为了建立多个socket的时候省一些代码，直接调用总比一条一条配置要快一些。</p>
 <div class="highlight"><pre><span class="n">def</span> <span class="n">new_sock</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
     <span class="n">sock</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">socket</span><span class="p">(</span><span class="nb">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="nb">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -231,7 +231,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 
 
 <p>目的：返回一个IPV4,字符串格式的的socket。第二句不需要管，我也不是很懂。第一个参数是普通socket的意思。具体的可以去这里查看：http://blog.csdn.net/chary8088/article/details/2486377</p>
-<h3>main函数</h3>
+<h4>main函数</h4>
 <div class="highlight"><pre><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">sock</span> <span class="o">=</span> <span class="n">new_sock</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">sock</span><span class="o">.</span><span class="nb">bind</span><span class="p">((</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">6634</span><span class="p">))</span>
@@ -259,7 +259,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 
 <p>添加一个句柄处理这个socket。标示为fileno(),处理内容为callback中内容。初始状态为READ(可读)。</p>
 <p>最后一个逻辑是启动ioloop,如果键入停止，则stop()。</p>
-<h3>accept数据</h3>
+<h4>accept数据</h4>
 <p>当我们建立起一个半连接的server_socket之后，我们需要去收取socket的数据。这个时候我们就需要调用到accept函数。</p>
 <div class="highlight"><pre><span class="n">def</span> <span class="n">agent</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">events</span><span class="p">):</span>
     <span class="c1">#print fd, sock, events</span>
@@ -294,7 +294,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <p>起作用很简单，打印一些关键信息。<strong>将其放在main函数之前就好。</strong></p>
 <p>同时我们还需要建立一个字典用于保存connection中的数据，key为connection.fileno(),即使用connection的文件标示符。</p>
 <p>下一句使用到的函数：</p>
-<h3>client_handler(address, fd, events)</h3>
+<h4>client_handler(address, fd, events)</h4>
 <div class="highlight"><pre><span class="n">def</span> <span class="n">client_handler</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">events</span><span class="p">):</span>
     <span class="n">sock</span> <span class="o">=</span> <span class="n">fd_map</span><span class="p">[</span><span class="n">fd</span><span class="p">]</span>  <span class="c1">#以fd为标示符，从map中读取相应的connection数据，即收取到的字符流</span>
     <span class="k">if</span> <span class="n">events</span> <span class="o">&amp;</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">READ:</span><span class="c1">#如果状态是可读的</span>
@@ -337,7 +337,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <p>回到<strong>accept</strong>函数：最后一句就是给message_queue_map[connection]初始成一个队列。</p>
 <p>至此底层的socket算是搭建完成。</p>
 <hr />
-<h1>事件处理——OpenFlow协议</h1>
+<h2>事件处理——OpenFlow协议</h2>
 <p>当底层通信搭建完成了之后，我们就需要对收到的数据进行一些处理，这些处理的规则就是OpenFlow协议。</p>
 <p>如何能实现事件处理？你需要做两件事情：</p>
 <ul>
@@ -345,7 +345,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <li>按照OpenFlow协议处理socket收取到数据，即事件处理。</li>
 </ul>
 <p>首先，我们需要一个静态库，里面是关于OpenFlow中使用到的报文的定义。</p>
-<h2>scapy</h2>
+<h3>scapy</h3>
 <p>我们使用scapy来对数据进行封装和解封装。什么是scapy?http://www.secdev.org/projects/scapy/</p>
 <p>本博客中也有scapy的简单教程：http://www.muzixing.com/pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html</p>
 <p>如果你想详细地了解openflow的数据结构，我建议你照着协议重新画一遍，或者到sdnap.com上搜索一篇叫：openflow美丽的数据结构的文章，稍后也将在搬到本博客。画完之后，我们再使用scapy去定义这些数据结构，经历了这些学习之后，你会对openflow协议有一个非常清晰明了的认识。</p>
@@ -432,9 +432,9 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <li>packet_out</li>
 </ul>
 <p>那么你可以进行下一步了。因为这些数据包是完成数据交换，即下发正确流表需要的最少的报文。</p>
-<h2>事件处理</h2>
+<h3>事件处理</h3>
 <p>可能很多高级的控制器都有自己定义的事件处理，我编程也是菜鸟水平，暂且以为这是对socket中收取的数据的处理吧，应该就是所谓的事件处理。</p>
-<h3>处理规则</h3>
+<h4>处理规则</h4>
 <p><strong>OpenFlow1.0</strong></p>
 <p>我们从socket中读取数据流，并使用scapy对数据进行封装和解封装，使用到的静态库就是上一小节提到的libopenflow。</p>
 <p>对socket数据的处理，需要在client_handler中去处理。</p>
@@ -502,7 +502,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 </pre></div>
 
 
-<h3>OFPT_FEATURES_REPLY的处理</h3>
+<h4>OFPT_FEATURES_REPLY的处理</h4>
 <p>接下来是一个非常重要的报文的处理：ofp_features_reply的封装与解析</p>
 <div class="highlight"><pre><span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
     <span class="k">print</span> <span class="s">&quot;OFPT_FEATURES_REPLY&quot;</span>
@@ -595,7 +595,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <p>features_info字典我们需要在主文件中去声明，将其放在import之后，作为全局变量存在。</p>
 <p>这些重要信息存储起来以便接下来的操作使用。</p>
 <p>type=7,8,9的类型在这里就不一一作介绍，如果你需要用到她们，你可以自己去写出相应的处理逻辑，其依据就是OpenFlow协议1.0。</p>
-<h3>OFPT_PACKET_IN的处理</h3>
+<h4>OFPT_PACKET_IN的处理</h4>
 <p>跳过了7，8，9三个类型的处理，我们下面讲的是非常重要的type=10的处理。</p>
 <p>packet_in的type=10,其作用如果不清楚，请查看协议，或者查看本博客《OpenFlow协议通信流程解读》，相信读完之后，你会有一个清晰的认识。</p>
 <p>packet_in 报文上来之后，由于他本身携带的数据的类型的不确定性，所以处理起来也相对比较麻烦。</p>
@@ -605,7 +605,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <li>普通数据通信报文：如IP</li>
 </ul>
 <p>这两者将触发不一样的处理机制，前者会触发packet_out,而后者会触发flow_mod。</p>
-<h3>OFPT_PACKET_OUT</h3>
+<h4>OFPT_PACKET_OUT</h4>
 <p>当第一个数据包上来的时候，我们默认主机发送的是ARP包，这样我们可以省去很多不必要的逻辑，当然这些逻辑在进一步完善的时候需要添加。</p>
 <div class="highlight"><pre><span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
                 <span class="n">pkt_in_msg</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_packet_in</span><span class="p">(</span><span class="n">body</span><span class="p">)</span> <span class="c1">#首先将其封装成packet_in数据格式</span>
@@ -637,7 +637,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 
 <p>然后我们再将必要的信息，如发送的端口：0xfffb，也就是FLOOD端口。这个数据包的意义在于：通知交换机可以对这个包进行广播。下一个交换机收到ARP之后，进行同样的操作，出发packet_in事件，然后下发packet_out指令。直到找到arp的回应。</p>
 <p>当处理完ARP之后，packet_in会触发ofp_flow_mod操作。</p>
-<h3>OFPT_FLOW_MOD的处理</h3>
+<h4>OFPT_FLOW_MOD的处理</h4>
 <p>这一小节是一个特别重要的小节，是整一个控制器通信部分最核心的部分！</p>
 <p>首先，packet_in报上来的报文可能有很多类型，可能是二层的，可能是三层的，可能是四层。有可能是纯IP的，有可能是带有VLAN tags的IP，也有可能是TCP等等。所以我们需要针对不同的类型的数据进行不同的操作。</p>
 <p>我们在这里只处理四种类型的数据：</p>
@@ -768,7 +768,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 </pre></div>
 
 
-<h3>OFPT_STATS_REQUEST的处理</h3>
+<h4>OFPT_STATS_REQUEST的处理</h4>
 <p>当流表下发成功之后，我们可以通过OFPT_STATS_REQUEST去获取流的统计信息。这是许多业务的基础。没有流量统计信息，就没有操作的基础。所以这一小节是自编控制器的提升功能，也是必要功能。</p>
 <p>OFPT_STATS_REQUEST</p>
 <ul>
@@ -844,7 +844,7 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <p>header之后紧跟着ofp_stats_request(type=1)，代表这个request是请求flow的信息。紧接着是熟悉的wildcards和match。最后是消息实体ofp_flow_stats_request(out_port=port)</p>
 <p>在这里有一些信息我们并没有填出来，但是他们非常重要。比如ofp_flow_stats_request()中<strong>table_id 我们需要通过table对应的request去获取，如果没有获取，可以填0xff,即没有限制。对于out_port也是一样，如果无法获取port,则可以填0xffff,即None。同样表示无限制。</strong></p>
 <p>其他的类型就不一一介绍了，细心去看协议都可以写出来。</p>
-<h3>OFPT_STATS_REPLY的处理</h3>
+<h4>OFPT_STATS_REPLY的处理</h4>
 <p>交换机收到stats_request之后，会按照匹配结果向控制器返回stats_reply。同样的，有多少种stats_request就会对应有多少种stats_reply。</p>
 <p>所以reply的处理也是一件很重要的事情。</p>
 <div class="highlight"><pre><span class="n">elif</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">17</span> <span class="ow">and</span> <span class="n">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">&gt;</span> <span class="mi">12</span><span class="p">:</span>
@@ -920,17 +920,17 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <p>table request可以获取table的内容，如table0中有多少流等等。</p>
 <p>port request可以获取端口上的信息。再这里不再展开，读者可自行研究。</p>
 <p>至此我们已经顺利处理完stats_reply的所有类型的数据。我们可以很好地利用统计信息去做文章，比如利用流量统计去做负载均衡的实验等等。</p>
-<h3>其他的报文</h3>
+<h4>其他的报文</h4>
 <p>其他的报文相对于以上的报文不是特别重要，当然如果你有精力，那就把整个OpenFlow整个都实现。相信以上的实现之后，后面的也会变得特别简单。以下就举例介绍两个相对比较重要的报文。</p>
-<h4>barrier</h4>
+<p><strong>barrier</strong></p>
 <p>我们无法获知流表下发是否已经写入成功。或者我们想确认某个指令下发到交换机，并已经执行成功，我们应该怎么去得到这个回执呢？</p>
 <p>这个时候你就需要使用到barrier。</p>
 <p>在你想确认的报文之后下发一条barrier_request，当交换机执行到barrier的时候，前面的指令都已经执行完。交换机会回复barrier_reply给控制器，通知已经执行完barrier，即前面的指令已经执行完。控制器默认前面的指令已经执行成功，因为错误的情况会报错。</p>
-<h4>flow_removed</h4>
+<p><strong>flow_removed</strong></p>
 <p>这是一条貌似可有可无的报文，但是事实上非常重要。只要你在下发flow的时候将flags置1，那么当流表失效或者被删除时，switch就会上报一个flow_removed。我们怎么才能利用这个消息呢？</p>
 <p>我们可以把这个消息打印出来，去查看他的内容，看看各个字段是不是想要的值。因为曾经我们就是从这个报文的打印信息中发现我们的流没有下发对的。最后将最麻烦的问题解决了，所以这个报文可以好好利用，可以查看流表在switch上的情况。</p>
 <hr />
-<h1>上层应用</h1>
+<h2>上层应用</h2>
 <p>终于写完了底层通信部分。以上的部分已经可以保证一件事情，可以在非环形网中实现通信，因为环形网会存在网络风暴，而我们上面的代码并没有避免网络风暴的措施。所以说上面的控制器最好<strong>运行在一个树形的网络中，而不应该存在环路。</strong></p>
 <p>如何解决网络风暴？我们需要解决两个问题：</p>
 <ul>
@@ -941,13 +941,13 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 <p>第二个主要解决方法是编写路由算路算法，算出路径，从而在下发流表的时候将原有的port=0xfffb,替换成算路算出来的端口。这样就可以解决这两个问题。同时也可以解决3层路由问题。</p>
 <p>更多的上层应用，这里不再介绍，有兴趣的读者可以自己继续研究。</p>
 <hr />
-<h1>后续</h1>
+<h2>后续</h2>
 <p>写了这么多，好累好累。但是感觉还不错，起码这四个月的成果算是写得差不多了。还有一些秘密不能写，也不该写，所以就没写。像以上的教程，耐心做下来其实还是很有趣的。其重点也许并不是做一个多么牛逼的控制器，而是通过这个过程，对OpenFlow的了解。SDNAP群里的一个群友说的挺对的：也许通过写一遍控制器代码是最好的学习方法。写完这个控制器之后，我可以从OpenFlow的事件处理，哪一个报文有多长，有多少字段，都有什么用，到底层通信的socket搭建说个大概，我很自信，我能完成这个工作！也许这个控制器很弱，很弱，他甚至没有把算路的功能给大家写出来！（当然已经实现了！哈哈！）也许相比于floodlight，opendaylight,contrial等牛逼的主流控制器都弱上不知道多少倍！甚至连比较的资格都没有！可是那又怎么样呢！我完成了他！一句一句写下来的不仅仅是代码，更是心血！</p>
 <p>从来没有这么认真地去完成一件事情！有时候人生就从某一件给你带来巨大成就感的事情开始有了转变！我始终相信，每一站，我都会努力做好着，而这一站，我收获了巨大的成功！我自己认为的巨大成功！没有什么嘉奖，没有什么的名誉！我只是很热爱，很兴奋地去做一件我很自豪的事情！<strong>没有什么事情比带着愉快的心情去做一件让自己充满自豪感的事情更幸福了！</strong></p>
 <p>很高兴我在年轻的时候选择了一个我目前看来很喜欢的方向，并在这条道路上越走越远！很高兴我能在SDNAP这个大家庭里遇到很多好玩的朋友，很多比我大很多很多的大哥，大叔！这里有很多我的老师，比如地球-某某，KKBluE,盛科-卫峰，无厘头等！在完成这个控制器的道路上他们给了我许多指导，特别是地球-某某老师。</p>
 <p>最后，当年那两个年轻有为的学长，如今一个在美团，一个在美帝的那两个熟悉的人。带我走进OpenFlow世界，同时这个控制器也是他们首先开始编写的。后来才由我来完成这个小小的控制器！谢谢学长！！</p>
 <p>差点忘了，一起奋斗的小伙伴，老伙伴！工信部的adam可是给我很多机会，给我很多帮助的博士哥！一起加班的时候聊天感觉特别好！！能一起奋斗努力完成一件事情真的太幸福了！！还有完成上层建筑的同事兼好朋友yzp学长！一起合作完成一件东西的感觉让我学会了合作，如果天气好，一起骑自行车下班聊天真的是一件特别惬意的事情！！跟你合作很愉快，哈哈！</p>
-<p><strong>谢谢一路上帮助我的人，明天你会看到更好的我！</strong></p>
+<p><strong>谢谢一路上帮助我的人，感谢我们家小乖乖，一直很支持我！明天你会看到更好的我！</strong></p>
 <hr /></div>
 	
         <hr>

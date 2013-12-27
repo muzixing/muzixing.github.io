@@ -38,7 +38,7 @@
 
         <ul class="nav">
             
-            <li><a href="./pages/about.html">About</a></li>
+            <li><a href="./pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -73,7 +73,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         </div>
         
         <div><h2>前言</h2>
-<p>（习惯性乱扯两句，可跳过）一年之前第一次接触SDN的时候，我甚至连pox的发音都发不对。第一次看OF1.0spec的时候，更是不懂secure channel到底是什么概念，Datapath一样是云里雾里。我不知道流是一个什么概念，不知道SDN如何DN，我只是觉得，我可能会比较喜欢IP这一方面的东西，具体哪一方面我也不知道。但是无所谓啊，我还年轻，我有选择的机会。抱着试一试的态度，去学习了SDN的一些知识，慢慢地就喜欢上了。不仅仅是因为知识本身，更是因为当我获得成功时刻的成就感与自豪感，让我觉得我愿意去做这件事情！一年之后，我写过Openflow协议通信流程的教程，画过所有Openflow协议的数据结构，写完自己的一个控制器，还写了一边关于如何编写控制器的教程，懂得怎么使用mininet搭建自定义的拓扑，懂得使用spirent testcente去打流测试，懂得pox是如何运作的，等等。我甚至可以去教一些新手一些关于SDN的技术，但是，当我想要写点东西的时候，我却突然发现，我不知道什么是SDN！我并不清楚SDN是从何而来，不知道SDN发展历程，不知道SDN目前面临的问题，不明白SDN的现状到底什么状态，不知道SDN的未来有什么前景。我只知道一些具体的技术细节，也许对于一个本科生已经不错了。但是这也正是我们本科生的弱点所在吧。缺少大局观，目光不够长远，对知识的掌握更倾向于操作而非原理。正好需要写一写小论文，抓住机会，好好学习一下SDN的相关知识是一个非常明智的选择。</p>
+<p>（习惯性乱扯两句，可跳过）一年之前第一次接触SDN的时候，我甚至连pox的发音都发不对。第一次看OF1.0spec的时候，更是不懂secure channel到底是什么概念，Datapath一样是云里雾里。我不知道流是一个什么概念，不知道SDN如何DN，我只是觉得，我可能会比较喜欢IP这一方面的东西，具体哪一方面我也不知道。但是无所谓啊，我还年轻，我有选择的机会。抱着试一试的态度，去学习了SDN的一些知识，慢慢地就喜欢上了。不仅仅是因为知识本身，更是因为当我获得成功时刻的成就感与自豪感，让我觉得我愿意去做这件事情！一年之后，我写过Openflow协议通信流程的教程，画过所有Openflow协议的数据结构，写完自己的一个控制器，还写了一边关于如何编写控制器的教程，懂得怎么使用mininet搭建自定义的拓扑，懂得使用spirent testcenter去打流测试，懂得pox是如何运作的，等等。我甚至可以去教一些新手一些关于SDN的技术，但是，当我想要写点东西的时候，我却突然发现，我不知道什么是SDN！我并不清楚SDN是从何而来，不知道SDN发展历程，不知道SDN目前面临的问题，不明白SDN的现状到底什么状态，不知道SDN的未来有什么前景。我只知道一些具体的技术细节，也许对于一个本科生已经不错了。但是这也正是我们本科生的弱点所在吧。缺少大局观，目光不够长远，对知识的掌握更倾向于操作而非原理。正好需要写一写小论文，抓住机会，好好学习一下SDN的相关知识是一个非常明智的选择。</p>
 <h2>什么是SDN？</h2>
 <p><strong>SDN是software defined network 的首字母缩写，翻译成中文即：软件定义网络</strong>。利用OpenFlow协议，把路由器的控制平面（control plane）从数据平面（data plane）中分离出来，以软件方式实现。这个架构可以让网络管理员，在不改动硬件设备的前提下，以中央控制方式，用程序重新规划网络，为控制网络流量提供了新的方法，也提供了核心网络及应用创新的良好平台。</p>
 <h2>SDN的发展历程</h2>
@@ -214,11 +214,11 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 
  </div>
         <div class="summary"><hr />
-<h1>前言</h1>
+<h2>前言</h2>
 <p>SDN(Software Defined Network)这些年越来越火。当我还是大三的小朋友的时候，我的学长带我走进了OpenFlow的世界。一年里，我慢慢学会了许多东西，研究过pox,写过mininet自定义拓扑，画过OpenFlow的数据结构，做过HTTP的流量引导，广播风暴解除等许多小东西。在SDN这条道路上越走越远，也希望有一天，我能在这个领域有所成就，做出一点自己的贡献。</p>
 <p>暑假的时候开始来工信部电信研究院实习，开始跟着学长一起开发，后来学长去美帝了，我继续完成剩下的工作。为了实现demo，我们顺便写了一个小小的控制器，其本质很简单，也许简单到你都不屑一顾。但是这个过程，我们需要从底层通信开始搭建，一直到最后的上层应用，无论哪一个环节，都会涉及到。到最后你会发现，其实也许这个控制器并没有太大的用处，但是更多的是这个过程中你学到的知识，那是使用别人开发的控制器说不能得到的宝贵知识。</p>
 <hr />
-<h1>你能得到的</h1>
+<h2>你能得到的</h2>
 <ul>
 <li>底层通信：基于Tornado架构的socket通信的搭建</li>
 <li>OpenFlow协议数据结构细节</li>
@@ -243,24 +243,24 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 
 
  </div>
-        <div class="summary"><h1>前言</h1>
+        <div class="summary"><h2>前言</h2>
 <p>接触了这么久的SDN，OpenFlow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对OpenFlow协议通信流程的一些理解。</p>
-<h1>SDN中Switch和controller</h1>
+<h2>SDN中Switch和controller</h2>
 <p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
-<h2>switch组成与传统交换机的差异</h2>
-<h3>switch组成</h3>
+<h3>switch组成与传统交换机的差异</h3>
+<h4>switch组成</h4>
 <p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
 <ul>
 <li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
 <li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
 </ul>
-<h3>of中sw与传统交换机的差异</h3>
+<h4>of中sw与传统交换机的差异</h4>
 <ul>
 <li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
 <li>运行of协议，实现许多路由器的功能，比如组播。</li>
 <li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
 </ul>
-<h3>OpenFlow的switch可以从以下方式获得</h3>
+<h4>OpenFlow的switch可以从以下方式获得</h4>
 <ul>
 <li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
     </div>	
