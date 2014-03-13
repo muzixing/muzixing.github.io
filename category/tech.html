@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html"><h1>【原】基于mininet的OpenFlow拓展性拓扑搭建</h1></a>
-2014-03-11
+            <a href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html"><h1>SDN实现HTTP网络加速实验</h1></a>
+2014-03-13
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,29 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h2>前言</h2>
+        <div><h3>由于篇幅太长，且这个实验室是很久以前，我和我的小伙伴们一起做的课设，没有时间进行排版书写。</h3>
+<p>附上链接：</p>
+<p>http://user.qzone.qq.com/350959853/blog/1394681174</p>
+<p>北邮学弟学妹做这个课设的可以联系628中某学长。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html"><h2>【原】基于mininet的OpenFlow拓展性拓扑搭建</h2></a>
+        <div class= "well small"> 2014-03-11
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
 <p>我们普遍情况下，都是单一控制器去控制一个网络。但是如果多控制器呢？我们如何实现多控制情况下的通信要求呢？</p>
 <p>这有点难度！需要一些东西向的协议来实现控制器之间的数据共享与交换。不是我一个人一两天能搞定的事情。且不同控制器对拓扑信息等存储方式不一样，需要一个统一的标准就显得比较困难。我们先不去想太多。首先，我们需要完成的第一项工作就是数据平面上，不同控制器之间的网络可以相互通信。</p>
 <p>最简单的通信莫过于ping了！</p>
@@ -84,95 +106,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>直接上代码：</p>
 <div class="highlight"><pre><span class="o">\</span><span class="c1">#!/usr/bin/python</span>
 <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    This is a topu of our test. It shows that how to add an interface(for example a real hardware interface) to a network after the network is created.</span>
-<span class="s">    This code writed by li cheng, after learning mininet of sprient&#39;s.</span>
-<span class="s">&quot;&quot;&quot;</span>
-<span class="nb">import</span> <span class="n">re</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">cli</span> <span class="nb">import</span> <span class="n">CLI</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">log</span> <span class="nb">import</span> <span class="n">setLogLevel</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span><span class="n">error</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">net</span> <span class="nb">import</span> <span class="n">Mininet</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">link</span> <span class="nb">import</span> <span class="n">Intf</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">topolib</span> <span class="nb">import</span> <span class="n">TreeTopo</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">util</span> <span class="nb">import</span> <span class="n">quietRun</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">node</span> <span class="nb">import</span> <span class="n">RemoteController</span><span class="p">,</span> <span class="n">OVSKernelSwitch</span>
-<span class="n">def</span> <span class="n">checkIntf</span><span class="p">(</span><span class="n">intf</span><span class="p">):</span>
-    <span class="c1">#make sure intface exists and is not configured.</span>
-    <span class="k">if</span><span class="p">(</span><span class="s">&#39; %s:&#39;</span><span class="nv">%</span> <span class="nv">intf</span><span class="p">)</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">quietRun</span><span class="p">(</span><span class="s">&#39;ip link show&#39;</span><span class="p">):</span>
-        <span class="n">error</span><span class="p">(</span><span class="s">&#39;Error:&#39;</span><span class="p">,</span> <span class="n">intf</span><span class="p">,</span> <span class="s">&#39;does not exist!\n&#39;</span> <span class="p">)</span>
-        <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">ips</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span> <span class="n">r</span><span class="s">&#39;\d+\.\d+\.\d+\.\d+&#39;</span><span class="p">,</span> <span class="n">quietRun</span><span class="p">(</span> <span class="s">&#39;ifconfig &#39;</span> <span class="o">+</span> <span class="n">intf</span> <span class="p">)</span> <span class="p">)</span>
-    <span class="k">if</span> <span class="n">ips:</span>
-        <span class="n">error</span><span class="p">(</span><span class="s">&quot;Error:&quot;</span><span class="p">,</span> <span class="n">intf</span><span class="p">,</span> <span class="s">&#39;has an IP address,&#39;</span>
-            <span class="s">&#39;and is probably in use!\n&#39;</span><span class="p">)</span>
-        <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">setLogLevel</span><span class="p">(</span><span class="s">&quot;info&quot;</span><span class="p">)</span>
-    <span class="n">OVSKernelSwitch</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
-    <span class="n">intfName_1</span> <span class="o">=</span> <span class="s">&quot;eth1&quot;</span>  <span class="c1">#将虚拟机的eth1赋值给intfName_1,</span>
-    <span class="n">info</span><span class="p">(</span><span class="s">&quot;****checking****&quot;</span><span class="p">,</span> <span class="n">intfName_1</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span><span class="p">)</span>
-    <span class="n">checkIntf</span><span class="p">(</span><span class="n">intfName_1</span><span class="p">)</span> <span class="c1">#检查eth1是否可用</span>
-
-    <span class="n">info</span><span class="p">(</span><span class="s">&quot;****creating network****\n&quot;</span><span class="p">)</span>
-    <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">listenPort</span> <span class="o">=</span> <span class="mi">6633</span><span class="p">)</span> <span class="c1">#监听端口是6633</span>
-
-    <span class="n">mycontroller</span> <span class="o">=</span> <span class="n">RemoteController</span><span class="p">(</span><span class="s">&quot;muziController&quot;</span><span class="p">,</span> <span class="n">ip</span> <span class="o">=</span> <span class="s">&quot;192.168.0.1&quot;</span><span class="p">)</span><span class="c1">#设定远程控制器</span>
-
-    <span class="n">switch_1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s1&#39;</span><span class="p">)</span><span class="c1">#添加交换机s1</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">controllers</span> <span class="o">=</span> <span class="p">[</span><span class="n">mycontroller</span><span class="p">]</span><span class="c1">#添加控制器</span>
-
-    <span class="n">_intf_1</span> <span class="o">=</span> <span class="n">Intf</span><span class="p">(</span><span class="n">intfName_1</span><span class="p">,</span> <span class="n">node</span> <span class="o">=</span> <span class="n">switch_1</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="c1">#使用接口函数把虚拟机的网卡和mininet中的交换机的端口1连接</span>
-
-    <span class="n">h1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h1&#39;</span><span class="p">)</span><span class="c1">#创建host1</span>
-    <span class="n">h2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h2&#39;</span><span class="p">)</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span><span class="c1">#将h1连接到s1上</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_1</span><span class="p">,</span> <span class="n">h2</span><span class="p">)</span>
-
-    <span class="n">info</span><span class="p">(</span><span class="s">&quot;*****Adding hardware interface &quot;</span><span class="p">,</span> <span class="n">intfName_1</span><span class="p">,</span> <span class="s">&quot;to switch:&quot;</span> <span class="p">,</span><span class="n">switch_1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span><span class="p">)</span>
-
-    <span class="n">net</span><span class="o">.</span><span class="n">start</span><span class="p">()</span><span class="c1">#启动mininet类的对象net</span>
-    <span class="n">CLI</span><span class="p">(</span><span class="n">net</span><span class="p">)</span><span class="c1">#启动命令行</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-</pre></div>
-
-
-<p>以上的代码写完之后，保存为topo.py文件，我们无需再输入什么sudo mn等命令，只需要运行它就可以了。</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">python</span> <span class="n">topo</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-
-
-<p>另外我们还需要在远端运行一个控制器。这个太简单，不懂的同学可以google一下。</p>
-<p>这就完成了一个虚拟机的代码编写，另外一个虚拟机的情况同理去做就可以了。</p>
-<h2>关键配置</h2>
-<p>在这个时候，两个mininet中的网络是无法相互ping通的。</p>
-<p>因为还有一些关键配置我们没有做。</p>
-<h3>host的ip配置成与虚拟机网卡同一网段的ip</h3>
-<p><strong>这一点需要非常注意！</strong>因为mininet模拟出来的host默认情况下，是10网段的，而普通的虚拟机会得到的网段是192的网段。这两个网段并不一样，所以host无法ping通虚拟机网卡也是很正常的，即使物理上做了连接。</p>
-<p>所以我们需要对host进行ip配置</p>
-<p>在mininet之下：</p>
-<div class="highlight"><pre><span class="n">h1</span> <span class="n">ifconfig</span> <span class="n">h1</span><span class="o">-</span><span class="n">eth0</span> <span class="mf">192.168.0.6</span><span class="c1">#ip只要是同一网段就可以</span>
-</pre></div>
-
-
-<p>最好我们需要把所有的host的ip都修改成192网段的。所以模拟的时候建议host数量不用过多。也许mininet中可以直接指定所有host的ip网段，我还没有研究到，如果你知道，你可以告诉我！相互交流学习！</p>
-<p>这个时候你会发现还是没有ping通！我们需要进行下一步。</p>
-<h3>将网卡设为桥接模式，并全部允许混杂，同时不给网卡分配IP。</h3>
-<ul>
-<li>
-<p>桥接模式能确保虚拟机能和主机通信，并通过主机网卡与两一个虚拟机网卡连接。</p>
-</li>
-<li>
-<p>混杂模式之下会把目的地址不是自己的数据接受并转发出去。</p>
-</li>
-<li>
-<p>不给网卡进行dhclient服务，则网卡没有配置ip，从而作为一个二层原件去转发数据。</p>
-</li>
-</ul>
-<p>当两台虚拟机都完成了以上的工作的时候，相信两个mininet网络之间的host是可以互ping的！好玩吧！</p>
-<h2>后续</h2>
-<p>多控制器的沟通，其实更重要的是控制器之间的信息共享，但是那还比较难，以后做出来再说吧。谢谢浏览！</p></div>
-        <hr />
-    </div>
-		
+<span class="s">    This is a topu of our test. It shows that how to add an ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -256,43 +192,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <li>若干网络协议的熟悉与掌握。</li>
 <li>最重要的，你自己从无到有，经历了一个开发过程，所有出现的你想到的想不到的问题，你都需要自己去解决。你会在解决问题的过程中收获太多太多你想不到的财富。</li>
 <li>自信！你可以大声对自己说 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html"><h2>【原创】OpenFlow通信流程解读</h2></a>
-        <div class= "well small"> 2013-12-12
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>接触了这么久的SDN，OpenFlow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对OpenFlow协议通信流程的一些理解。</p>
-<h2>SDN中Switch和controller</h2>
-<p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
-<h3>switch组成与传统交换机的差异</h3>
-<h4>switch组成</h4>
-<p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
-<ul>
-<li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
-<li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
-</ul>
-<h4>of中sw与传统交换机的差异</h4>
-<ul>
-<li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
-<li>运行of协议，实现许多路由器的功能，比如组播。</li>
-<li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
-</ul>
-<h4>OpenFlow的switch可以从以下方式获得</h4>
-<ul>
-<li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
