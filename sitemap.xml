@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/index.html</loc>
-<lastmod>2014-03-25T11:35:05-00:00</lastmod>
+<lastmod>2014-03-25T13:33:17-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/archives.html</loc>
-<lastmod>2014-03-25T11:35:05-00:00</lastmod>
+<lastmod>2014-03-25T13:33:17-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/tags.html</loc>
-<lastmod>2014-03-25T11:35:05-00:00</lastmod>
+<lastmod>2014-03-25T13:33:17-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/categories.html</loc>
-<lastmod>2014-03-25T11:35:05-00:00</lastmod>
+<lastmod>2014-03-25T13:33:17-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -53,7 +53,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/03/21/ru-he-shi-yong-markdowntian-jia-shi-pin-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html</loc>
+<loc>http://muzixing.github.io/pages/2014/03/21/markdowntian-jia-shi-pin-jiao-cheng-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html</loc>
 <lastmod>2014-03-21T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
