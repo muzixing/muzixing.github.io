@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="./theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="./theme/bootstrap.min.css" rel="stylesheet">
-    <link href="./theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="./theme/local.css" rel="stylesheet">
-    <link href="./theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href=".">Code the world</a>
+        <a class="brand" href="../../../..">Code the world</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="./pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2014/03/26/poxmessengermo-kuai-getting-start.html"><h1>[pox]messenger模块getting start</h1></a>
+            <h1>[pox]messenger模块getting start</h1>
 2014-03-26
 
-by <a class="url fn" href="./author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><h3>关于messenger getting started的来历</h3>
 <p>在pox中，murphy专门开发了一个叫messenger的模块，用于实现pox与其他程序的通信。我曾有一个想法想实现分布式的pox。于是我在整个internet上面寻找了好久，依然没有找到什么有用的东西！很忧伤！自己看代码也没有看明白怎么用！后来直接去stanford的网站上面问pox的做着murphy！在我再三脑残的追问之下，终于他觉得应该写一个getting started了。于是就在pox+wiki上面添加了messenger的getting started.</p>
 <h3>Messenger 的作用</h3>
@@ -123,138 +117,23 @@ The messenger package in the repository has a fair amount of comments.  Addition
 <p>更多的尝试我没有继续，因为实在是看不懂这个POX的代码逻辑。最后选择自己去开启一个线程，直接简历socket连接。但是这些连接需要设计一些逻辑，可能工作量还是有一些的。但是不是特别多。如果你对这个感兴趣，你可以尝试。如果你知道更好的方法，你可以给我留言哦！我非常喜欢有人和我交流，一个人做这个很郁闷！</p>
 <p>如有问题，请留言。</p>
 <p>更多pox相关解答：https://openflow.stanford.edu/display/ONL/POX+Wiki</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = '[pox]messenger模块getting start';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html"><h2>mininet与外部host通信</h2></a>
-        <div class= "well small"> 2014-03-25
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>好多同学都在尝试使用mininet搭建拓扑。有的同学在尝试如何让mininet与外网通信，比如虚拟机，比如mininet之外的另一个网络。问题已经存在很久，本文将介绍如何使用mininet的接口实现与外界通信。</p>
-<h3>Intf()接口</h3>
-<p>在mininet的源码中，我们可以找到一个link的文件，也是一个类。这个文件中有一个接口类Intf()</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Intf</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
-
-    <span class="s">&quot;Basic interface object that can configure itself.&quot;</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>使用这个接口类，可以把安装mininet的机器的网卡接到mininet的ovs之上。</p>
-<p>剩下的就简单了。最重要的接口解决之后一切就都解决了。</p>
-<p>如果需要例子，可以在本站查看：mininet搭建自定义拓扑</p>
-<p>另，也可以查看mininet中的hwintf文件。</p>
-<p>希望能对你有帮助。</p> <a class="btn btn-info xsmall" href="./pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html"><h2>【转】linux常用命令</h2></a>
-        <div class= "well small"> 2014-03-25
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>我为我没有系统的学习linux而感到后悔！一定好好时间一遍鸟哥的linux私房菜，但是一些linux常用命令，记下也好！google之后，搜到一篇不错的文章，特此转载，保留个人使用。原文地址：http://www.php100.com/html/webkaifa/Linux/2009/1106/3485.html</p>
-<h3>linux常用命令</h3>
-<p><strong>系统信息</strong></p>
-<p>arch 显示机器的处理器架构(1) </p>
-<p>uname -m 显示机器的处理器架构(2) </p>
-<p>uname -r 显示正在使用的内核版本 </p>
-<p>dmidecode -q 显示硬件系统部件 - (SMBIOS / DMI) </p>
-<p>hdparm -i /dev/hda 罗列一个磁盘的架构特性 </p>
-<p>hdparm -tT /dev/sda 在磁盘上执行测试性读取操作 </p>
-<p>cat /proc ...</p> <a class="btn btn-info xsmall" href="./pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/03/21/markdowntian-jia-shi-pin-jiao-cheng-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html"><h2>MARKDOWN添加视频教程：Idina Menze和Caleb Hyles激情对唱Let It Go</h2></a>
-        <div class= "well small"> 2014-03-21
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>首先，在markdown中写好标题，如：这个网站还不错。然后冒号：然后添加视频的地址等信息就好了。</p>
-<p>格式如下：</p>
-<div class="highlight"><pre>    Idina Menze和Caleb Hyles激情对唱Let It Go：<span class="nt">&lt;iframe</span> <span class="na">height=</span><span class="s">498</span> <span class="na">width=</span><span class="s">510</span> <span class="na">src=</span><span class="s">&quot;http://player.youku.com/embed/XNjcyMDU4Njg0&quot;</span> <span class="na">frameborder=</span><span class="s">0</span> <span class="err">allowfullscreen</span><span class="nt">&gt;&lt;/iframe&gt;</span>
-</pre></div>
-
-
-<p>这样就可以添加成功了。</p>
-<p>冒号后面的信息请在相关视频的分享键附近寻找把视频分享给朋友的地址，然后选择通用地址复制，格式上面已经有给出。</p>
-<p>然后就可以了！简单吧！我可是偷偷看别人的github源码才学会的！</p>
-<p>视频附上：</p>
-<p>Menze和Caleb Hyles激情对唱Let It Go:</p>
-<iframe height=498 width=510 src="http://player.youku.com/embed/XNjcyMDU4Njg0" frameborder=0 allowfullscreen></iframe>
-
-<p>非常赞的一个视频！学习如何使用MARKDOWN添加视频的成果咯！</p> <a class="btn btn-info xsmall" href="./pages/2014/03/21/markdowntian-jia-shi-pin-jiao-cheng-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html"><h2>SDN实现HTTP网络加速实验</h2></a>
-        <div class= "well small"> 2014-03-13
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>由于篇幅太长，且这个实验室是很久以前，我和我的小伙伴们一起做的课设，没有时间进行排版书写。</h3>
-<p>附上链接：</p>
-<p>http://user.qzone.qq.com/350959853/blog/1394681174</p>
-<p>北邮学弟学妹做这个课设的可以联系628中某学长。</p> <a class="btn btn-info xsmall" href="./pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="./index.html">1</a></li>
-    <li class=""><a href="./index2.html">2</a></li>
-    <li class=""><a href="./index3.html">3</a></li>
-    <li class=""><a href="./index4.html">4</a></li>
-
-    <li class="next"><a href="./index2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -265,8 +144,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="./archives.html">Archives</a>
-                <li><a href="./tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <li><a href="http://muzixing.github.io/" rel="alternate">Atom feed</a></li>
             </ul>
             </div>
@@ -278,8 +157,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="./category/life.html">Life</a></li>
-                <li><a href="./category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">Life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -315,7 +194,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href=".">Code the world</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Code the world</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
