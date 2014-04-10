@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/03/26/poxmessenger-component-getting-started.html"><h1>[POX]messenger component getting started</h1></a>
-2014-03-26
+            <a href="../pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html"><h1>The study notes of East-west Bridge for SDN Network Peering</h1></a>
+2014-04-10
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,60 +72,147 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h3>关于messenger getting started的来历</h3>
-<p>在POX中，Murphy专门开发了一个叫messenger的模块，用于实现POX与其他程序的通信。我曾有一个想法想实现分布式的POX。于是我在整个Internet上面寻找了好久，依然没有找到什么有用的东西！很忧伤！自己看代码也没有看明白怎么用！后来直接去Stanford的网站上面问Murphy！在我再三脑残的追问之下，终于他觉得应该写一个Getting started了。于是就在POX+wiki上面添加了Messenger的Getting started.</p>
-<h3>Messenger 的作用</h3>
-<p>从以下的英文中，我们可以对Messenger有一定的了解。messenger是一个API,是用与POX与其他程序建立连接的API,通过他实现的有PoxDesk,也就是POX的web ui。</p>
-<p>The messenger component provides an interface for POX to interact with external processes via bidirectional JSON-based messages.  The messenger by itself is really just an API, actual communication is implemented by transports.  Currently, transports exist for TCP sockets and for HTTP.  Actual functionality is implemented by services.  POX comes with a few services.  messenger.log_service allows for interacting with the log remotely (reading it, reconfiguring it, etc.).  openflow.of_service allows for some OpenFlow operations (e.g., listing switches, setting flow entries, etc.).  There are also a few small example services in the messenger package, and pox-log.py (in the tools directory) is a small, standalone, external Python application which interfaces with the the logging service over TCP.
-By writing a new service, it becomes available over any transport.  Similarly, writing a new transport allows for accessing any service in a new way.
-The messenger package in the repository has a fair amount of comments.  Additionally, you can see POXDesk (mentioned elsewhere) as an example of both implementing a new service, and communicating with messenger over HTTP from JavaScript. </p>
-<h3>加载messenger模块</h3>
-<p>我们在以下的代码中在运行的POX的时候加载了Messenger组件。同时，我们也把tcp_transport作为组件加载进来，最后我们运行Messenger组件。这个example启动了一个服务端线程，监听本机的7790端口。</p>
-<div class="highlight"><pre><span class="p">[</span><span class="n">pox_dart</span><span class="p">]</span><span class="nv">$</span> <span class="err">./</span><span class="nv">pox</span><span class="o">.</span><span class="n">py</span> <span class="nb">log</span><span class="o">.</span><span class="n">level</span> <span class="o">--</span><span class="n">DEBUG</span> <span class="n">messenger</span> <span class="n">messenger</span><span class="o">.</span><span class="n">tcp_transport</span> <span class="n">messenger</span><span class="o">.</span><span class="n">example</span>
-<span class="n">POX</span> <span class="mf">0.3.0</span> <span class="p">(</span><span class="n">dart</span><span class="p">)</span> <span class="o">/</span> <span class="n">Copyright</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">2014</span> <span class="n">James</span> <span class="n">McCauley</span><span class="p">,</span> <span class="n">et</span> <span class="n">al</span><span class="o">.</span>
-<span class="n">DEBUG:boot:Not</span> <span class="n">launching</span> <span class="n">of_01</span>
-<span class="n">DEBUG:core:POX</span> <span class="mf">0.3.0</span> <span class="p">(</span><span class="n">dart</span><span class="p">)</span> <span class="n">going</span> <span class="n">up</span><span class="o">...</span>
-<span class="n">DEBUG:core:Running</span> <span class="n">on</span> <span class="n">CPython</span> <span class="p">(</span><span class="mf">2.7.5</span><span class="o">/</span><span class="n">Sep</span> <span class="mi">12</span> <span class="mi">2013</span> <span class="mi">21</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mi">34</span><span class="p">)</span>
-<span class="n">DEBUG:messenger</span><span class="o">.</span><span class="n">tcp_transport:Listening</span> <span class="n">on</span> <span class="mf">0.0.0.0</span><span class="p">:</span><span class="mi">7790</span>
-<span class="n">DEBUG:core:Platform</span> <span class="n">is</span> <span class="n">Darwin</span><span class="o">-</span><span class="mf">13.1.0</span><span class="o">-</span><span class="n">x86_64</span><span class="o">-</span><span class="n">i386</span><span class="o">-</span><span class="mi">64</span><span class="n">bit</span>
-<span class="n">INFO:core:POX</span> <span class="mf">0.3.0</span> <span class="p">(</span><span class="n">dart</span><span class="p">)</span> <span class="n">is</span> <span class="n">up</span><span class="o">.</span>
+        <div><h3>前言</h3>
+<p>这是一篇学习笔记，是在阅读了林萍萍女士的论文"East-West Bridge for SDN Network Peering  "之后的总结与思考。</p>
+<p>东西向接口通信中交换的数据是一个域中的数据。</p>
+<h3>控制器之间的发现</h3>
+<p>最简单的方式就是直接指定,但是这明显不是一个合理的方法。比较好的做法是让所有的控制器在开启的时候向一个注册服务器注册自己的信息，然后再获取所有控制器的信息，如IP,PORT,用于建立控制器之间的连接。另有更智能的方法是通过lldp去发现邻居。即LLDP报文中携带本域中控制器的信息。
+即有如下三种方式：</p>
+<ul>
+<li>通过配置信息设置</li>
+<li>访问注册服务器获取</li>
+<li>通过LLDP去发现邻居 </li>
+</ul>
+<p>我认为，第一种方法最简单，但是需要手动配置。第二种方法最易于设计。第三种方法最智能。我觉得使用LLDP去发现邻居是一种不错的方式。每一次接入网络都需要探测自己的邻居，然后发送自己的拓扑信息给邻居，同时当拓扑发生变化时也需要给邻居同步，此处的拓扑发生变化可以包含如下两点：</p>
+<ul>
+<li>域内拓扑发生变化，如link down</li>
+<li>邻居C拓扑变化传送过来导致本地存储拓扑变化，从而需要更新拓扑，并通知其他邻居。</li>
+</ul>
+<h3>网络信息的存储</h3>
+<ul>
+<li>分布式存储在每一个控制器，每一个控制器只保存自己的视图，需要全局数据时再发送请求从别的控制器获取。此方式为主动请求方式，能减少拓扑信息传递的数量。但是耗时大。</li>
+<li>分布式存储在每一个控制器，每一个控制器都有全网视图。时刻保持tcp连接，实时更新全网拓扑。</li>
+<li>集中式存储，全网视图在某一指定服务器上。当全网视图发生改变，则分发给订阅的控制器。</li>
+</ul>
+<p>以上3种方法都需要在控制器启动的时候，将自己的拓扑信息提交给集中式存储的服务器或者发布给订阅的控制器。</p>
+<p>个人以为第三种集中式存储会比较好。控制器连接的时候也不需要去建立多个连接，只需订阅这一服务即可。（如何分析？）</p>
+<h3>网络视图</h3>
+<p>每一个网络都有一个视图，这个视图包含了如下的信息：（此表摘自参考文献）</p>
+<table>
+   <tr>
+      <td>Name</td>
+      <td>Type</td>
+      <td>Columns</td>
+   </tr>
+   <tr>
+      <td>Node_id</td>
+      <td>Virtual/physical</td>
+      <td>IP/MAC, OF_version, port_numbers，is_edge_node, Vendor_name,MTU，Device_type，Deveice_function</td>
+   </tr>
+   <tr>
+      <td>Link_id</td>
+      <td>Virtual/physical</td>
+      <td>Node_ID_src, Port_ID_src, Node_ID_dst,
+      Port_ID_dst,
+      Bandwidth,is_interdomain_link</td>
+   </tr>
+   <tr>
+      <td>Port_id</td>
+      <td>Virtual/physical</td>
+      <td>Node_ID,
+      Port_MAC,is_active, is_edge_port,
+      VLAN_ID,
+      throughput</td>
+   </tr>
+   <tr>
+      <td>Node_capbility</td>
+      <td>NULL</td>
+      <td>protocol_name, version, port</td>
+   </tr>
+   <tr>
+      <td>Reachability</td>
+      <td>NULL</td>
+      <td>IP_prefixes,length</td>
+   </tr>
+   <tr>
+      <td>Node_table_ID(Flow entity)</td>
+      <td>NULL</td>
+      <td>Columns names are the same as the fields defined in the flowtable in OpenFlow specification</td>
+   </tr>
+   <tr>
+      <td>Link_Utilities</td>
+      <td>NULL</td>
+      <td>Link_ID， Link utilities</td>
+   </tr>
+   <tr>
+      <td>Flow_path(Node_ID_src  Node_ID_dst)</td>
+      <td>NULL</td>
+      <td>Port_ID (in), Node_ID_src, Port_ID (out),Port_ID (in), Node_ID_dst, Port_ID (out)</td>
+   </tr>
+   <tr>
+      <td></td>
+   </tr>
+</table>
+
+<p>在上表之外，东西向接口还应该交换主机数据。如：</p>
+<div class="highlight"><pre><span class="n">IP</span><span class="o">/</span><span class="n">MAC</span> <span class="p">:</span><span class="n">DPID</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span><span class="o">+</span><span class="n">port</span>
 </pre></div>
 
 
-<p>然后我们开启另一个终端，然后进入到POX的messenger目录之下，运行test_client文件</p>
-<div class="highlight"><pre><span class="n">python</span> <span class="n">test_client</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-
-
-<p>之后，我们在test_client的输入框之下，输入：</p>
-<div class="highlight"><pre><span class="p">{</span><span class="s">&quot;CHANNEL&quot;</span><span class="p">:</span><span class="s">&quot;upper&quot;</span><span class="p">,</span><span class="s">&quot;msg&quot;</span><span class="p">:</span><span class="s">&quot;hello world&quot;</span><span class="p">}</span>
-</pre></div>
-
-
-<p>马上就会收到pox返回的信息：</p>
-<div class="highlight"><pre><span class="n">Recv:</span> <span class="p">{</span>
-    <span class="s">&quot;count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s">&quot;msg&quot;</span><span class="p">:</span> <span class="s">&quot;HELLO WORLD&quot;</span><span class="p">,</span>
-    <span class="s">&quot;CHANNEL&quot;</span><span class="p">:</span> <span class="s">&quot;upper&quot;</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>当然，这个前提是在test_client的主函数中的IP+Port都设置正确的情况下才会产生，即test_client中开启了一个半连接socket，做为客户端去connect server TCP.</p>
-<h3>小提示</h3>
-<p>如果想让POX运行CLI，你需要在运行POX的时候加上 py ,例如：</p>
-<div class="highlight"><pre><span class="n">python</span> <span class="n">pox</span><span class="o">.</span><span class="n">py</span> <span class="n">py</span>
-</pre></div>
-
-
-<p>这就会出现CLI。同时如果想让显示漂亮，可以加上samples.pretty_log。</p>
+<p>用于回复ARP信息。</p>
+<h3>网络视图学习</h3>
+<p>网络试图的基础信息可以通过LLDP报文获取，若更多高级的信息，我们需要通过对LLDP的数据段进行拓展，以携带相关的信息。本处所提到的学习是指从底层网络获取相关信息。</p>
+<h3>交换数据格式</h3>
+<ul>
+<li>Json，xml均可。</li>
+</ul>
+<p>对于这些我表示不太懂。一般的我使用scapy封装数据包，转换成stream之后，使用socket传输。</p>
+<h3>网络虚拟化</h3>
+<p>为了私有原因或者安全原因，我们有时候并不希望别的控制器全部知道我们的拓扑，所以网络虚拟化是很有必要的。<strong>我们可以将拓扑简化为几个边源端口组成的大交换机</strong> 从而隐藏内部拓扑的细节。</p>
+<p>这一点非常必要，而网络虚拟化可以完美解决。网络虚拟化产品有很多，有flowvisor，也有北京邮电大学开发的CNVP</p>
+<h3>交换事件</h3>
+<p>当网络信息（拓扑信息）发生变化时，我们需要实时地通知其他控制器这一变化。模拟BGP协议，我们可以设置5种类型的消息结构。</p>
+<ul>
+<li>Open</li>
+<li>Update</li>
+<li>Notification</li>
+<li>Keep-alive</li>
+<li>View-refresh</li>
+</ul>
+<p>当启动控制器时，控制器与其他控制器连接，发送open消息。然后发送update消息，将自己的网络信息传递给对方，同时获取对方传递过来的网络信息，以获得更新的全网拓扑。在无数据传输的时候，需要传递Keep-alive消息保持TCP连接。View-refresh消息用于主动获取网络信息。</p>
 <h3>后语</h3>
-<p>更多的尝试我没有继续，因为实在是看不懂这个POX的代码逻辑。最后选择自己去开启一个线程，直接简历socket连接。但是这些连接需要设计一些逻辑，可能工作量还是有一些的。但是不是特别多。如果你对这个感兴趣，你可以尝试。如果你知道更好的方法，你可以给我留言哦！我非常喜欢有人和我交流，一个人做这个很郁闷！</p>
-<p>如有问题，请留言。</p>
-<p>更多POX相关解答：https://openflow.stanford.edu/display/ONL/POX+Wiki</p></div>
+<p>这是昨天拜读林萍萍女士论文的总结与思考。虽然东西向接口大家都能想到，但是早在一年前就做出来，并做了implementation 和evaluation，这是非常厉害的！向前辈们学习！更多详细信息可以直接阅读参考文献。</p>
+<h3>参考文献：</h3>
+<p>Pingping Lin, Jun Bi, and Yangyang Wang</p>
+<p>East-West Bridge for SDN Network Peering</p>
+<p>Institute for Network Sciences and Cyberspace, Department of Computer Science,
+Tsinghua University</p>
+<p>Tsinghua National Laboratory for Information Science and Technology (TNList)</p></div>
         <hr />
     </div>
 		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/03/26/poxmessenger-component-getting-started.html"><h2>[POX]messenger component getting started</h2></a>
+        <div class= "well small"> 2014-03-26
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>关于messenger getting started的来历</h3>
+<p>在POX中，Murphy专门开发了一个叫messenger的模块，用于实现POX与其他程序的通信。我曾有一个想法想实现分布式的POX。于是我在整个Internet上面寻找了好久，依然没有找到什么有用的东西！很忧伤！自己看代码也没有看明白怎么用！后来直接去Stanford的网站上面问Murphy！在我再三脑残的追问之下，终于他觉得应该写一个Getting started了。于是就在POX+wiki上面添加了Messenger的Getting started.</p>
+<h3>Messenger 的作用</h3>
+<p>从以下的英文中，我们可以对Messenger有一定的了解。messenger是一个API,是用与POX与其他程序建立连接的API,通过他实现的有PoxDesk,也就是POX的web ui。</p>
+<p>The messenger component provides an interface for POX to interact with external processes via bidirectional JSON-based messages.  The messenger by itself is really ...</p> <a class="btn btn-info xsmall" href="../pages/2014/03/26/poxmessenger-component-getting-started.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -217,27 +304,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <iframe height=498 width=510 src="http://player.youku.com/embed/XNjcyMDU4Njg0" frameborder=0 allowfullscreen></iframe>
 
 <p>非常赞的一个视频！学习如何使用MARKDOWN添加视频的成果咯！</p> <a class="btn btn-info xsmall" href="../pages/2014/03/21/markdowntian-jia-shi-pin-jiao-cheng-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html"><h2>SDN实现HTTP网络加速实验</h2></a>
-        <div class= "well small"> 2014-03-13
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>由于篇幅太长，且这个实验室是很久以前，我和我的小伙伴们一起做的课设，没有时间进行排版书写。</h3>
-<p>附上链接：</p>
-<p>http://user.qzone.qq.com/350959853/blog/1394681174</p>
-<p>北邮学弟学妹做这个课设的可以联系628中某学长。</p> <a class="btn btn-info xsmall" href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

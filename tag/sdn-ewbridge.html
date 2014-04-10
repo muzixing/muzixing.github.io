@@ -191,121 +191,13 @@ Tsinghua University</p>
         <hr />
     </div>
 		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/26/poxmessenger-component-getting-started.html"><h2>[POX]messenger component getting started</h2></a>
-        <div class= "well small"> 2014-03-26
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>关于messenger getting started的来历</h3>
-<p>在POX中，Murphy专门开发了一个叫messenger的模块，用于实现POX与其他程序的通信。我曾有一个想法想实现分布式的POX。于是我在整个Internet上面寻找了好久，依然没有找到什么有用的东西！很忧伤！自己看代码也没有看明白怎么用！后来直接去Stanford的网站上面问Murphy！在我再三脑残的追问之下，终于他觉得应该写一个Getting started了。于是就在POX+wiki上面添加了Messenger的Getting started.</p>
-<h3>Messenger 的作用</h3>
-<p>从以下的英文中，我们可以对Messenger有一定的了解。messenger是一个API,是用与POX与其他程序建立连接的API,通过他实现的有PoxDesk,也就是POX的web ui。</p>
-<p>The messenger component provides an interface for POX to interact with external processes via bidirectional JSON-based messages.  The messenger by itself is really ...</p> <a class="btn btn-info xsmall" href="../pages/2014/03/26/poxmessenger-component-getting-started.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html"><h2>mininet与外部host通信</h2></a>
-        <div class= "well small"> 2014-03-25
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>好多同学都在尝试使用mininet搭建拓扑。有的同学在尝试如何让mininet与外网通信，比如虚拟机，比如mininet之外的另一个网络。问题已经存在很久，本文将介绍如何使用mininet的接口实现与外界通信。</p>
-<h3>Intf()接口</h3>
-<p>在mininet的源码中，我们可以找到一个link的文件，也是一个类。这个文件中有一个接口类Intf()</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Intf</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
-
-    <span class="s">&quot;Basic interface object that can configure itself.&quot;</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>使用这个接口类，可以把安装mininet的机器的网卡接到mininet的ovs之上。</p>
-<p>剩下的就简单了。最重要的接口解决之后一切就都解决了。</p>
-<p>如果需要例子，可以在本站查看：mininet搭建自定义拓扑</p>
-<p>另，也可以查看mininet中的hwintf文件。</p>
-<p>希望能对你有帮助。</p> <a class="btn btn-info xsmall" href="../pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html"><h2>【转】linux常用命令</h2></a>
-        <div class= "well small"> 2014-03-25
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>我为我没有系统的学习linux而感到后悔！一定好好时间一遍鸟哥的linux私房菜，但是一些linux常用命令，记下也好！google之后，搜到一篇不错的文章，特此转载，保留个人使用。原文地址：http://www.php100.com/html/webkaifa/Linux/2009/1106/3485.html</p>
-<h3>linux常用命令</h3>
-<p><strong>系统信息</strong></p>
-<p>arch 显示机器的处理器架构(1) </p>
-<p>uname -m 显示机器的处理器架构(2) </p>
-<p>uname -r 显示正在使用的内核版本 </p>
-<p>dmidecode -q 显示硬件系统部件 - (SMBIOS / DMI) </p>
-<p>hdparm -i /dev/hda 罗列一个磁盘的架构特性 </p>
-<p>hdparm -tT /dev/sda 在磁盘上执行测试性读取操作 </p>
-<p>cat /proc ...</p> <a class="btn btn-info xsmall" href="../pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html"><h2>SDN实现HTTP网络加速实验</h2></a>
-        <div class= "well small"> 2014-03-13
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>由于篇幅太长，且这个实验室是很久以前，我和我的小伙伴们一起做的课设，没有时间进行排版书写。</h3>
-<p>附上链接：</p>
-<p>http://user.qzone.qq.com/350959853/blog/1394681174</p>
-<p>北邮学弟学妹做这个课设的可以联系628中某学长。</p> <a class="btn btn-info xsmall" href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
-    <li class="active"><a href="../category/tech.html">1</a></li>
-    <li class=""><a href="../category/tech2.html">2</a></li>
-    <li class=""><a href="../category/tech3.html">3</a></li>
-    <li class=""><a href="../category/tech4.html">4</a></li>
+    <li class="active"><a href="../tag/sdn-ewbridge.html">1</a></li>
 
-    <li class="next"><a href="../category/tech2.html">Next &rarr;</a></li>
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
 
 </ul>
 </div>
