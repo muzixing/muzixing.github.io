@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/index.html</loc>
-<lastmod>2014-04-10T10:55:08-00:00</lastmod>
+<lastmod>2014-04-15T22:34:20-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/archives.html</loc>
-<lastmod>2014-04-10T10:55:08-00:00</lastmod>
+<lastmod>2014-04-15T22:34:20-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/tags.html</loc>
-<lastmod>2014-04-10T10:55:08-00:00</lastmod>
+<lastmod>2014-04-15T22:34:20-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/categories.html</loc>
-<lastmod>2014-04-10T10:55:08-00:00</lastmod>
+<lastmod>2014-04-15T22:34:20-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2013-12-27T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://muzixing.github.io/pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html</loc>
+<lastmod>2014-04-15T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -187,7 +194,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/category/tech.html</loc>
-<lastmod>2014-04-10T00:00:00-00:00</lastmod>
+<lastmod>2014-04-15T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -200,8 +207,8 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/suan-fa.html</loc>
-<lastmod>2013-11-29T00:00:00-00:00</lastmod>
+<loc>http://muzixing.github.io/tag/c.html</loc>
+<lastmod>2014-04-15T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -242,6 +249,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
+<loc>http://muzixing.github.io/tag/suan-fa.html</loc>
+<lastmod>2013-11-29T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
 <loc>http://muzixing.github.io/tag/openflow.html</loc>
 <lastmod>2014-03-13T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
@@ -264,7 +278,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/author/muzi.html</loc>
-<lastmod>2014-04-10T00:00:00-00:00</lastmod>
+<lastmod>2014-04-15T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

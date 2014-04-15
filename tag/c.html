@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="./theme/html5.js"></script>
+    <script src="../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="./theme/bootstrap.min.css" rel="stylesheet">
-    <link href="./theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="./theme/local.css" rel="stylesheet">
-    <link href="./theme/pygments.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../theme/local.css" rel="stylesheet">
+    <link href="../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href=".">Code the world</a>
+        <a class="brand" href="..">Code the world</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="./pages/about-me.html">About me</a></li>
+            <li><a href="../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -62,10 +62,10 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html"><h1>[C语言]两个栈实现队列</h1></a>
+            <a href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html"><h1>[C语言]两个栈实现队列</h1></a>
 2014-04-15
 
-by <a class="url fn" href="./author/muzi.html">muzi</a>
+by <a class="url fn" href="../author/muzi.html">muzi</a>
  
 
 
@@ -274,138 +274,13 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         <hr />
     </div>
 		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html"><h2>The study notes of East-west Bridge for SDN Network Peering</h2></a>
-        <div class= "well small"> 2014-04-10
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>这是一篇学习笔记，是在阅读了林萍萍女士的论文"East-West Bridge for SDN Network Peering  "之后的总结与思考。</p>
-<p>东西向接口通信中交换的数据是一个域中的数据。</p>
-<h3>控制器之间的发现</h3>
-<p>最简单的方式就是直接指定,但是这明显不是一个合理的方法。比较好的做法是让所有的控制器在开启的时候向一个注册服务器注册自己的信息，然后再获取所有控制器的信息，如IP,PORT,用于建立控制器之间的连接。另有更智能的方法是通过lldp去发现邻居。即LLDP报文中携带本域中控制器的信息。
-即有如下三种方式：</p>
-<ul>
-<li>通过配置信息设置</li>
-<li>访问注册服务器获取</li>
-<li>通过LLDP去发现邻居 </li>
-</ul>
-<p>我认为，第一种方法最简单，但是需要手动配置。第二种方法最易于设计。第三种方法最智能。我觉得使用LLDP去发现邻居是一种不错的方式。每一次接入网络都需要探测自己的邻居，然后发送自己的拓扑信息给邻居，同时当拓扑发生变化时也需要给邻居同步，此处的拓扑发生变化可以包含如下两点：</p>
-<ul>
-<li>域内拓扑发生变化，如link down</li>
-<li>邻居C拓扑变化传送过来导致本地存储拓扑变化，从而需要更新拓扑，并通知其他邻居。</li>
-</ul>
-<h3>网络信息的存储</h3>
-<ul>
-<li>分布式存储在每一个控制器，每一个控制器只保存自己的视图，需要全局数据时再发送请求从别的控制器获取。此方式为主动请求方式，能减少拓扑信息传递的数量。但是耗时大。</li>
-<li>分布式存储在每一个控制器，每一个控制器都有全网视图 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/03/26/poxmessenger-component-getting-started.html"><h2>[POX]messenger component getting started</h2></a>
-        <div class= "well small"> 2014-03-26
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>关于messenger getting started的来历</h3>
-<p>在POX中，Murphy专门开发了一个叫messenger的模块，用于实现POX与其他程序的通信。我曾有一个想法想实现分布式的POX。于是我在整个Internet上面寻找了好久，依然没有找到什么有用的东西！很忧伤！自己看代码也没有看明白怎么用！后来直接去Stanford的网站上面问Murphy！在我再三脑残的追问之下，终于他觉得应该写一个Getting started了。于是就在POX+wiki上面添加了Messenger的Getting started.</p>
-<h3>Messenger 的作用</h3>
-<p>从以下的英文中，我们可以对Messenger有一定的了解。messenger是一个API,是用与POX与其他程序建立连接的API,通过他实现的有PoxDesk,也就是POX的web ui。</p>
-<p>The messenger component provides an interface for POX to interact with external processes via bidirectional JSON-based messages.  The messenger by itself is really ...</p> <a class="btn btn-info xsmall" href="./pages/2014/03/26/poxmessenger-component-getting-started.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html"><h2>mininet与外部host通信</h2></a>
-        <div class= "well small"> 2014-03-25
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>好多同学都在尝试使用mininet搭建拓扑。有的同学在尝试如何让mininet与外网通信，比如虚拟机，比如mininet之外的另一个网络。问题已经存在很久，本文将介绍如何使用mininet的接口实现与外界通信。</p>
-<h3>Intf()接口</h3>
-<p>在mininet的源码中，我们可以找到一个link的文件，也是一个类。这个文件中有一个接口类Intf()</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Intf</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
-
-    <span class="s">&quot;Basic interface object that can configure itself.&quot;</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>使用这个接口类，可以把安装mininet的机器的网卡接到mininet的ovs之上。</p>
-<p>剩下的就简单了。最重要的接口解决之后一切就都解决了。</p>
-<p>如果需要例子，可以在本站查看：mininet搭建自定义拓扑</p>
-<p>另，也可以查看mininet中的hwintf文件。</p>
-<p>希望能对你有帮助。</p> <a class="btn btn-info xsmall" href="./pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html"><h2>【转】linux常用命令</h2></a>
-        <div class= "well small"> 2014-03-25
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>我为我没有系统的学习linux而感到后悔！一定好好时间一遍鸟哥的linux私房菜，但是一些linux常用命令，记下也好！google之后，搜到一篇不错的文章，特此转载，保留个人使用。原文地址：http://www.php100.com/html/webkaifa/Linux/2009/1106/3485.html</p>
-<h3>linux常用命令</h3>
-<p><strong>系统信息</strong></p>
-<p>arch 显示机器的处理器架构(1) </p>
-<p>uname -m 显示机器的处理器架构(2) </p>
-<p>uname -r 显示正在使用的内核版本 </p>
-<p>dmidecode -q 显示硬件系统部件 - (SMBIOS / DMI) </p>
-<p>hdparm -i /dev/hda 罗列一个磁盘的架构特性 </p>
-<p>hdparm -tT /dev/sda 在磁盘上执行测试性读取操作 </p>
-<p>cat /proc ...</p> <a class="btn btn-info xsmall" href="./pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
-    <li class="active"><a href="./index.html">1</a></li>
-    <li class=""><a href="./index2.html">2</a></li>
-    <li class=""><a href="./index3.html">3</a></li>
-    <li class=""><a href="./index4.html">4</a></li>
-    <li class=""><a href="./index5.html">5</a></li>
+    <li class="active"><a href="../tag/c.html">1</a></li>
 
-    <li class="next"><a href="./index2.html">Next &rarr;</a></li>
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
 
 </ul>
 </div>
@@ -421,8 +296,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="./archives.html">Archives</a>
-                <li><a href="./tags.html">Tags</a>
+                <li><a href="../archives.html">Archives</a>
+                <li><a href="../tags.html">Tags</a>
                 <li><a href="http://muzixing.github.io/" rel="alternate">Atom feed</a></li>
             </ul>
             </div>
@@ -434,8 +309,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="./category/life.html">Life</a></li>
-                <li><a href="./category/tech.html">Tech</a></li>
+                <li><a href="../category/life.html">Life</a></li>
+                <li><a href="../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -471,7 +346,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href=".">Code the world</a> &copy; muzi 2012</p>
+<p><a href="..">Code the world</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
