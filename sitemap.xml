@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/index.html</loc>
-<lastmod>2014-04-15T22:41:41-00:00</lastmod>
+<lastmod>2014-04-17T11:32:43-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/archives.html</loc>
-<lastmod>2014-04-15T22:41:41-00:00</lastmod>
+<lastmod>2014-04-17T11:32:43-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/tags.html</loc>
-<lastmod>2014-04-15T22:41:41-00:00</lastmod>
+<lastmod>2014-04-17T11:32:43-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/categories.html</loc>
-<lastmod>2014-04-15T22:41:41-00:00</lastmod>
+<lastmod>2014-04-17T11:32:43-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2013-12-27T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://muzixing.github.io/pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html</loc>
+<lastmod>2014-04-17T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -194,7 +201,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/category/tech.html</loc>
-<lastmod>2014-04-15T00:00:00-00:00</lastmod>
+<lastmod>2014-04-17T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -209,6 +216,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>http://muzixing.github.io/tag/c.html</loc>
 <lastmod>2014-04-15T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>http://muzixing.github.io/tag/code.html</loc>
+<lastmod>2014-04-17T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -278,7 +292,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/author/muzi.html</loc>
-<lastmod>2014-04-15T00:00:00-00:00</lastmod>
+<lastmod>2014-04-17T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

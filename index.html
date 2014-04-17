@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html"><h1>[C语言]两个栈实现队列</h1></a>
-2014-04-15
+            <a href="./pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html"><h1>编程真的不简单</h1></a>
+2014-04-17
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
  
@@ -73,6 +73,111 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         </div>
         
         <div><h3>前言</h3>
+<p>以前觉得编程嘛，不就是写代码嘛。谁不会啊！后来，和大男哥聊天的过程中，他说到一句话：大家都说我会c编程，然后我也觉得我会用c。就像我会打篮球，科比也会打篮球一样。</p>
+<p>当时真的笑翻了！不过说来也是！编程真的不简单！</p>
+<h3>编程真的不简单</h3>
+<p>下面是上个周我做的c语言培训题收获的感想。<strong>编程真的不简单啊！</strong></p>
+<p>之前都是用python写程序，很少会注意到一些方面，比如头文件之类的，指针之类的。这次的c题培训，让我对编程的认识上升到了另一个阶段。</p>
+<h3>编码</h3>
+<p>编程并不是仅仅把功能实现而已。还有许多重要的东西，比如：</p>
+<ul>
+<li>
+<p><strong>逻辑的严谨性</strong>：一些边界条件，可能的逻辑分支等，都需要考虑到。</p>
+</li>
+<li>
+<p><strong>模块化思想</strong>：将相对独立的功能写在一个文件中，有利于解耦和移植。提高代码的复用性，同时也为单元测试提供了可能。</p>
+</li>
+<li>
+<p><strong>头文件的重要性</strong>：在C语言中通过include 头文件的方式把某一些模块添加进来。同时一个头文件所包含的的内容应该是静态的声明，而不应该有实现。所有的实现都应该出现在同名的.c文件中。同时，在运行的时候我们必须保证.C的实现与.h的声明一致，某种程度上是对代码的保护。</p>
+</li>
+<li>
+<p><strong>可读性</strong>：可读性的重点是对编程者而言。一个好的代码，应该可读性很高。我们可以从函数明直观的明白函数的功能，同时可以从变量名清楚地知道其作用。从文本的角度提高可读性。一段苦涩难懂的代码，也许机器容易度，但是其可读性过低，对于后期维护，成本过高。</p>
+</li>
+<li>
+<p><strong>追求高效</strong>：在保证可读性的同时，应该追求代码的高效性，如多重循环中，上层计算结果应该用变量去保存，用于底层的循环，而不应该在底层进行多次计算重复值。
+如：</p>
+<div class="highlight"><pre><span class="err">函数</span><span class="n">foo</span><span class="p">(</span><span class="nb">int</span> <span class="n">num</span><span class="p">)</span><span class="err">是一个计算庞大的函数。</span>
+<span class="n">For</span><span class="p">(</span><span class="nb">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">100</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="p">{</span>   
+    <span class="n">For</span><span class="p">(</span><span class="nb">int</span> <span class="n">j</span> <span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span> <span class="o">&lt;</span><span class="n">foo</span><span class="p">(</span><span class="n">i</span><span class="p">);</span><span class="n">j</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">j</span><span class="o">++</span><span class="p">;</span><span class="sr">//</span><span class="k">do</span> <span class="n">anything</span><span class="o">.</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>这样每一次循环内循环的时候，在判断j是否小于foo(i)的时候都需要花大量的时间去计算foo(i)的结果。正确的方式应该是：</p>
+<div class="highlight"><pre><span class="n">For</span><span class="p">(</span><span class="nb">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">100</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="p">{</span>   <span class="nb">int</span> <span class="n">tmp</span> <span class="o">=</span><span class="n">foo</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+    <span class="n">For</span><span class="p">(</span><span class="nb">int</span> <span class="n">j</span> <span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span> <span class="o">&lt;</span><span class="n">tmp</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">j</span><span class="o">++</span><span class="p">;</span><span class="sr">//</span><span class="k">do</span> <span class="n">anything</span><span class="o">.</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>如此一来仅仅计算了一次，就可以将值使用多次，减少了没有必要的循环。
+虽然写起来可能不太好看。但是花费一个变量可以省去许多计算是很值得的。</p>
+</li>
+<li>
+<p><strong>设计的重要性</strong>：能实现功能的方式有很多种，如何采用高效的算法，设计优雅的数据结构，定义正确的函数功能，参数。这些是我这些天学到的宝贵的一点。</p>
+</li>
+<li>
+<p><strong>算法</strong>：一个程序的灵魂是算法。宁可花掉时间想算法，也不可以退而求其次采用低效的算法解决问题。</p>
+</li>
+<li><strong>数据结构的重要性</strong>：在写代码的过程中好多时候我的数据结构都设计得不好，男哥给我很多的帮助。首先要清楚要做什么，需要什么，然后再去设计。后来的数据结构好与坏，我基本能有一些感觉了。好的数据结构能让算法更简单。</li>
+<li>
+<p><strong>函数定义</strong>：函数定义涉及到函数的名称，参数，返回值这三大要素。好的名称可以提高可读性，正确的参数，能让整个程序运行得更合理，为算法提供正确的数据。返回值的重要性体现在函数调用的情况下。比如一个pop()函数，它不应该是在函数体里面打印pop出来的数值，而返回void，而是将pop的数值返回。打印的任务应该是打印返回值。这样的函数定义才是正确的，因为更多的场景需要得到这个数值，而不是在控制台下面打印一个值。</p>
+</li>
+<li>
+<p><strong>代码的优雅度</strong>：渐渐觉得，其实写代码不是一件简单的事情。他需要一个人拥有足够的背景知识，如英文的熟练程度，逻辑思维严谨度，设计思想等等。能把一个功能成功拆分成许多的相对独立的模块，然后有机的组合在一起，而且可读性很高，鲁棒性（稳定性）很强，可移植性很强，这就是代码的优雅度。</p>
+</li>
+<li>
+<p><strong>语言的熟练度非常重要</strong>:刚开始的时候举步维艰，一个指针就能搞疯掉。但是慢慢的就习惯了，速度也就上来了，遇到的问题多了，也就知道怎么解决了。写的多了，也就快了。所以语言的熟练程度也是我在这次培训中得到的提升。</p>
+</li>
+<li>
+<p><strong>知识广度</strong>:除了基础的语法以外，比较成熟的接口，架构是我需要大大补充的。比如通用线程编程中很多知识还没有摸透。还需要多练习，多看书，多理解。有其事在线程池一题，pthread_cond_t 的一些操作我还不是特别清晰。</p>
+</li>
+<li>
+<p><strong>指针</strong>: 从python这种不需要接触指针的语言转到c这种一直使用指针的语言，还是需要一个过渡的。幸亏大一的时候学C++，还算认真。基本上已经捡起来以前的东西了。只是始终没有使用完调用free的习惯，看来还需要培养。 因为指针出现的问题是这次训练中遇到的最多的问题。</p>
+</li>
+</ul>
+<h3>调试</h3>
+<p>以上的都是在编码的过程中的一些总结。但是这显然不是最重要的，最重要的是：<strong>调试</strong>！</p>
+<p><strong>如何定位错误是一个很重要的能力！</strong></p>
+<p>我目前使用打印信息调试，慢慢定位到错误断点。</p>
+<p>调试方式有很多种：</p>
+<ul>
+<li>打印调试信息</li>
+<li>gcc --debug   + gdb </li>
+<li>使用eclipse等集成环境会让你调试爽一点哦。起码不需要一直面对黑框子。</li>
+<li>更多的我就不知道了。</li>
+</ul>
+<p>我觉得我应该学习一下如何在bash中使用 gdb 进行调试。这是我以后要学习的知识之一，写代码不难，调试才难！因为出错是正常的。</p>
+<h3>总结</h3>
+<p><strong>写一个程序其实就是在做一个产品</strong>。</p>
+<p>需要考虑到产品的功能，是否能够为用户创造价值。如何从无到有设计，实现一个功能，这个过程本身就是在做一个产品，只不过范围上比较小而已。在设计的时候不仅仅要考虑到产品的功能性，还要考虑到许多方面，比如与其他产品配合工作等等。我觉得这8道题给我的提升是非常大的！不仅仅是c语言方面，而是编码设计方面。更大的范围内，这次培训改变了我的思维模式。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html"><h2>[C语言]两个栈实现队列</h2></a>
+        <div class= "well small"> 2014-04-15
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
 <p>这是学习c语言的第一个训练题。刚开始写得真的非常差！！后来在大男哥的知道下学会了如何写c语言。本篇教程是：如何使用两个栈实现队列的功能。基本上这个代码也是他手把手教的。</p>
 <h3>算法</h3>
 <p>如何使用两个栈实现队列？
@@ -87,193 +192,9 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <span class="c1">##################</span>
 <span class="n">Author:</span> <span class="n">muzi</span>
 <span class="n">Date:2014</span><span class="sr">/4/</span><span class="mi">10</span>
-<span class="n">TODO:</span> <span class="n">Using</span> <span class="n">the</span> <span class="n">stack</span> <span class="n">to</span> <span class="n">complete</span> <span class="n">the</span> <span class="n">list</span> <span class="n">function</span><span class="o">.</span>
-<span class="c1">##################</span>
-<span class="o">*/</span>
-<span class="c1">#ifndef _STACK_H_</span>
-<span class="c1">#define _STACK_H_</span>
-
-<span class="n">typedef</span> <span class="n">struct</span> <span class="n">_stack</span>
-<span class="p">{</span>
-    <span class="n">void</span> <span class="o">**</span> <span class="n">buttom</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">top</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">max_size</span><span class="p">;</span>
-<span class="p">}</span><span class="n">stack_t</span><span class="p">;</span>
-<span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack_create</span><span class="p">();</span>
-
-<span class="n">void</span> <span class="n">stack_destroy</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">);</span>
-<span class="n">void</span> <span class="o">*</span> <span class="n">stack_push</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">,</span> <span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">);</span>
-<span class="n">void</span> <span class="o">*</span> <span class="n">stack_pop</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">);</span>
-
-<span class="c1">#endif</span>
-</pre></div>
-
-
-<p>stack.h中定义了stack的结构体，以及以下相关的函数，如push，pop等。当然类似于面向对象中的构造函数的stack_create()也是必须的。最后还不忘定义destroy去释放内存。</p>
-<div class="highlight"><pre><span class="c1">#include &lt;stdlib.h&gt;</span>
-<span class="c1">#include &quot;stack.h&quot;</span>
-
-<span class="n">stack_t</span><span class="o">*</span> <span class="n">stack_create</span><span class="p">(){</span>
-    <span class="n">stack_t</span> <span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="n">stack_t</span><span class="p">));</span>
-    <span class="n">p</span><span class="o">-&gt;</span><span class="n">max_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
-    <span class="n">p</span><span class="o">-&gt;</span><span class="n">buttom</span> <span class="o">=</span> <span class="p">(</span><span class="n">void</span> <span class="o">**</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="n">void</span> <span class="o">*</span><span class="p">)</span> <span class="o">*</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">max_size</span><span class="p">);</span>
-    <span class="n">p</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">return</span> <span class="n">p</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="n">stack_destroy</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">){</span>
-    <span class="n">free</span><span class="p">(</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">buttom</span><span class="p">);</span>
-    <span class="n">free</span><span class="p">(</span><span class="n">stack</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="o">*</span> <span class="n">stack_push</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">,</span> <span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">&gt;=</span> <span class="n">stack</span><span class="o">-&gt;</span><span class="n">max_size</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="k">return</span> <span class="n">NULL</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="n">stack</span><span class="o">-&gt;</span><span class="n">buttom</span><span class="p">[</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">;</span>
-    <span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span><span class="o">++</span><span class="p">;</span>
-    <span class="k">return</span> <span class="n">data</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="o">*</span> <span class="n">stack_pop</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span><span class="o">--</span><span class="p">;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">buttom</span><span class="p">[</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span><span class="p">]);</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">NULL</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>这些都是基本的函数，相比应该不难，不做更多解释。</p>
-<h4>queue的实现</h4>
-<p>同样的先，先写queue.h</p>
-<div class="highlight"><pre><span class="c1">#ifndef _QUEUE_H_</span>
-<span class="c1">#define _QUEUE_H_</span>
-<span class="c1">#include &quot;stack.h&quot;</span>
-
-<span class="n">typedef</span> <span class="n">struct</span> <span class="n">_QUEUE_H_</span>
-<span class="p">{</span>
-    <span class="n">stack_t</span> <span class="o">*</span> <span class="n">in</span><span class="p">;</span>
-    <span class="n">stack_t</span> <span class="o">*</span> <span class="n">out</span><span class="p">;</span>
-<span class="p">}</span><span class="n">queue_t</span><span class="p">;</span>
-
-<span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue_create</span><span class="p">();</span>
-<span class="n">void</span> <span class="n">queue_destroy</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">);</span>
-<span class="n">void</span> <span class="o">*</span> <span class="n">queue_push</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">,</span> <span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">);</span>
-<span class="n">void</span> <span class="o">*</span> <span class="n">queue_pop</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">);</span>
-
-
-<span class="c1">#endif</span>
-</pre></div>
-
-
-<p>这个文件定义了struct queue_t,成员有 两个stack的指针。（喜欢python的人是绝对不喜欢c的指针的，比如我。不过不得不说，不会c的程序员，真不好意思说自己是程序员。）</p>
-<p>我们要在queue.c中去实现queue.h定义的内容。</p>
-<p>关键算法也在这里。</p>
-<div class="highlight"><pre><span class="c1">#include &quot;queue.h&quot;</span>
-<span class="c1">#include &lt;stdlib.h&gt;</span>
-
-<span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue_create</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span> <span class="o">=</span> <span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="n">queue_t</span><span class="p">));</span>
-    <span class="n">queue</span><span class="o">-&gt;</span><span class="n">in</span> <span class="o">=</span> <span class="n">stack_create</span><span class="p">();</span>
-    <span class="n">queue</span><span class="o">-&gt;</span><span class="n">out</span> <span class="o">=</span> <span class="n">stack_create</span><span class="p">();</span>
-    <span class="k">return</span> <span class="n">queue</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="n">void</span> <span class="n">queue_destroy</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">stack_destroy</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">in</span><span class="p">);</span>
-    <span class="n">stack_destroy</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">out</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="o">*</span> <span class="n">queue_push</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">,</span> <span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">return</span> <span class="n">stack_push</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">in</span><span class="p">,</span> <span class="n">data</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="o">*</span> <span class="n">queue_pop</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">out</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>  <span class="sr">//</span><span class="err">最关键的其实就是这个判断以及这个判断所执行的语句</span><span class="p">(</span><span class="err">如果</span><span class="n">out</span> <span class="n">stack</span><span class="err">都出栈了，那么需要从</span><span class="n">in</span><span class="err">中倒换过来。</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="k">while</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">in</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="sr">//</span><span class="err">如果</span><span class="n">in</span><span class="err">中有数据的话。</span>
-        <span class="p">{</span>
-            <span class="n">stack_push</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">out</span><span class="p">,</span><span class="n">stack_pop</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">in</span><span class="p">));</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">stack_pop</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">out</span><span class="p">);</span><span class="sr">//</span><span class="err">始终返回的是</span><span class="n">out_stack</span><span class="err">的数据</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>就是这么简单，就把功能实现了。跟着大男哥学习c语言编程，还是有很多收获的。</p>
-<h4>main函数测试。</h4>
-<div class="highlight"><pre><span class="c1">#include &lt;stdio.h&gt;</span>
-<span class="c1">#include &lt;stdlib.h&gt;</span>
-<span class="c1">#include &quot;queue.h&quot;</span>
-<span class="sr">//</span><span class="c1">#include &quot;stack2list.h&quot;</span>
-
-
-<span class="n">void</span> <span class="n">int_printer</span><span class="p">(</span><span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">);</span>
-<span class="nb">int</span> <span class="n">main</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span> <span class="o">=</span> <span class="n">queue_create</span><span class="p">();</span>
-
-    <span class="nb">int</span> <span class="o">*</span> <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-
-    <span class="nb">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">for</span><span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">2</span> <span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">queue_pop</span><span class="p">(</span><span class="n">queue</span><span class="p">);</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%d,&quot;</span><span class="p">,</span><span class="o">*</span><span class="n">data</span><span class="p">);</span>
-        <span class="n">free</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">6</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="k">for</span><span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">5</span> <span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">queue_pop</span><span class="p">(</span><span class="n">queue</span><span class="p">);</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%d,&quot;</span><span class="p">,</span><span class="o">*</span><span class="n">data</span><span class="p">);</span>
-        <span class="n">free</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="n">int_printer</span><span class="p">(</span><span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%d&quot;</span><span class="p">,</span><span class="o">*</span><span class="p">((</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">data</span><span class="p">));</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>至此功能实现。</p>
-<p>在写代码的过程中，发现设计的重要性，一个好的逻辑思维，设计风格，能让代码写得非常优雅。其实写代码也是一个有讲究的活。就像一个工程师设计一个模型一样，既要美观实用，又要能随时被拿走，放到别处使用。代码的风格，结构的设计，实现方案等等，都是一个很好玩的事情。</p>
-<p>希望不久之后我能学好c语言！感谢大男哥的帮助！</p></div>
-        <hr />
-    </div>
-		
+<span class="n">TODO ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -365,34 +286,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>如果需要例子，可以在本站查看：mininet搭建自定义拓扑</p>
 <p>另，也可以查看mininet中的hwintf文件。</p>
 <p>希望能对你有帮助。</p> <a class="btn btn-info xsmall" href="./pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html"><h2>【转】linux常用命令</h2></a>
-        <div class= "well small"> 2014-03-25
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>我为我没有系统的学习linux而感到后悔！一定好好时间一遍鸟哥的linux私房菜，但是一些linux常用命令，记下也好！google之后，搜到一篇不错的文章，特此转载，保留个人使用。原文地址：http://www.php100.com/html/webkaifa/Linux/2009/1106/3485.html</p>
-<h3>linux常用命令</h3>
-<p><strong>系统信息</strong></p>
-<p>arch 显示机器的处理器架构(1) </p>
-<p>uname -m 显示机器的处理器架构(2) </p>
-<p>uname -r 显示正在使用的内核版本 </p>
-<p>dmidecode -q 显示硬件系统部件 - (SMBIOS / DMI) </p>
-<p>hdparm -i /dev/hda 罗列一个磁盘的架构特性 </p>
-<p>hdparm -tT /dev/sda 在磁盘上执行测试性读取操作 </p>
-<p>cat /proc ...</p> <a class="btn btn-info xsmall" href="./pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
