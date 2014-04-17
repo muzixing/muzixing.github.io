@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html"><h1>[C语言]两个栈实现队列</h1></a>
-2014-04-15
+            <a href="../pages/2014/04/18/ctime_server.html"><h1>[c]time_server</h1></a>
+2014-04-18
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -73,6 +73,200 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         </div>
         
         <div><h3>前言</h3>
+<p>本篇内容主要是介绍如何编写一个通过socket通信，实现获取服务器当前时间的例子。</p>
+<h3>实现</h3>
+<p>首先我们需要定义两个函数：</p>
+<div class="highlight"><pre><span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+</pre></div>
+
+
+<p>这两个函数是用于提供时间获取服务和，客户端调用去获取时间的函数。</p>
+<p>以下是time_server.h的内容：</p>
+<div class="highlight"><pre><span class="c1">#ifndef _TIME_SERVER_</span>
+<span class="c1">#define _TIME_SERVER_</span>
+<span class="c1">#include &lt;sys/socket.h&gt;</span>
+<span class="c1">#include &lt;string.h&gt;</span>
+
+<span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+<span class="c1">#endif</span>
+</pre></div>
+
+
+<p>time_server.c文件是实现time_server中的函数声明。
+头文件如下：</p>
+<div class="highlight"><pre><span class="c">#include &lt;stdlib.h&gt;</span>
+<span class="c">#include &quot;time_server.h&quot;</span>
+<span class="c">#include &lt;stdio.h&gt;</span>
+<span class="c">#include &lt;time.h&gt;</span>
+<span class="c">#include &lt;sys/types.h&gt;</span>
+<span class="c">#include &lt;sys/socket.h&gt;</span>
+<span class="c">#include &lt;netinet/in.h&gt;</span>
+</pre></div>
+
+
+<p>我们需要把系统时间返回所以需要用到time.h</p>
+<p>需要使用socket，所以需要include <socket.h></p>
+<p>netinet/in.h则是因为要使用inet_addr()函数。</p>
+<p><strong>time_server函数实现如下：</strong></p>
+<div class="highlight"><pre><span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">)</span><span class="sr">//</span><span class="n">You</span> <span class="n">should</span> <span class="n">change</span> <span class="n">the</span> <span class="n">ip</span> <span class="n">addr</span> <span class="n">into</span> <span class="nb">int</span><span class="o">.</span>
+<span class="p">{</span>
+    <span class="nb">int</span> <span class="n">server_fd</span><span class="p">;</span>    <span class="sr">//</span><span class="err">用于记录</span><span class="nb">socket</span><span class="err">的</span><span class="n">fd</span>
+    <span class="nb">int</span> <span class="n">client_fd</span><span class="p">;</span>
+    <span class="n">struct</span> <span class="n">sockaddr_in</span> <span class="n">server_addr</span><span class="p">,</span> <span class="n">client_addr</span><span class="p">;</span>
+    <span class="nb">int</span> <span class="n">sock_size</span><span class="p">;</span><span class="sr">//si</span><span class="n">ze</span> <span class="n">of</span> <span class="n">socket_in</span><span class="o">.</span>
+
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; server start.\n&quot;</span><span class="p">);</span>
+    <span class="sr">//c</span><span class="n">reate</span> <span class="n">a</span> <span class="nb">socket</span><span class="o">.</span>
+    <span class="n">server_fd</span> <span class="o">=</span> <span class="nb">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span> <span class="sr">//</span><span class="err">若成功返回一个非</span><span class="o">-</span><span class="mi">1</span><span class="err">的整数</span><span class="n">fd</span><span class="err">，若失败，返回</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="n">server_fd</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket failed.\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket successful.\n&quot;</span><span class="p">);</span>
+
+    <span class="sr">//s</span><span class="n">et</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">of</span> <span class="nb">socket</span>
+    <span class="n">bzero</span><span class="p">(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">,</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">));</span><span class="sr">//</span><span class="n">fill</span> <span class="mi">0</span> <span class="n">of</span> <span class="n">server_addr</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span><span class="sr">//</span><span class="err">设置协议族为</span><span class="n">IPV4</span><span class="err">。另还有其他几种如</span><span class="n">AF_UNIX</span><span class="p">,</span><span class="err">可</span><span class="n">google</span><span class="o">.</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_addr</span><span class="o">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="s">&quot;0.0.0.0&quot;</span><span class="p">);</span><span class="sr">//</span><span class="err">将十进制点分</span><span class="n">ip</span><span class="p">,</span><span class="err">转化为</span><span class="mi">32</span><span class="n">bit</span><span class="err">的整数，同时</span><span class="mf">0.0.0.0</span> <span class="err">为监听所有地址。服务器可能不止一个地址。</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">port</span><span class="p">);</span><span class="sr">//</span><span class="n">htons</span><span class="p">()</span><span class="err">函数是将</span><span class="n">port</span><span class="err">转化为网络字节序（大小端问题）</span>
+
+    <span class="sr">//</span><span class="nb">bind</span> <span class="n">to</span> <span class="n">port</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">bind</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">),</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="p">)))</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; bind failed\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; bind seccessful\n&quot;</span><span class="p">);</span>
+    <span class="sr">//</span><span class="nb">listen</span> 
+    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span> <span class="nb">listen</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="sr">//</span><span class="nb">listen</span><span class="p">(</span><span class="n">socket_fd</span><span class="p">,</span> <span class="nb">listen</span> <span class="n">number</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; listen failed\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; listen seccessful\n&quot;</span><span class="p">);</span>
+    <span class="sr">//</span><span class="nb">recv</span>
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">sock_size</span> <span class="o">=</span> <span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">);</span>
+        <span class="n">client_fd</span> <span class="o">=</span> <span class="nb">accept</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">client_addr</span><span class="p">),</span><span class="o">&amp;</span><span class="n">sock_size</span><span class="p">);</span><span class="sr">//</span><span class="p">(</span><span class="n">server_socket_fd</span><span class="p">,</span><span class="n">store_mem</span><span class="p">,</span><span class="nb">length</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span><span class="n">client_fd</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; accept failed.\n&quot;</span><span class="p">);</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; accept seccessful\n&quot;</span><span class="p">);</span>
+
+        <span class="n">time_t</span> <span class="n">t</span><span class="p">;</span>
+        <span class="nb">time</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">send</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,</span><span class="n">asctime</span><span class="p">(</span><span class="nb">localtime</span><span class="p">((</span><span class="n">const</span> <span class="n">time_t</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="nb">time</span><span class="p">)),</span><span class="n">sizeof</span><span class="p">(</span><span class="n">asctime</span><span class="p">(</span><span class="nb">localtime</span><span class="p">((</span><span class="n">const</span> <span class="n">time_t</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="nb">time</span><span class="p">))),</span><span class="mi">0</span><span class="p">))</span><span class="sr">//s</span><span class="n">end</span> <span class="n">the</span> <span class="nb">system</span> <span class="nb">time</span>
+        <span class="p">{</span>
+            <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; send failed.\n&quot;</span><span class="p">);</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;send time seccessful\n&quot;</span><span class="p">);</span>
+        <span class="nb">close</span><span class="p">(</span><span class="n">client_fd</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="nb">close</span><span class="p">(</span><span class="n">server_fd</span><span class="p">);</span>
+
+<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>以上是time_server的函数实现。但是比较忧伤的是我使用的time的格式不太对，发送过去的星期。接下来是客户端的代码。两个函数都写在一个time_server.c文件里就好了。直接通过函数名调用即可。</p>
+<p><strong>get_time()</strong></p>
+<div class="highlight"><pre><span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">)</span><span class="sr">//</span><span class="err">参数是</span><span class="n">server_ip</span> <span class="err">和</span> <span class="n">port</span>
+<span class="p">{</span>   
+    <span class="nb">int</span> <span class="n">client_fd</span><span class="p">;</span>
+    <span class="nb">int</span> <span class="n">recv_length</span><span class="p">;</span>
+    <span class="nb">int</span> <span class="n">sock_size</span> <span class="o">=</span> <span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">);</span>
+    <span class="n">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">1024</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+    <span class="n">struct</span> <span class="n">sockaddr_in</span> <span class="n">server_addr</span><span class="p">,</span> <span class="n">client_addr</span><span class="p">;</span>
+
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; client start.\n&quot;</span><span class="p">);</span>
+    <span class="sr">//c</span><span class="n">reate</span> <span class="n">a</span> <span class="nb">socket</span><span class="o">.</span>
+    <span class="n">client_fd</span> <span class="o">=</span> <span class="nb">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="n">client_fd</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket failed.\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket successful.\n&quot;</span><span class="p">);</span>
+
+    <span class="sr">//s</span><span class="n">et</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">of</span> <span class="nb">socket</span>
+    <span class="n">bzero</span><span class="p">(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">,</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">));</span><span class="sr">//s</span><span class="n">et</span> <span class="n">the</span> <span class="n">server</span> <span class="n">addr</span><span class="o">.</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_addr</span><span class="o">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">ip</span><span class="p">;</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">port</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">connect</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">),</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="p">)))</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;connect failed\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;connect successful\n&quot;</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="p">(</span><span class="n">recv_length</span> <span class="o">=</span><span class="nb">recv</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,</span><span class="n">buffer</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;receive failed\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;receive:\n&quot;</span><span class="p">);</span>
+    <span class="n">buffer</span><span class="p">[</span><span class="n">recv_length</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;\0&#39;</span><span class="p">;</span><span class="sr">//</span><span class="n">end</span> <span class="n">of</span> <span class="n">buffer</span><span class="o">.</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%s\n&quot;</span><span class="p">,</span> <span class="n">buffer</span><span class="p">);</span>
+
+    <span class="n">getchar</span><span class="p">();</span>
+    <span class="nb">close</span><span class="p">(</span><span class="n">client_fd</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">buffer</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>基本上time_server.c就是以上的内容，并不复杂。</p>
+<p><strong>main.c</strong></p>
+<div class="highlight"><pre><span class="c1">#include &lt;stdlib.h&gt;</span>
+<span class="c1">#include &lt;stdio.h&gt;</span>
+<span class="c1">#include &quot;time_server.h&quot;</span>
+<span class="c1">#include &lt;sys/socket.h&gt;</span>
+<span class="c1">#include &lt;netinet/in.h&gt;</span>
+<span class="c1">#include &lt;sys/types.h&gt;</span>
+<span class="nb">int</span> <span class="n">main</span><span class="p">(</span><span class="nb">int</span> <span class="n">argc</span><span class="p">,</span> <span class="n">char</span> <span class="n">const</span> <span class="o">*</span><span class="n">argv</span><span class="o">[]</span><span class="p">)</span>
+<span class="p">{</span>   
+    <span class="nb">int</span> <span class="n">server_ip</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="s">&quot;0.0.0.0&quot;</span><span class="p">);</span>
+    <span class="sr">//</span><span class="n">time_server</span><span class="p">(</span><span class="mi">50000</span><span class="p">);</span>
+    <span class="n">char</span> <span class="o">*</span> <span class="nb">time</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">(</span><span class="n">server_ip</span><span class="p">,</span><span class="mi">50000</span><span class="p">);</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%s\n&quot;</span><span class="p">,</span><span class="nb">time</span> <span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>主函数也非常简单，在一台服务器机器上运行time_server(port).</p>
+<p>在客户端上，运行get_time(server_ip,port)即可。</p>
+<p>另，启动顺序是先启动server,再启动client,不然会有refused。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html"><h2>[C语言]两个栈实现队列</h2></a>
+        <div class= "well small"> 2014-04-15
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
 <p>这是学习c语言的第一个训练题。刚开始写得真的非常差！！后来在大男哥的知道下学会了如何写c语言。本篇教程是：如何使用两个栈实现队列的功能。基本上这个代码也是他手把手教的。</p>
 <h3>算法</h3>
 <p>如何使用两个栈实现队列？
@@ -87,193 +281,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="c1">##################</span>
 <span class="n">Author:</span> <span class="n">muzi</span>
 <span class="n">Date:2014</span><span class="sr">/4/</span><span class="mi">10</span>
-<span class="n">TODO:</span> <span class="n">Using</span> <span class="n">the</span> <span class="n">stack</span> <span class="n">to</span> <span class="n">complete</span> <span class="n">the</span> <span class="n">list</span> <span class="n">function</span><span class="o">.</span>
-<span class="c1">##################</span>
-<span class="o">*/</span>
-<span class="c1">#ifndef _STACK_H_</span>
-<span class="c1">#define _STACK_H_</span>
-
-<span class="n">typedef</span> <span class="n">struct</span> <span class="n">_stack</span>
-<span class="p">{</span>
-    <span class="n">void</span> <span class="o">**</span> <span class="n">buttom</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">top</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">max_size</span><span class="p">;</span>
-<span class="p">}</span><span class="n">stack_t</span><span class="p">;</span>
-<span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack_create</span><span class="p">();</span>
-
-<span class="n">void</span> <span class="n">stack_destroy</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">);</span>
-<span class="n">void</span> <span class="o">*</span> <span class="n">stack_push</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">,</span> <span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">);</span>
-<span class="n">void</span> <span class="o">*</span> <span class="n">stack_pop</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">);</span>
-
-<span class="c1">#endif</span>
-</pre></div>
-
-
-<p>stack.h中定义了stack的结构体，以及以下相关的函数，如push，pop等。当然类似于面向对象中的构造函数的stack_create()也是必须的。最后还不忘定义destroy去释放内存。</p>
-<div class="highlight"><pre><span class="c1">#include &lt;stdlib.h&gt;</span>
-<span class="c1">#include &quot;stack.h&quot;</span>
-
-<span class="n">stack_t</span><span class="o">*</span> <span class="n">stack_create</span><span class="p">(){</span>
-    <span class="n">stack_t</span> <span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="n">stack_t</span><span class="p">));</span>
-    <span class="n">p</span><span class="o">-&gt;</span><span class="n">max_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
-    <span class="n">p</span><span class="o">-&gt;</span><span class="n">buttom</span> <span class="o">=</span> <span class="p">(</span><span class="n">void</span> <span class="o">**</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="n">void</span> <span class="o">*</span><span class="p">)</span> <span class="o">*</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">max_size</span><span class="p">);</span>
-    <span class="n">p</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">return</span> <span class="n">p</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="n">stack_destroy</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">){</span>
-    <span class="n">free</span><span class="p">(</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">buttom</span><span class="p">);</span>
-    <span class="n">free</span><span class="p">(</span><span class="n">stack</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="o">*</span> <span class="n">stack_push</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">,</span> <span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">&gt;=</span> <span class="n">stack</span><span class="o">-&gt;</span><span class="n">max_size</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="k">return</span> <span class="n">NULL</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="n">stack</span><span class="o">-&gt;</span><span class="n">buttom</span><span class="p">[</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">;</span>
-    <span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span><span class="o">++</span><span class="p">;</span>
-    <span class="k">return</span> <span class="n">data</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="o">*</span> <span class="n">stack_pop</span><span class="p">(</span><span class="n">stack_t</span> <span class="o">*</span> <span class="n">stack</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span><span class="o">--</span><span class="p">;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">buttom</span><span class="p">[</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span><span class="p">]);</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">NULL</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>这些都是基本的函数，相比应该不难，不做更多解释。</p>
-<h4>queue的实现</h4>
-<p>同样的先，先写queue.h</p>
-<div class="highlight"><pre><span class="c1">#ifndef _QUEUE_H_</span>
-<span class="c1">#define _QUEUE_H_</span>
-<span class="c1">#include &quot;stack.h&quot;</span>
-
-<span class="n">typedef</span> <span class="n">struct</span> <span class="n">_QUEUE_H_</span>
-<span class="p">{</span>
-    <span class="n">stack_t</span> <span class="o">*</span> <span class="n">in</span><span class="p">;</span>
-    <span class="n">stack_t</span> <span class="o">*</span> <span class="n">out</span><span class="p">;</span>
-<span class="p">}</span><span class="n">queue_t</span><span class="p">;</span>
-
-<span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue_create</span><span class="p">();</span>
-<span class="n">void</span> <span class="n">queue_destroy</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">);</span>
-<span class="n">void</span> <span class="o">*</span> <span class="n">queue_push</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">,</span> <span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">);</span>
-<span class="n">void</span> <span class="o">*</span> <span class="n">queue_pop</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">);</span>
-
-
-<span class="c1">#endif</span>
-</pre></div>
-
-
-<p>这个文件定义了struct queue_t,成员有 两个stack的指针。（喜欢python的人是绝对不喜欢c的指针的，比如我。不过不得不说，不会c的程序员，真不好意思说自己是程序员。）</p>
-<p>我们要在queue.c中去实现queue.h定义的内容。</p>
-<p>关键算法也在这里。</p>
-<div class="highlight"><pre><span class="c1">#include &quot;queue.h&quot;</span>
-<span class="c1">#include &lt;stdlib.h&gt;</span>
-
-<span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue_create</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span> <span class="o">=</span> <span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="n">queue_t</span><span class="p">));</span>
-    <span class="n">queue</span><span class="o">-&gt;</span><span class="n">in</span> <span class="o">=</span> <span class="n">stack_create</span><span class="p">();</span>
-    <span class="n">queue</span><span class="o">-&gt;</span><span class="n">out</span> <span class="o">=</span> <span class="n">stack_create</span><span class="p">();</span>
-    <span class="k">return</span> <span class="n">queue</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="n">void</span> <span class="n">queue_destroy</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">stack_destroy</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">in</span><span class="p">);</span>
-    <span class="n">stack_destroy</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">out</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="o">*</span> <span class="n">queue_push</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">,</span> <span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">return</span> <span class="n">stack_push</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">in</span><span class="p">,</span> <span class="n">data</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="o">*</span> <span class="n">queue_pop</span><span class="p">(</span><span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">out</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>  <span class="sr">//</span><span class="err">最关键的其实就是这个判断以及这个判断所执行的语句</span><span class="p">(</span><span class="err">如果</span><span class="n">out</span> <span class="n">stack</span><span class="err">都出栈了，那么需要从</span><span class="n">in</span><span class="err">中倒换过来。</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="k">while</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">in</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="sr">//</span><span class="err">如果</span><span class="n">in</span><span class="err">中有数据的话。</span>
-        <span class="p">{</span>
-            <span class="n">stack_push</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">out</span><span class="p">,</span><span class="n">stack_pop</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">in</span><span class="p">));</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">stack_pop</span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">out</span><span class="p">);</span><span class="sr">//</span><span class="err">始终返回的是</span><span class="n">out_stack</span><span class="err">的数据</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>就是这么简单，就把功能实现了。跟着大男哥学习c语言编程，还是有很多收获的。</p>
-<h4>main函数测试。</h4>
-<div class="highlight"><pre><span class="c1">#include &lt;stdio.h&gt;</span>
-<span class="c1">#include &lt;stdlib.h&gt;</span>
-<span class="c1">#include &quot;queue.h&quot;</span>
-<span class="sr">//</span><span class="c1">#include &quot;stack2list.h&quot;</span>
-
-
-<span class="n">void</span> <span class="n">int_printer</span><span class="p">(</span><span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">);</span>
-<span class="nb">int</span> <span class="n">main</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="n">queue_t</span> <span class="o">*</span> <span class="n">queue</span> <span class="o">=</span> <span class="n">queue_create</span><span class="p">();</span>
-
-    <span class="nb">int</span> <span class="o">*</span> <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-
-    <span class="nb">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">for</span><span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">2</span> <span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">queue_pop</span><span class="p">(</span><span class="n">queue</span><span class="p">);</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%d,&quot;</span><span class="p">,</span><span class="o">*</span><span class="n">data</span><span class="p">);</span>
-        <span class="n">free</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">6</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">));</span>
-    <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>
-    <span class="n">queue_push</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span><span class="n">data</span><span class="p">);</span>
-    <span class="k">for</span><span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">5</span> <span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">queue_pop</span><span class="p">(</span><span class="n">queue</span><span class="p">);</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%d,&quot;</span><span class="p">,</span><span class="o">*</span><span class="n">data</span><span class="p">);</span>
-        <span class="n">free</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="n">void</span> <span class="n">int_printer</span><span class="p">(</span><span class="n">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%d&quot;</span><span class="p">,</span><span class="o">*</span><span class="p">((</span><span class="nb">int</span> <span class="o">*</span><span class="p">)</span><span class="n">data</span><span class="p">));</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>至此功能实现。</p>
-<p>在写代码的过程中，发现设计的重要性，一个好的逻辑思维，设计风格，能让代码写得非常优雅。其实写代码也是一个有讲究的活。就像一个工程师设计一个模型一样，既要美观实用，又要能随时被拿走，放到别处使用。代码的风格，结构的设计，实现方案等等，都是一个很好玩的事情。</p>
-<p>希望不久之后我能学好c语言！感谢大男哥的帮助！</p></div>
-        <hr />
-    </div>
-		
+<span class="n">TODO ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html">read more</a></div>
+    </div>	
+				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>

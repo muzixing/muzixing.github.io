@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html"><h1>编程真的不简单</h1></a>
-2014-04-17
+            <a href="../pages/2014/04/18/ctime_server.html"><h1>[c]time_server</h1></a>
+2014-04-18
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -73,6 +73,200 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         </div>
         
         <div><h3>前言</h3>
+<p>本篇内容主要是介绍如何编写一个通过socket通信，实现获取服务器当前时间的例子。</p>
+<h3>实现</h3>
+<p>首先我们需要定义两个函数：</p>
+<div class="highlight"><pre><span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+</pre></div>
+
+
+<p>这两个函数是用于提供时间获取服务和，客户端调用去获取时间的函数。</p>
+<p>以下是time_server.h的内容：</p>
+<div class="highlight"><pre><span class="c1">#ifndef _TIME_SERVER_</span>
+<span class="c1">#define _TIME_SERVER_</span>
+<span class="c1">#include &lt;sys/socket.h&gt;</span>
+<span class="c1">#include &lt;string.h&gt;</span>
+
+<span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+<span class="c1">#endif</span>
+</pre></div>
+
+
+<p>time_server.c文件是实现time_server中的函数声明。
+头文件如下：</p>
+<div class="highlight"><pre><span class="c">#include &lt;stdlib.h&gt;</span>
+<span class="c">#include &quot;time_server.h&quot;</span>
+<span class="c">#include &lt;stdio.h&gt;</span>
+<span class="c">#include &lt;time.h&gt;</span>
+<span class="c">#include &lt;sys/types.h&gt;</span>
+<span class="c">#include &lt;sys/socket.h&gt;</span>
+<span class="c">#include &lt;netinet/in.h&gt;</span>
+</pre></div>
+
+
+<p>我们需要把系统时间返回所以需要用到time.h</p>
+<p>需要使用socket，所以需要include <socket.h></p>
+<p>netinet/in.h则是因为要使用inet_addr()函数。</p>
+<p><strong>time_server函数实现如下：</strong></p>
+<div class="highlight"><pre><span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">)</span><span class="sr">//</span><span class="n">You</span> <span class="n">should</span> <span class="n">change</span> <span class="n">the</span> <span class="n">ip</span> <span class="n">addr</span> <span class="n">into</span> <span class="nb">int</span><span class="o">.</span>
+<span class="p">{</span>
+    <span class="nb">int</span> <span class="n">server_fd</span><span class="p">;</span>    <span class="sr">//</span><span class="err">用于记录</span><span class="nb">socket</span><span class="err">的</span><span class="n">fd</span>
+    <span class="nb">int</span> <span class="n">client_fd</span><span class="p">;</span>
+    <span class="n">struct</span> <span class="n">sockaddr_in</span> <span class="n">server_addr</span><span class="p">,</span> <span class="n">client_addr</span><span class="p">;</span>
+    <span class="nb">int</span> <span class="n">sock_size</span><span class="p">;</span><span class="sr">//si</span><span class="n">ze</span> <span class="n">of</span> <span class="n">socket_in</span><span class="o">.</span>
+
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; server start.\n&quot;</span><span class="p">);</span>
+    <span class="sr">//c</span><span class="n">reate</span> <span class="n">a</span> <span class="nb">socket</span><span class="o">.</span>
+    <span class="n">server_fd</span> <span class="o">=</span> <span class="nb">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span> <span class="sr">//</span><span class="err">若成功返回一个非</span><span class="o">-</span><span class="mi">1</span><span class="err">的整数</span><span class="n">fd</span><span class="err">，若失败，返回</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="n">server_fd</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket failed.\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket successful.\n&quot;</span><span class="p">);</span>
+
+    <span class="sr">//s</span><span class="n">et</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">of</span> <span class="nb">socket</span>
+    <span class="n">bzero</span><span class="p">(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">,</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">));</span><span class="sr">//</span><span class="n">fill</span> <span class="mi">0</span> <span class="n">of</span> <span class="n">server_addr</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span><span class="sr">//</span><span class="err">设置协议族为</span><span class="n">IPV4</span><span class="err">。另还有其他几种如</span><span class="n">AF_UNIX</span><span class="p">,</span><span class="err">可</span><span class="n">google</span><span class="o">.</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_addr</span><span class="o">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="s">&quot;0.0.0.0&quot;</span><span class="p">);</span><span class="sr">//</span><span class="err">将十进制点分</span><span class="n">ip</span><span class="p">,</span><span class="err">转化为</span><span class="mi">32</span><span class="n">bit</span><span class="err">的整数，同时</span><span class="mf">0.0.0.0</span> <span class="err">为监听所有地址。服务器可能不止一个地址。</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">port</span><span class="p">);</span><span class="sr">//</span><span class="n">htons</span><span class="p">()</span><span class="err">函数是将</span><span class="n">port</span><span class="err">转化为网络字节序（大小端问题）</span>
+
+    <span class="sr">//</span><span class="nb">bind</span> <span class="n">to</span> <span class="n">port</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">bind</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">),</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="p">)))</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; bind failed\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; bind seccessful\n&quot;</span><span class="p">);</span>
+    <span class="sr">//</span><span class="nb">listen</span> 
+    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span> <span class="nb">listen</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="sr">//</span><span class="nb">listen</span><span class="p">(</span><span class="n">socket_fd</span><span class="p">,</span> <span class="nb">listen</span> <span class="n">number</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; listen failed\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; listen seccessful\n&quot;</span><span class="p">);</span>
+    <span class="sr">//</span><span class="nb">recv</span>
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">sock_size</span> <span class="o">=</span> <span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">);</span>
+        <span class="n">client_fd</span> <span class="o">=</span> <span class="nb">accept</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">client_addr</span><span class="p">),</span><span class="o">&amp;</span><span class="n">sock_size</span><span class="p">);</span><span class="sr">//</span><span class="p">(</span><span class="n">server_socket_fd</span><span class="p">,</span><span class="n">store_mem</span><span class="p">,</span><span class="nb">length</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span><span class="n">client_fd</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; accept failed.\n&quot;</span><span class="p">);</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; accept seccessful\n&quot;</span><span class="p">);</span>
+
+        <span class="n">time_t</span> <span class="n">t</span><span class="p">;</span>
+        <span class="nb">time</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">send</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,</span><span class="n">asctime</span><span class="p">(</span><span class="nb">localtime</span><span class="p">((</span><span class="n">const</span> <span class="n">time_t</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="nb">time</span><span class="p">)),</span><span class="n">sizeof</span><span class="p">(</span><span class="n">asctime</span><span class="p">(</span><span class="nb">localtime</span><span class="p">((</span><span class="n">const</span> <span class="n">time_t</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="nb">time</span><span class="p">))),</span><span class="mi">0</span><span class="p">))</span><span class="sr">//s</span><span class="n">end</span> <span class="n">the</span> <span class="nb">system</span> <span class="nb">time</span>
+        <span class="p">{</span>
+            <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; send failed.\n&quot;</span><span class="p">);</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;send time seccessful\n&quot;</span><span class="p">);</span>
+        <span class="nb">close</span><span class="p">(</span><span class="n">client_fd</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="nb">close</span><span class="p">(</span><span class="n">server_fd</span><span class="p">);</span>
+
+<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>以上是time_server的函数实现。但是比较忧伤的是我使用的time的格式不太对，发送过去的星期。接下来是客户端的代码。两个函数都写在一个time_server.c文件里就好了。直接通过函数名调用即可。</p>
+<p><strong>get_time()</strong></p>
+<div class="highlight"><pre><span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">)</span><span class="sr">//</span><span class="err">参数是</span><span class="n">server_ip</span> <span class="err">和</span> <span class="n">port</span>
+<span class="p">{</span>   
+    <span class="nb">int</span> <span class="n">client_fd</span><span class="p">;</span>
+    <span class="nb">int</span> <span class="n">recv_length</span><span class="p">;</span>
+    <span class="nb">int</span> <span class="n">sock_size</span> <span class="o">=</span> <span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">);</span>
+    <span class="n">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">1024</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+    <span class="n">struct</span> <span class="n">sockaddr_in</span> <span class="n">server_addr</span><span class="p">,</span> <span class="n">client_addr</span><span class="p">;</span>
+
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; client start.\n&quot;</span><span class="p">);</span>
+    <span class="sr">//c</span><span class="n">reate</span> <span class="n">a</span> <span class="nb">socket</span><span class="o">.</span>
+    <span class="n">client_fd</span> <span class="o">=</span> <span class="nb">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="n">client_fd</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket failed.\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket successful.\n&quot;</span><span class="p">);</span>
+
+    <span class="sr">//s</span><span class="n">et</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">of</span> <span class="nb">socket</span>
+    <span class="n">bzero</span><span class="p">(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">,</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">));</span><span class="sr">//s</span><span class="n">et</span> <span class="n">the</span> <span class="n">server</span> <span class="n">addr</span><span class="o">.</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_addr</span><span class="o">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">ip</span><span class="p">;</span>
+    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">port</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">connect</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">),</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="p">)))</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;connect failed\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;connect successful\n&quot;</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="p">(</span><span class="n">recv_length</span> <span class="o">=</span><span class="nb">recv</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,</span><span class="n">buffer</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;receive failed\n&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;receive:\n&quot;</span><span class="p">);</span>
+    <span class="n">buffer</span><span class="p">[</span><span class="n">recv_length</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;\0&#39;</span><span class="p">;</span><span class="sr">//</span><span class="n">end</span> <span class="n">of</span> <span class="n">buffer</span><span class="o">.</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%s\n&quot;</span><span class="p">,</span> <span class="n">buffer</span><span class="p">);</span>
+
+    <span class="n">getchar</span><span class="p">();</span>
+    <span class="nb">close</span><span class="p">(</span><span class="n">client_fd</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">buffer</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>基本上time_server.c就是以上的内容，并不复杂。</p>
+<p><strong>main.c</strong></p>
+<div class="highlight"><pre><span class="c1">#include &lt;stdlib.h&gt;</span>
+<span class="c1">#include &lt;stdio.h&gt;</span>
+<span class="c1">#include &quot;time_server.h&quot;</span>
+<span class="c1">#include &lt;sys/socket.h&gt;</span>
+<span class="c1">#include &lt;netinet/in.h&gt;</span>
+<span class="c1">#include &lt;sys/types.h&gt;</span>
+<span class="nb">int</span> <span class="n">main</span><span class="p">(</span><span class="nb">int</span> <span class="n">argc</span><span class="p">,</span> <span class="n">char</span> <span class="n">const</span> <span class="o">*</span><span class="n">argv</span><span class="o">[]</span><span class="p">)</span>
+<span class="p">{</span>   
+    <span class="nb">int</span> <span class="n">server_ip</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="s">&quot;0.0.0.0&quot;</span><span class="p">);</span>
+    <span class="sr">//</span><span class="n">time_server</span><span class="p">(</span><span class="mi">50000</span><span class="p">);</span>
+    <span class="n">char</span> <span class="o">*</span> <span class="nb">time</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">(</span><span class="n">server_ip</span><span class="p">,</span><span class="mi">50000</span><span class="p">);</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%s\n&quot;</span><span class="p">,</span><span class="nb">time</span> <span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>主函数也非常简单，在一台服务器机器上运行time_server(port).</p>
+<p>在客户端上，运行get_time(server_ip,port)即可。</p>
+<p>另，启动顺序是先启动server,再启动client,不然会有refused。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html"><h2>编程真的不简单</h2></a>
+        <div class= "well small"> 2014-04-17
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
 <p>以前觉得编程嘛，不就是写代码嘛。谁不会啊！后来，和大男哥聊天的过程中，他说到一句话：大家都说我会c编程，然后我也觉得我会用c。就像我会打篮球，科比也会打篮球一样。</p>
 <p>当时真的笑翻了！不过说来也是！编程真的不简单！</p>
 <h3>编程真的不简单</h3>
@@ -91,77 +285,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p><strong>头文件的重要性</strong>：在C语言中通过include 头文件的方式把某一些模块添加进来。同时一个头文件所包含的的内容应该是静态的声明，而不应该有实现。所有的实现都应该出现在同名的.c文件中。同时，在运行的时候我们必须保证.C的实现与.h的声明一致，某种程度上是对代码的保护。</p>
 </li>
 <li>
-<p><strong>可读性</strong>：可读性的重点是对编程者而言。一个好的代码，应该可读性很高。我们可以从函数明直观的明白函数的功能，同时可以从变量名清楚地知道其作用。从文本的角度提高可读性。一段苦涩难懂的代码，也许机器容易度，但是其可读性过低，对于后期维护，成本过高。</p>
-</li>
-<li>
-<p><strong>追求高效</strong>：在保证可读性的同时，应该追求代码的高效性，如多重循环中，上层计算结果应该用变量去保存，用于底层的循环，而不应该在底层进行多次计算重复值。
-如：</p>
-<div class="highlight"><pre><span class="err">函数</span><span class="n">foo</span><span class="p">(</span><span class="nb">int</span> <span class="n">num</span><span class="p">)</span><span class="err">是一个计算庞大的函数。</span>
-<span class="n">For</span><span class="p">(</span><span class="nb">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">100</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
-<span class="p">{</span>   
-    <span class="n">For</span><span class="p">(</span><span class="nb">int</span> <span class="n">j</span> <span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span> <span class="o">&lt;</span><span class="n">foo</span><span class="p">(</span><span class="n">i</span><span class="p">);</span><span class="n">j</span><span class="o">++</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">j</span><span class="o">++</span><span class="p">;</span><span class="sr">//</span><span class="k">do</span> <span class="n">anything</span><span class="o">.</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>这样每一次循环内循环的时候，在判断j是否小于foo(i)的时候都需要花大量的时间去计算foo(i)的结果。正确的方式应该是：</p>
-<div class="highlight"><pre><span class="n">For</span><span class="p">(</span><span class="nb">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">100</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
-<span class="p">{</span>   <span class="nb">int</span> <span class="n">tmp</span> <span class="o">=</span><span class="n">foo</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
-    <span class="n">For</span><span class="p">(</span><span class="nb">int</span> <span class="n">j</span> <span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span> <span class="o">&lt;</span><span class="n">tmp</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">j</span><span class="o">++</span><span class="p">;</span><span class="sr">//</span><span class="k">do</span> <span class="n">anything</span><span class="o">.</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>如此一来仅仅计算了一次，就可以将值使用多次，减少了没有必要的循环。
-虽然写起来可能不太好看。但是花费一个变量可以省去许多计算是很值得的。</p>
-</li>
-<li>
-<p><strong>设计的重要性</strong>：能实现功能的方式有很多种，如何采用高效的算法，设计优雅的数据结构，定义正确的函数功能，参数。这些是我这些天学到的宝贵的一点。</p>
-</li>
-<li>
-<p><strong>算法</strong>：一个程序的灵魂是算法。宁可花掉时间想算法，也不可以退而求其次采用低效的算法解决问题。</p>
-</li>
-<li><strong>数据结构的重要性</strong>：在写代码的过程中好多时候我的数据结构都设计得不好，男哥给我很多的帮助。首先要清楚要做什么，需要什么，然后再去设计。后来的数据结构好与坏，我基本能有一些感觉了。好的数据结构能让算法更简单。</li>
-<li>
-<p><strong>函数定义</strong>：函数定义涉及到函数的名称，参数，返回值这三大要素。好的名称可以提高可读性，正确的参数，能让整个程序运行得更合理，为算法提供正确的数据。返回值的重要性体现在函数调用的情况下。比如一个pop()函数，它不应该是在函数体里面打印pop出来的数值，而返回void，而是将pop的数值返回。打印的任务应该是打印返回值。这样的函数定义才是正确的，因为更多的场景需要得到这个数值，而不是在控制台下面打印一个值。</p>
-</li>
-<li>
-<p><strong>代码的优雅度</strong>：渐渐觉得，其实写代码不是一件简单的事情。他需要一个人拥有足够的背景知识，如英文的熟练程度，逻辑思维严谨度，设计思想等等。能把一个功能成功拆分成许多的相对独立的模块，然后有机的组合在一起，而且可读性很高，鲁棒性（稳定性）很强，可移植性很强，这就是代码的优雅度。</p>
-</li>
-<li>
-<p><strong>语言的熟练度非常重要</strong>:刚开始的时候举步维艰，一个指针就能搞疯掉。但是慢慢的就习惯了，速度也就上来了，遇到的问题多了，也就知道怎么解决了。写的多了，也就快了。所以语言的熟练程度也是我在这次培训中得到的提升。</p>
-</li>
-<li>
-<p><strong>知识广度</strong>:除了基础的语法以外，比较成熟的接口，架构是我需要大大补充的。比如通用线程编程中很多知识还没有摸透。还需要多练习，多看书，多理解。有其事在线程池一题，pthread_cond_t 的一些操作我还不是特别清晰。</p>
-</li>
-<li>
-<p><strong>指针</strong>: 从python这种不需要接触指针的语言转到c这种一直使用指针的语言，还是需要一个过渡的。幸亏大一的时候学C++，还算认真。基本上已经捡起来以前的东西了。只是始终没有使用完调用free的习惯，看来还需要培养。 因为指针出现的问题是这次训练中遇到的最多的问题。</p>
-</li>
-</ul>
-<h3>调试</h3>
-<p>以上的都是在编码的过程中的一些总结。但是这显然不是最重要的，最重要的是：<strong>调试</strong>！</p>
-<p><strong>如何定位错误是一个很重要的能力！</strong></p>
-<p>我目前使用打印信息调试，慢慢定位到错误断点。</p>
-<p>调试方式有很多种：</p>
-<ul>
-<li>打印调试信息</li>
-<li>gcc --debug   + gdb </li>
-<li>使用eclipse等集成环境会让你调试爽一点哦。起码不需要一直面对黑框子。</li>
-<li>更多的我就不知道了。</li>
-</ul>
-<p>我觉得我应该学习一下如何在bash中使用 gdb 进行调试。这是我以后要学习的知识之一，写代码不难，调试才难！因为出错是正常的。</p>
-<h3>总结</h3>
-<p><strong>写一个程序其实就是在做一个产品</strong>。</p>
-<p>需要考虑到产品的功能，是否能够为用户创造价值。如何从无到有设计，实现一个功能，这个过程本身就是在做一个产品，只不过范围上比较小而已。在设计的时候不仅仅要考虑到产品的功能性，还要考虑到许多方面，比如与其他产品配合工作等等。我觉得这8道题给我的提升是非常大的！不仅仅是c语言方面，而是编码设计方面。更大的范围内，这次培训改变了我的思维模式。</p></div>
-        <hr />
-    </div>
-		
+<p><strong>可读性</strong>：可读性的重点是对编程者而言 ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -252,40 +378,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>Messenger 的作用</h3>
 <p>从以下的英文中，我们可以对Messenger有一定的了解。messenger是一个API,是用与POX与其他程序建立连接的API,通过他实现的有PoxDesk,也就是POX的web ui。</p>
 <p>The messenger component provides an interface for POX to interact with external processes via bidirectional JSON-based messages.  The messenger by itself is really ...</p> <a class="btn btn-info xsmall" href="../pages/2014/03/26/poxmessenger-component-getting-started.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html"><h2>mininet与外部host通信</h2></a>
-        <div class= "well small"> 2014-03-25
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>好多同学都在尝试使用mininet搭建拓扑。有的同学在尝试如何让mininet与外网通信，比如虚拟机，比如mininet之外的另一个网络。问题已经存在很久，本文将介绍如何使用mininet的接口实现与外界通信。</p>
-<h3>Intf()接口</h3>
-<p>在mininet的源码中，我们可以找到一个link的文件，也是一个类。这个文件中有一个接口类Intf()</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Intf</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
-
-    <span class="s">&quot;Basic interface object that can configure itself.&quot;</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>使用这个接口类，可以把安装mininet的机器的网卡接到mininet的ovs之上。</p>
-<p>剩下的就简单了。最重要的接口解决之后一切就都解决了。</p>
-<p>如果需要例子，可以在本站查看：mininet搭建自定义拓扑</p>
-<p>另，也可以查看mininet中的hwintf文件。</p>
-<p>希望能对你有帮助。</p> <a class="btn btn-info xsmall" href="../pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
