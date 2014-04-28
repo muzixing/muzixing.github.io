@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/04/18/ctime_server.html"><h1>[c]time_server</h1></a>
-2014-04-18
+            <a href="../pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html"><h1>[c]线程池的实现</h1></a>
+2014-04-28
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -73,6 +73,337 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         </div>
         
         <div><h3>前言</h3>
+<p>这是C语言培训的最后一题，线程池，今天看了看控制器的代码，看到了线程池的影子，然后发现应该赶紧写完这篇了。哎，文笔不行，写书写成屎了！希望再修改几次能不丢人吧。</p>
+<p>本篇主要介绍如何实现一个线程池模型，task是简单的打印，当然如果你想让线程池完成你的功能线程的管理，只需要将task换成你的线程就可以了。</p>
+<h3>线程池</h3>
+<p>（摘自百度百科）线程池是一种多线程处理形式，处理过程中将任务添加到队列，然后在创建线程后自动启动这些任务。线程池线程都是后台线程。</p>
+<p>组成：</p>
+<ul>
+<li>线程池管理器（ThreadPoolManager）:用于创建并管理线程池</li>
+<li>工作线程（WorkThread）: 线程池中线程</li>
+<li>任务接口（Task）:每个任务必须实现的接口，以供工作线程调度任务的执行。</li>
+<li>任务队列:用于存放没有处理的任务。提供一种缓冲机制。</li>
+</ul>
+<p>更多可访问：http://baike.baidu.com/link?url=caXqYSEEEDLS28VYuSzSxPbTM3dt_5WwXqF2-TUxR8ptJxggJaJHfTZ3_9Hs4urU#2</p>
+<h3>threadpool.h</h3>
+<p>threadpool.h的功能主要是定义工作线程的结构和线程池结构，声明相关的函数，如创建函数。</p>
+<div class="highlight"><pre><span class="c1">#ifndef _THREADPOOL_</span>
+<span class="c1">#define _THREADPOOL_</span>
+<span class="sr">//</span><span class="c1">#include &lt;stdlib.h&gt;</span>
+<span class="sr">//</span><span class="c1">#include &lt;pthread.h&gt;</span>
+
+<span class="n">typedef</span> <span class="n">struct</span> <span class="n">threadpool_work</span>
+<span class="p">{</span>
+    <span class="n">void</span> <span class="p">(</span><span class="o">*</span><span class="n">process</span><span class="p">)(</span><span class="n">void</span><span class="o">*</span><span class="p">);</span>
+    <span class="n">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">;</span>
+    <span class="n">struct</span> <span class="n">threadpool_work</span><span class="o">*</span> <span class="k">next</span><span class="p">;</span> <span class="sr">//</span><span class="k">use</span> <span class="n">the</span> <span class="nb">link</span> <span class="k">for</span> <span class="n">save</span> <span class="n">thread</span><span class="o">.</span>
+
+<span class="p">}</span><span class="n">tpool_work_t</span><span class="p">;</span>
+
+<span class="n">typedef</span> <span class="n">struct</span> <span class="n">tpool</span>
+<span class="p">{</span>
+    <span class="nb">int</span> <span class="n">num_thread</span><span class="p">;</span><span class="sr">//co</span><span class="n">unt</span> <span class="n">of</span> <span class="n">thread</span><span class="o">.</span>
+    <span class="nb">int</span> <span class="n">max_queue_size</span><span class="p">;</span>  <span class="sr">//m</span><span class="n">ax</span> <span class="n">number</span> <span class="n">of</span> <span class="n">thread</span><span class="o">.</span>
+
+    <span class="n">pthread_t</span><span class="o">*</span> <span class="n">tid</span><span class="p">;</span> <span class="sr">//</span><span class="n">thread</span> <span class="n">id</span><span class="p">;</span>
+    <span class="n">tpool_work_t</span> <span class="o">*</span><span class="n">queue</span><span class="p">;</span> <span class="sr">//</span><span class="n">the</span> <span class="n">queue</span> <span class="n">header</span><span class="o">.</span>
+    <span class="nb">int</span> <span class="n">front</span><span class="p">,</span><span class="n">rear</span><span class="p">;</span> <span class="sr">//</span><span class="n">the</span> <span class="n">header</span> <span class="ow">and</span> <span class="n">end</span><span class="o">.</span>
+
+    <span class="nb">int</span> <span class="n">closed</span><span class="p">;</span> <span class="sr">//c</span><span class="n">lose</span> <span class="n">putting</span> <span class="p">,</span><span class="n">but</span> <span class="n">can</span> <span class="n">run</span> <span class="n">the</span> <span class="n">existed</span> <span class="n">threads</span><span class="o">.</span>
+    <span class="nb">int</span> <span class="nb">shutdown</span><span class="p">;</span>   <span class="sr">//s</span><span class="n">hutdown</span> <span class="n">all</span> <span class="n">thread</span> <span class="n">works</span><span class="o">.</span>
+
+    <span class="n">pthread_mutex_t</span> <span class="n">queue_lock</span><span class="p">;</span>      <span class="sr">//</span><span class="n">lock</span> <span class="n">the</span> <span class="n">queue</span>
+    <span class="n">pthread_cond_t</span> <span class="n">queue_has_task</span><span class="p">;</span>   <span class="sr">//</span><span class="n">task</span> <span class="n">condition</span><span class="o">.</span>
+    <span class="n">pthread_cond_t</span> <span class="n">queue_has_space</span><span class="p">;</span>  <span class="sr">//s</span><span class="n">pace</span> <span class="n">condition</span>
+    <span class="n">pthread_cond_t</span> <span class="n">queue_empty</span><span class="p">;</span>      <span class="sr">//</span><span class="n">empty</span> <span class="n">condition</span>
+
+<span class="p">}</span><span class="o">*</span><span class="n">tpool_t</span><span class="p">;</span>
+
+<span class="n">void</span> <span class="o">*</span><span class="n">thread_creat</span><span class="p">(</span><span class="n">void</span><span class="o">*</span><span class="p">);</span> <span class="sr">//</span><span class="n">void</span><span class="o">*</span> <span class="n">pointer</span><span class="o">.</span>
+
+<span class="n">void</span> <span class="n">tpool_init</span><span class="p">(</span><span class="n">tpool_t</span><span class="o">*</span> <span class="n">tpool_p</span><span class="p">,</span> <span class="nb">int</span> <span class="n">num_thread</span> <span class="p">,</span><span class="nb">int</span> <span class="n">max_queue_size</span><span class="p">);</span>
+
+<span class="nb">int</span> <span class="n">tpool_add_work</span><span class="p">(</span><span class="n">tpool_t</span> <span class="n">tpool</span><span class="p">,</span><span class="n">void</span><span class="p">(</span><span class="o">*</span><span class="n">routine</span><span class="p">)(</span><span class="n">void</span><span class="o">*</span><span class="p">),</span><span class="n">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">);</span> <span class="sr">//</span><span class="err">第二个参数是任务函数的地址，</span><span class="o">*</span><span class="n">arg</span><span class="err">是任务函数的参数、</span>
+
+<span class="nb">int</span> <span class="n">tpool_destroy</span><span class="p">(</span><span class="n">tpool_t</span> <span class="n">tpool</span><span class="p">,</span> <span class="nb">int</span> <span class="n">finish</span><span class="p">);</span> 
+<span class="nb">int</span> <span class="n">get_size</span><span class="p">(</span><span class="n">tpool_t</span> <span class="n">pool</span><span class="p">);</span>
+<span class="nb">int</span> <span class="n">full</span><span class="p">(</span><span class="n">tpool_t</span> <span class="n">pool</span><span class="p">);</span>
+<span class="nb">int</span> <span class="n">empty</span><span class="p">(</span><span class="n">tpool_t</span> <span class="n">pool</span><span class="p">);</span>
+
+<span class="c1">#endif</span>
+</pre></div>
+
+
+<h3>threadpool.c</h3>
+<p>threadpool.c是threadpool.h的实现。主要实现了，threadpool.h中定义的所有函数。</p>
+<div class="highlight"><pre><span class="c1">#include &lt;stdlib.h&gt;</span>
+<span class="c1">#include &lt;stdio.h&gt;</span>
+<span class="c1">#include &quot;threadpool.h&quot;</span>
+<span class="c1">#include &lt;pthread.h&gt;</span>
+<span class="c1">#include &lt;unistd.h&gt;</span>
+<span class="c1">#include &lt;sys/types.h&gt;</span>
+<span class="c1">#include &lt;string.h&gt;</span>
+
+<span class="n">void</span> <span class="n">tpool_init</span><span class="p">(</span><span class="n">tpool_t</span><span class="o">*</span> <span class="n">tpool_p</span><span class="p">,</span> <span class="nb">int</span> <span class="n">num_thread</span> <span class="p">,</span><span class="nb">int</span> <span class="n">max_queue_size</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nb">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="n">tpool_t</span> <span class="n">pool</span><span class="p">;</span>
+
+    <span class="n">pool</span> <span class="o">=</span> <span class="p">(</span><span class="n">tpool_t</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">tpool</span><span class="p">));</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pool</span> <span class="o">==</span><span class="n">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">perror</span><span class="p">(</span><span class="s">&quot;malloc&quot;</span><span class="p">);</span>
+        <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span><span class="sr">//</span><span class="k">return</span> <span class="n">normal</span><span class="p">?</span>
+    <span class="p">}</span>
+
+    <span class="n">pool</span><span class="o">-&gt;</span><span class="n">num_thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">pool</span><span class="o">-&gt;</span><span class="n">max_queue_size</span> <span class="o">=</span> <span class="n">max_queue_size</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span> <span class="sr">//</span><span class="err">为了留出一个位置，用于区别队列满和空的区别，详情看博客中循环队列那篇。</span>
+    <span class="n">pool</span><span class="o">-&gt;</span><span class="n">num_thread</span> <span class="o">=</span> <span class="n">num_thread</span><span class="p">;</span>
+    <span class="n">pool</span><span class="o">-&gt;</span><span class="n">tid</span> <span class="o">=</span> <span class="n">NULL</span><span class="p">;</span>                        <span class="sr">//</span><span class="n">thread</span> <span class="n">id</span>
+    <span class="n">pool</span><span class="o">-&gt;</span><span class="n">front</span> <span class="o">=</span> <span class="n">pool</span><span class="o">-&gt;</span><span class="n">rear</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">pool</span><span class="o">-&gt;</span><span class="n">closed</span> <span class="o">=</span> <span class="n">pool</span><span class="o">-&gt;</span><span class="nb">shutdown</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="sr">//i</span><span class="n">nit</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">,</span><span class="n">NULL</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="sr">//</span><span class="n">failed</span><span class="o">.</span>
+    <span class="p">{</span>
+        <span class="n">perror</span><span class="p">(</span><span class="s">&quot;pthread_mutex_init&quot;</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
+        <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pthread_cond_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_has_task</span><span class="p">,</span><span class="n">NULL</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="sr">//</span><span class="err">初始化</span>
+    <span class="p">{</span>
+        <span class="n">perror</span><span class="p">(</span><span class="s">&quot;pthread_cond_init:queue_has_task&quot;</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
+        <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pthread_cond_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_has_space</span><span class="p">,</span><span class="n">NULL</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">perror</span><span class="p">(</span><span class="s">&quot;pthread_cond_init:queue_has_space&quot;</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
+        <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pthread_cond_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_empty</span><span class="p">,</span><span class="n">NULL</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">perror</span><span class="p">(</span><span class="s">&quot;pthread_cond_init:queue_empty&quot;</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
+        <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">threadpool_work</span><span class="p">)</span><span class="o">*</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">max_queue_size</span><span class="p">))</span> <span class="o">==</span> <span class="n">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">perror</span><span class="p">(</span><span class="s">&quot;malloc pool-&gt;queue:&quot;</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
+        <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">tid</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">sizeof</span><span class="p">(</span><span class="n">pthread_t</span><span class="p">)</span><span class="o">*</span><span class="n">num_thread</span><span class="p">))</span><span class="o">==</span><span class="n">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">perror</span><span class="p">(</span><span class="s">&quot;malloc pool-&gt;tid&quot;</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>
+        <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_thread</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">tid</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">NULL</span><span class="p">,</span><span class="n">thread_creat</span><span class="p">,(</span><span class="n">void</span><span class="o">*</span><span class="p">)</span><span class="n">pool</span><span class="p">)</span><span class="o">!=</span><span class="mi">0</span><span class="p">)</span><span class="sr">//</span><span class="err">创建线程，执行实体为</span><span class="n">thread_creat</span><span class="err">函数。</span>
+        <span class="p">{</span>
+            <span class="n">perror</span><span class="p">(</span><span class="s">&quot;pthread_create error&quot;</span><span class="p">);</span>
+            <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="o">*</span><span class="n">tpool_p</span> <span class="o">=</span> <span class="n">pool</span><span class="p">;</span>
+
+<span class="p">}</span>
+<span class="n">void</span> <span class="o">*</span><span class="n">thread_creat</span><span class="p">(</span><span class="n">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="sr">//</span><span class="k">use</span> <span class="k">for</span> <span class="n">creating</span> <span class="n">threads</span><span class="o">.</span>
+<span class="p">{</span>
+    <span class="n">tpool_t</span> <span class="n">pool</span> <span class="o">=</span> <span class="p">(</span><span class="n">tpool_t</span><span class="p">)(</span><span class="n">arg</span><span class="p">);</span>
+    <span class="n">tpool_work_t</span><span class="o">*</span> <span class="n">work</span><span class="p">;</span>
+
+    <span class="sr">//</span><span class="nb">printf</span><span class="p">(</span><span class="s">&quot;thread_creat start\n&quot;</span><span class="p">);</span>
+    <span class="k">for</span><span class="p">(;;)</span> <span class="sr">//</span><span class="n">loop</span> <span class="n">forever</span>
+    <span class="p">{</span>
+        <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span><span class="sr">//</span><span class="err">在操作数据之前，需要先</span><span class="n">lock</span>
+        <span class="k">while</span><span class="p">(</span><span class="n">empty</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span><span class="o">&amp;&amp;!</span><span class="n">pool</span><span class="o">-&gt;</span><span class="nb">shutdown</span><span class="p">)</span> <span class="sr">//i</span><span class="n">f</span> <span class="n">the</span> <span class="n">queue</span> <span class="n">is</span> <span class="n">empty</span> <span class="ow">and</span> <span class="nb">wait</span> <span class="k">for</span> <span class="n">add</span><span class="o">.</span>
+        <span class="p">{</span>
+            <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;I am sleep..\n&quot;</span><span class="p">);</span>
+            <span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_has_task</span><span class="p">,</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span> 
+        <span class="p">}</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;I am awake\n&quot;</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pool</span><span class="o">-&gt;</span><span class="nb">shutdown</span> <span class="o">==</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;exit\n&quot;</span><span class="p">);</span>
+            <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span>
+            <span class="n">pthread_exit</span><span class="p">(</span><span class="n">NULL</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="nb">int</span> <span class="n">is_full</span> <span class="o">=</span> <span class="n">full</span><span class="p">(</span><span class="n">pool</span><span class="p">);</span>  
+        <span class="n">work</span> <span class="o">=</span> <span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue</span><span class="o">+</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">front</span><span class="p">;</span><span class="sr">//</span><span class="n">that</span> <span class="n">is</span> <span class="n">a</span> <span class="n">queue</span>
+        <span class="sr">//</span><span class="nb">printf</span><span class="p">(</span><span class="s">&quot;pool-&gt;front:%d\n&quot;</span><span class="p">,</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">front</span> <span class="p">);</span>
+        <span class="n">pool</span><span class="o">-&gt;</span><span class="n">front</span> <span class="o">=</span> <span class="p">(</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">front</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="nv">%pool</span><span class="o">-&gt;</span><span class="n">max_queue_size</span><span class="p">;</span>
+        <span class="sr">//</span><span class="nb">printf</span><span class="p">(</span><span class="s">&quot;pool-&gt;front(after)%d\n&quot;</span><span class="p">,</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">front</span> <span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">is_full</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_has_space</span><span class="p">);</span>  <span class="sr">//</span><span class="n">broadcast</span> <span class="n">to</span> <span class="n">all</span> <span class="n">thread</span> <span class="n">that</span> <span class="n">has</span> <span class="n">been</span> <span class="n">full</span><span class="o">.</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">empty</span><span class="p">(</span><span class="n">pool</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="n">pthread_cond_signal</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_empty</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span><span class="sr">//</span><span class="err">读写完成，解锁</span>
+        <span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">work</span><span class="o">-&gt;</span><span class="n">process</span><span class="p">))(</span><span class="n">work</span><span class="o">-&gt;</span><span class="n">arg</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nb">int</span> <span class="n">tpool_add_work</span><span class="p">(</span><span class="n">tpool_t</span> <span class="n">tpool</span><span class="p">,</span><span class="n">void</span><span class="p">(</span><span class="o">*</span><span class="n">process</span><span class="p">)(</span><span class="n">void</span><span class="o">*</span><span class="p">),</span><span class="n">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span><span class="sr">//</span><span class="err">添加任务函数</span>
+<span class="p">{</span>
+    <span class="n">tpool_work_t</span> <span class="o">*</span><span class="n">temp</span><span class="p">;</span>
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span>
+
+    <span class="k">while</span><span class="p">(</span><span class="n">full</span><span class="p">(</span><span class="n">tpool</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="o">!</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="nb">shutdown</span><span class="p">)</span> <span class="o">&amp;&amp;</span><span class="p">(</span><span class="o">!</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">closed</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;queue full\n&quot;</span><span class="p">);</span>
+        <span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_has_space</span><span class="p">,</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span><span class="sr">//i</span><span class="n">f</span> <span class="n">full</span> <span class="ow">and</span> <span class="k">do</span> <span class="ow">not</span> <span class="nb">shutdown</span> <span class="ow">and</span> <span class="k">do</span> <span class="ow">not</span> <span class="n">closed</span> <span class="p">,</span><span class="k">then</span> <span class="n">we</span> <span class="nb">wait</span><span class="o">.</span>
+    <span class="p">}</span>   
+    <span class="k">if</span><span class="p">(</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="nb">shutdown</span> <span class="o">||</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">closed</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;shutdown\n&quot;</span><span class="p">);</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nb">int</span> <span class="n">is_empty</span> <span class="o">=</span> <span class="n">empty</span><span class="p">(</span><span class="n">tpool</span><span class="p">);</span>
+    <span class="sr">//</span><span class="nb">printf</span><span class="p">(</span><span class="s">&quot;is empty:%d\n&quot;</span><span class="p">,</span> <span class="n">is_empty</span><span class="p">);</span>
+    <span class="nb">int</span> <span class="n">size</span> <span class="o">=</span><span class="n">get_size</span><span class="p">(</span><span class="n">tpool</span><span class="p">);</span>
+    <span class="sr">//</span><span class="nb">printf</span><span class="p">(</span><span class="s">&quot;len:%d\n&quot;</span><span class="p">,</span><span class="n">size</span><span class="p">);</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue</span> <span class="o">+</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">rear</span><span class="p">;</span>  <span class="sr">//</span><span class="n">add</span> <span class="n">a</span> <span class="n">node</span> <span class="n">of</span> <span class="nb">link</span><span class="o">.</span>
+    <span class="n">temp</span><span class="o">-&gt;</span><span class="n">process</span> <span class="o">=</span> <span class="n">process</span><span class="p">;</span>
+    <span class="n">temp</span><span class="o">-&gt;</span><span class="n">arg</span> <span class="o">=</span> <span class="n">arg</span><span class="p">;</span>
+    <span class="n">tpool</span><span class="o">-&gt;</span><span class="n">rear</span> <span class="o">=</span> <span class="p">(</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">rear</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="nv">%tpool</span><span class="o">-&gt;</span><span class="n">max_queue_size</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">is_empty</span><span class="p">)</span>
+    <span class="p">{</span>       
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;signal has task\n&quot;</span><span class="p">);</span>
+        <span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_has_task</span><span class="p">);</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;pthread_cond_broadcast\n&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="sr">//</span><span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_has_task</span><span class="p">);</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+
+
+<span class="nb">int</span> <span class="n">tpool_destroy</span><span class="p">(</span><span class="n">tpool_t</span> <span class="n">tpool</span><span class="p">,</span> <span class="nb">int</span> <span class="n">finish</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;tpool_destroy\n&quot;</span><span class="p">);</span>
+    <span class="nb">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span>
+    <span class="n">tpool</span><span class="o">-&gt;</span><span class="n">closed</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="sr">//</span> <span class="nb">wait</span> <span class="k">for</span> <span class="n">all</span> <span class="n">works</span> <span class="n">done</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">finish</span> <span class="o">==</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;wait for all work done\n&quot;</span><span class="p">);</span>
+        <span class="k">while</span><span class="p">(</span><span class="o">!</span><span class="n">empty</span><span class="p">(</span><span class="n">tpool</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_empty</span><span class="p">,</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="n">tpool</span><span class="o">-&gt;</span><span class="nb">shutdown</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_lock</span><span class="p">);</span>
+    <span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue_has_task</span><span class="p">);</span>
+
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;wait for worker thread exit\n&quot;</span><span class="p">);</span>
+
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">tpool</span><span class="o">-&gt;</span><span class="n">num_thread</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">pthread_join</span><span class="p">(</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">tid</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">NULL</span><span class="p">);</span>  <span class="sr">//</span><span class="n">All</span> <span class="n">awake</span> <span class="ow">and</span> <span class="n">find</span> <span class="n">out</span> <span class="n">shotdown</span> <span class="p">,</span><span class="ow">and</span> <span class="nb">exit</span><span class="o">.</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;free thread pool\n&quot;</span><span class="p">);</span>
+
+    <span class="n">free</span><span class="p">(</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">tid</span><span class="p">);</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">tpool</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">);</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">tpool</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nb">int</span> <span class="n">empty</span><span class="p">(</span><span class="n">tpool_t</span> <span class="n">pool</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">pool</span><span class="o">-&gt;</span><span class="n">front</span> <span class="o">==</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">rear</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nb">int</span> <span class="n">full</span><span class="p">(</span><span class="n">tpool_t</span> <span class="n">pool</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">rear</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="nv">%pool</span><span class="o">-&gt;</span><span class="n">max_queue_size</span> <span class="o">==</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">front</span><span class="p">);</span><span class="sr">//</span><span class="o">+</span><span class="mi">1</span><span class="err">用于区别循环链表中的</span><span class="n">full</span> <span class="ow">and</span> <span class="n">empty</span>
+<span class="p">}</span>
+<span class="nb">int</span> <span class="n">get_size</span><span class="p">(</span><span class="n">tpool_t</span> <span class="n">pool</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">rear</span><span class="o">+</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">max_queue_size</span><span class="o">-</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">front</span><span class="p">)</span><span class="nv">%pool</span><span class="o">-&gt;</span><span class="n">max_queue_size</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3>main.c</h3>
+<p>main函数主要负责调用，测试线程池。工作任务是最简单的打印。</p>
+<div class="highlight"><pre><span class="c1">#include &lt;stdlib.h&gt;</span>
+<span class="c1">#include &lt;pthread.h&gt;</span>
+<span class="c1">#include &quot;threadpool.h&quot;</span>
+
+<span class="n">char</span> <span class="o">*</span><span class="n">str</span><span class="o">[]</span> <span class="o">=</span><span class="p">{</span><span class="s">&quot;string 0&quot;</span><span class="p">,</span><span class="s">&quot;string 1&quot;</span><span class="p">,</span><span class="s">&quot;string 2&quot;</span><span class="p">,</span><span class="s">&quot;string 3&quot;</span><span class="p">,</span><span class="s">&quot;string 4&quot;</span><span class="p">,</span><span class="s">&quot;string 5&quot;</span><span class="p">,</span><span class="s">&quot;string 6&quot;</span><span class="p">,};</span>
+
+<span class="n">void</span> <span class="n">job</span><span class="p">(</span><span class="n">void</span> <span class="o">*</span><span class="n">str</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">long</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10000000</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="sr">//</span><span class="n">loop</span> <span class="k">for</span> <span class="n">watching</span> <span class="n">the</span> <span class="k">print</span><span class="o">.</span>
+    <span class="p">{</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="o">+</span><span class="n">i</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%s\n&quot;</span><span class="p">,(</span><span class="n">char</span><span class="o">*</span><span class="p">)</span><span class="n">str</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="nb">int</span> <span class="n">main</span><span class="p">(</span><span class="nb">int</span> <span class="n">argc</span><span class="p">,</span> <span class="n">char</span> <span class="n">const</span> <span class="o">*</span><span class="n">argv</span><span class="o">[]</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nb">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="n">tpool_t</span> <span class="n">test_pool</span><span class="p">;</span>
+
+    <span class="n">tpool_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">test_pool</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">18</span><span class="p">);</span><span class="sr">//</span><span class="err">工作线程为</span><span class="mi">8</span><span class="err">，最大为</span><span class="mi">18</span><span class="err">个</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="sr">//</span><span class="nb">printf</span><span class="p">(</span><span class="s">&quot;loop\n&quot;</span><span class="p">);</span>
+        <span class="n">tpool_add_work</span><span class="p">(</span><span class="n">test_pool</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="n">str</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+    <span class="p">}</span>
+    <span class="n">tpool_destroy</span><span class="p">(</span><span class="n">test_pool</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3>后续</h3>
+<p>现在写教程都不知道说什么好了，感觉要说的都在代码，注释里，就不多废话了。有问题的请评论。希望能对你有帮助。另外你可能需要在添加完县城之后，将线程join一下才能看打印。释放的时候可以运行等待的线程。</p>
+<p>c语言培训题到此结束。希望是一个新的开始！</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/04/18/ctime_server.html"><h2>[c]time_server</h2></a>
+        <div class= "well small"> 2014-04-18
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
 <p>本篇内容主要是介绍如何编写一个通过socket通信，实现获取服务器当前时间的例子。</p>
 <h3>实现</h3>
 <p>首先我们需要定义两个函数：</p>
@@ -97,160 +428,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>time_server.c文件是实现time_server中的函数声明。
 头文件如下：</p>
 <div class="highlight"><pre><span class="c">#include &lt;stdlib.h&gt;</span>
-<span class="c">#include &quot;time_server.h&quot;</span>
-<span class="c">#include &lt;stdio.h&gt;</span>
-<span class="c">#include &lt;time.h&gt;</span>
-<span class="c">#include &lt;sys/types.h&gt;</span>
-<span class="c">#include &lt;sys/socket.h&gt;</span>
-<span class="c">#include &lt;netinet/in.h&gt;</span>
-</pre></div>
-
-
-<p>我们需要把系统时间返回所以需要用到time.h</p>
-<p>需要使用socket，所以需要include <socket.h></p>
-<p>netinet/in.h则是因为要使用inet_addr()函数。</p>
-<p><strong>time_server函数实现如下：</strong></p>
-<div class="highlight"><pre><span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">)</span><span class="sr">//</span><span class="n">You</span> <span class="n">should</span> <span class="n">change</span> <span class="n">the</span> <span class="n">ip</span> <span class="n">addr</span> <span class="n">into</span> <span class="nb">int</span><span class="o">.</span>
-<span class="p">{</span>
-    <span class="nb">int</span> <span class="n">server_fd</span><span class="p">;</span>    <span class="sr">//</span><span class="err">用于记录</span><span class="nb">socket</span><span class="err">的</span><span class="n">fd</span>
-    <span class="nb">int</span> <span class="n">client_fd</span><span class="p">;</span>
-    <span class="n">struct</span> <span class="n">sockaddr_in</span> <span class="n">server_addr</span><span class="p">,</span> <span class="n">client_addr</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">sock_size</span><span class="p">;</span><span class="sr">//si</span><span class="n">ze</span> <span class="n">of</span> <span class="n">socket_in</span><span class="o">.</span>
-
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; server start.\n&quot;</span><span class="p">);</span>
-    <span class="sr">//c</span><span class="n">reate</span> <span class="n">a</span> <span class="nb">socket</span><span class="o">.</span>
-    <span class="n">server_fd</span> <span class="o">=</span> <span class="nb">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span> <span class="sr">//</span><span class="err">若成功返回一个非</span><span class="o">-</span><span class="mi">1</span><span class="err">的整数</span><span class="n">fd</span><span class="err">，若失败，返回</span><span class="o">-</span><span class="mi">1</span>
-    <span class="k">if</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="n">server_fd</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket failed.\n&quot;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket successful.\n&quot;</span><span class="p">);</span>
-
-    <span class="sr">//s</span><span class="n">et</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">of</span> <span class="nb">socket</span>
-    <span class="n">bzero</span><span class="p">(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">,</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">));</span><span class="sr">//</span><span class="n">fill</span> <span class="mi">0</span> <span class="n">of</span> <span class="n">server_addr</span>
-    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span><span class="sr">//</span><span class="err">设置协议族为</span><span class="n">IPV4</span><span class="err">。另还有其他几种如</span><span class="n">AF_UNIX</span><span class="p">,</span><span class="err">可</span><span class="n">google</span><span class="o">.</span>
-    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_addr</span><span class="o">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="s">&quot;0.0.0.0&quot;</span><span class="p">);</span><span class="sr">//</span><span class="err">将十进制点分</span><span class="n">ip</span><span class="p">,</span><span class="err">转化为</span><span class="mi">32</span><span class="n">bit</span><span class="err">的整数，同时</span><span class="mf">0.0.0.0</span> <span class="err">为监听所有地址。服务器可能不止一个地址。</span>
-    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">port</span><span class="p">);</span><span class="sr">//</span><span class="n">htons</span><span class="p">()</span><span class="err">函数是将</span><span class="n">port</span><span class="err">转化为网络字节序（大小端问题）</span>
-
-    <span class="sr">//</span><span class="nb">bind</span> <span class="n">to</span> <span class="n">port</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">bind</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">),</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="p">)))</span>
-    <span class="p">{</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; bind failed\n&quot;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; bind seccessful\n&quot;</span><span class="p">);</span>
-    <span class="sr">//</span><span class="nb">listen</span> 
-    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span> <span class="nb">listen</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="sr">//</span><span class="nb">listen</span><span class="p">(</span><span class="n">socket_fd</span><span class="p">,</span> <span class="nb">listen</span> <span class="n">number</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; listen failed\n&quot;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; listen seccessful\n&quot;</span><span class="p">);</span>
-    <span class="sr">//</span><span class="nb">recv</span>
-    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">sock_size</span> <span class="o">=</span> <span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">);</span>
-        <span class="n">client_fd</span> <span class="o">=</span> <span class="nb">accept</span><span class="p">(</span><span class="n">server_fd</span><span class="p">,(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">client_addr</span><span class="p">),</span><span class="o">&amp;</span><span class="n">sock_size</span><span class="p">);</span><span class="sr">//</span><span class="p">(</span><span class="n">server_socket_fd</span><span class="p">,</span><span class="n">store_mem</span><span class="p">,</span><span class="nb">length</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span><span class="n">client_fd</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; accept failed.\n&quot;</span><span class="p">);</span>
-            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-        <span class="p">}</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; accept seccessful\n&quot;</span><span class="p">);</span>
-
-        <span class="n">time_t</span> <span class="n">t</span><span class="p">;</span>
-        <span class="nb">time</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t</span><span class="p">);</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">send</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,</span><span class="n">asctime</span><span class="p">(</span><span class="nb">localtime</span><span class="p">((</span><span class="n">const</span> <span class="n">time_t</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="nb">time</span><span class="p">)),</span><span class="n">sizeof</span><span class="p">(</span><span class="n">asctime</span><span class="p">(</span><span class="nb">localtime</span><span class="p">((</span><span class="n">const</span> <span class="n">time_t</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="nb">time</span><span class="p">))),</span><span class="mi">0</span><span class="p">))</span><span class="sr">//s</span><span class="n">end</span> <span class="n">the</span> <span class="nb">system</span> <span class="nb">time</span>
-        <span class="p">{</span>
-            <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; send failed.\n&quot;</span><span class="p">);</span>
-            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-        <span class="p">}</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;send time seccessful\n&quot;</span><span class="p">);</span>
-        <span class="nb">close</span><span class="p">(</span><span class="n">client_fd</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="nb">close</span><span class="p">(</span><span class="n">server_fd</span><span class="p">);</span>
-
-<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>以上是time_server的函数实现。但是比较忧伤的是我使用的time的格式不太对，发送过去的星期。接下来是客户端的代码。两个函数都写在一个time_server.c文件里就好了。直接通过函数名调用即可。</p>
-<p><strong>get_time()</strong></p>
-<div class="highlight"><pre><span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">)</span><span class="sr">//</span><span class="err">参数是</span><span class="n">server_ip</span> <span class="err">和</span> <span class="n">port</span>
-<span class="p">{</span>   
-    <span class="nb">int</span> <span class="n">client_fd</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">recv_length</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">sock_size</span> <span class="o">=</span> <span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">);</span>
-    <span class="n">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">1024</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
-    <span class="n">struct</span> <span class="n">sockaddr_in</span> <span class="n">server_addr</span><span class="p">,</span> <span class="n">client_addr</span><span class="p">;</span>
-
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; client start.\n&quot;</span><span class="p">);</span>
-    <span class="sr">//c</span><span class="n">reate</span> <span class="n">a</span> <span class="nb">socket</span><span class="o">.</span>
-    <span class="n">client_fd</span> <span class="o">=</span> <span class="nb">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
-    <span class="k">if</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="n">client_fd</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket failed.\n&quot;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;&gt; create socket successful.\n&quot;</span><span class="p">);</span>
-
-    <span class="sr">//s</span><span class="n">et</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">of</span> <span class="nb">socket</span>
-    <span class="n">bzero</span><span class="p">(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">,</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr_in</span><span class="p">));</span><span class="sr">//s</span><span class="n">et</span> <span class="n">the</span> <span class="n">server</span> <span class="n">addr</span><span class="o">.</span>
-    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span>
-    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_addr</span><span class="o">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">ip</span><span class="p">;</span>
-    <span class="n">server_addr</span><span class="o">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">port</span><span class="p">);</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">connect</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">),</span><span class="n">sizeof</span><span class="p">(</span><span class="n">struct</span> <span class="n">sockaddr</span><span class="p">)))</span>
-    <span class="p">{</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;connect failed\n&quot;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;connect successful\n&quot;</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="p">(</span><span class="n">recv_length</span> <span class="o">=</span><span class="nb">recv</span><span class="p">(</span><span class="n">client_fd</span><span class="p">,</span><span class="n">buffer</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
-    <span class="p">{</span>
-        <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;receive failed\n&quot;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;receive:\n&quot;</span><span class="p">);</span>
-    <span class="n">buffer</span><span class="p">[</span><span class="n">recv_length</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;\0&#39;</span><span class="p">;</span><span class="sr">//</span><span class="n">end</span> <span class="n">of</span> <span class="n">buffer</span><span class="o">.</span>
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%s\n&quot;</span><span class="p">,</span> <span class="n">buffer</span><span class="p">);</span>
-
-    <span class="n">getchar</span><span class="p">();</span>
-    <span class="nb">close</span><span class="p">(</span><span class="n">client_fd</span><span class="p">);</span>
-    <span class="k">return</span> <span class="n">buffer</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>基本上time_server.c就是以上的内容，并不复杂。</p>
-<p><strong>main.c</strong></p>
-<div class="highlight"><pre><span class="c1">#include &lt;stdlib.h&gt;</span>
-<span class="c1">#include &lt;stdio.h&gt;</span>
-<span class="c1">#include &quot;time_server.h&quot;</span>
-<span class="c1">#include &lt;sys/socket.h&gt;</span>
-<span class="c1">#include &lt;netinet/in.h&gt;</span>
-<span class="c1">#include &lt;sys/types.h&gt;</span>
-<span class="nb">int</span> <span class="n">main</span><span class="p">(</span><span class="nb">int</span> <span class="n">argc</span><span class="p">,</span> <span class="n">char</span> <span class="n">const</span> <span class="o">*</span><span class="n">argv</span><span class="o">[]</span><span class="p">)</span>
-<span class="p">{</span>   
-    <span class="nb">int</span> <span class="n">server_ip</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="s">&quot;0.0.0.0&quot;</span><span class="p">);</span>
-    <span class="sr">//</span><span class="n">time_server</span><span class="p">(</span><span class="mi">50000</span><span class="p">);</span>
-    <span class="n">char</span> <span class="o">*</span> <span class="nb">time</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">(</span><span class="n">server_ip</span><span class="p">,</span><span class="mi">50000</span><span class="p">);</span>
-    <span class="nb">printf</span><span class="p">(</span><span class="s">&quot;%s\n&quot;</span><span class="p">,</span><span class="nb">time</span> <span class="p">);</span>
-
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>主函数也非常简单，在一台服务器机器上运行time_server(port).</p>
-<p>在客户端上，运行get_time(server_ip,port)即可。</p>
-<p>另，启动顺序是先启动server,再启动client,不然会有refused。</p></div>
-        <hr />
-    </div>
-		
+<span class="c">#include &quot;time_server.h ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/18/ctime_server.html">read more</a></div>
+    </div>	
+				
 
  
         

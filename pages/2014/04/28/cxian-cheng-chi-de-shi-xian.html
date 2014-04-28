@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">Code the world</a>
+        <a class="brand" href="../../../..">Code the world</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="../pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html"><h1>[c]线程池的实现</h1></a>
+            <h1>[c]线程池的实现</h1>
 2014-04-28
 
-by <a class="url fn" href="../author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><h3>前言</h3>
 <p>这是C语言培训的最后一题，线程池，今天看了看控制器的代码，看到了线程池的影子，然后发现应该赶紧写完这篇了。哎，文笔不行，写书写成屎了！希望再修改几次能不丢人吧。</p>
 <p>本篇主要介绍如何实现一个线程池模型，task是简单的打印，当然如果你想让线程池完成你的功能线程的管理，只需要将task换成你的线程就可以了。</p>
@@ -385,177 +379,23 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>后续</h3>
 <p>现在写教程都不知道说什么好了，感觉要说的都在代码，注释里，就不多废话了。有问题的请评论。希望能对你有帮助。另外你可能需要在添加完县城之后，将线程join一下才能看打印。释放的时候可以运行等待的线程。</p>
 <p>c语言培训题到此结束。希望是一个新的开始！</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = '[c]线程池的实现';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html"><h2>[c]生产者消费者模式实现</h2></a>
-        <div class= "well small"> 2014-04-19
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>本文主要内容是：使用多线程，运行生产者函数和消费者函数，去实现队列（临界区）的读写操作。</p>
-<p>其意义在与熟悉多线程的互斥过程。生产者消费者模式是最好，最简单的选择。</p>
-<h3>数据结构</h3>
-<p>首先我们要操作的数据结构是队列。那么我首先要构造一个队列：</p>
-<p>queue.h</p>
-<div class="highlight"><pre><span class="c1">#ifndef _QUEUE_</span>
-<span class="c1">#define _QUEUE_</span>
-
-
-<span class="n">typedef</span> <span class="n">struct</span> <span class="n">_QUEUE_</span>
-<span class="p">{</span>
-    <span class="nb">int</span> <span class="n">maxsize</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>  <span class="sr">//</span><span class="n">bad</span> <span class="n">design</span>
-    <span class="nb">int</span> <span class="n">end</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">begin</span><span class="p">;</span>
-
-<span class="p">}</span><span class="n">queue_t</span><span class="p">;</span>
-
-<span class="n">void</span> <span class="n">queue_init</span><span class="p">(</span><span class="n">queue_t</span><span class="o">*</span> <span class="n">queue</span><span class="p">);</span> <span class="sr">//</span><span class="err">队列的初始化。如</span><span class="n">end</span><span class="p">,</span><span class="n">begin</span><span class="err">，</span><span class="n">maxsize</span><span class="err">的设置。</span>
-<span class="nb">int</span> <span class="n">get_len</span><span class="p">(</span><span class="n">queue_t</span><span class="o">*</span> <span class="n">queue</span><span class="p">);</span>     <span class="sr">//</span><span class="err">获取队列的长度</span>
-<span class="n">void ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/04/18/ctime_server.html"><h2>[c]time_server</h2></a>
-        <div class= "well small"> 2014-04-18
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>本篇内容主要是介绍如何编写一个通过socket通信，实现获取服务器当前时间的例子。</p>
-<h3>实现</h3>
-<p>首先我们需要定义两个函数：</p>
-<div class="highlight"><pre><span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-</pre></div>
-
-
-<p>这两个函数是用于提供时间获取服务和，客户端调用去获取时间的函数。</p>
-<p>以下是time_server.h的内容：</p>
-<div class="highlight"><pre><span class="c1">#ifndef _TIME_SERVER_</span>
-<span class="c1">#define _TIME_SERVER_</span>
-<span class="c1">#include &lt;sys/socket.h&gt;</span>
-<span class="c1">#include &lt;string.h&gt;</span>
-
-<span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-<span class="c1">#endif</span>
-</pre></div>
-
-
-<p>time_server.c文件是实现time_server中的函数声明。
-头文件如下：</p>
-<div class="highlight"><pre><span class="c">#include &lt;stdlib.h&gt;</span>
-<span class="c">#include &quot;time_server.h ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/18/ctime_server.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html"><h2>编程真的不简单</h2></a>
-        <div class= "well small"> 2014-04-17
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>以前觉得编程嘛，不就是写代码嘛。谁不会啊！后来，和大男哥聊天的过程中，他说到一句话：大家都说我会c编程，然后我也觉得我会用c。就像我会打篮球，科比也会打篮球一样。</p>
-<p>当时真的笑翻了！不过说来也是！编程真的不简单！</p>
-<h3>编程真的不简单</h3>
-<p>下面是上个周我做的c语言培训题收获的感想。<strong>编程真的不简单啊！</strong></p>
-<p>之前都是用python写程序，很少会注意到一些方面，比如头文件之类的，指针之类的。这次的c题培训，让我对编程的认识上升到了另一个阶段。</p>
-<h3>编码</h3>
-<p>编程并不是仅仅把功能实现而已。还有许多重要的东西，比如：</p>
-<ul>
-<li>
-<p><strong>逻辑的严谨性</strong>：一些边界条件，可能的逻辑分支等，都需要考虑到。</p>
-</li>
-<li>
-<p><strong>模块化思想</strong>：将相对独立的功能写在一个文件中，有利于解耦和移植。提高代码的复用性，同时也为单元测试提供了可能。</p>
-</li>
-<li>
-<p><strong>头文件的重要性</strong>：在C语言中通过include 头文件的方式把某一些模块添加进来。同时一个头文件所包含的的内容应该是静态的声明，而不应该有实现。所有的实现都应该出现在同名的.c文件中。同时，在运行的时候我们必须保证.C的实现与.h的声明一致，某种程度上是对代码的保护。</p>
-</li>
-<li>
-<p><strong>可读性</strong>：可读性的重点是对编程者而言 ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html"><h2>[C语言]两个栈实现队列</h2></a>
-        <div class= "well small"> 2014-04-15
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>这是学习c语言的第一个训练题。刚开始写得真的非常差！！后来在大男哥的知道下学会了如何写c语言。本篇教程是：如何使用两个栈实现队列的功能。基本上这个代码也是他手把手教的。</p>
-<h3>算法</h3>
-<p>如何使用两个栈实现队列？
-大家都能想到需要在pop的时候从一个栈到另一个栈倒一下，再pop，这样就有做到先入先出了。但是如何判别哪一个是目前正在使用的，而哪一个又是用来接收第一个栈pop数据的呢？</p>
-<p>其实有一个好办法就是，指定一个是专门用于入栈的栈in_stack，所有数据入栈的时候必须入到这个栈中，而出栈的时候，需要将数据pop到另一个栈中，然后再从另一个栈中出栈。第二次出栈的时候直接从out_stack。直到out_stack的数据为空，则将in_stack的数据pop到out_stack中。这样就能保证出栈的顺序是FIFO了。</p>
-<p>同时，in_stack的深度就是队列的最小深度。</p>
-<p>最大深度是len(in_stack+out_stack).当且仅当第一次push时，全部push到满，然后pop数据，之后继续push直到满。严格意义上来说应该是len(in_stack+out_stack)-1，因为有一个pop掉了。</p>
-<h3>实现</h3>
-<h4>stack的实现</h4>
-<p>首先我们要实现stack。以下是stack.h</p>
-<div class="highlight"><pre><span class="o">/*</span>
-<span class="c1">##################</span>
-<span class="n">Author:</span> <span class="n">muzi</span>
-<span class="n">Date:2014</span><span class="sr">/4/</span><span class="mi">10</span>
-<span class="n">TODO ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../category/tech.html">1</a></li>
-    <li class=""><a href="../category/tech2.html">2</a></li>
-    <li class=""><a href="../category/tech3.html">3</a></li>
-    <li class=""><a href="../category/tech4.html">4</a></li>
-    <li class=""><a href="../category/tech5.html">5</a></li>
-
-    <li class="next"><a href="../category/tech2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -566,8 +406,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <li><a href="http://muzixing.github.io/" rel="alternate">Atom feed</a></li>
             </ul>
             </div>
@@ -579,8 +419,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">Life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">Life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -616,7 +456,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">Code the world</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Code the world</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
