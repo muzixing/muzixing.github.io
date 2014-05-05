@@ -81,7 +81,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 </ul>
 <h3>控制器</h3>
 <p>首先在nox/src/coreapps/switch中找到switch.cc。
-在class switch中添加成员变量uint32_t src_ip，nat_ip；由于只是一个简单的dame，就不做映射列表了。</p>
+在class switch中添加成员变量uint32_t src_ip，nat_ip；由于只是一个简单的demo，就不做映射列表了。</p>
 <p>handle_packet_in中将if(setup_flows &amp;&amp; out_port!=-1)的逻辑修改如下：</p>
 <div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">setup_flows</span> <span class="o">&amp;&amp;</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="p">{</span>
@@ -128,11 +128,11 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 </ul>
 <p>此时pingall可通。</p>
 <h3>后语</h3>
-<p>arp表真的很重要！Openflow1.0中没有修改arp的功能。1.3才有这个功能。考虑通信需要从全局的角度考虑，不能只考虑ICMP，ICMP之前的arp是必不可少，且非常重要的一个过程。希望读者能从中加深对网络通信流程的理解。感谢@地球-某某老师长久支持和教导！哈哈！</p>
+<p>arp缓存表很重要！Openflow1.0中没有修改arp的功能，1.3才有。考虑通信需要从全局的角度考虑，不能只考虑ICMP的转换，ICMP之前的arp的转换是必不可少的过程。希望读者能从中加深对网络通信流程的理解。感谢@地球-某某老师长久支持和教导！哈哈！</p>
 <h3>修改</h3>
-<p>经台湾-linton同学提示，还有另一个方法更好：在nat之前，给目的主机发送arp_request,sender_ip为nat_ip,以此来给目的主机添加arp信息。
-只需要在下发fm之前，下发一个pkt_out，发送封装好的arp即可。不再赘述。</p>
-<p>但是必须保证arp列表中始终有对应的表项。如果刷新之后，arp数据丢失，到达主机的数据将被丢弃。所以必须保证在发送数据之前发送arp_request。@地球-某某 老师解决方案为：周期发送arp_request，这能一定程度上解决这个问题。flow_mod的周期小于arp缓存表刷新周期也能一定程度解决这个问题。根本的是要保证数据发送之前，发送arp_request，以保证dst host的arp缓存表中有对应项。</p></div>
+<p>台湾-linton同学提供了更好的解决方案：在nat之前，给目的主机发送arp_request,sender_ip为nat_ip,以此来给目的主机添加arp信息。
+只需要在下发flow_mod之前，下发一个pkt_out，用于发送nat arp即可。不再赘述。</p>
+<p>以上的解决方案并不完美，如果目标主机arp缓存表刷新之后，nat arp数据丢失，到达主机的数据将被丢弃。所以必须保证在发送数据之前发送arp_request。@地球-某某 老师解决方案为：周期发送arp_request，这能一定程度上解决这个问题。flow_mod的周期小于arp缓存表刷新周期也能一定程度解决这个问题。解决这个问题的根本是要保证数据发送之前，发送arp_request，以保证dst host的arp缓存表中有对应项。</p></div>
         <hr />
     </div>
 		
