@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/index.html</loc>
-<lastmod>2014-06-05T11:48:01-00:00</lastmod>
+<lastmod>2014-07-14T14:22:48-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/archives.html</loc>
-<lastmod>2014-06-05T11:48:01-00:00</lastmod>
+<lastmod>2014-07-14T14:22:48-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/tags.html</loc>
-<lastmod>2014-06-05T11:48:01-00:00</lastmod>
+<lastmod>2014-07-14T14:22:48-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/categories.html</loc>
-<lastmod>2014-06-05T11:48:01-00:00</lastmod>
+<lastmod>2014-07-14T14:22:48-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2013-12-27T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://muzixing.github.io/pages/2014/07/14/guan-yu-zhe-ge-shi-jie-de-si-kao.html</loc>
+<lastmod>2014-07-14T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -222,7 +229,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/category/life.html</loc>
-<lastmod>2014-03-21T00:00:00-00:00</lastmod>
+<lastmod>2014-07-14T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -341,14 +348,14 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/tag/hu-si-luan-xiang.html</loc>
-<lastmod>2014-01-01T00:00:00-00:00</lastmod>
+<lastmod>2014-07-14T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/author/muzi.html</loc>
-<lastmod>2014-05-04T00:00:00-00:00</lastmod>
+<lastmod>2014-07-14T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

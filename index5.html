@@ -62,6 +62,36 @@
  
 
     <div class='article'>
+        <a href="./pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html"><h2>【原创】SDN下的分布式广播风暴解决方案</h2></a>
+        <div class= "well small"> 2013-12-07
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>这是很久以前的成果了，那时候我才大三上。为了学习sdn,openflow等知识，北邮科研楼628的一群哥们儿，想着各种新奇的东西去解决已有的问题。</p>
+<p>有一天，我们遇到了网络风暴，但是我们觉得STP有点复杂，而且，确实也不愿意去学。那么，就自己写一个解决方案吧。于是，下面的小代码产生了。</p>
+<h3>核心思想</h3>
+<p>其实特别简单，一句话：<strong>不让同一个数据包从第二个端口进入，即仅允许数据包从第一个进来的端口进入。</strong></p>
+<p>也就是说，我确保了，同一个数据包，不会从别的交换机从非第一次的in_port进入本交换机，那就不会有环路，也就解决了风暴，而且，同一个端口允许进入，不影响主机继续发送广播包。</p>
+<h3>具体实现</h3>
+<p>这个就需要我们建立一个macToport的表，在python里面数据结构字典来实现。使用src_mac作为key，记录值为[dstip,port,time]</p>
+<div class="highlight"><pre><span class="n">self</span><span class="o">.</span><span class="n">macToPort</span> <span class="o">=</span> <span class="p">{</span><span class="n">srcMAC:</span><span class="p">[</span><span class="n">dst_ip</span><span class="p">,</span><span class="n">in_port</span><span class="p">,</span><span class="nb">time</span><span class="p">]}</span>
+</pre></div>
+
+
+<p>这个字典记录了用数据包的mac地址记录了数据包的目标ip,入口端口，到达时间三个信息，其实如果为了更好的对应，我们应该使用上xid,让 ...</p> <a class="btn btn-info xsmall" href="./pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html"><h2>【原创】mininet搭建自定义网络拓扑 by muzi</h2></a>
         <div class= "well small"> 2013-12-06
 
@@ -204,34 +234,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <h5>数据包的发送与接收 ...</h5> <a class="btn btn-info xsmall" href="./pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html"><h2>［原］poxdesk实现拓扑显示</h2></a>
-        <div class= "well small"> 2013-11-29
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>POXDESK实现拓扑的显示</h3>
-<p>今天实习第二天，开始深入逐渐玩POX跟mininet！之前只是会基本的操作，慢慢的要更加了解！今天早上就实现了一下poxdesk的功能！</p>
-<h4>操作步骤如下：</h4>
-<div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/noxrepo/</span><span class="n">pox</span>
-<span class="n">cd</span> <span class="n">pox</span>
-<span class="n">git</span> <span class="n">checkout</span> <span class="n">betta</span>
-<span class="n">cd</span> <span class="n">ext</span>
-<span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/MurphyMc/</span><span class="n">poxdesk</span>
-<span class="n">cd</span> <span class="n">poxdesk</span>
-<span class="n">wget</span> <span class="n">http:</span><span class="sr">//</span><span class="n">downloads</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="sr">/qooxdoo/</span><span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk</span><span class="o">.</span><span class="n">zip</span>
-<span class="n">unzip</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="./index4.html">&larr; Previous</a></li>
@@ -272,7 +274,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="./category/life.html">Life</a></li>
+                <li><a href="./category/life.html">life</a></li>
                 <li><a href="./category/tech.html">Tech</a></li>
                    
             </ul>
