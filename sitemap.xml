@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/index.html</loc>
-<lastmod>2014-07-14T14:22:48-00:00</lastmod>
+<lastmod>2014-07-24T21:41:50-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/archives.html</loc>
-<lastmod>2014-07-14T14:22:48-00:00</lastmod>
+<lastmod>2014-07-24T21:41:50-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/tags.html</loc>
-<lastmod>2014-07-14T14:22:48-00:00</lastmod>
+<lastmod>2014-07-24T21:41:50-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://muzixing.github.io/categories.html</loc>
-<lastmod>2014-07-14T14:22:48-00:00</lastmod>
+<lastmod>2014-07-24T21:41:50-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2013-12-27T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://muzixing.github.io/pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html</loc>
+<lastmod>2014-07-24T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -236,7 +243,14 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/category/tech.html</loc>
-<lastmod>2014-05-04T00:00:00-00:00</lastmod>
+<lastmod>2014-07-24T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>http://muzixing.github.io/tag/spider.html</loc>
+<lastmod>2014-07-24T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -312,6 +326,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
+<loc>http://muzixing.github.io/tag/python.html</loc>
+<lastmod>2014-07-24T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
 <loc>http://muzixing.github.io/tag/openflow.html</loc>
 <lastmod>2014-05-04T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
@@ -355,7 +376,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://muzixing.github.io/author/muzi.html</loc>
-<lastmod>2014-07-14T00:00:00-00:00</lastmod>
+<lastmod>2014-07-24T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
