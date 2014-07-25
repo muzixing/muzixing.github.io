@@ -76,53 +76,66 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>很多人说学Python最终需要写一个爬虫才能算是学成出山了，而我就是那个留级生，一直没有写过。炎热的夏日，以及看java的抑郁，让我无聊之中萌生了这个想法。于是在百度的帮助下，写完了这个教程。视频教程可以去百度学堂看，我就是在那里看的。</p>
 <h1>spider</h1>
 <p>代码详解就不多加介绍，注释相信已经很明确了，请看代码。</p>
-<div class="highlight"><pre> <span class="nb">import</span> <span class="n">urllib2</span> 
- <span class="nb">import</span> <span class="n">urllib</span>
+<div class="highlight"><pre><span class="nb">import</span> <span class="n">urllib2</span>
+<span class="nb">import</span> <span class="n">urllib</span>
+<span class="nb">import</span> <span class="n">sys</span>
 
- <span class="n">class</span>  <span class="n">get_mm_pic</span><span class="p">(</span><span class="n">object</span><span class="p">):</span> 
-     <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="n">page_num</span><span class="p">):</span> 
-         <span class="n">self</span><span class="o">.</span><span class="n">page_num</span> <span class="o">=</span> <span class="n">page_num</span> 
-         <span class="n">self</span><span class="o">.</span><span class="n">mmurl</span><span class="o">=</span> <span class="s">&quot;http://mm.taobao.com/json/request_top_list.htm?type=0&amp;page=&quot;</span><span class="c1">#这个是我们要抓取的网站的url，page = 数字。。 </span>
-     <span class="n">def</span>  <span class="n">get_pic</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>         
-         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> 
-         <span class="n">page_num</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">page_num</span> 
-         <span class="n">temp</span>  <span class="o">=</span><span class="s">&#39;&#39;&#39;&lt;img src=&quot;&#39;&#39;&#39;</span>
-         <span class="k">while</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">page_num:</span> 
-             <span class="n">url</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">mmurl</span> <span class="o">+</span> <span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="c1">#某页的全部url </span>
-             <span class="n">up</span> <span class="o">=</span>  <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="c1">#获取页面内容 </span>
-             <span class="n">cont</span> <span class="o">=</span> <span class="n">up</span><span class="o">.</span><span class="nb">read</span><span class="p">()</span>
+<span class="n">class</span> <span class="n">get_mm_pic</span><span class="p">(</span><span class="n">object</span><span class="p">):</span>
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="n">page_num</span><span class="p">):</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">page_num</span> <span class="o">=</span> <span class="n">page_num</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">mmurl</span><span class="o">=</span> <span class="s">&quot;http://mm.taobao.com/json/request_top_list.htm?type=0&amp;page=&quot;</span><span class="c1">#抓取的链接</span>
+    <span class="n">def</span> <span class="n">get_pic</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">page_num</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">page_num</span>
+    <span class="n">temp</span> <span class="o">=</span><span class="s">&#39;&#39;&#39;&lt;img src=&quot;&#39;&#39;&#39;</span>
+    <span class="k">while</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">page_num:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">mmurl</span> <span class="o">+</span> <span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">up</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">cont</span> <span class="o">=</span> <span class="n">up</span><span class="o">.</span><span class="nb">read</span><span class="p">()</span><span class="c1">#读取页面内容</span>
+        <span class="n">pa</span> <span class="o">=</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">True:</span>
+            <span class="n">ahref</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;&lt;a href=&quot;http&#39;&#39;&#39;</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s">&quot;target&quot;</span>
+            <span class="n">pa</span> <span class="o">=</span> <span class="n">cont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">ahref</span><span class="p">)</span><span class="c1">#匹配字符串</span>
+            <span class="n">pt</span> <span class="o">=</span> <span class="n">cont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">pa</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pa</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">break</span>
+            <span class="n">modelurl</span> <span class="o">=</span> <span class="n">cont</span><span class="p">[</span><span class="n">pa</span><span class="o">+</span><span class="n">len</span><span class="p">(</span><span class="n">ahref</span><span class="p">)</span><span class="o">-</span><span class="mi">4</span><span class="p">:</span> <span class="n">pt</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">mup</span><span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">modelurl</span><span class="p">)</span>
+            <span class="n">mcont</span> <span class="o">=</span> <span class="n">mup</span><span class="o">.</span><span class="nb">read</span><span class="p">()</span>
 
-             <span class="n">ahref</span> <span class="o">=</span> <span class="s">&quot;&lt;a href&quot;</span>
-             <span class="n">target</span> <span class="o">=</span> <span class="s">&quot;target&quot;</span>
-             <span class="n">pa</span> <span class="o">=</span> <span class="n">cont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">ahref</span><span class="p">)</span> 
-             <span class="n">pt</span> <span class="o">=</span> <span class="n">cont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">pa</span><span class="p">)</span><span class="c1">#找到匹配字符串的前后位置，获取由网页提供的美女模特的个人主页之类的页面地址。可通过审查元素获取格式。并设定匹配规则。</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="s">&quot;&lt;img style&quot;</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="s">&quot;.jpg&quot;</span>
+            <span class="n">iph</span> <span class="o">=</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">True:</span>
+                <span class="n">iph</span> <span class="o">=</span> <span class="n">mcont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+                <span class="n">ipj</span> <span class="o">=</span> <span class="n">mcont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tail</span><span class="p">,</span> <span class="n">iph</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">iph</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="c1">#匹配失败则跳出循环</span>
+                    <span class="n">break</span>
+                <span class="n">mpic</span> <span class="o">=</span> <span class="n">mcont</span><span class="p">[</span><span class="n">iph</span> <span class="p">:</span> <span class="n">ipj</span> <span class="o">+</span> <span class="n">len</span><span class="p">(</span><span class="n">tail</span><span class="p">)]</span>
+                <span class="n">ips</span> <span class="o">=</span> <span class="n">mpic</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;src&quot;</span><span class="p">)</span>
+                <span class="n">urlpic</span> <span class="o">=</span> <span class="n">mpic</span><span class="p">[</span><span class="n">ips</span> <span class="o">+</span><span class="n">len</span><span class="p">(</span><span class="s">&quot;src =&quot;</span><span class="p">):]</span>
+                <span class="n">try:</span>
+                    <span class="k">print</span> <span class="s">&quot;&gt;&gt;&gt;downloading : lady_p&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_no_&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_pic_&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.jpg......&quot;</span>
+                    <span class="n">urllib</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">urlpic</span><span class="p">,</span> <span class="s">&quot;lady_p&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_no_&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_pic_&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.jpg&quot;</span><span class="p">)</span><span class="c1">#下载图片</span>
+                <span class="n">except</span> <span class="n">KeyboardInterrupt:</span>
+                    <span class="k">print</span> <span class="s">&quot;SIGINT, exit...&quot;</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">except:</span>
+                    <span class="n">pass</span>
+                <span class="n">mcont</span> <span class="o">=</span> <span class="n">mcont</span><span class="p">[</span><span class="n">ipj</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="n">k</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="n">cont</span> <span class="o">=</span> <span class="n">cont</span><span class="p">[</span><span class="n">pt</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">j</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">print</span> <span class="s">&quot;&gt;&gt;&gt;download completed&quot;</span>
+<span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">page_num</span><span class="p">):</span>
+    <span class="n">get_mm_pictures</span> <span class="o">=</span> <span class="n">get_mm_pic</span><span class="p">(</span><span class="n">page_num</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;@Author:www.muzixing.com&quot;</span>
+    <span class="n">get_mm_pictures</span><span class="o">.</span><span class="n">get_pic</span><span class="p">()</span>
 
-             <span class="n">modelurl</span> <span class="o">=</span> <span class="n">cont</span><span class="p">[</span><span class="n">pa</span><span class="o">+</span><span class="n">len</span><span class="p">(</span><span class="n">ahref</span><span class="p">)</span> <span class="o">+</span><span class="mi">2</span><span class="p">:</span> <span class="n">pt</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="c1">#切割匹配成功的字符串 </span>
-             <span class="n">mup</span><span class="o">=</span>  <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">modelurl</span><span class="p">)</span> 
-             <span class="n">mcont</span> <span class="o">=</span> <span class="n">mup</span><span class="o">.</span><span class="nb">read</span><span class="p">()</span>  <span class="c1">#读取美女主页的全部内容，和第一次读取页面其实一样</span>
-
-             <span class="n">header</span> <span class="o">=</span> <span class="s">&quot;&lt;img style&quot;</span><span class="c1">#通过审查元素获得特征，并选择字符串匹配。 </span>
-             <span class="n">tail</span> <span class="o">=</span> <span class="s">&quot;.jpg&quot;</span>
-             <span class="n">iph</span> <span class="o">=</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
-             <span class="k">while</span> <span class="n">iph</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>   <span class="c1">#循环读取，找到所有图片 </span>
-                 <span class="n">iph</span> <span class="o">=</span> <span class="n">mcont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> 
-                 <span class="n">ipj</span>  <span class="o">=</span>  <span class="n">mcont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tail</span><span class="p">,</span>  <span class="n">iph</span><span class="p">)</span>         
-                 <span class="n">mpic</span> <span class="o">=</span> <span class="n">mcont</span><span class="p">[</span><span class="n">iph</span> <span class="p">:</span> <span class="n">ipj</span> <span class="o">+</span> <span class="n">len</span><span class="p">(</span><span class="n">tail</span><span class="p">)]</span> 
-                 <span class="n">ips</span> <span class="o">=</span> <span class="n">mpic</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;src&quot;</span><span class="p">)</span> 
-                 <span class="n">urlpic</span> <span class="o">=</span>  <span class="n">mpic</span><span class="p">[</span><span class="n">ips</span> <span class="o">+</span><span class="n">len</span><span class="p">(</span><span class="s">&quot;src =&quot;</span><span class="p">):</span> <span class="p">]</span><span class="c1">#同样的，我们找到了图片的地址。可以在浏览器中查看是否正确 </span>
-                 <span class="n">urllib</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">urlpic</span><span class="p">,</span> <span class="s">&quot;lady&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="mi">10</span><span class="o">+</span><span class="n">j</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.jpg&quot;</span><span class="p">)</span><span class="c1">#下载图片到程序保存目录，若改变目录，可加路径 </span>
-                 <span class="k">print</span> <span class="s">&quot;&gt;&gt;&gt;downloading : lady&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="mi">10</span><span class="o">+</span><span class="n">j</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.jpg......&quot;</span>
-
-                 <span class="n">mcont</span> <span class="o">=</span> <span class="n">mcont</span><span class="p">[</span><span class="n">ipj</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span><span class="c1">#移动字符串其实位置，进入下一个匹配循环 </span>
-                 <span class="n">j</span><span class="o">+=</span><span class="mi">1</span>
-             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-         <span class="k">print</span> <span class="s">&quot;&gt;&gt;&gt;download completed&quot;</span>    
- <span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">page_num</span><span class="p">):</span> 
-     <span class="n">get_mm_pictures</span> <span class="o">=</span> <span class="n">get_mm_pic</span><span class="p">(</span><span class="n">page_num</span><span class="p">)</span> 
-     <span class="n">get_mm_pictures</span><span class="o">.</span><span class="n">get_pic</span><span class="p">()</span>
-
- <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span> 
-     <span class="n">main</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="c1">#这个数字可以自己写咯。当然写成输入的形式会更好。</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="c1">#python spider.py number</span>
 </pre></div>
 
 
