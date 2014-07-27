@@ -4,378 +4,378 @@ xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitem
 xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
-<loc>http://muzixing.github.io/index.html</loc>
-<lastmod>2014-07-27T16:07:31-00:00</lastmod>
+<loc>http://www.muzixing.com/index.html</loc>
+<lastmod>2014-07-27T17:22:02-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/archives.html</loc>
-<lastmod>2014-07-27T16:07:31-00:00</lastmod>
+<loc>http://www.muzixing.com/archives.html</loc>
+<lastmod>2014-07-27T17:22:02-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tags.html</loc>
-<lastmod>2014-07-27T16:07:31-00:00</lastmod>
+<loc>http://www.muzixing.com/tags.html</loc>
+<lastmod>2014-07-27T17:22:02-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/categories.html</loc>
-<lastmod>2014-07-27T16:07:31-00:00</lastmod>
+<loc>http://www.muzixing.com/categories.html</loc>
+<lastmod>2014-07-27T17:22:02-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/about-me.html</loc>
+<loc>http://www.muzixing.com/pages/about-me.html</loc>
 <lastmod>2013-12-27T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html</loc>
+<loc>http://www.muzixing.com/pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html</loc>
 <lastmod>2014-07-24T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/07/14/guan-yu-zhe-ge-shi-jie-de-si-kao.html</loc>
+<loc>http://www.muzixing.com/pages/2014/07/14/guan-yu-zhe-ge-shi-jie-de-si-kao.html</loc>
 <lastmod>2014-07-14T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/05/04/noxshi-xian-natgong-neng.html</loc>
+<loc>http://www.muzixing.com/pages/2014/05/04/noxshi-xian-natgong-neng.html</loc>
 <lastmod>2014-05-04T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html</loc>
+<loc>http://www.muzixing.com/pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html</loc>
 <lastmod>2014-04-28T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html</loc>
+<loc>http://www.muzixing.com/pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html</loc>
 <lastmod>2014-04-19T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/04/18/ctime_server.html</loc>
+<loc>http://www.muzixing.com/pages/2014/04/18/ctime_server.html</loc>
 <lastmod>2014-04-18T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html</loc>
+<loc>http://www.muzixing.com/pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html</loc>
 <lastmod>2014-04-17T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html</loc>
+<loc>http://www.muzixing.com/pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html</loc>
 <lastmod>2014-04-15T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html</loc>
+<loc>http://www.muzixing.com/pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html</loc>
 <lastmod>2014-04-10T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/03/26/poxmessenger-component-getting-started.html</loc>
+<loc>http://www.muzixing.com/pages/2014/03/26/poxmessenger-component-getting-started.html</loc>
 <lastmod>2014-03-26T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html</loc>
+<loc>http://www.muzixing.com/pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html</loc>
 <lastmod>2014-03-25T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html</loc>
+<loc>http://www.muzixing.com/pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html</loc>
 <lastmod>2014-03-25T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/03/21/markdowntian-jia-shi-pin-jiao-cheng-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html</loc>
+<loc>http://www.muzixing.com/pages/2014/03/21/markdowntian-jia-shi-pin-jiao-cheng-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html</loc>
 <lastmod>2014-03-21T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html</loc>
+<loc>http://www.muzixing.com/pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html</loc>
 <lastmod>2014-03-13T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html</loc>
+<loc>http://www.muzixing.com/pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html</loc>
 <lastmod>2014-03-11T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2014/01/01/shu-yu-wo-de-2013he-2014.html</loc>
+<loc>http://www.muzixing.com/pages/2014/01/01/shu-yu-wo-de-2013he-2014.html</loc>
 <lastmod>2014-01-01T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/12/24/sdnde-chu-bu-ren-shi.html</loc>
+<loc>http://www.muzixing.com/pages/2013/12/24/sdnde-chu-bu-ren-shi.html</loc>
 <lastmod>2013-12-24T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/12/20/openflow10shu-ju-jie-gou-tu-shi.html</loc>
+<loc>http://www.muzixing.com/pages/2013/12/20/openflow10shu-ju-jie-gou-tu-shi.html</loc>
 <lastmod>2013-12-20T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html</loc>
+<loc>http://www.muzixing.com/pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html</loc>
 <lastmod>2013-12-17T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html</loc>
+<loc>http://www.muzixing.com/pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html</loc>
 <lastmod>2013-12-12T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/12/11/wo-ceng-jing-qi-ci-bi-shi-zi-ji-de-ling-hun.html</loc>
+<loc>http://www.muzixing.com/pages/2013/12/11/wo-ceng-jing-qi-ci-bi-shi-zi-ji-de-ling-hun.html</loc>
 <lastmod>2013-12-11T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html</loc>
+<loc>http://www.muzixing.com/pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html</loc>
 <lastmod>2013-12-07T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html</loc>
+<loc>http://www.muzixing.com/pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html</loc>
 <lastmod>2013-12-06T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html</loc>
+<loc>http://www.muzixing.com/pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html</loc>
 <lastmod>2013-11-29T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/11/29/nge-zheng-shu-qiu-qi-zhong-ren-yi-n-1ge-shu-de-cheng-ji-zhong-de-zui-da-de-ge-jin-yong-chu-fa.html</loc>
+<loc>http://www.muzixing.com/pages/2013/11/29/nge-zheng-shu-qiu-qi-zhong-ren-yi-n-1ge-shu-de-cheng-ji-zhong-de-zui-da-de-ge-jin-yong-chu-fa.html</loc>
 <lastmod>2013-11-29T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html</loc>
+<loc>http://www.muzixing.com/pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html</loc>
 <lastmod>2013-11-29T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html</loc>
+<loc>http://www.muzixing.com/pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html</loc>
 <lastmod>2013-11-29T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/pages/2013/11/28/yuan-chuang-poxyun-xing-ji-zhi-byli-cheng.html</loc>
+<loc>http://www.muzixing.com/pages/2013/11/28/yuan-chuang-poxyun-xing-ji-zhi-byli-cheng.html</loc>
 <lastmod>2013-11-28T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/category/life.html</loc>
+<loc>http://www.muzixing.com/category/life.html</loc>
 <lastmod>2014-07-14T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/category/tech.html</loc>
+<loc>http://www.muzixing.com/category/tech.html</loc>
 <lastmod>2014-07-24T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/spider.html</loc>
+<loc>http://www.muzixing.com/tag/spider.html</loc>
 <lastmod>2014-07-24T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/mininet.html</loc>
+<loc>http://www.muzixing.com/tag/mininet.html</loc>
 <lastmod>2014-03-11T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/thread_pool.html</loc>
+<loc>http://www.muzixing.com/tag/thread_pool.html</loc>
 <lastmod>2014-04-28T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/code.html</loc>
+<loc>http://www.muzixing.com/tag/code.html</loc>
 <lastmod>2014-04-17T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/http.html</loc>
+<loc>http://www.muzixing.com/tag/http.html</loc>
 <lastmod>2014-03-13T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/socket.html</loc>
+<loc>http://www.muzixing.com/tag/socket.html</loc>
 <lastmod>2014-04-18T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/song.html</loc>
+<loc>http://www.muzixing.com/tag/song.html</loc>
 <lastmod>2014-03-21T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/tornado.html</loc>
+<loc>http://www.muzixing.com/tag/tornado.html</loc>
 <lastmod>2013-11-29T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/sdn-ewbridge.html</loc>
+<loc>http://www.muzixing.com/tag/sdn-ewbridge.html</loc>
 <lastmod>2014-04-10T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/scapy.html</loc>
+<loc>http://www.muzixing.com/tag/scapy.html</loc>
 <lastmod>2013-11-29T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/c.html</loc>
+<loc>http://www.muzixing.com/tag/c.html</loc>
 <lastmod>2014-04-28T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/python.html</loc>
+<loc>http://www.muzixing.com/tag/python.html</loc>
 <lastmod>2014-07-24T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/openflow.html</loc>
+<loc>http://www.muzixing.com/tag/openflow.html</loc>
 <lastmod>2014-05-04T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/multi_thread.html</loc>
+<loc>http://www.muzixing.com/tag/multi_thread.html</loc>
 <lastmod>2014-04-19T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/suan-fa.html</loc>
+<loc>http://www.muzixing.com/tag/suan-fa.html</loc>
 <lastmod>2013-11-29T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/nox.html</loc>
+<loc>http://www.muzixing.com/tag/nox.html</loc>
 <lastmod>2014-05-04T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/sdn.html</loc>
+<loc>http://www.muzixing.com/tag/sdn.html</loc>
 <lastmod>2014-05-04T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/tag/hu-si-luan-xiang.html</loc>
+<loc>http://www.muzixing.com/tag/hu-si-luan-xiang.html</loc>
 <lastmod>2014-07-14T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>http://muzixing.github.io/author/muzi.html</loc>
+<loc>http://www.muzixing.com/author/muzi.html</loc>
 <lastmod>2014-07-24T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
