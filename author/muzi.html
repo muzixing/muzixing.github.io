@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html"><h1>【python爬虫】抓取淘宝模特图片——20分钟爬虫之旅</h1></a>
-2014-07-24
+            <a href="../pages/2014/08/02/opendaylightru-men-jiao-cheng.html"><h1>OpenDaylight入门教程</h1></a>
+2014-08-02
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,179 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h1>前言</h1>
+        <div><h3>关于OpenDaylight</h3>
+<p>OpenDaylight is an open platform for network programmability to enable SDN and create a solid foundation for NFV for networks at any size and scale.</p>
+<p>对于SDN而言，ODL（OpenDaylight）是一个开源的可编程的平台，简单的说是一个非常有野心开源控制器而不仅仅只是控制器。</p>
+<p>opendaylight官网:http://www.opendaylight.org/</p>
+<h3>环境配置</h3>
+<ul>
+<li>
+<p>jdk需要1.6以上。</p>
+<p>sudo apt-get -y install openjdk-7-jdk</p>
+</li>
+</ul>
+<p>更多安装信息请查看:https://wiki.opendaylight.org/view/OpenDaylight_Controller:Installation</p>
+<p>或者查看《opendaylight学习及开发初级教程-北邮天依》</p>
+<ul>
+<li>
+<p>安装maven</p>
+<p>sudo apt-get install maven</p>
+</li>
+</ul>
+<h3>下载与安装</h3>
+<div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">https:</span><span class="sr">//gi</span><span class="n">t</span><span class="o">.</span><span class="n">opendaylight</span><span class="o">.</span><span class="n">org</span><span class="sr">/gerrit/</span><span class="n">p</span><span class="o">/</span><span class="n">controller</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+
+
+<h4>编译</h4>
+<p>Controller:</p>
+<div class="highlight"><pre><span class="n">cd</span>   <span class="n">controller</span><span class="sr">/opendaylight/</span><span class="n">distribution</span><span class="o">/</span><span class="n">opendaylight</span>
+<span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span>
+</pre></div>
+
+
+<h4>执行</h4>
+<div class="highlight"><pre><span class="n">cd</span> <span class="n">controller</span><span class="sr">/opendaylight/</span><span class="n">distribution</span><span class="sr">/opendaylight/</span><span class="n">target</span><span class="sr">/distribution.opendaylight-OSGIpackage/o</span><span class="n">pendaylight</span>
+<span class="o">./</span><span class="n">run</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+
+
+<h3>maven</h3>
+<p>opendaylight的工程是基于osgi的maven工程。使用maven对odl进行编译，并运行osgi架构。</p>
+<p>opendaylight的文件目录是maven标准目录。</p>
+<ul>
+<li>
+<p>src/main/java: Application/Library sources</p>
+</li>
+<li>
+<p>src/main/resources:Application/Library resources</p>
+</li>
+<li>
+<p>src/main/filters: Resource filter files</p>
+</li>
+<li>
+<p>src/main/assembly: Assembly descriptors</p>
+</li>
+<li>
+<p>src/main/config: Configuration files</p>
+</li>
+<li>
+<p>src/main/webapp: Web application sources</p>
+</li>
+<li>
+<p>src/test/java: Test sources</p>
+</li>
+<li>
+<p>src/test/resources: Test resources</p>
+</li>
+<li>
+<p>src/test/filters: Test resource filter files</p>
+</li>
+<li>
+<p>src/site: Site</p>
+</li>
+<li>
+<p>LICENSE.txt: Project's license</p>
+</li>
+<li>
+<p>README.txt: Project's readme</p>
+</li>
+</ul>
+<p>其中pom.xml是非常重要文件，是maven工程的核心文件，是maven的项目对象模型。用于描述资源，包括版本号，依赖关系，资源url等信息。</p>
+<p>其中每一个工程由的3个坐标定位：groupId:artifactId:version定位。在ODL中groupId可以是：org.opendaylight.controller.artifactId可以是controller的一个模块名如：hosttracker.</p>
+<h3>OSGI</h3>
+<p>ODL的每一个maven文件都是OSGI的一个bundle，需要在OSGI中注册使用。更多信息可查看：http://www.opendaylight.org/project/technical-overview</p>
+<p>我们使用mvn clean install 编译完ODL之后，进入生成的target目录（前面有介绍）找到opendaylight目录下的run.sh（linux下为.sh,windows下为.bat）,并运行，实际上就是运行了osgi框架。然后osgi根据项目的pom.xml把相关的bundle注册运行。</p>
+<h3>OpenDayLight目录简介</h3>
+<p><img alt="opendaylight" src="http://www.opendaylight.org/sites/www.opendaylight.org/files/pages/images/odp_ds_ltr_diagram.png" /></p>
+<p>本图来自：http://www.opendaylight.org</p>
+<p>从上图可以看出ODL从层次上可分为三层:</p>
+<ul>
+<li>南向接口和协议插件</li>
+<li>控制器平台</li>
+<li>网络应用 业务和服务</li>
+</ul>
+<p>此处主要介绍ODL中controller各目录主要功能。</p>
+<div class="highlight"><pre><span class="err">——</span><span class="n">controller</span>
+    <span class="err">——</span><span class="n">features</span>
+    <span class="err">——</span><span class="n">opendaylight</span>  <span class="c1">#主文件 包含各个模块的源文件</span>
+    <span class="err">——</span><span class="n">third</span><span class="o">-</span><span class="n">party</span>    
+    <span class="err">——</span><span class="n">itest</span>    
+    <span class="err">——</span><span class="n">LICENSE</span>
+    <span class="err">——</span><span class="n">NOTICE</span>
+    <span class="err">——</span><span class="n">README</span><span class="o">.</span><span class="n">OPENDAYLIGHT</span>
+    <span class="err">——</span><span class="n">pom</span><span class="o">.</span><span class="n">xml</span>  <span class="c1">#maven文件对象模型，用于描述项目如何工作。</span>
+</pre></div>
+
+
+<p>在opendaylight中有ODL的模块源文件，各目录的功能简介如下：</p>
+<ul>
+<li>appauth:关于app授权，定义 abstract class Authrization </li>
+<li>archetypes:工程使用的maven的archetype</li>
+<li>arphandler:用于处理arp数据</li>
+<li>forwarding:静态路由</li>
+<li>forwardrulesmanager:管理流表数据和转发规则</li>
+<li>connectionmanager:交换机连接管理：单一，集群，轮询，负载均衡，VTN等连接管理。</li>
+<li>containermanager:VTN管理，每一个VTN对应一个container</li>
+<li>clustering:控制器集群</li>
+<li>commons:公共信息</li>
+<li>hosttracker（new）:主机发现，管理，追踪</li>
+<li>
+<p>md-sal:</p>
+<p>Model-driven approach to service abstraction presents an opportunity to unify both northbound and southbound APIs and the data structures used in various services and components of an SDN Controller.
+MD-SAL使得在SDN控制器那些丰富的服务和模块可以使用统一的数据结构和南向和北向的API。</p>
+<p>In order to describe the structure of data provided by controller components a domain-specific language, YANG, is proposed as the modeling language for service and data abstractions. Such language allows to:</p>
+<p>为了描述控制器组件提供的数据结构，我们使用一种领域专门的语言YANG作为服务和数据抽象的建模语言。</p>
+<p>（下面的英文也不难，不翻译了）</p>
+<p>—— Modeling the structure of XML data and functionality provided by controller components</p>
+<p>—— Define sem
+antic elements and their relationships</p>
+<p>—— Model all the components as a single system.</p>
+<p>The XML nature of YANG data model presents an opportunity for self-describing data, which controller components and applications using the controller’s northbound APIs can consume in a raw format, along with the data’s schema.</p>
+<p>Utilizing a schema language simplifies development of controller components and application. A developer of a module that provides some functionality (a service, data, functions/procedure) can define a schema and thus create simpler, statically typed APIs for the provided functionality, and thus lower the risk of incorrect interpretation of data structures exposed through the Service Abstraction Layer.</p>
+</li>
+<li>
+<p>northbound:北向相关（控制器管理，HTTP,web UI,统计，子网，交换机管理，用户管理，网络配置，静态路由，流表编程，主机管理，连接管理等组建的北向接口）</p>
+</li>
+<li>protocol_plugins:协议插件（openflow,拓扑）</li>
+<li>routing:Dijkstra算法实现</li>
+<li>sal:（最重要的文件之一！）服务抽象层，action，match等功能抽象</li>
+<li>samples:例子（流聚合，负载均衡，二三层转发等）</li>
+<li>security：安全相关</li>
+<li>statisticsmanager:统计模块接口</li>
+<li>switchmanager:交换机管理</li>
+<li>usermanager:用户管理（接口和实现）</li>
+<li>web：web UI</li>
+</ul>
+<p>其他目录不再介绍。</p>
+<h3>Opendaylight模块开发</h3>
+<p>在ODL中开发模块需要掌握：YANG,XML,MAVEN,JAVA,RESTAPI，等多项知识。每一个模块基本上可以由四个bundle联合实现功能：</p>
+<ul>
+<li>创建model bundle,使用YANG描述数据结构，和RPC调用</li>
+<li>创建plugin bundle 用于插件的具体实现，实现model的声明</li>
+<li>创建service bundle 提供连接北向实现和南向的MD-SAL定义的服务</li>
+<li>创建northbound bundle 用于提供北向的接口和实现。</li>
+</ul>
+<p>更具体的操作将在下一篇教程中详细介绍如何一步一步在ODL中开发模块。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html"><h2>【python爬虫】抓取淘宝模特图片——20分钟爬虫之旅</h2></a>
+        <div class= "well small"> 2014-07-24
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h1>前言</h1>
 <p>很多人说学Python最终需要写一个爬虫才能算是学成出山了，而我就是那个留级生，一直没有写过。炎热的夏日，以及看java的抑郁，让我无聊之中萌生了这个想法。于是在百度的帮助下，写完了这个教程。视频教程可以去百度学堂看，我就是在那里看的。</p>
 <h1>spider</h1>
 <p>代码详解就不多加介绍，注释相信已经很明确了，请看代码。</p>
@@ -86,65 +258,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <span class="n">self</span><span class="o">.</span><span class="n">mmurl</span><span class="o">=</span> <span class="s">&quot;http://mm.taobao.com/json/request_top_list.htm?type=0&amp;page=&quot;</span><span class="c1">#抓取的链接</span>
     <span class="n">def</span> <span class="n">get_pic</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">page_num</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">page_num</span>
-    <span class="n">temp</span> <span class="o">=</span><span class="s">&#39;&#39;&#39;&lt;img src=&quot;&#39;&#39;&#39;</span>
-    <span class="k">while</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">page_num:</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">mmurl</span> <span class="o">+</span> <span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-        <span class="n">up</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-        <span class="n">cont</span> <span class="o">=</span> <span class="n">up</span><span class="o">.</span><span class="nb">read</span><span class="p">()</span><span class="c1">#读取页面内容</span>
-        <span class="n">pa</span> <span class="o">=</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">while</span> <span class="n">True:</span>
-            <span class="n">ahref</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;&lt;a href=&quot;http&#39;&#39;&#39;</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="s">&quot;target&quot;</span>
-            <span class="n">pa</span> <span class="o">=</span> <span class="n">cont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">ahref</span><span class="p">)</span><span class="c1">#匹配字符串</span>
-            <span class="n">pt</span> <span class="o">=</span> <span class="n">cont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">pa</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">pa</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-                <span class="n">break</span>
-            <span class="n">modelurl</span> <span class="o">=</span> <span class="n">cont</span><span class="p">[</span><span class="n">pa</span><span class="o">+</span><span class="n">len</span><span class="p">(</span><span class="n">ahref</span><span class="p">)</span><span class="o">-</span><span class="mi">4</span><span class="p">:</span> <span class="n">pt</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">mup</span><span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">modelurl</span><span class="p">)</span>
-            <span class="n">mcont</span> <span class="o">=</span> <span class="n">mup</span><span class="o">.</span><span class="nb">read</span><span class="p">()</span>
-
-            <span class="n">header</span> <span class="o">=</span> <span class="s">&quot;&lt;img style&quot;</span>
-            <span class="n">tail</span> <span class="o">=</span> <span class="s">&quot;.jpg&quot;</span>
-            <span class="n">iph</span> <span class="o">=</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">while</span> <span class="n">True:</span>
-                <span class="n">iph</span> <span class="o">=</span> <span class="n">mcont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
-                <span class="n">ipj</span> <span class="o">=</span> <span class="n">mcont</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tail</span><span class="p">,</span> <span class="n">iph</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">iph</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="c1">#匹配失败则跳出循环</span>
-                    <span class="n">break</span>
-                <span class="n">mpic</span> <span class="o">=</span> <span class="n">mcont</span><span class="p">[</span><span class="n">iph</span> <span class="p">:</span> <span class="n">ipj</span> <span class="o">+</span> <span class="n">len</span><span class="p">(</span><span class="n">tail</span><span class="p">)]</span>
-                <span class="n">ips</span> <span class="o">=</span> <span class="n">mpic</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;src&quot;</span><span class="p">)</span>
-                <span class="n">urlpic</span> <span class="o">=</span> <span class="n">mpic</span><span class="p">[</span><span class="n">ips</span> <span class="o">+</span><span class="n">len</span><span class="p">(</span><span class="s">&quot;src =&quot;</span><span class="p">):]</span>
-                <span class="n">try:</span>
-                    <span class="k">print</span> <span class="s">&quot;&gt;&gt;&gt;downloading : lady_p&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_no_&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_pic_&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.jpg......&quot;</span>
-                    <span class="n">urllib</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">urlpic</span><span class="p">,</span> <span class="s">&quot;lady_p&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_no_&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_pic_&quot;</span><span class="o">+</span><span class="n">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.jpg&quot;</span><span class="p">)</span><span class="c1">#下载图片</span>
-                <span class="n">except</span> <span class="n">KeyboardInterrupt:</span>
-                    <span class="k">print</span> <span class="s">&quot;SIGINT, exit...&quot;</span>
-                    <span class="n">sys</span><span class="o">.</span><span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-                <span class="n">except:</span>
-                    <span class="n">pass</span>
-                <span class="n">mcont</span> <span class="o">=</span> <span class="n">mcont</span><span class="p">[</span><span class="n">ipj</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
-                <span class="n">k</span><span class="o">+=</span><span class="mi">1</span>
-            <span class="n">cont</span> <span class="o">=</span> <span class="n">cont</span><span class="p">[</span><span class="n">pt</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
-            <span class="n">j</span><span class="o">+=</span><span class="mi">1</span>
-        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="k">print</span> <span class="s">&quot;&gt;&gt;&gt;download completed&quot;</span>
-<span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">page_num</span><span class="p">):</span>
-    <span class="n">get_mm_pictures</span> <span class="o">=</span> <span class="n">get_mm_pic</span><span class="p">(</span><span class="n">page_num</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;@Author:www.muzixing.com&quot;</span>
-    <span class="n">get_mm_pictures</span><span class="o">.</span><span class="n">get_pic</span><span class="p">()</span>
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">main</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="c1">#python spider.py number</span>
-</pre></div>
-
-
-<p>就是这么一个简单的40+行，就可以将淘女郎大量的图片下载下来了。好好欣赏吧！技术能让生活更有趣！</p>
-<h1>后语</h1>
-<p>如果你还有什么好玩的Python项目，可以告诉我，我也想学！</p></div>
-        <hr />
-    </div>
-		
+    <span class="n">page_num ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -229,45 +345,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>threadpool.h</h3>
 <p>threadpool.h的功能主要是定义工作线程的结构和线程池结构，声明相关的函数，如创建函数。</p>
 <div class="highlight"><pre><span class="c1">#ifndef ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html"><h2>[c]生产者消费者模式实现</h2></a>
-        <div class= "well small"> 2014-04-19
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>本文主要内容是：使用多线程，运行生产者函数和消费者函数，去实现队列（临界区）的读写操作。</p>
-<p>其意义在与熟悉多线程的互斥过程。生产者消费者模式是最好，最简单的选择。</p>
-<h3>数据结构</h3>
-<p>首先我们要操作的数据结构是队列。那么我首先要构造一个队列：</p>
-<p>queue.h</p>
-<div class="highlight"><pre><span class="c1">#ifndef _QUEUE_</span>
-<span class="c1">#define _QUEUE_</span>
-
-
-<span class="n">typedef</span> <span class="n">struct</span> <span class="n">_QUEUE_</span>
-<span class="p">{</span>
-    <span class="nb">int</span> <span class="n">maxsize</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>  <span class="sr">//</span><span class="n">bad</span> <span class="n">design</span>
-    <span class="nb">int</span> <span class="n">end</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">begin</span><span class="p">;</span>
-
-<span class="p">}</span><span class="n">queue_t</span><span class="p">;</span>
-
-<span class="n">void</span> <span class="n">queue_init</span><span class="p">(</span><span class="n">queue_t</span><span class="o">*</span> <span class="n">queue</span><span class="p">);</span> <span class="sr">//</span><span class="err">队列的初始化。如</span><span class="n">end</span><span class="p">,</span><span class="n">begin</span><span class="err">，</span><span class="n">maxsize</span><span class="err">的设置。</span>
-<span class="nb">int</span> <span class="n">get_len</span><span class="p">(</span><span class="n">queue_t</span><span class="o">*</span> <span class="n">queue</span><span class="p">);</span>     <span class="sr">//</span><span class="err">获取队列的长度</span>
-<span class="n">void ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
