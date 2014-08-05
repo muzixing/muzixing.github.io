@@ -96,19 +96,22 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 </pre></div>
 
 
-<h4>编译</h4>
+<ul>
+<li>编译</li>
+</ul>
 <p>Controller:</p>
 <div class="highlight"><pre><span class="n">cd</span>   <span class="n">controller</span><span class="sr">/opendaylight/</span><span class="n">distribution</span><span class="o">/</span><span class="n">opendaylight</span>
 <span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span>
 </pre></div>
 
 
-<h4>执行</h4>
-<div class="highlight"><pre><span class="n">cd</span> <span class="n">controller</span><span class="sr">/opendaylight/</span><span class="n">distribution</span><span class="sr">/opendaylight/</span><span class="n">target</span><span class="sr">/distribution.opendaylight-OSGIpackage/o</span><span class="n">pendaylight</span>
-<span class="o">./</span><span class="n">run</span><span class="o">.</span><span class="n">sh</span>
-</pre></div>
-
-
+<ul>
+<li>
+<p>执行</p>
+<p>cd controller/opendaylight/distribution/opendaylight/target/distribution.opendaylight-OSGIpackage/opendaylight
+./run.sh</p>
+</li>
+</ul>
 <h3>maven</h3>
 <p>opendaylight的工程是基于osgi的maven工程。使用maven对odl进行编译，并运行osgi架构。</p>
 <p>opendaylight的文件目录是maven标准目录。</p>
@@ -151,7 +154,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 </li>
 </ul>
 <p>其中pom.xml是非常重要文件，是maven工程的核心文件，是maven的项目对象模型。用于描述资源，包括版本号，依赖关系，资源url等信息。</p>
-<p>其中每一个工程由的3个坐标定位：groupId:artifactId:version定位。在ODL中groupId可以是：org.opendaylight.controller.artifactId可以是controller的一个模块名如：hosttracker.</p>
+<p>其中每一个工程由的3个坐标定位：groupId:artifactId:version定位。在ODL中groupId可以是：org.opendaylight.controller</p>
+<p>artifactId可以是controller的一个模块名如：hosttracker.</p>
 <h3>OSGI</h3>
 <p>ODL的每一个maven文件都是OSGI的一个bundle，需要在OSGI中注册使用。更多信息可查看：http://www.opendaylight.org/project/technical-overview</p>
 <p>我们使用mvn clean install 编译完ODL之后，进入生成的target目录（前面有介绍）找到opendaylight目录下的run.sh（linux下为.sh,windows下为.bat）,并运行，实际上就是运行了osgi框架。然后osgi根据项目的pom.xml把相关的bundle注册运行。</p>
@@ -195,7 +199,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 MD-SAL使得在SDN控制器那些丰富的服务和模块可以使用统一的数据结构和南向和北向的API。</p>
 <p>In order to describe the structure of data provided by controller components a domain-specific language, YANG, is proposed as the modeling language for service and data abstractions. Such language allows to:</p>
 <p>为了描述控制器组件提供的数据结构，我们使用一种领域专门的语言YANG作为服务和数据抽象的建模语言。</p>
-<p>（下面的英文也不难，不翻译了）</p>
 <p>—— Modeling the structure of XML data and functionality provided by controller components</p>
 <p>—— Define sem
 antic elements and their relationships</p>
@@ -225,7 +228,7 @@ antic elements and their relationships</p>
 <li>创建service bundle 提供连接北向实现和南向的MD-SAL定义的服务</li>
 <li>创建northbound bundle 用于提供北向的接口和实现。</li>
 </ul>
-<p>更具体的操作将在下一篇教程中详细介绍如何一步一步在ODL中开发模块。</p></div>
+<p>更具体的操作将在下一篇教程<opendaylight开发ping模块>中详细介绍如何一步一步在ODL中开发模块。</p></div>
         <hr />
     </div>
 		
