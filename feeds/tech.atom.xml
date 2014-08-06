@@ -1,5 +1,960 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/tech.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-08-02T00:00:00+08:00</updated><entry><title>OpenDaylight入门教程</title><link href="http://www.muzixing.com/pages/2014/08/02/opendaylightru-men-jiao-cheng.html" rel="alternate"></link><updated>2014-08-02T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-02:pages/2014/08/02/opendaylightru-men-jiao-cheng.html</id><summary type="html">&lt;h3&gt;关于OpenDaylight&lt;/h3&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/tech.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-08-06T00:00:00+08:00</updated><entry><title>Opendaylight中开发模块Ping</title><link href="http://www.muzixing.com/pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html" rel="alternate"></link><updated>2014-08-06T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-06:pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html</id><summary type="html">&lt;h3&gt;前言&lt;/h3&gt;
+&lt;p&gt;在安装和运行opendaylight之后，我们需要了解opendaylight各个目录的作用，运行机制。在此基础之上，我们需要动手进行第一个ODL模块的开发，在开发中找到ODL的重要所在。接下来的教程是在完成官网的一篇教程的基础上的总结和介绍，希望读者能有所收获。&lt;/p&gt;
+&lt;h3&gt;摘要&lt;/h3&gt;
+&lt;p&gt;本篇教程主要介绍如何在ODL上使用MD-SAL开发一个简单的TCP ping插件。这个插件实现了向指定地址发送ICMP，探测IP地址可达性的功能。首先我们需要使用YANG定义一个ping model,然后我们需要实现一个ping plugin,实现ping功能，再然后创建ping service 用于提供ping服务，最后我们通过REST API来实现北向接口使用ping service。&lt;/p&gt;
+&lt;p&gt;其中每一个功能，我们将其创建为maven工程，并作为osgi的bundle。所以我们总共需要创建4个OSGI 的bundle：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Northbound API / Implementation [ping-northbound]&lt;/p&gt;
+&lt;p&gt;The northbound API defines the interface for interacting with the given service. For example, a REST, or JSON interface for invoking the ping service.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Service Bundle [ping-service]&lt;/p&gt;
+&lt;p&gt;The service bundle links the northbound implementation with the south bound (MD-SAL) definitions.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;South Bound API (MD-SAL definition) [model-ping]&lt;/p&gt;
+&lt;p&gt;This bundle defines a simple yang file which results in auto-generated data-models ( i.e. auto generated java interfaces)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Specific Implementation of South Bound Interface&lt;/p&gt;
+&lt;p&gt;Defines the specific of the south bound interface, generally protocol specific etc.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;第一步：下载控制器源码，编译&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;使用一下的命令下载controller的最新代码，注意，若使用以前旧版本的控制器，在教程中会遇到一些问题，所以推荐重新下载新文件。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;git&lt;/span&gt; &lt;span class="n"&gt;clone&lt;/span&gt; &lt;span class="n"&gt;https:&lt;/span&gt;&lt;span class="sr"&gt;//gi&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="sr"&gt;/gerrit/&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;git&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;检查YANG tools的版本&amp;gt;=0.5.8-SNAPSHOT即可。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;vi controller/opendaylight/commons/opendaylight/pom.xml
+...
+&lt;span class="nt"&gt;&amp;lt;yangtools.version&amp;gt;&lt;/span&gt;0.5.8-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/yangtools.version&amp;gt;&lt;/span&gt;
+...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;编译控制器&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/&lt;/span&gt;&lt;span class="n"&gt;distribution&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;
+&lt;span class="n"&gt;mvn&lt;/span&gt; &lt;span class="n"&gt;clean&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;第二步：使用YANG定义model-ping&lt;/h3&gt;
+&lt;p&gt;在ODL中使用YANG来描述底层的数据结构，所以我们需要首先要建立一个YANG model文件，目的是为了生成JAVA API。YANG文件定义的数据结构可以一一对应生成java 接口等API，更详细的资料请看：  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;https:&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="n"&gt;wiki&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="sr"&gt;/view/&lt;/span&gt;&lt;span class="n"&gt;YANG_Tools:YANG_to_Java_Mapping&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;最简单的方式是在md-sal/model中建立model，这样可以和使用其他模块的pom.xml。在完成第一步的基础上，按照以下命令，创建YANG工程&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="o"&gt;..&lt;/span&gt;&lt;span class="sr"&gt;/../m&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;sal&lt;/span&gt;&lt;span class="sr"&gt;/model/&lt;/span&gt;
+&lt;span class="nb"&gt;mkdir&lt;/span&gt; &lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;
+&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;
+&lt;span class="nb"&gt;mkdir&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="sr"&gt;/main/&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后在src/main/yang目录创建文件&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="sr"&gt;/main/&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这个ping model的yang文件首先需要定义一个简单的RPC(Remote Procedure Call Protocol)来完成ping request的初始化，这个过程需要IPV4的地址作为参数，所以我们需要import “ietf-inet-types” model。同时，我们也要为这个调用设置返回值。具体如下：（复制粘贴时请将中文注释删除）&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;module&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;        &lt;span class="c1"&gt;#模块名称&lt;/span&gt;
+  &lt;span class="n"&gt;namespace&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;urn:opendaylight:ping&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;ietf&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;inet&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;types&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="n"&gt;inet&lt;/span&gt;&lt;span class="p"&gt;;}&lt;/span&gt;&lt;span class="c1"&gt;#import&lt;/span&gt;
+  &lt;span class="n"&gt;revision&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;2013-09-11&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;description&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;TCP ping module&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;    &lt;span class="c1"&gt;#对模块/模型描述&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+  &lt;span class="n"&gt;rpc&lt;/span&gt; &lt;span class="nb"&gt;send&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;echo&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;          &lt;span class="c1"&gt;#定义rpc &lt;/span&gt;
+    &lt;span class="n"&gt;description&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Send TCP ECHO request&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;input&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;    &lt;span class="c1"&gt;#输入&lt;/span&gt;
+      &lt;span class="n"&gt;leaf&lt;/span&gt; &lt;span class="n"&gt;destination&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;  
+        &lt;span class="n"&gt;type&lt;/span&gt; &lt;span class="n"&gt;inet:ipv4&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;address&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;   &lt;span class="c1"&gt;#参数为ipv4地址&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;output&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;   &lt;span class="c1"&gt;#输出&lt;/span&gt;
+      &lt;span class="n"&gt;leaf&lt;/span&gt; &lt;span class="n"&gt;echo&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;type&lt;/span&gt; &lt;span class="n"&gt;enumeration&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+          &lt;span class="n"&gt;enum&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;reachable&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;    &lt;span class="c1"&gt;#返回类型&lt;/span&gt;
+            &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;description&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Received reply&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+          &lt;span class="p"&gt;}&lt;/span&gt;
+          &lt;span class="n"&gt;enum&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;unreachable&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;description&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;No reply during timeout&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+          &lt;span class="p"&gt;}&lt;/span&gt;
+          &lt;span class="n"&gt;enum&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;error&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;description&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Error happened&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+          &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="n"&gt;description&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Result types&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;完成之后，我们需要为maven项目model-ping构建pom.xml文件。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;pom&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xml&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在pom.xml中使用model-parent 会使整个pom.xml变得很简单。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;project&lt;/span&gt; &lt;span class="na"&gt;xmlns=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://maven.apache.org/POM/4.0.0&amp;quot;&lt;/span&gt;
+ &lt;span class="na"&gt;xmlns:xsi=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2001/XMLSchema-instance&amp;quot;&lt;/span&gt;
+ &lt;span class="na"&gt;xsi:schemaLocation=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;parent&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;model-parent&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller.model&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;relativePath&amp;gt;&amp;lt;/relativePath&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/parent&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;modelVersion&amp;gt;&lt;/span&gt;4.0.0&lt;span class="nt"&gt;&amp;lt;/modelVersion&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;model-ping&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;packaging&amp;gt;&lt;/span&gt;bundle&lt;span class="nt"&gt;&amp;lt;/packaging&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/project&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;完成以上的步骤之后，就可以使用maven编译生成API和bundle了。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;mvn&lt;/span&gt; &lt;span class="n"&gt;clean&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;若想运行ODL的时候运行bundle，则需要将生成的jar包复制到plugins目录。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cp&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="sr"&gt;/target/mo&lt;/span&gt;&lt;span class="n"&gt;del&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.1&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;SNAPSHOT&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;jar&lt;/span&gt; &lt;span class="o"&gt;..&lt;/span&gt;&lt;span class="sr"&gt;/../&lt;/span&gt;&lt;span class="o"&gt;..&lt;/span&gt;&lt;span class="sr"&gt;/distribution/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/target/&lt;/span&gt;&lt;span class="o"&gt;\&lt;/span&gt;
+&lt;span class="n"&gt;distribution&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;osgipackage&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/&lt;/span&gt;&lt;span class="n"&gt;plugins&lt;/span&gt;&lt;span class="o"&gt;/\&lt;/span&gt;
+&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.1&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;SNAPSHOT&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;jar&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;第三步：ping plugin&lt;/h3&gt;
+&lt;p&gt;上一步我们创建了一个model，定义了数据结构，这一步我们需要创建一个bundle来实现这个ping的插件。从而提供ping的服务。&lt;/p&gt;
+&lt;p&gt;在controller/opendaylight/ping目录创建工程，命令如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="o"&gt;..&lt;/span&gt;&lt;span class="sr"&gt;/../&lt;/span&gt;&lt;span class="o"&gt;../&lt;/span&gt;
+&lt;span class="nb"&gt;mkdir&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="sr"&gt;/plugin/s&lt;/span&gt;&lt;span class="n"&gt;rc&lt;/span&gt;&lt;span class="sr"&gt;/main/&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="sr"&gt;/org/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="sr"&gt;/plugin/i&lt;/span&gt;&lt;span class="n"&gt;nternal&lt;/span&gt;
+&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;plugin&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这依然是一个maven工程，所以我们需要创建他的pom.xml文件，用于描述工程。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;pom&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xml&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在pom.xml文件中，我们需要为上一步定义的model-ping描述依赖关系。并需要引入上一步编译生成的包：org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911。 同时，为了定义ipv4，我们还需要引入依赖包：org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev100924&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;project&lt;/span&gt; &lt;span class="na"&gt;xmlns=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://maven.apache.org/POM/4.0.0&amp;quot;&lt;/span&gt;
+ &lt;span class="na"&gt;xmlns:xsi=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2001/XMLSchema-instance&amp;quot;&lt;/span&gt;
+ &lt;span class="na"&gt;xsi:schemaLocation=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;modelVersion&amp;gt;&lt;/span&gt;4.0.0&lt;span class="nt"&gt;&amp;lt;/modelVersion&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;parent&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;commons.opendaylight&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.4.2-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;relativePath&amp;gt;&lt;/span&gt;../../commons/opendaylight&lt;span class="nt"&gt;&amp;lt;/relativePath&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;/parent&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;ping.plugin&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;0.4.0-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;packaging&amp;gt;&lt;/span&gt;bundle&lt;span class="nt"&gt;&amp;lt;/packaging&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;build&amp;gt;&lt;/span&gt;  #构建工程
+   &lt;span class="nt"&gt;&amp;lt;plugins&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;plugin&amp;gt;&lt;/span&gt;
+       &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.apache.felix&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+       &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;maven-bundle-plugin&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+       &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;bundle&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;plugin&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+       &lt;span class="nt"&gt;&amp;lt;extensions&amp;gt;&lt;/span&gt;true&lt;span class="nt"&gt;&amp;lt;/extensions&amp;gt;&lt;/span&gt;
+       &lt;span class="nt"&gt;&amp;lt;configuration&amp;gt;&lt;/span&gt;
+         &lt;span class="nt"&gt;&amp;lt;instructions&amp;gt;&lt;/span&gt;
+           &lt;span class="nt"&gt;&amp;lt;Import&lt;/span&gt;&lt;span class="err"&gt;-Package&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+             org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911,
+             org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev100924,
+             org.opendaylight.yangtools.yang.common,
+             org.opendaylight.yangtools.yang.binding,
+             org.opendaylight.controller.sal.binding.api,
+             org.opendaylight.controller.sal.common.util,
+             com.google.common.util.concurrent,
+             org.osgi.framework
+           &lt;span class="nt"&gt;&amp;lt;/Import-Package&amp;gt;&lt;/span&gt;
+           &lt;span class="nt"&gt;&amp;lt;Export&lt;/span&gt;&lt;span class="err"&gt;-Package&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+             org.opendaylight.controller.ping.plugin.internal#生成包，java文件所在目录
+           &lt;span class="nt"&gt;&amp;lt;/Export-Package&amp;gt;&lt;/span&gt;
+           &lt;span class="nt"&gt;&amp;lt;Bundle&lt;/span&gt;&lt;span class="err"&gt;-Activator&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+             org.opendaylight.controller.ping.plugin.internal.PingProvider
+           &lt;span class="nt"&gt;&amp;lt;/Bundle-Activator&amp;gt;&lt;/span&gt;
+         &lt;span class="nt"&gt;&amp;lt;/instructions&amp;gt;&lt;/span&gt;
+         &lt;span class="nt"&gt;&amp;lt;manifestLocation&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;project&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;basedir&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;/META-INF&lt;span class="nt"&gt;&amp;lt;/manifestLocation&amp;gt;&lt;/span&gt;
+       &lt;span class="nt"&gt;&amp;lt;/configuration&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;/plugin&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;/plugins&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;/build&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;dependencies&amp;gt;&lt;/span&gt;#依赖关系
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.osgi&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;org.osgi.core&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller.model&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;model-ping&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;sal-binding-api&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;sal-common-util&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.yangtools&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;yang-common&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;yangtools&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.yangtools&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;yang-binding&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;yangtools&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;/dependencies&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/project&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;完成pom.xml之后，我们需要在正确的目录添加接口实现文件&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="sr"&gt;/main/&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="sr"&gt;/org/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="sr"&gt;/plugin/i&lt;/span&gt;&lt;span class="n"&gt;nternal&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;PingImpl&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在第一步完成之后，我们已经由YANG文件生成了PingService的接口。PingImpl将实现PingService接口。在PingService中有sendEcho 的RPC方法声明，所以PingImpl也有这一方法。这个RPC方法将IPV4数据 “SendEchoInput”作为参数传入，并返回枚举类型"SendEchoOutput"。返回值是由YANG定义的EchoResult.Reachable或者EchoResult.Unreachable，错误还会返回EchoResult.Error。类中用InetAddress.isReachable(timeout)函数去检测IPV4地址是否可达。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nb"&gt;package&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;plugin&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;internal&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;io&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;IOException&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;InetAddress&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;util&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Collections&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;util&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;concurrent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Future&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;common&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;util&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Rpcs&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;v1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rev130911&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;PingService&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;v1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rev130911&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SendEchoInput&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;v1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rev130911&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SendEchoOutput&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;v1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rev130911&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SendEchoOutput&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;EchoResult&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;v1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rev130911&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SendEchoOutputBuilder&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yangtools&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;common&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;RpcError&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yangtools&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;common&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;RpcResult&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;google&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;common&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;util&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;concurrent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Futures&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="n"&gt;public&lt;/span&gt; &lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;PingImpl&lt;/span&gt; &lt;span class="n"&gt;implements&lt;/span&gt; &lt;span class="n"&gt;PingService&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+    &lt;span class="n"&gt;private&lt;/span&gt; &lt;span class="n"&gt;EchoResult&lt;/span&gt; &lt;span class="n"&gt;pingHost&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;InetAddress&lt;/span&gt; &lt;span class="n"&gt;destination&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;throws&lt;/span&gt; &lt;span class="n"&gt;IOException&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;destination&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;isReachable&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5000&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;EchoResult&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Reachable&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;EchoResult&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Unreachable&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="n"&gt;EchoResult&lt;/span&gt;&lt;span class="err"&gt;是在&lt;/span&gt;&lt;span class="n"&gt;YANG&lt;/span&gt;&lt;span class="err"&gt;文件中定义的输出数据格式，编译之后生成的&lt;/span&gt;&lt;span class="n"&gt;JAVA&lt;/span&gt;&lt;span class="err"&gt;类型。&lt;/span&gt;
+
+    &lt;span class="nv"&gt;@Override&lt;/span&gt;
+    &lt;span class="n"&gt;public&lt;/span&gt; &lt;span class="n"&gt;Future&lt;/span&gt;&lt;span class="sr"&gt;&amp;lt;RpcResult&amp;lt;SendEchoOutput&amp;gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;sendEcho&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SendEchoInput&lt;/span&gt; &lt;span class="n"&gt;destination&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;try&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;InetAddress&lt;/span&gt; &lt;span class="n"&gt;dst&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;InetAddress&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getByName&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;destination&lt;/span&gt;
+                    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getDestination&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getValue&lt;/span&gt;&lt;span class="p"&gt;());&lt;/span&gt;
+            &lt;span class="n"&gt;EchoResult&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;this&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pingHost&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+            &lt;span class="sr"&gt;/* Build the result and return it. */&lt;/span&gt;
+            &lt;span class="n"&gt;SendEchoOutputBuilder&lt;/span&gt; &lt;span class="n"&gt;ob&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;SendEchoOutputBuilder&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+            &lt;span class="n"&gt;ob&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setEchoResult&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="n"&gt;RpcResult&lt;/span&gt;&lt;span class="sr"&gt;&amp;lt;SendEchoOutput&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;rpcResult&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;
+                    &lt;span class="n"&gt;Rpcs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="sr"&gt;&amp;lt;SendEchoOutput&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;getRpcResult&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;true&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ob&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+                            &lt;span class="n"&gt;Collections&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="sr"&gt;&amp;lt;RpcError&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;emptySet&lt;/span&gt;&lt;span class="p"&gt;());&lt;/span&gt;
+
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;Futures&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;immediateFuture&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rpcResult&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="n"&gt;catch&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Exception&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+            &lt;span class="sr"&gt;/* Return error result. */&lt;/span&gt;
+            &lt;span class="n"&gt;SendEchoOutputBuilder&lt;/span&gt; &lt;span class="n"&gt;ob&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;SendEchoOutputBuilder&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+            &lt;span class="n"&gt;ob&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setEchoResult&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;EchoResult&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Error&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="n"&gt;RpcResult&lt;/span&gt;&lt;span class="sr"&gt;&amp;lt;SendEchoOutput&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;rpcResult&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;
+                    &lt;span class="n"&gt;Rpcs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="sr"&gt;&amp;lt;SendEchoOutput&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;getRpcResult&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;true&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ob&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+                            &lt;span class="n"&gt;Collections&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="sr"&gt;&amp;lt;RpcError&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;emptySet&lt;/span&gt;&lt;span class="p"&gt;());&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;Futures&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;immediateFuture&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rpcResult&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Futures:represents the result of an asynchronous computation.&lt;/p&gt;
+&lt;p&gt;more:http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html&lt;/p&gt;
+&lt;p&gt;完成PingImpl.java之后我们还需要一个java文件，作用在于在osgi上注册plugin service，是bundle的activator。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="sr"&gt;/main/&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="sr"&gt;/org/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="sr"&gt;/plugin/i&lt;/span&gt;&lt;span class="n"&gt;nternal&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;PingProvider&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这个类需要继承AbstractBindingAwareProvider 接口（这个接口非常重要，后续的教程教详细介绍相关内容）。在我们的例子这个接口中的onSessionInitiated 是最重要的方法。我们使用这个方法，将pingservice的接口和实现作为参数参入，实现服务在OSGI框架注册，从而让其他bundle感知到。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="x"&gt;package org.opendaylight.controller.ping.plugin.internal;&lt;/span&gt;
+
+&lt;span class="x"&gt;import java.util.Collection;&lt;/span&gt;
+
+&lt;span class="x"&gt;import org.opendaylight.controller.sal.binding.api.AbstractBindingAwareProvider;&lt;/span&gt;
+&lt;span class="x"&gt;// import org.opendaylight.controller.sal.binding.api.BindingAwareBroker.ConsumerContext;&lt;/span&gt;
+&lt;span class="x"&gt;import org.opendaylight.controller.sal.binding.api.BindingAwareBroker.ProviderContext;&lt;/span&gt;
+&lt;span class="x"&gt;import org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911.PingService;&lt;/span&gt;
+&lt;span class="x"&gt;import org.opendaylight.yangtools.yang.binding.RpcService;&lt;/span&gt;
+&lt;span class="x"&gt;import org.osgi.framework.BundleContext;&lt;/span&gt;
+
+&lt;span class="x"&gt;public class PingProvider extends AbstractBindingAwareProvider {&lt;/span&gt;
+
+&lt;span class="x"&gt;    PingImpl pingImpl;&lt;/span&gt;
+
+&lt;span class="x"&gt;    public PingProvider() {&lt;/span&gt;
+&lt;span class="x"&gt;        pingImpl = new PingImpl();//构造实例&lt;/span&gt;
+&lt;span class="x"&gt;    }&lt;/span&gt;
+
+&lt;span class="x"&gt;    @Override&lt;/span&gt;
+&lt;span class="x"&gt;    public Collection&lt;/span&gt;&lt;span class="cp"&gt;&amp;lt;?&lt;/span&gt; &lt;span class="k"&gt;extends&lt;/span&gt; &lt;span class="nx"&gt;RpcService&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;getImplementations&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="k"&gt;null&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="o"&gt;@&lt;/span&gt;&lt;span class="nx"&gt;Override&lt;/span&gt;
+    &lt;span class="k"&gt;public&lt;/span&gt; &lt;span class="nx"&gt;Collection&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;?&lt;/span&gt; &lt;span class="k"&gt;extends&lt;/span&gt; &lt;span class="nx"&gt;ProviderFunctionality&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;getFunctionality&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="k"&gt;null&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="o"&gt;@&lt;/span&gt;&lt;span class="nx"&gt;Override&lt;/span&gt;
+    &lt;span class="k"&gt;public&lt;/span&gt; &lt;span class="nx"&gt;void&lt;/span&gt; &lt;span class="nx"&gt;onSessionInitiated&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;ProviderContext&lt;/span&gt; &lt;span class="nx"&gt;session&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nx"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;addRpcImplementation&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;PingService&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;class&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;pingImpl&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//注册服务&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="o"&gt;@&lt;/span&gt;&lt;span class="nx"&gt;Override&lt;/span&gt;
+    &lt;span class="k"&gt;protected&lt;/span&gt; &lt;span class="nx"&gt;void&lt;/span&gt; &lt;span class="nx"&gt;startImpl&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;BundleContext&lt;/span&gt; &lt;span class="nx"&gt;context&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这一步我们完成了activator和implementation。完成了服务的实现和注册。然后编译工程：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;mvn&lt;/span&gt; &lt;span class="n"&gt;clean&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;将生成的jar文件复制到plugins目录&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cp&lt;/span&gt; &lt;span class="n"&gt;target&lt;/span&gt;&lt;span class="sr"&gt;/ping.plugin-0.4.0-SNAPSHOT.jar ../&lt;/span&gt;&lt;span class="o"&gt;..&lt;/span&gt;&lt;span class="sr"&gt;/distribution/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/target/&lt;/span&gt;&lt;span class="n"&gt;distribution&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;osgipackage&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/&lt;/span&gt;&lt;span class="n"&gt;plugins&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;plugin&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;0.4.0&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;SNAPSHOT&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;jar&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;测试&lt;/h4&gt;
+&lt;p&gt;以上的步骤已经完成了YANG定义model,以及服务生产者的实现。我们可以通过自动生成的RESTAPI去调用send-echo RPC。可使用curl进行测试，命令如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;curl&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;H&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Content-Type:application/json&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="n"&gt;POST&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;u&lt;/span&gt; &lt;span class="n"&gt;admin:admin&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;{input:{destination:127.0.0.1}}&amp;quot;&lt;/span&gt; &lt;span class="n"&gt;http:&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost:8080&lt;/span&gt;&lt;span class="sr"&gt;/restconf/o&lt;/span&gt;&lt;span class="n"&gt;perations&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ping:send&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;echo&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;其中destination的值可换成任意你想要ping的地址。&lt;/p&gt;
+&lt;p&gt;如果ping成功将会返回&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;output&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:{&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;echo-result&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;reachable&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;}}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;否则返回其他。&lt;/p&gt;
+&lt;h3&gt;第三步 通过REST API使用Ping RPC&lt;/h3&gt;
+&lt;p&gt;接下来的部门将介绍如何为ping model构造消费者（以上的provider是生产者）,然后为这个消费者实现一个REST API.&lt;/p&gt;
+&lt;h4&gt;Ping service&lt;/h4&gt;
+&lt;p&gt;为了让北向接口和YANG model解耦，我们使用Ping service来连接ping plugin和Ping northbound。所以我们还需要构建一个作为osgi bundle的maven工程，构建目录在controller/opendaylight/ping&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="o"&gt;..&lt;/span&gt;
+&lt;span class="nb"&gt;mkdir&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="n"&gt;service&lt;/span&gt;&lt;span class="sr"&gt;/src/m&lt;/span&gt;&lt;span class="n"&gt;ain&lt;/span&gt;&lt;span class="sr"&gt;/java/o&lt;/span&gt;&lt;span class="n"&gt;rg&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/co&lt;/span&gt;&lt;span class="n"&gt;ntroller&lt;/span&gt;&lt;span class="sr"&gt;/ping/s&lt;/span&gt;&lt;span class="n"&gt;ervice&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;
+&lt;span class="nb"&gt;mkdir&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="n"&gt;service&lt;/span&gt;&lt;span class="sr"&gt;/src/m&lt;/span&gt;&lt;span class="n"&gt;ain&lt;/span&gt;&lt;span class="sr"&gt;/java/o&lt;/span&gt;&lt;span class="n"&gt;rg&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/co&lt;/span&gt;&lt;span class="n"&gt;ntroller&lt;/span&gt;&lt;span class="sr"&gt;/ping/s&lt;/span&gt;&lt;span class="n"&gt;ervice&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;impl&lt;/span&gt;
+&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="n"&gt;service&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;每一个maven项目，我们都需要有一个pom.xml文件。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;pom&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xml&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在pom.xml中，我们需要指明这个bundle的activator(osgi的每一个bundle都有activator，用于启动。详情请google),同时，还需要暴露出plugin service 接口，以便其他的bundle使用，比如Ping northbound。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nt"&gt;&amp;lt;project&lt;/span&gt; &lt;span class="na"&gt;xmlns=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://maven.apache.org/POM/4.0.0&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;xmlns:xsi=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2001/XMLSchema-instance&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;xsi:schemaLocation=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;modelVersion&amp;gt;&lt;/span&gt;4.0.0&lt;span class="nt"&gt;&amp;lt;/modelVersion&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;parent&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;commons.opendaylight&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.4.2-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;relativePath&amp;gt;&lt;/span&gt;../../commons/opendaylight&lt;span class="nt"&gt;&amp;lt;/relativePath&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/parent&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;ping.service&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;packaging&amp;gt;&lt;/span&gt;bundle&lt;span class="nt"&gt;&amp;lt;/packaging&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;build&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;plugins&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;plugin&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.apache.felix&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;maven-bundle-plugin&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;bundle&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;plugin&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;extensions&amp;gt;&lt;/span&gt;true&lt;span class="nt"&gt;&amp;lt;/extensions&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;configuration&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;instructions&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;Import&lt;/span&gt;&lt;span class="err"&gt;-Package&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+              org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911,
+              org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev100924,
+              org.opendaylight.yangtools.yang.common,
+              org.opendaylight.yangtools.yang.binding,
+              org.opendaylight.controller.sal.binding.api,
+              org.osgi.framework
+            &lt;span class="nt"&gt;&amp;lt;/Import-Package&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;Export&lt;/span&gt;&lt;span class="err"&gt;-Package&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;org.opendaylight.controller.ping.service.api&lt;span class="nt"&gt;&amp;lt;/Export-Package&amp;gt;&lt;/span&gt;#导出api包
+            &lt;span class="nt"&gt;&amp;lt;Bundle&lt;/span&gt;&lt;span class="err"&gt;-Activator&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;org.opendaylight.controller.ping.service.impl.PingServiceImpl&lt;span class="nt"&gt;&amp;lt;/Bundle-Activator&amp;gt;&lt;/span&gt;  #activator的指明
+          &lt;span class="nt"&gt;&amp;lt;/instructions&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;manifestLocation&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;project&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;basedir&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;/META-INF&lt;span class="nt"&gt;&amp;lt;/manifestLocation&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/configuration&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;/plugin&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/plugins&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/build&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;dependencies&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.osgi&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;org.osgi.core&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller.model&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;model-ping&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;sal-binding-api&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.yangtools&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;yang-common&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;yangtools&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.yangtools&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;yang-binding&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;yangtools&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/dependencies&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/project&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;完成pom.xml之后，我们需要开始定义ping service的接口和实现。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="sr"&gt;/main/&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="sr"&gt;/org/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="sr"&gt;/service/&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;PingServiceAPI&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ping service的接口非常简单。参数为传入的目标地址，返回会boolean类型，表明是否可达。具体如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nb"&gt;package&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;service&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="n"&gt;public&lt;/span&gt; &lt;span class="n"&gt;interface&lt;/span&gt; &lt;span class="n"&gt;PingServiceAPI&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+    &lt;span class="o"&gt;/**&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;pingDestination&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="nv"&gt;@param&lt;/span&gt; &lt;span class="n"&gt;address&lt;/span&gt; &lt;span class="n"&gt;An&lt;/span&gt; &lt;span class="n"&gt;IPv4&lt;/span&gt; &lt;span class="n"&gt;address&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt; &lt;span class="n"&gt;pinged&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="nv"&gt;@return&lt;/span&gt; &lt;span class="n"&gt;True&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;address&lt;/span&gt; &lt;span class="n"&gt;is&lt;/span&gt; &lt;span class="n"&gt;reachable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;false&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;address&lt;/span&gt; &lt;span class="n"&gt;is&lt;/span&gt; &lt;span class="n"&gt;unreachable&lt;/span&gt; &lt;span class="ow"&gt;or&lt;/span&gt; &lt;span class="n"&gt;error&lt;/span&gt; &lt;span class="n"&gt;occurs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+     &lt;span class="o"&gt;*/&lt;/span&gt;
+    &lt;span class="n"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;pingDestination&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;address&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;完成接口定义之后，我们还需要实现接口。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="sr"&gt;/main/&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="sr"&gt;/org/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="sr"&gt;/service/im&lt;/span&gt;&lt;span class="n"&gt;pl&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;PingServiceImpl&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的PingServiceImpl类继承了AbstractBindingAwareConsumer类。在AbstractBindingAwareConsumer类中提供了回调函数，以osgi启动bundle。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（这个重要的类所属的目录为：controller/opendaylight/md-sal/sal-binding-api/src/main/java/org/opendaylight/controller/sal/binding/api。着这个目录中有非常重要的类如BindingAwareBroker.java。在后续的教程中将重点分析次目录。）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在onSessionInitialized方法中，'ConsumerContext'被存储等待后续使用。而startImpl方法则是调用了register函数，将bundle注册到了osgi平台。pingDestination方法首先寻找是否存在ping service 的RPC调用。如存在则继续使用ping.recv130911b包内的SendEchoInput类构建input,然后调用ping plugin中的sendEcho，返回的SendEchoOutput字符串映射成boolean值，返回调用者。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nb"&gt;package&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;service&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;impl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;util&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;concurrent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ExecutionException&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;service&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;PingServiceAPI&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;binding&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;AbstractBindingAwareConsumer&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;binding&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BindingAwareBroker&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ConsumerContext&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;binding&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BindingAwareConsumer&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;v1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ietf&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ns&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ietf&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;inet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;types&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rev100924&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Ipv4Address&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;v1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rev130911&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;PingService&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;v1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rev130911&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SendEchoInputBuilder&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;v1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rev130911&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SendEchoOutput&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yangtools&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;common&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;RpcResult&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;osgi&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;framework&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BundleActivator&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;osgi&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;framework&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BundleContext&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="n"&gt;public&lt;/span&gt; &lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;PingServiceImpl&lt;/span&gt; &lt;span class="n"&gt;extends&lt;/span&gt; &lt;span class="n"&gt;AbstractBindingAwareConsumer&lt;/span&gt; &lt;span class="n"&gt;implements&lt;/span&gt;
+        &lt;span class="n"&gt;BundleActivator&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;BindingAwareConsumer&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;PingServiceAPI&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+    &lt;span class="n"&gt;private&lt;/span&gt; &lt;span class="n"&gt;PingService&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;private&lt;/span&gt; &lt;span class="n"&gt;ConsumerContext&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="nv"&gt;@Override&lt;/span&gt;
+    &lt;span class="n"&gt;public&lt;/span&gt; &lt;span class="n"&gt;void&lt;/span&gt; &lt;span class="n"&gt;onSessionInitialized&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ConsumerContext&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;this&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;session&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="nv"&gt;@Override&lt;/span&gt;
+    &lt;span class="n"&gt;protected&lt;/span&gt; &lt;span class="n"&gt;void&lt;/span&gt; &lt;span class="n"&gt;startImpl&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;BundleContext&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;registerService&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PingServiceAPI&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;this&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;null&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="nv"&gt;@Override&lt;/span&gt;
+    &lt;span class="n"&gt;public&lt;/span&gt; &lt;span class="n"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;pingDestination&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;address&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;null&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;this&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getRpcService&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PingService&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;null&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+                &lt;span class="sr"&gt;/* No ping service found. */&lt;/span&gt;
+                &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;false&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+
+        &lt;span class="n"&gt;Ipv4Address&lt;/span&gt; &lt;span class="n"&gt;destination&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Ipv4Address&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;address&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+        &lt;span class="n"&gt;SendEchoInputBuilder&lt;/span&gt; &lt;span class="n"&gt;ib&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;SendEchoInputBuilder&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;ib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setDestination&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;destination&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;try&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;RpcResult&lt;/span&gt;&lt;span class="sr"&gt;&amp;lt;SendEchoOutput&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sendEcho&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+            &lt;span class="n"&gt;switch&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getResult&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getEchoResult&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;Reachable:&lt;/span&gt;
+                &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;true&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;Unreachable:&lt;/span&gt;
+            &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;Error:&lt;/span&gt;
+            &lt;span class="n"&gt;default:&lt;/span&gt;
+                &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;false&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="n"&gt;catch&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;InterruptedException&lt;/span&gt; &lt;span class="n"&gt;ie&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="n"&gt;catch&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ExecutionException&lt;/span&gt; &lt;span class="n"&gt;ee&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;false&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;完成以上内容之后，对bundle使用mvn进行编译，并将生成的jar包复制到指定目录。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;mvn&lt;/span&gt; &lt;span class="n"&gt;clean&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;
+&lt;span class="n"&gt;cp&lt;/span&gt; &lt;span class="n"&gt;target&lt;/span&gt;&lt;span class="sr"&gt;/ping.service-1.1-SNAPSHOT.jar ../&lt;/span&gt;&lt;span class="o"&gt;..&lt;/span&gt;&lt;span class="sr"&gt;/distribution/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/target/&lt;/span&gt;&lt;span class="n"&gt;distribution&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;osgipackage&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/&lt;/span&gt;&lt;span class="n"&gt;plugins&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;service&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.1&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;SNAPSHOT&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;jar&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Ping Northbound&lt;/h4&gt;
+&lt;p&gt;在完成了ping service之后，我们最后还需要构建一个北向API，调用ping service。&lt;/p&gt;
+&lt;p&gt;在controller/opendaylight/ping目录在创建northbound目录。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="o"&gt;..&lt;/span&gt;
+&lt;span class="nb"&gt;mkdir&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="n"&gt;northbound&lt;/span&gt;&lt;span class="sr"&gt;/src/m&lt;/span&gt;&lt;span class="n"&gt;ain&lt;/span&gt;&lt;span class="sr"&gt;/java/o&lt;/span&gt;&lt;span class="n"&gt;rg&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/co&lt;/span&gt;&lt;span class="n"&gt;ntroller&lt;/span&gt;&lt;span class="sr"&gt;/ping/&lt;/span&gt;&lt;span class="n"&gt;northbound&lt;/span&gt;
+&lt;span class="nb"&gt;mkdir&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="n"&gt;northbound&lt;/span&gt;&lt;span class="sr"&gt;/src/m&lt;/span&gt;&lt;span class="n"&gt;ain&lt;/span&gt;&lt;span class="sr"&gt;/resources/&lt;/span&gt;&lt;span class="n"&gt;META&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;INF&lt;/span&gt;
+&lt;span class="nb"&gt;mkdir&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="n"&gt;northbound&lt;/span&gt;&lt;span class="sr"&gt;/src/m&lt;/span&gt;&lt;span class="n"&gt;ain&lt;/span&gt;&lt;span class="sr"&gt;/resources/&lt;/span&gt;&lt;span class="n"&gt;WEB&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;INF&lt;/span&gt;
+&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="n"&gt;northbound&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;同样的为工程添加pom.xml&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;pom&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xml&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在pom.xml文件中我们需要import Ping service包，以便使用Ping Service。同时，我们也要需要确定许多WEB服务的信息。例如ContextPath,我们定义ContextPath为'/controller/nb/v2',所以我们可以通过HTTP PUT的方式向http://localhost:8080/controller/nb/v2/ping/{ipAddress}发送send ping请求。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;project&lt;/span&gt; &lt;span class="na"&gt;xmlns=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://maven.apache.org/POM/4.0.0&amp;quot;&lt;/span&gt;
+ &lt;span class="na"&gt;xmlns:xsi=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2001/XMLSchema-instance&amp;quot;&lt;/span&gt;
+ &lt;span class="na"&gt;xsi:schemaLocation=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;modelVersion&amp;gt;&lt;/span&gt;4.0.0&lt;span class="nt"&gt;&amp;lt;/modelVersion&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;parent&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;commons.opendaylight&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.4.2-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;relativePath&amp;gt;&lt;/span&gt;../../commons/opendaylight&lt;span class="nt"&gt;&amp;lt;/relativePath&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/parent&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;ping.northbound&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.0-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;packaging&amp;gt;&lt;/span&gt;bundle&lt;span class="nt"&gt;&amp;lt;/packaging&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;build&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;plugins&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;plugin&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.codehaus.enunciate&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;maven-enunciate-plugin&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;enunciate&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;dependencies&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;sal&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;0.7.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/dependencies&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;/plugin&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;plugin&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.apache.felix&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;maven-bundle-plugin&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;bundle&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;plugin&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;extensions&amp;gt;&lt;/span&gt;true&lt;span class="nt"&gt;&amp;lt;/extensions&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;configuration&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;instructions&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;Import&lt;/span&gt;&lt;span class="err"&gt;-Package&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+              org.opendaylight.controller.ping.service.api,
+              org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev100924,
+              org.apache.commons.logging,
+              com.sun.jersey.spi.container.servlet,
+              org.opendaylight.controller.northbound.commons,
+              org.opendaylight.controller.northbound.commons.exception,
+              org.opendaylight.controller.northbound.commons.utils,
+              org.opendaylight.controller.sal.utils,
+              org.opendaylight.controller.sal.authorization,
+              org.opendaylight.controller.sal.packet.address,
+              javax.ws.rs,
+              javax.ws.rs.core,
+              javax.xml.bind.annotation,
+              javax.xml.bind,
+              org.slf4j,
+              org.apache.catalina.filters,
+              com.fasterxml.jackson.jaxrs.base,
+              com.fasterxml.jackson.jaxrs.json,
+              !org.codehaus.enunciate.jaxrs
+            &lt;span class="nt"&gt;&amp;lt;/Import-Package&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;Web&lt;/span&gt;&lt;span class="err"&gt;-ContextPath&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;/controller/nb/v2&lt;span class="nt"&gt;&amp;lt;/Web-ContextPath&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;/instructions&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;manifestLocation&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;project&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;basedir&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;/src/main/resources/META-INF&lt;span class="nt"&gt;&amp;lt;/manifestLocation&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/configuration&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;/plugin&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/plugins&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/build&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;dependencies&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller.thirdparty&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;com.sun.jersey.jersey-servlet&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.17&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;commons.northbound&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;0.4.2-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.codehaus.enunciate&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;enunciate-core-annotations&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;${&lt;/span&gt;&lt;span class="n"&gt;enunciate&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="cp"&gt;}&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller.thirdparty&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;org.apache.catalina.filters.CorsFilter&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;7.0.42&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;ping.service&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/dependencies&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/project&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;接下来我们创建enunciate.xml。什么是enunciate?  http://enueciate.codehaus.org&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot;?&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;enunciate&lt;/span&gt; &lt;span class="na"&gt;label=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;full&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;xmlns:xsi=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2001/XMLSchema-instance&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;xsi:noNamespaceSchemaLocation=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://enunciate.codehaus.org/schemas/enunciate-1.26.xsd&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;services&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;rest&lt;/span&gt; &lt;span class="na"&gt;defaultRestSubcontext=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/controller/nb/v2/ping&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/services&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;modules&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;docs&lt;/span&gt; &lt;span class="na"&gt;docsDir=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;rest&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;title=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Ping REST API&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;includeExampleXml=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;includeExampleJson=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;true&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/modules&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/enunciate&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;最后我们还需要配置web.xml&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="sr"&gt;/main/&lt;/span&gt;&lt;span class="n"&gt;resources&lt;/span&gt;&lt;span class="sr"&gt;/WEB-INF/&lt;/span&gt;&lt;span class="n"&gt;web&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xml&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;web.xml可以从其他类似的北向的项目中复制，然后修改。在servlet标签中声明：JAXRSPing,对应到param-value中的PingNorthboundRSApplication。我们将马上实现这个文件。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;ISO-8859-1&amp;quot;?&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;web-app&lt;/span&gt; &lt;span class="na"&gt;xmlns=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://java.sun.com/xml/ns/javaee&amp;quot;&lt;/span&gt;
+ &lt;span class="na"&gt;xmlns:xsi=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2001/XMLSchema-instance&amp;quot;&lt;/span&gt;
+ &lt;span class="na"&gt;xsi:schemaLocation=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://java.sun.com/xml/ns/javaee&lt;/span&gt;
+&lt;span class="s"&gt; http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd&amp;quot;&lt;/span&gt;
+ &lt;span class="na"&gt;version=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;3.0&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;servlet&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;servlet-name&amp;gt;&lt;/span&gt;JAXRSPing&lt;span class="nt"&gt;&amp;lt;/servlet-name&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;servlet-class&amp;gt;&lt;/span&gt;com.sun.jersey.spi.container.servlet.ServletContainer&lt;span class="nt"&gt;&amp;lt;/servlet-class&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;init-param&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;param-name&amp;gt;&lt;/span&gt;javax.ws.rs.Application&lt;span class="nt"&gt;&amp;lt;/param-name&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;param-value&amp;gt;&lt;/span&gt;org.opendaylight.controller.ping.northbound.PingNorthboundRSApplication&lt;span class="nt"&gt;&amp;lt;/param-value&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/init-param&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;load-on-startup&amp;gt;&lt;/span&gt;1&lt;span class="nt"&gt;&amp;lt;/load-on-startup&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/servlet&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;servlet-mapping&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;servlet-name&amp;gt;&lt;/span&gt;JAXRSPing&lt;span class="nt"&gt;&amp;lt;/servlet-name&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;url-pattern&amp;gt;&lt;/span&gt;/*&lt;span class="nt"&gt;&amp;lt;/url-pattern&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/servlet-mapping&amp;gt;&lt;/span&gt;
+
+        &lt;span class="nt"&gt;&amp;lt;filter&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;filter-name&amp;gt;&lt;/span&gt;CorsFilter&lt;span class="nt"&gt;&amp;lt;/filter-name&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;filter-class&amp;gt;&lt;/span&gt;org.apache.catalina.filters.CorsFilter&lt;span class="nt"&gt;&amp;lt;/filter-class&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;init-param&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-name&amp;gt;&lt;/span&gt;cors.allowed.origins&lt;span class="nt"&gt;&amp;lt;/param-name&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-value&amp;gt;&lt;/span&gt;*&lt;span class="nt"&gt;&amp;lt;/param-value&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;/init-param&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;init-param&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-name&amp;gt;&lt;/span&gt;cors.allowed.methods&lt;span class="nt"&gt;&amp;lt;/param-name&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-value&amp;gt;&lt;/span&gt;GET,POST,HEAD,OPTIONS,PUT&lt;span class="nt"&gt;&amp;lt;/param-value&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;/init-param&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;init-param&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-name&amp;gt;&lt;/span&gt;cors.allowed.headers&lt;span class="nt"&gt;&amp;lt;/param-name&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-value&amp;gt;&lt;/span&gt;Content-Type,X-Requested-With,accept,authorization, origin,Origin,Access-Control-Request-Method,Access-Control-Request-Headers&lt;span class="nt"&gt;&amp;lt;/param-value&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;/init-param&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;init-param&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-name&amp;gt;&lt;/span&gt;cors.exposed.headers&lt;span class="nt"&gt;&amp;lt;/param-name&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-value&amp;gt;&lt;/span&gt;Access-Control-Allow-Origin,Access-Control-Allow-Credentials&lt;span class="nt"&gt;&amp;lt;/param-value&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;/init-param&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;init-param&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-name&amp;gt;&lt;/span&gt;cors.support.credentials&lt;span class="nt"&gt;&amp;lt;/param-name&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-value&amp;gt;&lt;/span&gt;true&lt;span class="nt"&gt;&amp;lt;/param-value&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;/init-param&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;init-param&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-name&amp;gt;&lt;/span&gt;cors.preflight.maxage&lt;span class="nt"&gt;&amp;lt;/param-name&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;param-value&amp;gt;&lt;/span&gt;10&lt;span class="nt"&gt;&amp;lt;/param-value&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;/init-param&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/filter&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;filter-mapping&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;filter-name&amp;gt;&lt;/span&gt;CorsFilter&lt;span class="nt"&gt;&amp;lt;/filter-name&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;url-pattern&amp;gt;&lt;/span&gt;/*&lt;span class="nt"&gt;&amp;lt;/url-pattern&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/filter-mapping&amp;gt;&lt;/span&gt;
+
+        &lt;span class="nt"&gt;&amp;lt;security-constraint&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;web-resource-collection&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;web-resource-name&amp;gt;&lt;/span&gt;NB api&lt;span class="nt"&gt;&amp;lt;/web-resource-name&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;url-pattern&amp;gt;&lt;/span&gt;/*&lt;span class="nt"&gt;&amp;lt;/url-pattern&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;http-method&amp;gt;&lt;/span&gt;POST&lt;span class="nt"&gt;&amp;lt;/http-method&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;http-method&amp;gt;&lt;/span&gt;GET&lt;span class="nt"&gt;&amp;lt;/http-method&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;http-method&amp;gt;&lt;/span&gt;PUT&lt;span class="nt"&gt;&amp;lt;/http-method&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;http-method&amp;gt;&lt;/span&gt;PATCH&lt;span class="nt"&gt;&amp;lt;/http-method&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;http-method&amp;gt;&lt;/span&gt;DELETE&lt;span class="nt"&gt;&amp;lt;/http-method&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;http-method&amp;gt;&lt;/span&gt;HEAD&lt;span class="nt"&gt;&amp;lt;/http-method&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;/web-resource-collection&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;auth-constraint&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;role-name&amp;gt;&lt;/span&gt;System-Admin&lt;span class="nt"&gt;&amp;lt;/role-name&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;role-name&amp;gt;&lt;/span&gt;Network-Admin&lt;span class="nt"&gt;&amp;lt;/role-name&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;role-name&amp;gt;&lt;/span&gt;Network-Operator&lt;span class="nt"&gt;&amp;lt;/role-name&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;role-name&amp;gt;&lt;/span&gt;Container-User&lt;span class="nt"&gt;&amp;lt;/role-name&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;/auth-constraint&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/security-constraint&amp;gt;&lt;/span&gt;
+
+        &lt;span class="nt"&gt;&amp;lt;security-role&amp;gt;&lt;/span&gt;
+                &lt;span class="nt"&gt;&amp;lt;role-name&amp;gt;&lt;/span&gt;System-Admin&lt;span class="nt"&gt;&amp;lt;/role-name&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/security-role&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;security-role&amp;gt;&lt;/span&gt;
+                &lt;span class="nt"&gt;&amp;lt;role-name&amp;gt;&lt;/span&gt;Network-Admin&lt;span class="nt"&gt;&amp;lt;/role-name&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/security-role&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;security-role&amp;gt;&lt;/span&gt;
+                &lt;span class="nt"&gt;&amp;lt;role-name&amp;gt;&lt;/span&gt;Network-Operator&lt;span class="nt"&gt;&amp;lt;/role-name&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/security-role&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;security-role&amp;gt;&lt;/span&gt;
+                &lt;span class="nt"&gt;&amp;lt;role-name&amp;gt;&lt;/span&gt;Container-User&lt;span class="nt"&gt;&amp;lt;/role-name&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/security-role&amp;gt;&lt;/span&gt;
+
+        &lt;span class="nt"&gt;&amp;lt;login-config&amp;gt;&lt;/span&gt;
+                &lt;span class="nt"&gt;&amp;lt;auth-method&amp;gt;&lt;/span&gt;BASIC&lt;span class="nt"&gt;&amp;lt;/auth-method&amp;gt;&lt;/span&gt;
+                &lt;span class="nt"&gt;&amp;lt;realm-name&amp;gt;&lt;/span&gt;opendaylight&lt;span class="nt"&gt;&amp;lt;/realm-name&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/login-config&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/web-app&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;完成xml文件之后，我们首先需要完成源文件PingNorthboundRSApplication.java&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="sr"&gt;/main/&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="sr"&gt;/org/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="sr"&gt;/northbound/&lt;/span&gt;&lt;span class="n"&gt;PingNorthboundRSApplication&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这个文件将PingNorthbound作为一个web service app。当REST 调用对应URI的资源时将被调用。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="x"&gt;package org.opendaylight.controller.ping.northbound;&lt;/span&gt;
+
+&lt;span class="x"&gt;import java.util.HashSet;&lt;/span&gt;
+&lt;span class="x"&gt;import java.util.Set;&lt;/span&gt;
+
+&lt;span class="x"&gt;import javax.ws.rs.core.Application;&lt;/span&gt;
+
+&lt;span class="x"&gt;public class PingNorthboundRSApplication extends Application {&lt;/span&gt;
+&lt;span class="x"&gt;    @Override&lt;/span&gt;
+&lt;span class="x"&gt;    public Set&amp;lt;Class&lt;/span&gt;&lt;span class="cp"&gt;&amp;lt;?&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;getClasses&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nx"&gt;Set&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nx"&gt;Class&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;?&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;classes&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;HashSet&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nx"&gt;Class&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;?&amp;gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="nx"&gt;classes&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;PingNorthbound&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;class&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;classes&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在PingNorthbound文件中应用的实例定义为PingNorthbound，所以我们需要实现这个类。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="sr"&gt;/main/&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="sr"&gt;/org/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="sr"&gt;/northbound/&lt;/span&gt;&lt;span class="n"&gt;PingNorthbound&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;PingNorthnound定义了ping方法，用于相应特定URI路径的资源相应。ping方法会查找ping service的接口和pingDestination的方法，并根据返回值构建HTTP相应。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nb"&gt;package&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;northbound&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;javax&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ws&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;PUT&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;javax&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ws&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Path&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;javax&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ws&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;PathParam&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;javax&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ws&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;core&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Response&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;codehaus&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;enunciate&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;jaxrs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ResponseCode&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;codehaus&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;enunciate&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;jaxrs&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;StatusCodes&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;service&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;PingServiceAPI&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;utils&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ServiceHelper&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="nv"&gt;@Path&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;public&lt;/span&gt; &lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;PingNorthbound&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="o"&gt;/**&lt;/span&gt;
+     &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;Ping&lt;/span&gt; &lt;span class="n"&gt;test&lt;/span&gt;
+     &lt;span class="o"&gt;*/&lt;/span&gt;
+    &lt;span class="nv"&gt;@Path&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/ping/{ipAddress}&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nv"&gt;@PUT&lt;/span&gt;
+    &lt;span class="nv"&gt;@StatusCodes&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;
+        &lt;span class="nv"&gt;@ResponseCode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;200&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;condition&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Destination reachable&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="nv"&gt;@ResponseCode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;503&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;condition&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Internal error&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="nv"&gt;@ResponseCode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;503&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;condition&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Destination unreachable&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;})&lt;/span&gt;
+    &lt;span class="n"&gt;public&lt;/span&gt; &lt;span class="n"&gt;Response&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;@PathParam&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;ipAddress&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;ipAddress&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;PingServiceAPI&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PingServiceAPI&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;ServiceHelper&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getGlobalInstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                &lt;span class="n"&gt;PingServiceAPI&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;this&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;null&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+            &lt;span class="sr"&gt;/* Ping service not found. */&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;Response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ok&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;No ping service&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;status&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;500&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pingDestination&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ipAddress&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;Response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ok&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ipAddress&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;&amp;quot; - reachable&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;Response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ok&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ipAddress&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;&amp;quot; - unreachable&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;status&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;503&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;终于，我们完成了northbound的实现，别忘记对工程进行编译。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;mvn&lt;/span&gt; &lt;span class="n"&gt;clean&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;还要把对应的jar包复制到plugins目录下&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cp&lt;/span&gt; &lt;span class="n"&gt;target&lt;/span&gt;&lt;span class="sr"&gt;/ping.northbound-1.0-SNAPSHOT.jar ../&lt;/span&gt;&lt;span class="o"&gt;..&lt;/span&gt;&lt;span class="sr"&gt;/distribution/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;&lt;span class="sr"&gt;/target/&lt;/span&gt;&lt;span class="n"&gt;distribution&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;osgipackage&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/&lt;/span&gt;&lt;span class="n"&gt;plugins&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;northbound&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.0&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;SNAPSHOT&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;jar&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;测试&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;运行odl，并通过curl测试&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="o"&gt;..&lt;/span&gt;&lt;span class="sr"&gt;/../&lt;/span&gt;&lt;span class="n"&gt;distribution&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/&lt;/span&gt;&lt;span class="n"&gt;target&lt;/span&gt;&lt;span class="sr"&gt;/distribution.opendaylight-0.1.0-SNAPSHOT-osgipackage/o&lt;/span&gt;&lt;span class="n"&gt;pendaylight&lt;/span&gt;
+&lt;span class="o"&gt;./&lt;/span&gt;&lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;测试命令和结果如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$&lt;/span&gt; &lt;span class="nv"&gt;curl&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;admin&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;admin&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="n"&gt;PUT&lt;/span&gt; &lt;span class="n"&gt;http:&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost:8080&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;nb&lt;/span&gt;&lt;span class="sr"&gt;/v2/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;127.0.0.1&lt;/span&gt;
+&lt;span class="mf"&gt;127.0.0.1&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;reachable&lt;/span&gt;
+&lt;span class="nv"&gt;$&lt;/span&gt; &lt;span class="nv"&gt;curl&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;admin&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;admin&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="n"&gt;PUT&lt;/span&gt; &lt;span class="n"&gt;http:&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost:8080&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;nb&lt;/span&gt;&lt;span class="sr"&gt;/v2/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;128.0.0.1&lt;/span&gt;
+&lt;span class="mf"&gt;128.0.0.1&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;unreachable&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;到目前位置，我们已经完成了绝大部分的工作！最后我们还需要将工程和整个工程一起编译。&lt;/p&gt;
+&lt;h3&gt;最后一步  编译整个工程&lt;/h3&gt;
+&lt;p&gt;全部的ping工程都需要作为控制器的一部分进行编译和安装，我们需要通过在pom.xml的修改达到这一目的。&lt;/p&gt;
+&lt;p&gt;官网上的教程说的是'sal/yang-prototype/sal/modules'目录，但是新版的控制器并没有这一目录，所以博主努力寻找了一下，在opendylight/md-sal/model下找到了类似的pom.xml。博主认为这就是正确的文件。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/m&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;sal&lt;/span&gt;&lt;span class="sr"&gt;/model/&lt;/span&gt;&lt;span class="n"&gt;pom&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xml&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;将 &lt;module&gt;model-ping&lt;/module&gt;添加到一下部分中&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt; ...
+ &lt;span class="nt"&gt;&amp;lt;modules&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;model-inventory&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;model-flow-base&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;model-flow-service&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;model-flow-statistics&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;model-ping&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+        &lt;span class="c"&gt;&amp;lt;!-- &amp;lt;module&amp;gt;model-topology-bgp&amp;lt;/module&amp;gt; --&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;/modules&amp;gt;&lt;/span&gt;
+ ...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;剩下的3个工程同样需要编译，将其加入到对应的pom.xml中。在官网给出的目录中并没有找到对应的段，博主重新找了一下，在controller目录中找到了对应的内容，应该是对的。将以下内容&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt; &lt;span class="c"&gt;&amp;lt;!-- Ping --&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/service&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/plugin&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/northbound&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;添加到&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    ...
+   &lt;span class="c"&gt;&amp;lt;!-- Samples --&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/samples/simpleforwarding&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/samples/loadbalancer&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/samples/northbound/loadbalancer&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+
+    &lt;span class="c"&gt;&amp;lt;!-- Ping --&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/service&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/plugin&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/northbound&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+
+    &lt;span class="c"&gt;&amp;lt;!-- Parents --&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/commons/concepts&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/commons/integrationtest&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/commons/checkstyle&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/commons/opendaylight&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/commons/parent&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/modules&amp;gt;&lt;/span&gt;
+  ...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;最后编译所有文件&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/&lt;/span&gt;&lt;span class="n"&gt;distribution&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;
+&lt;span class="n"&gt;mvn&lt;/span&gt; &lt;span class="n"&gt;clean&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;官网对应教程：https://wiki.opendaylight.org/view/Ping&lt;/p&gt;</summary><category term="opendaylight"></category><category term="SDN"></category><category term="Ping"></category></entry><entry><title>OpenDaylight入门教程</title><link href="http://www.muzixing.com/pages/2014/08/02/opendaylightru-men-jiao-cheng.html" rel="alternate"></link><updated>2014-08-02T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-02:pages/2014/08/02/opendaylightru-men-jiao-cheng.html</id><summary type="html">&lt;h3&gt;关于OpenDaylight&lt;/h3&gt;
 &lt;p&gt;OpenDaylight is an open platform for network programmability to enable SDN and create a solid foundation for NFV for networks at any size and scale.&lt;/p&gt;
 &lt;p&gt;对于SDN而言，ODL（OpenDaylight）是一个开源的可编程的平台，简单的说是一个非常有野心开源控制器而不仅仅只是控制器。&lt;/p&gt;
 &lt;p&gt;opendaylight官网:http://www.opendaylight.org/&lt;/p&gt;

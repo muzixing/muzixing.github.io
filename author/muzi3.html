@@ -62,6 +62,43 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html"><h2>The study notes of East-west Bridge for SDN Network Peering</h2></a>
+        <div class= "well small"> 2014-04-10
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>这是一篇学习笔记，是在阅读了林萍萍女士的论文"East-West Bridge for SDN Network Peering  "之后的总结与思考。</p>
+<p>东西向接口通信中交换的数据是一个域中的数据。</p>
+<h3>控制器之间的发现</h3>
+<p>最简单的方式就是直接指定,但是这明显不是一个合理的方法。比较好的做法是让所有的控制器在开启的时候向一个注册服务器注册自己的信息，然后再获取所有控制器的信息，如IP,PORT,用于建立控制器之间的连接。另有更智能的方法是通过lldp去发现邻居。即LLDP报文中携带本域中控制器的信息。
+即有如下三种方式：</p>
+<ul>
+<li>通过配置信息设置</li>
+<li>访问注册服务器获取</li>
+<li>通过LLDP去发现邻居 </li>
+</ul>
+<p>我认为，第一种方法最简单，但是需要手动配置。第二种方法最易于设计。第三种方法最智能。我觉得使用LLDP去发现邻居是一种不错的方式。每一次接入网络都需要探测自己的邻居，然后发送自己的拓扑信息给邻居，同时当拓扑发生变化时也需要给邻居同步，此处的拓扑发生变化可以包含如下两点：</p>
+<ul>
+<li>域内拓扑发生变化，如link down</li>
+<li>邻居C拓扑变化传送过来导致本地存储拓扑变化，从而需要更新拓扑，并通知其他邻居。</li>
+</ul>
+<h3>网络信息的存储</h3>
+<ul>
+<li>分布式存储在每一个控制器，每一个控制器只保存自己的视图，需要全局数据时再发送请求从别的控制器获取。此方式为主动请求方式，能减少拓扑信息传递的数量。但是耗时大。</li>
+<li>分布式存储在每一个控制器，每一个控制器都有全网视图 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/03/26/poxmessenger-component-getting-started.html"><h2>[POX]messenger component getting started</h2></a>
         <div class= "well small"> 2014-03-26
 
@@ -168,27 +205,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <iframe height=498 width=510 src="http://player.youku.com/embed/XNjcyMDU4Njg0" frameborder=0 allowfullscreen></iframe>
 
 <p>非常赞的一个视频！学习如何使用MARKDOWN添加视频的成果咯！</p> <a class="btn btn-info xsmall" href="../pages/2014/03/21/markdowntian-jia-shi-pin-jiao-cheng-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html"><h2>SDN实现HTTP网络加速实验</h2></a>
-        <div class= "well small"> 2014-03-13
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>由于篇幅太长，且这个实验室是很久以前，我和我的小伙伴们一起做的课设，没有时间进行排版书写。</h3>
-<p>附上链接：</p>
-<p>http://user.qzone.qq.com/350959853/blog/1394681174</p>
-<p>北邮学弟学妹做这个课设的可以联系628中某学长。</p> <a class="btn btn-info xsmall" href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
