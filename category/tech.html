@@ -960,7 +960,12 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 </pre></div>
 
 
-<p>测试命令和结果如下：</p>
+<p>此时可以输入命令</p>
+<div class="highlight"><pre><span class="n">ss</span> <span class="n">ping</span>
+</pre></div>
+
+
+<p>启动关于ping内容的bundle,可以看到5个内容，其中4个是我们刚刚添加的bundle.再开终端使用curl测试，测试命令和结果如下：</p>
 <div class="highlight"><pre><span class="nv">$</span> <span class="nv">curl</span> <span class="o">--</span><span class="n">user</span> <span class="s">&quot;admin&quot;</span><span class="p">:</span><span class="s">&quot;admin&quot;</span> <span class="o">-</span><span class="n">X</span> <span class="n">PUT</span> <span class="n">http:</span><span class="sr">//</span><span class="n">localhost:8080</span><span class="sr">/controller/</span><span class="n">nb</span><span class="sr">/v2/</span><span class="n">ping</span><span class="o">/</span><span class="mf">127.0.0.1</span>
 <span class="mf">127.0.0.1</span> <span class="o">-</span> <span class="n">reachable</span>
 <span class="nv">$</span> <span class="nv">curl</span> <span class="o">--</span><span class="n">user</span> <span class="s">&quot;admin&quot;</span><span class="p">:</span><span class="s">&quot;admin&quot;</span> <span class="o">-</span><span class="n">X</span> <span class="n">PUT</span> <span class="n">http:</span><span class="sr">//</span><span class="n">localhost:8080</span><span class="sr">/controller/</span><span class="n">nb</span><span class="sr">/v2/</span><span class="n">ping</span><span class="o">/</span><span class="mf">128.0.0.1</span>
@@ -983,50 +988,59 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         <span class="nt">&lt;module&gt;</span>model-flow-base<span class="nt">&lt;/module&gt;</span>
         <span class="nt">&lt;module&gt;</span>model-flow-service<span class="nt">&lt;/module&gt;</span>
         <span class="nt">&lt;module&gt;</span>model-flow-statistics<span class="nt">&lt;/module&gt;</span>
+        <span class="nt">&lt;module&gt;</span>model-topology-bgp<span class="nt">&lt;/module&gt;</span>
         <span class="nt">&lt;module&gt;</span>model-ping<span class="nt">&lt;/module&gt;</span>
-        <span class="c">&lt;!-- &lt;module&gt;model-topology-bgp&lt;/module&gt; --&gt;</span>
  <span class="nt">&lt;/modules&gt;</span>
  ...
 </pre></div>
 
 
-<p>剩下的3个工程同样需要编译，将其加入到对应的pom.xml中。在官网给出的目录中并没有找到对应的段，博主重新找了一下，在controller目录中找到了对应的内容，应该是对的。将以下内容</p>
-<div class="highlight"><pre> <span class="c">&lt;!-- Ping --&gt;</span>
- <span class="nt">&lt;module&gt;</span>/ping/service<span class="nt">&lt;/module&gt;</span>
- <span class="nt">&lt;module&gt;</span>/ping/plugin<span class="nt">&lt;/module&gt;</span>
- <span class="nt">&lt;module&gt;</span>/ping/northbound<span class="nt">&lt;/module&gt;</span>
+<p>剩下的3个工程同样需要编译，将其加入到对应的pom.xml中。官网给的文件目录是对的，但是内容不对。</p>
+<div class="highlight"><pre><span class="n">vi</span> <span class="n">controller</span><span class="sr">/opendaylight/</span><span class="n">distribution</span><span class="sr">/opendaylight/</span><span class="n">pom</span><span class="o">.</span><span class="n">xml</span>
 </pre></div>
 
 
-<p>添加到</p>
-<div class="highlight"><pre>    ...
-   <span class="c">&lt;!-- Samples --&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/samples/simpleforwarding<span class="nt">&lt;/module&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/samples/loadbalancer<span class="nt">&lt;/module&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/samples/northbound/loadbalancer<span class="nt">&lt;/module&gt;</span>
+<p>添加内容如下</p>
+<div class="highlight"><pre> ...
+ <span class="c">&lt;!-- Ping --&gt;</span>  
+    <span class="nt">&lt;dependency&gt;</span>
+      <span class="nt">&lt;groupId&gt;</span>org.opendaylight.controller<span class="nt">&lt;/groupId&gt;</span>
+      <span class="nt">&lt;artifactId&gt;</span>ping.northbound<span class="nt">&lt;/artifactId&gt;</span>
+      <span class="nt">&lt;version&gt;</span>1.0-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>   
+    <span class="nt">&lt;dependency&gt;</span>    
+      <span class="nt">&lt;groupId&gt;</span>org.opendaylight.controller<span class="nt">&lt;/groupId&gt;</span>    
+      <span class="nt">&lt;artifactId&gt;</span>ping.plugin<span class="nt">&lt;/artifactId&gt;</span>
+      <span class="nt">&lt;version&gt;</span>0.4.0-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>   
+    <span class="nt">&lt;dependency&gt;</span>    
+      <span class="nt">&lt;groupId&gt;</span>org.opendaylight.controller<span class="nt">&lt;/groupId&gt;</span>    
+      <span class="nt">&lt;artifactId&gt;</span>ping.service<span class="nt">&lt;/artifactId&gt;</span> 
+      <span class="nt">&lt;version&gt;</span>1.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
 
-    <span class="c">&lt;!-- Ping --&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/ping/service<span class="nt">&lt;/module&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/ping/plugin<span class="nt">&lt;/module&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/ping/northbound<span class="nt">&lt;/module&gt;</span>
+ <span class="c">&lt;!--Southbound bundles--&gt;</span>
+ ...
+ ...
+    <span class="nt">&lt;dependency&gt;</span>    
+      <span class="nt">&lt;groupId&gt;</span>org.opendaylight.controller.model<span class="nt">&lt;/groupId&gt;</span>  
+      <span class="nt">&lt;artifactId&gt;</span>model.ping<span class="nt">&lt;/artifactId&gt;</span>   
+      <span class="nt">&lt;version&gt;</span>1.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
 
-    <span class="c">&lt;!-- Parents --&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/commons/concepts<span class="nt">&lt;/module&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/commons/integrationtest<span class="nt">&lt;/module&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/commons/checkstyle<span class="nt">&lt;/module&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/commons/opendaylight<span class="nt">&lt;/module&gt;</span>
-    <span class="nt">&lt;module&gt;</span>/commons/parent<span class="nt">&lt;/module&gt;</span>
-  <span class="nt">&lt;/modules&gt;</span>
-  ...
+<span class="c">&lt;!-- toaster example I&#39;m pretty sure we should trim --&gt;</span>
+...
 </pre></div>
 
 
+<p>两处修改大概在500+和1000+行处。</p>
 <p>最后编译所有文件</p>
 <div class="highlight"><pre><span class="n">cd</span> <span class="n">controller</span><span class="sr">/opendaylight/</span><span class="n">distribution</span><span class="o">/</span><span class="n">opendaylight</span>
 <span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span>
 </pre></div>
 
 
+<p>运行odl,再次测试，无误！</p>
 <p>官网对应教程：https://wiki.opendaylight.org/view/Ping</p></div>
         <hr />
     </div>

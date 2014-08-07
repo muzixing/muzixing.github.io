@@ -887,7 +887,12 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;测试命令和结果如下：&lt;/p&gt;
+&lt;p&gt;此时可以输入命令&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ss&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;启动关于ping内容的bundle,可以看到5个内容，其中4个是我们刚刚添加的bundle.再开终端使用curl测试，测试命令和结果如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$&lt;/span&gt; &lt;span class="nv"&gt;curl&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;admin&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;admin&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="n"&gt;PUT&lt;/span&gt; &lt;span class="n"&gt;http:&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost:8080&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;nb&lt;/span&gt;&lt;span class="sr"&gt;/v2/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;127.0.0.1&lt;/span&gt;
 &lt;span class="mf"&gt;127.0.0.1&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;reachable&lt;/span&gt;
 &lt;span class="nv"&gt;$&lt;/span&gt; &lt;span class="nv"&gt;curl&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;admin&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;admin&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="n"&gt;PUT&lt;/span&gt; &lt;span class="n"&gt;http:&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="n"&gt;localhost:8080&lt;/span&gt;&lt;span class="sr"&gt;/controller/&lt;/span&gt;&lt;span class="n"&gt;nb&lt;/span&gt;&lt;span class="sr"&gt;/v2/&lt;/span&gt;&lt;span class="n"&gt;ping&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;128.0.0.1&lt;/span&gt;
@@ -910,50 +915,59 @@
         &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;model-flow-base&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
         &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;model-flow-service&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
         &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;model-flow-statistics&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;model-topology-bgp&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
         &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;model-ping&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
-        &lt;span class="c"&gt;&amp;lt;!-- &amp;lt;module&amp;gt;model-topology-bgp&amp;lt;/module&amp;gt; --&amp;gt;&lt;/span&gt;
  &lt;span class="nt"&gt;&amp;lt;/modules&amp;gt;&lt;/span&gt;
  ...
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;剩下的3个工程同样需要编译，将其加入到对应的pom.xml中。在官网给出的目录中并没有找到对应的段，博主重新找了一下，在controller目录中找到了对应的内容，应该是对的。将以下内容&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt; &lt;span class="c"&gt;&amp;lt;!-- Ping --&amp;gt;&lt;/span&gt;
- &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/service&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
- &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/plugin&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
- &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/northbound&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+&lt;p&gt;剩下的3个工程同样需要编译，将其加入到对应的pom.xml中。官网给的文件目录是对的，但是内容不对。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;vi&lt;/span&gt; &lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/&lt;/span&gt;&lt;span class="n"&gt;distribution&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/&lt;/span&gt;&lt;span class="n"&gt;pom&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xml&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;添加到&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;    ...
-   &lt;span class="c"&gt;&amp;lt;!-- Samples --&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/samples/simpleforwarding&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/samples/loadbalancer&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/samples/northbound/loadbalancer&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+&lt;p&gt;添加内容如下&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt; ...
+ &lt;span class="c"&gt;&amp;lt;!-- Ping --&amp;gt;&lt;/span&gt;  
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;ping.northbound&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.0-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;   
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;    
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;    
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;ping.plugin&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;0.4.0-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;   
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;    
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;    
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;ping.service&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt; 
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
 
-    &lt;span class="c"&gt;&amp;lt;!-- Ping --&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/service&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/plugin&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/ping/northbound&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
+ &lt;span class="c"&gt;&amp;lt;!--Southbound bundles--&amp;gt;&lt;/span&gt;
+ ...
+ ...
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;    
+      &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.opendaylight.controller.model&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;  
+      &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;model.ping&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;   
+      &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
 
-    &lt;span class="c"&gt;&amp;lt;!-- Parents --&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/commons/concepts&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/commons/integrationtest&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/commons/checkstyle&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/commons/opendaylight&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;/commons/parent&lt;span class="nt"&gt;&amp;lt;/module&amp;gt;&lt;/span&gt;
-  &lt;span class="nt"&gt;&amp;lt;/modules&amp;gt;&lt;/span&gt;
-  ...
+&lt;span class="c"&gt;&amp;lt;!-- toaster example I&amp;#39;m pretty sure we should trim --&amp;gt;&lt;/span&gt;
+...
 &lt;/pre&gt;&lt;/div&gt;
 
 
+&lt;p&gt;两处修改大概在500+和1000+行处。&lt;/p&gt;
 &lt;p&gt;最后编译所有文件&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="sr"&gt;/opendaylight/&lt;/span&gt;&lt;span class="n"&gt;distribution&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;opendaylight&lt;/span&gt;
 &lt;span class="n"&gt;mvn&lt;/span&gt; &lt;span class="n"&gt;clean&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
+&lt;p&gt;运行odl,再次测试，无误！&lt;/p&gt;
 &lt;p&gt;官网对应教程：https://wiki.opendaylight.org/view/Ping&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Wed, 06 Aug 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-08-06:pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html</guid><category>opendaylight</category><category>SDN</category><category>Ping</category></item><item><title>OpenDaylight入门教程</title><link>http://www.muzixing.com/pages/2014/08/02/opendaylightru-men-jiao-cheng.html</link><description>&lt;h3&gt;关于OpenDaylight&lt;/h3&gt;
 &lt;p&gt;OpenDaylight is an open platform for network programmability to enable SDN and create a solid foundation for NFV for networks at any size and scale.&lt;/p&gt;
 &lt;p&gt;对于SDN而言，ODL（OpenDaylight）是一个开源的可编程的平台，简单的说是一个非常有野心开源控制器而不仅仅只是控制器。&lt;/p&gt;
