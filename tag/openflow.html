@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/05/04/noxshi-xian-natgong-neng.html"><h1>nox实现nat功能</h1></a>
-2014-05-04
+            <a href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html"><h1>OpenFlow1.3学习笔记</h1></a>
+2014-08-10
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -73,6 +73,191 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         </div>
         
         <div><h3>前言</h3>
+<p>OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。</p>
+<h3>OpenFlow端口</h3>
+<p>OF端口是OF处理流程和网络其他部分进行转发数据包的网络接口。
+OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必须支持的端口类型为</p>
+<ul>
+<li>物理端口</li>
+<li>逻辑端口</li>
+<li>保留端口</li>
+</ul>
+<p>逻辑端口和物理端口的不同在于，逻辑端口比物理端口更高一级，是对物理端口的虚拟化，提高可复用性，逻辑端口的数据包需要有tunnel_id，而物理端口没有。    </p>
+<p>保留端口中又分为：</p>
+<ul>
+<li>ALL</li>
+<li>CONTROLLER</li>
+<li>TABLE</li>
+<li>IN_PORT</li>
+<li>ANY</li>
+<li>LOCAL</li>
+<li>NORMAL</li>
+<li>FLOOD</li>
+</ul>
+<p>其中所有OF交换机都要支持ALL,CONTROLLER,TABLE,IN_PORT,ANY类型端口，OF_ONLY不要求支持LOCAL,NORMAL,FLOOD端口。</p>
+<h3>OpenFlow table</h3>
+<p>OpenFlow table分为255级，最低级为0.</p>
+<p>一条flow entry的结构为：</p>
+<table>
+    <tr>
+        <td>Match Fields</td>
+        <td>Priority</td>
+        <td>Counters</td>
+        <td>Instructions</td>
+        <td>Timeouts</td>
+        <td>Cookie</td>
+    </tr>
+</table>
+
+<p>此处有一个区别于1.0版本的instruction,  用于修改动作及或者处理流程，作用于各级流表之间。匹配过程可查看协议。</p>
+<h3>miss_table</h3>
+<p>每一个flow_table都需要支持table_miss，table_miss明确了如何处理未匹配的流，动作可能是DROP,也有可能是其他。</p>
+<p>table_miss flow entry 并不是缺省存在与流表中的。我们可通过控制器随时进行添加或删除。</p>
+<h3>group table</h3>
+<p>group table不是一个flow table。他是一个动作组的集合。一个动作组称之为group entry。它的结构如下：</p>
+<table>
+    <tr>
+        <td>Group Identifier</td>
+        <td>Group Type</td>
+        <td>Counters</td>
+        <td>Action Buckets</td>
+    </tr>
+</table>
+
+<p>当flow entry中有ofp_action_group时，将指明该flow entry选择执行的group table的ID。结构为：</p>
+<div class="highlight"><pre><span class="sr">/* Action structure for OFPAT_GROUP. */</span>
+<span class="n">struct</span> <span class="n">ofp_action_group</span> <span class="p">{</span>
+    <span class="n">uint16_t</span> <span class="n">type</span><span class="p">;</span> <span class="sr">/* OFPAT_GROUP. */</span>
+    <span class="n">uint16_t</span> <span class="n">len</span><span class="p">;</span> <span class="sr">/* Length is 8. */</span>
+    <span class="n">uint32_t</span> <span class="n">group_id</span><span class="p">;</span> <span class="sr">/* Group identifier. */</span>
+<span class="p">};</span>
+</pre></div>
+
+
+<h4>Group Type</h4>
+<ul>
+<li>
+<p>all:执行action buckets中所有的动作。适用于multicast or broadcast forwarding。</p>
+</li>
+<li>
+<p>select:选择其中若干组执行，适用于Load balancing。可以简单轮询，也可以根据权重执行。</p>
+</li>
+<li>
+<p>indirect：只执行group中的一个bucket,这个组只支持一个bucket,允许多流表和组表指到这个组。可用于链路聚合（link aggregation)，支持快速的，高效的收敛。</p>
+</li>
+<li>
+<p>fast failover：选择第一个活跃的bucket执行。可以在不询问控制器的情况下改变转发决策。但是要使用这个，还需要制定一个bucket的生存机制。可用于动态的负载均衡。</p>
+</li>
+</ul>
+<h3>Instructions和Action的区别</h3>
+<p>1.0版本中没有instruction。而在1.3中，instruction又和action有一些相似之处。仔细阅读之后发现两者是不一样的。instructions作用于流表之间，用于控制processing和修改action set。可以说是action的生产指令。而action则是对数据包修改的动作。</p>
+<h4>Instruction</h4>
+<p>instructions的类型有：</p>
+<ul>
+<li>
+<p>(Optional)Meter meter_id:将数据包直接交给某一个meter.</p>
+</li>
+<li>
+<p>(Optional)Apply-Actions actions(s):在不修改action set的情况下立即应用actions中的action。</p>
+</li>
+<li>
+<p>(Optional)Clear-Actions:立即清楚action set中的所有action</p>
+</li>
+<li>
+<p>(Required)Write-Actions actions(s):立即向action set中添加action，若已存在，覆盖，否则添加。</p>
+</li>
+<li>
+<p>(Optional)Write-Metadata metadata/mask:添加metadata</p>
+</li>
+<li>
+<p>（Required）Goto-table next_tale_id:跳转到下一个table,跳转对象id必须大于当前的，也就是说不可以跳回来。最后一个table必然不存在这个指令。</p>
+</li>
+<li>
+<p>(Optional)Experimenter:用于试验 </p>
+</li>
+</ul>
+<h4>Action</h4>
+<ul>
+<li>
+<p>Action set </p>
+<p>每一个数据包都有一个action set,用于记录action。在processing中，action set在流表之间传递。</p>
+</li>
+<li>
+<p>Action list</p>
+<p>集合和列表的区别显而易见。Apply-action和Packet_out消息包含action_list。因为这两者执行的动作是可重复的。如多个action_output.
+* Actions</p>
+<ul>
+<li>Required <strong>out_put</strong></li>
+<li>Optional <strong>Set_queue</strong></li>
+<li>Reqiured <strong>Drop</strong></li>
+<li>Reqiured <strong>Group</strong>指明动作类型为group.从而流表选择group中的action bucket。</li>
+<li>Optional <strong>Push_Tag/Pop_Tag</strong></li>
+<li>Optional <strong>Set_Field</strong></li>
+<li>Optional <strong>Change_TTL</strong></li>
+</ul>
+<p>具体细节可查看协议，不再赘述。</p>
+</li>
+</ul>
+<h3>Multicle Controller</h3>
+<p>在1.3版本的OF中支持多控制器。但是这个多控制器只是相对于交换机而已。因为OF协议只是定义了交换机和控制器之间的通信过程。具体的控制器协同工作内容不是OF的范围。也许我可以开发一个这样的协议哦！</p>
+<p>在多控制器内容中，相对于交换机而言，控制器可以有3中身份：equal,master和slave。控制器可以在任何时候改变角色。</p>
+<h4>Equal</h4>
+<p>Equal表明这个控制器并没有什么特殊之处，他和其他同样为equal的控制器是同等级的。比如一个交换机连接了3个控制器，且这三个控制器都是equal属性，那么这三个控制器对于交换机而言是等价的。equal类型控制器相当于一个独立的，具有完全权限的控制器。</p>
+<h4>Master and Slave</h4>
+<ul>
+<li>
+<p>Master</p>
+<p><strong>Master角色具有和Equal一样的完全权限。</strong></p>
+<p>当多控制器中某一个控制器申请成为Master时，其他控制器将成为Slave角色。</p>
+</li>
+<li>
+<p>Slave</p>
+<p><strong>作为Slave角色的控制器对交换机仅有可读权限,不能接受异步消息</strong></p>
+<p>（除去port_status以外的其他异步等消息）</p>
+<p>不能向交换机发送写消息（ofp_flow_mod等），若交换机收到slave控制器发送的写消息，将产生ERROR。 </p>
+</li>
+</ul>
+<h3>Mininet启动1.3版本OF</h3>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">mn</span> <span class="o">--</span><span class="n">topo</span> <span class="n">single</span><span class="p">,</span><span class="mi">3</span> <span class="o">--</span><span class="n">mac</span> <span class="o">--</span><span class="n">controller</span> <span class="n">remote</span> <span class="o">--</span><span class="n">switch</span> <span class="n">ovsk</span><span class="p">,</span><span class="n">protocols</span><span class="o">=</span><span class="n">OpenFlow13</span>
+</pre></div>
+
+
+<p>从以上可知，启动1.3版本的命令是protocols=OpenFlow13,但是这只是启动了mininet的1.3版本，还需要对交换机进行配置。命令如下： </p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">set</span> <span class="n">bridge</span> <span class="n">s1</span> <span class="n">protocols</span><span class="o">=</span><span class="n">OpenFlow13</span>
+</pre></div>
+
+
+<p>查看1.3版本的流表命令为：</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="nb">dump</span><span class="o">-</span><span class="n">flows</span> <span class="n">s1</span> <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
+</pre></div>
+
+
+<h3>OpenFlow教程</h3>
+<div class="highlight"><pre><span class="n">http:</span><span class="sr">//</span><span class="n">archive</span><span class="o">.</span><span class="n">openflow</span><span class="o">.</span><span class="n">org</span><span class="sr">/wk/i</span><span class="n">ndex</span><span class="o">.</span><span class="n">php</span><span class="o">/</span><span class="n">OpenFlow_Tutorial</span>
+</pre></div>
+
+
+<h3>后语</h3>
+<p>OF1.3内容实在太多，目前博主还未使用1.3版本进行实验，所以了解不多，若文中出现不正确的地方，欢迎在评论中指出。希望我能给你一些帮助。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/05/04/noxshi-xian-natgong-neng.html"><h2>nox实现nat功能</h2></a>
+        <div class= "well small"> 2014-05-04
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
 <p>nat功能是一个非常简单，但却非常重要的功能。保留10，127,192三个网段作为公网地址，通过nat实现地址复用，可以解决现网IPV4地址不够用的尴尬局面。本篇主要讲如何使用nox实现nat的demo.</p>
 <h3>环境</h3>
 <ul>
@@ -86,56 +271,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">setup_flows</span> <span class="o">&amp;&amp;</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="n">auto</span> <span class="n">fm</span> <span class="o">=</span> <span class="nn">v1::</span><span class="n">ofp_flow_mod</span><span class="p">()</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">())</span>
-               <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod::</span><span class="n">OFPFC_ADD</span><span class="p">)</span><span class="o">.</span><span class="n">idle_timeout</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-               <span class="o">.</span><span class="n">hard_timeout</span><span class="p">(</span><span class="nn">v1::</span><span class="n">OFP_FLOW_PERMANENT</span><span class="p">)</span>
-               <span class="o">.</span><span class="n">priority</span><span class="p">(</span><span class="nn">v1::</span><span class="n">OFP_DEFAULT_PRIORITY</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">in_port</span><span class="p">()</span><span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="sr">//</span><span class="err">将</span><span class="n">in_port</span><span class="err">为</span><span class="mi">1</span><span class="err">的数据进行</span><span class="n">nat</span><span class="err">转换</span>
-    <span class="p">{</span>   
-        <span class="n">nat_ip</span> <span class="o">=</span> <span class="n">uint32_t</span><span class="p">(</span><span class="n">inet_addr</span><span class="p">(</span><span class="s">&quot;10.0.168.192&quot;</span><span class="p">));</span><span class="sr">//</span><span class="err">由于机器中字节序和网络字节序不一样，所以</span><span class="n">ip</span><span class="err">为倒序，你可以使用函数将变成网络字节序</span>
-        <span class="n">cout</span><span class="sr">&lt;&lt;&quot;&gt;</span><span class="o">&gt;</span><span class="n">nat_ip:</span><span class="s">&quot;&lt;&lt;nat_ip&lt;&lt;endl;</span>
-<span class="s">        src_ip= flow.nw_src();//保存src_ip</span>
-<span class="s">        cout&lt;&lt;&quot;</span><span class="o">&gt;&gt;</span><span class="n">src_ip:</span><span class="s">&quot;&lt;&lt;src_ip&lt;&lt;endl;</span>
-<span class="s">        auto aset = v1::ofp_action_nw_src().nw_addr(nat_ip);</span>
-<span class="s">        fm.add_action(&amp;aset);//添加动作，修改数据的src_ip为nat_ip</span>
-<span class="s">        cout&lt;&lt;&quot;</span><span class="o">&gt;&gt;</span><span class="n">set_nw_src:</span><span class="s">&quot;&lt;&lt;nat_ip&lt;&lt;endl;</span>
-<span class="s">    }</span>
-
-<span class="s">    cout&lt;&lt;&quot;</span><span class="o">&gt;&gt;</span><span class="n">flow</span><span class="o">.</span><span class="n">nw_dst:</span><span class="s">&quot;&lt;&lt;flow.nw_dst()&lt;&lt;endl;  </span>
-<span class="s">    cout&lt;&lt;&quot;</span><span class="o">&gt;&gt;</span><span class="n">nat_ip:</span><span class="s">&quot;&lt;&lt;nat_ip&lt;&lt;endl;</span>
-<span class="s">    if ((nat_ip!=0)&amp;&amp;(flow.nw_dst()==nat_ip))//若dst_ip为nat_ip，则修改为src_ip，完成对接</span>
-<span class="s">    {</span>
-<span class="s">        auto aset_dst = v1::ofp_action_nw_dst().nw_addr(src_ip);</span>
-<span class="s">        fm.add_action(&amp;aset_dst);</span>
-<span class="s">        cout&lt;&lt;&quot;</span><span class="o">&gt;&gt;</span><span class="n">set_nw_dst:</span><span class="err">&quot;</span><span class="o">&lt;&lt;</span><span class="n">src_ip</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="n">auto</span> <span class="n">ao</span> <span class="o">=</span> <span class="nn">v1::</span><span class="n">ofp_action_output</span><span class="p">()</span><span class="o">.</span><span class="n">port</span><span class="p">(</span><span class="n">out_port</span><span class="p">);</span>
-    <span class="n">fm</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ao</span><span class="p">);</span>
-    <span class="n">dp</span><span class="o">.</span><span class="nb">send</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fm</span><span class="p">);</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>最后，非常重要的一点：</p>
-<p><strong>由于修改完src_ip之后，其他主机并不能接受改数据，因为arp列表中没有此项。所以需要添加静态arp。</strong></p>
-<h3>主机</h3>
-<ul>
-<li>
-<p>在mininet中，查看nat转换的主机的mac信息：h2 ifconfig</p>
-</li>
-<li>
-<p>在其他主机如h3中 添加静态arp: h3 arp -s nat_ip h2_mac</p>
-</li>
-</ul>
-<p>此时pingall可通。</p>
-<h3>后语</h3>
-<p>arp缓存表很重要！Openflow1.0中没有修改arp的功能，1.3才有。考虑通信需要从全局的角度考虑，不能只考虑ICMP的转换，ICMP之前的arp的转换是必不可少的过程。希望读者能从中加深对网络通信流程的理解。感谢@地球-某某老师长久支持和教导！哈哈！</p>
-<h3>修改</h3>
-<p>台湾-linton同学提供了更好的解决方案：在nat之前，给目的主机发送arp_request,sender_ip为nat_ip,以此来给目的主机添加arp信息。
-只需要在下发flow_mod之前，下发一个pkt_out，用于发送nat arp即可。不再赘述。</p>
-<p>以上的解决方案并不完美，如果目标主机arp缓存表刷新之后，nat arp数据丢失，到达主机的数据将被丢弃。所以必须保证在发送数据之前发送arp_request。@地球-某某 老师解决方案为：周期发送arp_request，这能一定程度上解决这个问题。flow_mod的周期小于arp缓存表刷新周期也能一定程度解决这个问题。解决这个问题的根本是要保证数据发送之前，发送arp_request，以保证dst host的arp缓存表中有对应项。</p></div>
-        <hr />
-    </div>
-		
+               <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/05/04/noxshi-xian-natgong-neng.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -210,36 +348,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p><img alt="" src="http://g.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=d5cbada7a964034f0bcdc2039ff8080c/faedab64034f78f06906f9897b310a55b3191cbe.jpg?referer=8100bf6eba99a90162226e065c55&amp;x=.jpg" /></p>
 <p>也许还有一些没有花全。因为这个是我初学OpenFlow时候画的，若有错误，欢迎指正！</p>
 <p>如果你觉得我的小站还不错，可以帮忙宣传宣传咯。创建初期，积攒人气！</p> <a class="btn btn-info xsmall" href="../pages/2013/12/20/openflow10shu-ju-jie-gou-tu-shi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html"><h2>【原创】SDN控制器开发教程——打造属于你自己的控制器</h2></a>
-        <div class= "well small"> 2013-12-17
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><hr />
-<h2>前言</h2>
-<p>SDN(Software Defined Network)这些年越来越火。当我还是大三的小朋友的时候，我的学长带我走进了OpenFlow的世界。一年里，我慢慢学会了许多东西，研究过pox,写过mininet自定义拓扑，画过OpenFlow的数据结构，做过HTTP的流量引导，广播风暴解除等许多小东西。在SDN这条道路上越走越远，也希望有一天，我能在这个领域有所成就，做出一点自己的贡献。</p>
-<p>暑假的时候开始来工信部电信研究院实习，开始跟着学长一起开发，后来学长去美帝了，我继续完成剩下的工作。为了实现demo，我们顺便写了一个小小的控制器，其本质很简单，也许简单到你都不屑一顾。但是这个过程，我们需要从底层通信开始搭建，一直到最后的上层应用，无论哪一个环节，都会涉及到。到最后你会发现，其实也许这个控制器并没有太大的用处，但是更多的是这个过程中你学到的知识，那是使用别人开发的控制器说不能得到的宝贵知识。</p>
-<hr />
-<h2>你能得到的</h2>
-<ul>
-<li>底层通信：基于Tornado架构的socket通信的搭建</li>
-<li>OpenFlow协议数据结构细节</li>
-<li>通信流程的事件处理</li>
-<li>若干网络协议的熟悉与掌握。</li>
-<li>最重要的，你自己从无到有，经历了一个开发过程，所有出现的你想到的想不到的问题，你都需要自己去解决。你会在解决问题的过程中收获太多太多你想不到的财富。</li>
-<li>自信！你可以大声对自己说 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
