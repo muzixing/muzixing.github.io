@@ -2604,7 +2604,8 @@ The messenger package in the repository has a fair amount of comments.  Addition
 
 &lt;p&gt;使用这个接口类，可以把安装mininet的机器的网卡接到mininet的ovs之上。&lt;/p&gt;
 &lt;p&gt;剩下的就简单了。最重要的接口解决之后一切就都解决了。&lt;/p&gt;
-&lt;p&gt;如果需要例子，可以在本站查看：mininet搭建自定义拓扑&lt;/p&gt;
+&lt;p&gt;如果需要例子，可以在本站查看：mininet搭建自定义拓扑
+http://www.muzixing.com/pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html&lt;/p&gt;
 &lt;p&gt;另，也可以查看mininet中的hwintf文件。&lt;/p&gt;
 &lt;p&gt;希望能对你有帮助。&lt;/p&gt;</summary></entry><entry><title>【转】linux常用命令</title><link href="http://www.muzixing.com/pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html" rel="alternate"></link><updated>2014-03-25T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-03-25:pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html</id><summary type="html">&lt;h3&gt;前言&lt;/h3&gt;
 &lt;p&gt;我为我没有系统的学习linux而感到后悔！一定好好时间一遍鸟哥的linux私房菜，但是一些linux常用命令，记下也好！google之后，搜到一篇不错的文章，特此转载，保留个人使用。原文地址：http://www.php100.com/html/webkaifa/Linux/2009/1106/3485.html&lt;/p&gt;
