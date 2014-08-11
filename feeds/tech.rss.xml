@@ -25,7 +25,7 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;h3&gt;OpenFlow table&lt;/h3&gt;
 &lt;p&gt;OpenFlow table分为255级，最低级为0.&lt;/p&gt;
 &lt;p&gt;一条flow entry的结构为：&lt;/p&gt;
-&lt;table&gt;
+&lt;table class="table-bordered table-striped table-condensed"&gt;
     &lt;tr&gt;
         &lt;td&gt;Match Fields&lt;/td&gt;
         &lt;td&gt;Priority&lt;/td&gt;
@@ -2451,7 +2451,7 @@ antic elements and their relationships&lt;/p&gt;
 &lt;p&gt;个人以为第三种集中式存储会比较好。控制器连接的时候也不需要去建立多个连接，只需订阅这一服务即可。（如何分析？）&lt;/p&gt;
 &lt;h3&gt;网络视图&lt;/h3&gt;
 &lt;p&gt;每一个网络都有一个视图，这个视图包含了如下的信息：（此表摘自参考文献）&lt;/p&gt;
-&lt;table&gt;
+&lt;table class="table-bordered table-striped table-condensed"&gt;
    &lt;tr&gt;
       &lt;td&gt;Name&lt;/td&gt;
       &lt;td&gt;Type&lt;/td&gt;
