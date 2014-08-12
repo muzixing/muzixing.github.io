@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/tech.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-08-10T00:00:00+08:00</updated><entry><title>OpenFlow1.3学习笔记</title><link href="http://www.muzixing.com/pages/2014/08/10/openflow13xue-xi-bi-ji.html" rel="alternate"></link><updated>2014-08-10T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-10:pages/2014/08/10/openflow13xue-xi-bi-ji.html</id><summary type="html">&lt;h3&gt;前言&lt;/h3&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/tech.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-08-10T00:00:00+08:00</updated><entry><title>OpenFlow1.3学习笔记</title><link href="http://www.muzixing.com/pages/2014/08/10/openflow13xue-xi-bi-ji.html" rel="alternate"></link><updated>2014-08-10T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-10:pages/2014/08/10/openflow13xue-xi-bi-ji.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。&lt;/p&gt;
-&lt;h3&gt;OpenFlow端口&lt;/h3&gt;
+&lt;h2&gt;OpenFlow端口&lt;/h2&gt;
 &lt;p&gt;OF端口是OF处理流程和网络其他部分进行转发数据包的网络接口。
 OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必须支持的端口类型为&lt;/p&gt;
 &lt;ul&gt;
@@ -22,8 +22,8 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;li&gt;FLOOD&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;其中所有OF交换机都要支持ALL,CONTROLLER,TABLE,IN_PORT,ANY类型端口，OF_ONLY不要求支持LOCAL,NORMAL,FLOOD端口。&lt;/p&gt;
-&lt;h3&gt;OpenFlow table&lt;/h3&gt;
-&lt;p&gt;OpenFlow table分为255级，最低级为0.&lt;/p&gt;
+&lt;h2&gt;OpenFlow Table&lt;/h2&gt;
+&lt;p&gt;OpenFlow Table分为255级，最低级为0.&lt;/p&gt;
 &lt;p&gt;一条flow entry的结构为：&lt;/p&gt;
 &lt;table class="table-bordered table-striped table-condensed"&gt;
     &lt;tr&gt;
@@ -37,12 +37,12 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;/table&gt;
 
 &lt;p&gt;此处有一个区别于1.0版本的instruction,  用于修改动作及或者处理流程，作用于各级流表之间。匹配过程可查看协议。&lt;/p&gt;
-&lt;h3&gt;miss_table&lt;/h3&gt;
+&lt;h3&gt;Miss_table&lt;/h3&gt;
 &lt;p&gt;每一个flow_table都需要支持table_miss，table_miss明确了如何处理未匹配的流，动作可能是DROP,也有可能是其他。&lt;/p&gt;
 &lt;p&gt;table_miss flow entry 并不是缺省存在与流表中的。我们可通过控制器随时进行添加或删除。&lt;/p&gt;
-&lt;h3&gt;group table&lt;/h3&gt;
-&lt;p&gt;group table不是一个flow table。他是一个动作组的集合。一个动作组称之为group entry。它的结构如下：&lt;/p&gt;
-&lt;table&gt;
+&lt;h2&gt;Group Table&lt;/h2&gt;
+&lt;p&gt;Group Table不是一个Flow Table。他是一个动作组的集合。一个动作组称之为group entry。它的结构如下：&lt;/p&gt;
+&lt;table class="table-bordered table-striped table-condensed"&gt;
     &lt;tr&gt;
         &lt;td&gt;Group Identifier&lt;/td&gt;
         &lt;td&gt;Group Type&lt;/td&gt;
@@ -61,7 +61,7 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;Group Type&lt;/h4&gt;
+&lt;h3&gt;Group Type&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;all:执行action buckets中所有的动作。适用于multicast or broadcast forwarding。&lt;/p&gt;
@@ -76,9 +76,9 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;p&gt;fast failover：选择第一个活跃的bucket执行。可以在不询问控制器的情况下改变转发决策。但是要使用这个，还需要制定一个bucket的生存机制。可用于动态的负载均衡。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3&gt;Instructions和Action的区别&lt;/h3&gt;
+&lt;h2&gt;Instructions和Action的区别&lt;/h2&gt;
 &lt;p&gt;1.0版本中没有instruction。而在1.3中，instruction又和action有一些相似之处。仔细阅读之后发现两者是不一样的。instructions作用于流表之间，用于控制processing和修改action set。可以说是action的生产指令。而action则是对数据包修改的动作。&lt;/p&gt;
-&lt;h4&gt;Instruction&lt;/h4&gt;
+&lt;h3&gt;Instruction&lt;/h3&gt;
 &lt;p&gt;instructions的类型有：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -88,7 +88,7 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;p&gt;(Optional)Apply-Actions actions(s):在不修改action set的情况下立即应用actions中的action。&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;(Optional)Clear-Actions:立即清楚action set中的所有action&lt;/p&gt;
+&lt;p&gt;(Optional)Clear-Actions:立即清除action set中的所有action&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;(Required)Write-Actions actions(s):立即向action set中添加action，若已存在，覆盖，否则添加。&lt;/p&gt;
@@ -103,7 +103,7 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;p&gt;(Optional)Experimenter:用于试验 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h4&gt;Action&lt;/h4&gt;
+&lt;h3&gt;Action&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;Action set &lt;/p&gt;
@@ -111,10 +111,12 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Action list&lt;/p&gt;
-&lt;p&gt;集合和列表的区别显而易见。Apply-action和Packet_out消息包含action_list。因为这两者执行的动作是可重复的。如多个action_output.
-* Actions&lt;/p&gt;
+&lt;p&gt;集合和列表的区别显而易见。Apply-action和Packet_out消息包含action_list。因为这两者执行的动作是可重复的。如多个action_output.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Actions&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Required &lt;strong&gt;out_put&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;Required &lt;strong&gt;Out_put&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;Optional &lt;strong&gt;Set_queue&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;Reqiured &lt;strong&gt;Drop&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;Reqiured &lt;strong&gt;Group&lt;/strong&gt;指明动作类型为group.从而流表选择group中的action bucket。&lt;/li&gt;
@@ -125,12 +127,12 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;p&gt;具体细节可查看协议，不再赘述。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3&gt;Multicle Controller&lt;/h3&gt;
+&lt;h2&gt;Multicle Controller&lt;/h2&gt;
 &lt;p&gt;在1.3版本的OF中支持多控制器。但是这个多控制器只是相对于交换机而已。因为OF协议只是定义了交换机和控制器之间的通信过程。具体的控制器协同工作内容不是OF的范围。也许我可以开发一个这样的协议哦！&lt;/p&gt;
 &lt;p&gt;在多控制器内容中，相对于交换机而言，控制器可以有3中身份：equal,master和slave。控制器可以在任何时候改变角色。&lt;/p&gt;
-&lt;h4&gt;Equal&lt;/h4&gt;
+&lt;h3&gt;Equal&lt;/h3&gt;
 &lt;p&gt;Equal表明这个控制器并没有什么特殊之处，他和其他同样为equal的控制器是同等级的。比如一个交换机连接了3个控制器，且这三个控制器都是equal属性，那么这三个控制器对于交换机而言是等价的。equal类型控制器相当于一个独立的，具有完全权限的控制器。&lt;/p&gt;
-&lt;h4&gt;Master and Slave&lt;/h4&gt;
+&lt;h3&gt;Master and Slave&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;Master&lt;/p&gt;
@@ -144,7 +146,7 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;p&gt;不能向交换机发送写消息（ofp_flow_mod等），若交换机收到slave控制器发送的写消息，将产生ERROR。 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3&gt;Mininet启动1.3版本OF&lt;/h3&gt;
+&lt;h2&gt;Mininet启动1.3版本OF&lt;/h2&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;mn&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;topo&lt;/span&gt; &lt;span class="n"&gt;single&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;mac&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt; &lt;span class="n"&gt;remote&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;switch&lt;/span&gt; &lt;span class="n"&gt;ovsk&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;protocols&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;OpenFlow13&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -159,12 +161,12 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h3&gt;OpenFlow教程&lt;/h3&gt;
+&lt;h2&gt;OpenFlow教程&lt;/h2&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;http:&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="n"&gt;archive&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;openflow&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;org&lt;/span&gt;&lt;span class="sr"&gt;/wk/i&lt;/span&gt;&lt;span class="n"&gt;ndex&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;php&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;OpenFlow_Tutorial&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h3&gt;后语&lt;/h3&gt;
+&lt;h2&gt;后语&lt;/h2&gt;
 &lt;p&gt;OF1.3内容实在太多，目前博主还未使用1.3版本进行实验，所以了解不多，若文中出现不正确的地方，欢迎在评论中指出。希望我能给你一些帮助。&lt;/p&gt;</summary><category term="openflow"></category></entry><entry><title>Opendaylight中开发模块Ping</title><link href="http://www.muzixing.com/pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html" rel="alternate"></link><updated>2014-08-06T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-06:pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html</id><summary type="html">&lt;h3&gt;前言&lt;/h3&gt;
 &lt;p&gt;在安装和运行opendaylight之后，我们需要了解opendaylight各个目录的作用，运行机制。在此基础之上，我们需要动手进行第一个ODL模块的开发，在开发中找到ODL的重要所在。接下来的教程是在完成官网的一篇教程的基础上的总结和介绍，希望读者能有所收获。&lt;/p&gt;
 &lt;h3&gt;摘要&lt;/h3&gt;

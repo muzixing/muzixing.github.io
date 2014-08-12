@@ -66,9 +66,9 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 
         </div>
 	
-        <div><h3>前言</h3>
+        <div><h2>前言</h2>
 <p>OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。</p>
-<h3>OpenFlow端口</h3>
+<h2>OpenFlow端口</h2>
 <p>OF端口是OF处理流程和网络其他部分进行转发数据包的网络接口。
 OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必须支持的端口类型为</p>
 <ul>
@@ -89,8 +89,8 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 <li>FLOOD</li>
 </ul>
 <p>其中所有OF交换机都要支持ALL,CONTROLLER,TABLE,IN_PORT,ANY类型端口，OF_ONLY不要求支持LOCAL,NORMAL,FLOOD端口。</p>
-<h3>OpenFlow table</h3>
-<p>OpenFlow table分为255级，最低级为0.</p>
+<h2>OpenFlow Table</h2>
+<p>OpenFlow Table分为255级，最低级为0.</p>
 <p>一条flow entry的结构为：</p>
 <table class="table-bordered table-striped table-condensed">
     <tr>
@@ -104,12 +104,12 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 </table>
 
 <p>此处有一个区别于1.0版本的instruction,  用于修改动作及或者处理流程，作用于各级流表之间。匹配过程可查看协议。</p>
-<h3>miss_table</h3>
+<h3>Miss_table</h3>
 <p>每一个flow_table都需要支持table_miss，table_miss明确了如何处理未匹配的流，动作可能是DROP,也有可能是其他。</p>
 <p>table_miss flow entry 并不是缺省存在与流表中的。我们可通过控制器随时进行添加或删除。</p>
-<h3>group table</h3>
-<p>group table不是一个flow table。他是一个动作组的集合。一个动作组称之为group entry。它的结构如下：</p>
-<table>
+<h2>Group Table</h2>
+<p>Group Table不是一个Flow Table。他是一个动作组的集合。一个动作组称之为group entry。它的结构如下：</p>
+<table class="table-bordered table-striped table-condensed">
     <tr>
         <td>Group Identifier</td>
         <td>Group Type</td>
@@ -128,7 +128,7 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 </pre></div>
 
 
-<h4>Group Type</h4>
+<h3>Group Type</h3>
 <ul>
 <li>
 <p>all:执行action buckets中所有的动作。适用于multicast or broadcast forwarding。</p>
@@ -143,9 +143,9 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 <p>fast failover：选择第一个活跃的bucket执行。可以在不询问控制器的情况下改变转发决策。但是要使用这个，还需要制定一个bucket的生存机制。可用于动态的负载均衡。</p>
 </li>
 </ul>
-<h3>Instructions和Action的区别</h3>
+<h2>Instructions和Action的区别</h2>
 <p>1.0版本中没有instruction。而在1.3中，instruction又和action有一些相似之处。仔细阅读之后发现两者是不一样的。instructions作用于流表之间，用于控制processing和修改action set。可以说是action的生产指令。而action则是对数据包修改的动作。</p>
-<h4>Instruction</h4>
+<h3>Instruction</h3>
 <p>instructions的类型有：</p>
 <ul>
 <li>
@@ -155,7 +155,7 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 <p>(Optional)Apply-Actions actions(s):在不修改action set的情况下立即应用actions中的action。</p>
 </li>
 <li>
-<p>(Optional)Clear-Actions:立即清楚action set中的所有action</p>
+<p>(Optional)Clear-Actions:立即清除action set中的所有action</p>
 </li>
 <li>
 <p>(Required)Write-Actions actions(s):立即向action set中添加action，若已存在，覆盖，否则添加。</p>
@@ -170,7 +170,7 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 <p>(Optional)Experimenter:用于试验 </p>
 </li>
 </ul>
-<h4>Action</h4>
+<h3>Action</h3>
 <ul>
 <li>
 <p>Action set </p>
@@ -178,10 +178,12 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 </li>
 <li>
 <p>Action list</p>
-<p>集合和列表的区别显而易见。Apply-action和Packet_out消息包含action_list。因为这两者执行的动作是可重复的。如多个action_output.
-* Actions</p>
+<p>集合和列表的区别显而易见。Apply-action和Packet_out消息包含action_list。因为这两者执行的动作是可重复的。如多个action_output.</p>
+</li>
+<li>
+<p>Actions</p>
 <ul>
-<li>Required <strong>out_put</strong></li>
+<li>Required <strong>Out_put</strong></li>
 <li>Optional <strong>Set_queue</strong></li>
 <li>Reqiured <strong>Drop</strong></li>
 <li>Reqiured <strong>Group</strong>指明动作类型为group.从而流表选择group中的action bucket。</li>
@@ -192,12 +194,12 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 <p>具体细节可查看协议，不再赘述。</p>
 </li>
 </ul>
-<h3>Multicle Controller</h3>
+<h2>Multicle Controller</h2>
 <p>在1.3版本的OF中支持多控制器。但是这个多控制器只是相对于交换机而已。因为OF协议只是定义了交换机和控制器之间的通信过程。具体的控制器协同工作内容不是OF的范围。也许我可以开发一个这样的协议哦！</p>
 <p>在多控制器内容中，相对于交换机而言，控制器可以有3中身份：equal,master和slave。控制器可以在任何时候改变角色。</p>
-<h4>Equal</h4>
+<h3>Equal</h3>
 <p>Equal表明这个控制器并没有什么特殊之处，他和其他同样为equal的控制器是同等级的。比如一个交换机连接了3个控制器，且这三个控制器都是equal属性，那么这三个控制器对于交换机而言是等价的。equal类型控制器相当于一个独立的，具有完全权限的控制器。</p>
-<h4>Master and Slave</h4>
+<h3>Master and Slave</h3>
 <ul>
 <li>
 <p>Master</p>
@@ -211,7 +213,7 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 <p>不能向交换机发送写消息（ofp_flow_mod等），若交换机收到slave控制器发送的写消息，将产生ERROR。 </p>
 </li>
 </ul>
-<h3>Mininet启动1.3版本OF</h3>
+<h2>Mininet启动1.3版本OF</h2>
 <div class="highlight"><pre><span class="n">sudo</span> <span class="n">mn</span> <span class="o">--</span><span class="n">topo</span> <span class="n">single</span><span class="p">,</span><span class="mi">3</span> <span class="o">--</span><span class="n">mac</span> <span class="o">--</span><span class="n">controller</span> <span class="n">remote</span> <span class="o">--</span><span class="n">switch</span> <span class="n">ovsk</span><span class="p">,</span><span class="n">protocols</span><span class="o">=</span><span class="n">OpenFlow13</span>
 </pre></div>
 
@@ -226,12 +228,12 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 </pre></div>
 
 
-<h3>OpenFlow教程</h3>
+<h2>OpenFlow教程</h2>
 <div class="highlight"><pre><span class="n">http:</span><span class="sr">//</span><span class="n">archive</span><span class="o">.</span><span class="n">openflow</span><span class="o">.</span><span class="n">org</span><span class="sr">/wk/i</span><span class="n">ndex</span><span class="o">.</span><span class="n">php</span><span class="o">/</span><span class="n">OpenFlow_Tutorial</span>
 </pre></div>
 
 
-<h3>后语</h3>
+<h2>后语</h2>
 <p>OF1.3内容实在太多，目前博主还未使用1.3版本进行实验，所以了解不多，若文中出现不正确的地方，欢迎在评论中指出。希望我能给你一些帮助。</p></div>
 	
         <hr>
