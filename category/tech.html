@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html"><h1>OpenFlow1.3学习笔记</h1></a>
-2014-08-10
+            <a href="../pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html"><h1>OpenDayLight中MD-SAL学习笔记</h1></a>
+2014-08-13
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -73,6 +73,87 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         </div>
         
         <div><h2>前言</h2>
+<p>在学习opendaylight的过程中，总是遇到AD-SAL( API-Driven SAL)和MD-SAL（Model-Driven SAL）等概念。在努力查找资料学习之后，有了一点学习笔记，写出来加深印象。同时也给同样迷惑的同学一点帮助。</p>
+<p>转载请声明：北邮-李呈：www.muzixing.com</p>
+<h2>About MD-SAL</h2>
+<p>MD-SAL使得在SDN控制器那些丰富的服务和模块可以使用统一的数据结构和南向和北向的API。</p>
+<p><img alt="sal-comparison" src="https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png" /></p>
+<p>上图引用地址：https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png</p>
+<p>MD-SAL提供请求路由（request routing）和基础设施去支持服务的适配，但它不提供服务的适应本身;业务适配是由插件提供。MD-SAL的认为适配插件是一个普通的插件：它向SAL提供数据，并通过模型生产的API来读取消费数据。一个适配插件完成了上两个来自不同模型产生的API之间的转换。因为数据节点实例由接口注入SAL(模型数据中包含了路由信息)，所以MD-SAL完成了协议类型和节点实例的转化。</p>
+<h3>Request outing</h3>
+<p>为SAL中，request routing可用于消费者的请求路由，从而寻找到对应的生产者。当一个plugin注册之后，就会在routing table中有对应记录，consumer向SAL发起RPC应用申请的时候，会由request routing查找routing table，找到对应的plugin。</p>
+<p>在md-sal/sal-binding-api/...、binding/api/rpc目录下可以找到RpcRouter.java等文件，都与RPC routing有关。当然request routing还有notification的routing,并不仅仅只是rpc。</p>
+<h2>Bundle register</h2>
+<h3>AbstractBrokerAwareActivator</h3>
+<p><strong>在一个具体的plugin实现中会继承AbstractBindingAwareProvider类,而AbstractBindingAwareProvider继承了AbstractBrokerAwareActivator类。</strong></p>
+<p>当一个bundle启动时就会调用AbstractBrokerAwareActivator。这个类实现了org.osgi.framework.BundleActivator接口。BunbleActivator中的start（BundleContext context）和stop(BundleContext context)方法用于开启bundle和关闭bundle.在AbstractBrokerAwareActivator中，实现了start和stop两个方法，分别调用了startImpl和stopImpl两个具体的方法。startImpl是在bundle开始的时候，用于初始化，资源申请等。同理，stopImpl是bundle关闭时，资源的释放。</p>
+<p>同理，消费者类似。</p>
+<h3>onSessionInitialized</h3>
+<p>每一个消费者或生产者和SAL之间的通信都可以具体称之为Session(会话)。上一小节提到的BundleActivator接口中有两个方法start和stop的参数都是BundleConetxt.在BundleContext接口中定义了许多方法，如：</p>
+<div class="highlight"><pre><span class="n">registerService</span><span class="p">(</span><span class="n">java</span><span class="o">.</span><span class="n">lang</span><span class="o">.</span><span class="n">Class</span><span class="sr">&lt;S\&gt;</span> <span class="n">clazz</span><span class="p">,</span> <span class="n">S</span> <span class="n">service</span><span class="p">,</span> <span class="n">java</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">Dictionary</span><span class="sr">&lt;java.lang.String,?&gt;</span> <span class="n">properties</span><span class="p">)</span>
+</pre></div>
+
+
+<p>可实现bundle的注册。具体链接：http://www.osgi.org/javadoc/r4v43/core/org/osgi/framework/BundleContext.html</p>
+<p>在onSessionInitialized方法中，通常会调用session.addRpcImplementation(Class<T> Serviceinterface,T implementation)。其方法定义在RpcProvider.java中，用于指明bunlde初始化时的接口和实现等运行实体。</p>
+<h2>Register to MD-SAL</h2>
+<h3>BindingAwareBroker</h3>
+<p>BindingAwareProvider和BindingAwareConsumer都实现了BindingAwareBroker interface,用
+于实现生产者和消费者的在MD-SAL注册。此接口可以消除生产者和消费者之间的直接关系。</p>
+<p>其他文件的功能根据文件名称基本可以了解。博主也没有太多深究。</p>
+<h3>RPC register</h3>
+<p>调用<strong>addRpcImplementation(class &lt;T> serviceInterface, T implementation)</strong>方法将RPC注册到MD-SAL,具体可查看RpcProviderRegister.java。举例如下：</p>
+<div class="highlight"><pre><span class="n">providerContext</span><span class="o">.</span><span class="n">addRpcImplementation</span><span class="p">(</span><span class="n">ShapeService</span><span class="o">.</span><span class="n">class</span><span class="p">,</span> <span class="n">shape</span><span class="p">);</span>
+</pre></div>
+
+
+<p>具体链接：http://sdntutorials.com/how-to-register-a-service-to-md-sal/</p>
+<p>消费者可以通过<strong>getRpcService(class <T/> serviceInterface)</strong>调用对应的RPC。</p>
+<div class="highlight"><pre><span class="n">session</span><span class="o">.</span><span class="n">getRpcService</span><span class="p">(</span><span class="n">ShapeService</span><span class="o">.</span><span class="n">class</span><span class="p">)</span>
+</pre></div>
+
+
+<h2>Plugin development process</h2>
+<p><img alt="plugin_development_process" src="https://wiki.opendaylight.org/images/3/39/Plugin_design_process.png" /></p>
+<p>上图引用地址：https://wiki.opendaylight.org/images/3/39/Plugin_design_process.png</p>
+<p>在ODL中开发一个plugin的流程如上所示。以<a href="http://www.muzixing.com/pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html">Ping</a>为例，首先需要使用YANG定义一个model,即model-ping。使用maven编译的时候，会调用YANG Tools自动生成对应的API.然后生成API OSGI Bundle。</p>
+<p>接着我们需要对接口进行实现，也即plugin source code.在ping例子中ping-plugin就是plugin source code。通过maven编译生成plugin OSGI Bundle.最后都部署到OSGI上。将对应的jar包放到controller对应目录中，运行controller时就会和控制器一起运行。但是在全局编译的时候还需要再对应的pom.xml中对其进行描述，从而使得在编译时将对应的bundle编译并生成对应的jar，从而成功在controller中添加功能。</p>
+<h3>Example</h3>
+<p>借用<a href="https://wiki.opendaylight.org/view/OpenDaylight_Controller:MD-SAL:FAQ">官网</a>的一张图，解（翻）释（译）一下添加新流表时，ODL内部运行的场景。</p>
+<p><img alt="add_flow_case" src="https://wiki.opendaylight.org/images/1/17/Add_Flow_use_case.png" /></p>
+<ol>
+<li>当plugin/app启动时，对应的bundle已经完成了注册。a）流编程服务(还是flow programmer service舒服)在md-sal注册，提供流数据配置通知服务。b）OF 插件和其他的插件在SAL上注册AddFlow RPF实现。注意RPC在plugin model中定义，而API是在编译过程中生成的。</li>
+<li>一个客户app通过控制器提供的REST API请求add flow。客户端app需要提供这个REST调用的全部参数。</li>
+<li>从“add flow”来的数据发序列化，然后一个新流就在flow service 配置数据树上创建了。若成功REST调用马上回回复调用者成功信息。</li>
+<li>由于flow programmer service已经注册去接收在flow service data tree上的数据变化消息的通知。MD-SAL产生一个data changed的通知并发给Flow programmer service.</li>
+<li>flow programmer service 读取该消息，并产生添加动作。</li>
+<li>在这个过程中还其他的操作中，flow programmer service 需要告诉OF plugin在适当的交换机上添加flow。Flow programmer service 使用OF plugin生成的API去创建"AddFlow"RPC所需要的输入参数DTO(data transfer obiect).</li>
+<li>Flow programmer service 获取到服务的实例，然后引用服务中的“AddFlow”RPC。MD-SAL将会将请求路由到适当的OF plugin。</li>
+<li>"AddFlow"RPC 请求被路由到OF plugin，然后“AddFlow”RPC的实现方法被引用。</li>
+<li>“AddFlow”RPC实现通过OF plugin API去读取RPC 输入参数的DTO.</li>
+<li>"AddFlow"RPC 被远程运行，相应的flow_mod被下发到相应的交换机。</li>
+</ol>
+<h2>后语</h2>
+<p>其实官网上已经有很多资料，在学习的过程中，OpenDaylight SDN研究群（194240432）的共享资料帮助了我很多。接下来我将学习官网教程toaster,希望能在那个例子中得到实践经验，为以后的工程开发打下基础。以目前的状况来看，我还需要花很多时间来学习ODL，之后才是真正的SDN应用开发。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html"><h2>OpenFlow1.3学习笔记</h2></a>
+        <div class= "well small"> 2014-08-10
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
 <p>OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。</p>
 <h2>OpenFlow端口</h2>
 <p>OF端口是OF处理流程和网络其他部分进行转发数据包的网络接口。
@@ -96,154 +177,9 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
 </ul>
 <p>其中所有OF交换机都要支持ALL,CONTROLLER,TABLE,IN_PORT,ANY类型端口，OF_ONLY不要求支持LOCAL,NORMAL,FLOOD端口。</p>
 <h2>OpenFlow Table</h2>
-<p>OpenFlow Table分为255级，最低级为0.</p>
-<p>一条flow entry的结构为：</p>
-<table class="table-bordered table-striped table-condensed">
-    <tr>
-        <td>Match Fields</td>
-        <td>Priority</td>
-        <td>Counters</td>
-        <td>Instructions</td>
-        <td>Timeouts</td>
-        <td>Cookie</td>
-    </tr>
-</table>
-
-<p>此处有一个区别于1.0版本的instruction,  用于修改动作及或者处理流程，作用于各级流表之间。匹配过程可查看协议。</p>
-<h3>Miss_table</h3>
-<p>每一个flow_table都需要支持table_miss，table_miss明确了如何处理未匹配的流，动作可能是DROP,也有可能是其他。</p>
-<p>table_miss flow entry 并不是缺省存在与流表中的。我们可通过控制器随时进行添加或删除。</p>
-<h2>Group Table</h2>
-<p>Group Table不是一个Flow Table。他是一个动作组的集合。一个动作组称之为group entry。它的结构如下：</p>
-<table class="table-bordered table-striped table-condensed">
-    <tr>
-        <td>Group Identifier</td>
-        <td>Group Type</td>
-        <td>Counters</td>
-        <td>Action Buckets</td>
-    </tr>
-</table>
-
-<p>当flow entry中有ofp_action_group时，将指明该flow entry选择执行的group table的ID。结构为：</p>
-<div class="highlight"><pre><span class="sr">/* Action structure for OFPAT_GROUP. */</span>
-<span class="n">struct</span> <span class="n">ofp_action_group</span> <span class="p">{</span>
-    <span class="n">uint16_t</span> <span class="n">type</span><span class="p">;</span> <span class="sr">/* OFPAT_GROUP. */</span>
-    <span class="n">uint16_t</span> <span class="n">len</span><span class="p">;</span> <span class="sr">/* Length is 8. */</span>
-    <span class="n">uint32_t</span> <span class="n">group_id</span><span class="p">;</span> <span class="sr">/* Group identifier. */</span>
-<span class="p">};</span>
-</pre></div>
-
-
-<h3>Group Type</h3>
-<ul>
-<li>
-<p>all:执行action buckets中所有的动作。适用于multicast or broadcast forwarding。</p>
-</li>
-<li>
-<p>select:选择其中若干组执行，适用于Load balancing。可以简单轮询，也可以根据权重执行。</p>
-</li>
-<li>
-<p>indirect：只执行group中的一个bucket,这个组只支持一个bucket,允许多流表和组表指到这个组。可用于链路聚合（link aggregation)，支持快速的，高效的收敛。</p>
-</li>
-<li>
-<p>fast failover：选择第一个活跃的bucket执行。可以在不询问控制器的情况下改变转发决策。但是要使用这个，还需要制定一个bucket的生存机制。可用于动态的负载均衡。</p>
-</li>
-</ul>
-<h2>Instructions和Action的区别</h2>
-<p>1.0版本中没有instruction。而在1.3中，instruction又和action有一些相似之处。仔细阅读之后发现两者是不一样的。instructions作用于流表之间，用于控制processing和修改action set。可以说是action的生产指令。而action则是对数据包修改的动作。</p>
-<h3>Instruction</h3>
-<p>instructions的类型有：</p>
-<ul>
-<li>
-<p>(Optional)Meter meter_id:将数据包直接交给某一个meter.</p>
-</li>
-<li>
-<p>(Optional)Apply-Actions actions(s):在不修改action set的情况下立即应用actions中的action。</p>
-</li>
-<li>
-<p>(Optional)Clear-Actions:立即清除action set中的所有action</p>
-</li>
-<li>
-<p>(Required)Write-Actions actions(s):立即向action set中添加action，若已存在，覆盖，否则添加。</p>
-</li>
-<li>
-<p>(Optional)Write-Metadata metadata/mask:添加metadata</p>
-</li>
-<li>
-<p>（Required）Goto-table next_tale_id:跳转到下一个table,跳转对象id必须大于当前的，也就是说不可以跳回来。最后一个table必然不存在这个指令。</p>
-</li>
-<li>
-<p>(Optional)Experimenter:用于试验 </p>
-</li>
-</ul>
-<h3>Action</h3>
-<ul>
-<li>
-<p>Action set </p>
-<p>每一个数据包都有一个action set,用于记录action。在processing中，action set在流表之间传递。</p>
-</li>
-<li>
-<p>Action list</p>
-<p>集合和列表的区别显而易见。Apply-action和Packet_out消息包含action_list。因为这两者执行的动作是可重复的。如多个action_output.</p>
-</li>
-<li>
-<p>Actions</p>
-<ul>
-<li>Required <strong>Out_put</strong></li>
-<li>Optional <strong>Set_queue</strong></li>
-<li>Reqiured <strong>Drop</strong></li>
-<li>Reqiured <strong>Group</strong>指明动作类型为group.从而流表选择group中的action bucket。</li>
-<li>Optional <strong>Push_Tag/Pop_Tag</strong></li>
-<li>Optional <strong>Set_Field</strong></li>
-<li>Optional <strong>Change_TTL</strong></li>
-</ul>
-<p>具体细节可查看协议，不再赘述。</p>
-</li>
-</ul>
-<h2>Multicle Controller</h2>
-<p>在1.3版本的OF中支持多控制器。但是这个多控制器只是相对于交换机而已。因为OF协议只是定义了交换机和控制器之间的通信过程。具体的控制器协同工作内容不是OF的范围。也许我可以开发一个这样的协议哦！</p>
-<p>在多控制器内容中，相对于交换机而言，控制器可以有3中身份：equal,master和slave。控制器可以在任何时候改变角色。</p>
-<h3>Equal</h3>
-<p>Equal表明这个控制器并没有什么特殊之处，他和其他同样为equal的控制器是同等级的。比如一个交换机连接了3个控制器，且这三个控制器都是equal属性，那么这三个控制器对于交换机而言是等价的。equal类型控制器相当于一个独立的，具有完全权限的控制器。</p>
-<h3>Master and Slave</h3>
-<ul>
-<li>
-<p>Master</p>
-<p><strong>Master角色具有和Equal一样的完全权限。</strong></p>
-<p>当多控制器中某一个控制器申请成为Master时，其他控制器将成为Slave角色。</p>
-</li>
-<li>
-<p>Slave</p>
-<p><strong>作为Slave角色的控制器对交换机仅有可读权限,不能接受异步消息</strong></p>
-<p>（除去port_status以外的其他异步等消息）</p>
-<p>不能向交换机发送写消息（ofp_flow_mod等），若交换机收到slave控制器发送的写消息，将产生ERROR。 </p>
-</li>
-</ul>
-<h2>Mininet启动1.3版本OF</h2>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">mn</span> <span class="o">--</span><span class="n">topo</span> <span class="n">single</span><span class="p">,</span><span class="mi">3</span> <span class="o">--</span><span class="n">mac</span> <span class="o">--</span><span class="n">controller</span> <span class="n">remote</span> <span class="o">--</span><span class="n">switch</span> <span class="n">ovsk</span><span class="p">,</span><span class="n">protocols</span><span class="o">=</span><span class="n">OpenFlow13</span>
-</pre></div>
-
-
-<p>从以上可知，启动1.3版本的命令是protocols=OpenFlow13,但是这只是启动了mininet的1.3版本，还需要对交换机进行配置。命令如下： </p>
-<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">set</span> <span class="n">bridge</span> <span class="n">s1</span> <span class="n">protocols</span><span class="o">=</span><span class="n">OpenFlow13</span>
-</pre></div>
-
-
-<p>查看1.3版本的流表命令为：</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="nb">dump</span><span class="o">-</span><span class="n">flows</span> <span class="n">s1</span> <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
-</pre></div>
-
-
-<h2>OpenFlow教程</h2>
-<div class="highlight"><pre><span class="n">http:</span><span class="sr">//</span><span class="n">archive</span><span class="o">.</span><span class="n">openflow</span><span class="o">.</span><span class="n">org</span><span class="sr">/wk/i</span><span class="n">ndex</span><span class="o">.</span><span class="n">php</span><span class="o">/</span><span class="n">OpenFlow_Tutorial</span>
-</pre></div>
-
-
-<h2>后语</h2>
-<p>OF1.3内容实在太多，目前博主还未使用1.3版本进行实验，所以了解不多，若文中出现不正确的地方，欢迎在评论中指出。希望我能给你一些帮助。</p></div>
-        <hr />
-    </div>
-		
+<p>OpenFlow ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -329,38 +265,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <span class="n">def</span> <span class="n">get_pic</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">page_num ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/05/04/noxshi-xian-natgong-neng.html"><h2>nox实现nat功能</h2></a>
-        <div class= "well small"> 2014-05-04
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>nat功能是一个非常简单，但却非常重要的功能。保留10，127,192三个网段作为公网地址，通过nat实现地址复用，可以解决现网IPV4地址不够用的尴尬局面。本篇主要讲如何使用nox实现nat的demo.</p>
-<h3>环境</h3>
-<ul>
-<li>nox  安装比较困难，请参看其他教程</li>
-<li>mininet    网络环境搭建神器</li>
-</ul>
-<h3>控制器</h3>
-<p>首先在nox/src/coreapps/switch中找到switch.cc。
-在class switch中添加成员变量uint32_t src_ip，nat_ip；由于只是一个简单的demo，就不做映射列表了。</p>
-<p>handle_packet_in中将if(setup_flows &amp;&amp; out_port!=-1)的逻辑修改如下：</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">setup_flows</span> <span class="o">&amp;&amp;</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">auto</span> <span class="n">fm</span> <span class="o">=</span> <span class="nn">v1::</span><span class="n">ofp_flow_mod</span><span class="p">()</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">())</span>
-               <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/05/04/noxshi-xian-natgong-neng.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

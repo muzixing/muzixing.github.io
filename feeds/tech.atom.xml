@@ -1,5 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/tech.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-08-10T00:00:00+08:00</updated><entry><title>OpenFlow1.3学习笔记</title><link href="http://www.muzixing.com/pages/2014/08/10/openflow13xue-xi-bi-ji.html" rel="alternate"></link><updated>2014-08-10T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-10:pages/2014/08/10/openflow13xue-xi-bi-ji.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/tech.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-08-13T00:00:00+08:00</updated><entry><title>OpenDayLight中MD-SAL学习笔记</title><link href="http://www.muzixing.com/pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html" rel="alternate"></link><updated>2014-08-13T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-13:pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;在学习opendaylight的过程中，总是遇到AD-SAL( API-Driven SAL)和MD-SAL（Model-Driven SAL）等概念。在努力查找资料学习之后，有了一点学习笔记，写出来加深印象。同时也给同样迷惑的同学一点帮助。&lt;/p&gt;
+&lt;p&gt;转载请声明：北邮-李呈：www.muzixing.com&lt;/p&gt;
+&lt;h2&gt;About MD-SAL&lt;/h2&gt;
+&lt;p&gt;MD-SAL使得在SDN控制器那些丰富的服务和模块可以使用统一的数据结构和南向和北向的API。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="sal-comparison" src="https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png" /&gt;&lt;/p&gt;
+&lt;p&gt;上图引用地址：https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png&lt;/p&gt;
+&lt;p&gt;MD-SAL提供请求路由（request routing）和基础设施去支持服务的适配，但它不提供服务的适应本身;业务适配是由插件提供。MD-SAL的认为适配插件是一个普通的插件：它向SAL提供数据，并通过模型生产的API来读取消费数据。一个适配插件完成了上两个来自不同模型产生的API之间的转换。因为数据节点实例由接口注入SAL(模型数据中包含了路由信息)，所以MD-SAL完成了协议类型和节点实例的转化。&lt;/p&gt;
+&lt;h3&gt;Request outing&lt;/h3&gt;
+&lt;p&gt;为SAL中，request routing可用于消费者的请求路由，从而寻找到对应的生产者。当一个plugin注册之后，就会在routing table中有对应记录，consumer向SAL发起RPC应用申请的时候，会由request routing查找routing table，找到对应的plugin。&lt;/p&gt;
+&lt;p&gt;在md-sal/sal-binding-api/...、binding/api/rpc目录下可以找到RpcRouter.java等文件，都与RPC routing有关。当然request routing还有notification的routing,并不仅仅只是rpc。&lt;/p&gt;
+&lt;h2&gt;Bundle register&lt;/h2&gt;
+&lt;h3&gt;AbstractBrokerAwareActivator&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;在一个具体的plugin实现中会继承AbstractBindingAwareProvider类,而AbstractBindingAwareProvider继承了AbstractBrokerAwareActivator类。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;当一个bundle启动时就会调用AbstractBrokerAwareActivator。这个类实现了org.osgi.framework.BundleActivator接口。BunbleActivator中的start（BundleContext context）和stop(BundleContext context)方法用于开启bundle和关闭bundle.在AbstractBrokerAwareActivator中，实现了start和stop两个方法，分别调用了startImpl和stopImpl两个具体的方法。startImpl是在bundle开始的时候，用于初始化，资源申请等。同理，stopImpl是bundle关闭时，资源的释放。&lt;/p&gt;
+&lt;p&gt;同理，消费者类似。&lt;/p&gt;
+&lt;h3&gt;onSessionInitialized&lt;/h3&gt;
+&lt;p&gt;每一个消费者或生产者和SAL之间的通信都可以具体称之为Session(会话)。上一小节提到的BundleActivator接口中有两个方法start和stop的参数都是BundleConetxt.在BundleContext接口中定义了许多方法，如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;registerService&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;lang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Class&lt;/span&gt;&lt;span class="sr"&gt;&amp;lt;S\&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;clazz&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;S&lt;/span&gt; &lt;span class="n"&gt;service&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;java&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;util&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Dictionary&lt;/span&gt;&lt;span class="sr"&gt;&amp;lt;java.lang.String,?&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;properties&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可实现bundle的注册。具体链接：http://www.osgi.org/javadoc/r4v43/core/org/osgi/framework/BundleContext.html&lt;/p&gt;
+&lt;p&gt;在onSessionInitialized方法中，通常会调用session.addRpcImplementation(Class&lt;T&gt; Serviceinterface,T implementation)。其方法定义在RpcProvider.java中，用于指明bunlde初始化时的接口和实现等运行实体。&lt;/p&gt;
+&lt;h2&gt;Register to MD-SAL&lt;/h2&gt;
+&lt;h3&gt;BindingAwareBroker&lt;/h3&gt;
+&lt;p&gt;BindingAwareProvider和BindingAwareConsumer都实现了BindingAwareBroker interface,用
+于实现生产者和消费者的在MD-SAL注册。此接口可以消除生产者和消费者之间的直接关系。&lt;/p&gt;
+&lt;p&gt;其他文件的功能根据文件名称基本可以了解。博主也没有太多深究。&lt;/p&gt;
+&lt;h3&gt;RPC register&lt;/h3&gt;
+&lt;p&gt;调用&lt;strong&gt;addRpcImplementation(class &amp;lt;T&gt; serviceInterface, T implementation)&lt;/strong&gt;方法将RPC注册到MD-SAL,具体可查看RpcProviderRegister.java。举例如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;providerContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;addRpcImplementation&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ShapeService&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;shape&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;具体链接：http://sdntutorials.com/how-to-register-a-service-to-md-sal/&lt;/p&gt;
+&lt;p&gt;消费者可以通过&lt;strong&gt;getRpcService(class &lt;T/&gt; serviceInterface)&lt;/strong&gt;调用对应的RPC。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getRpcService&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ShapeService&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Plugin development process&lt;/h2&gt;
+&lt;p&gt;&lt;img alt="plugin_development_process" src="https://wiki.opendaylight.org/images/3/39/Plugin_design_process.png" /&gt;&lt;/p&gt;
+&lt;p&gt;上图引用地址：https://wiki.opendaylight.org/images/3/39/Plugin_design_process.png&lt;/p&gt;
+&lt;p&gt;在ODL中开发一个plugin的流程如上所示。以&lt;a href="http://www.muzixing.com/pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html"&gt;Ping&lt;/a&gt;为例，首先需要使用YANG定义一个model,即model-ping。使用maven编译的时候，会调用YANG Tools自动生成对应的API.然后生成API OSGI Bundle。&lt;/p&gt;
+&lt;p&gt;接着我们需要对接口进行实现，也即plugin source code.在ping例子中ping-plugin就是plugin source code。通过maven编译生成plugin OSGI Bundle.最后都部署到OSGI上。将对应的jar包放到controller对应目录中，运行controller时就会和控制器一起运行。但是在全局编译的时候还需要再对应的pom.xml中对其进行描述，从而使得在编译时将对应的bundle编译并生成对应的jar，从而成功在controller中添加功能。&lt;/p&gt;
+&lt;h3&gt;Example&lt;/h3&gt;
+&lt;p&gt;借用&lt;a href="https://wiki.opendaylight.org/view/OpenDaylight_Controller:MD-SAL:FAQ"&gt;官网&lt;/a&gt;的一张图，解（翻）释（译）一下添加新流表时，ODL内部运行的场景。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="add_flow_case" src="https://wiki.opendaylight.org/images/1/17/Add_Flow_use_case.png" /&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;当plugin/app启动时，对应的bundle已经完成了注册。a）流编程服务(还是flow programmer service舒服)在md-sal注册，提供流数据配置通知服务。b）OF 插件和其他的插件在SAL上注册AddFlow RPF实现。注意RPC在plugin model中定义，而API是在编译过程中生成的。&lt;/li&gt;
+&lt;li&gt;一个客户app通过控制器提供的REST API请求add flow。客户端app需要提供这个REST调用的全部参数。&lt;/li&gt;
+&lt;li&gt;从“add flow”来的数据发序列化，然后一个新流就在flow service 配置数据树上创建了。若成功REST调用马上回回复调用者成功信息。&lt;/li&gt;
+&lt;li&gt;由于flow programmer service已经注册去接收在flow service data tree上的数据变化消息的通知。MD-SAL产生一个data changed的通知并发给Flow programmer service.&lt;/li&gt;
+&lt;li&gt;flow programmer service 读取该消息，并产生添加动作。&lt;/li&gt;
+&lt;li&gt;在这个过程中还其他的操作中，flow programmer service 需要告诉OF plugin在适当的交换机上添加flow。Flow programmer service 使用OF plugin生成的API去创建"AddFlow"RPC所需要的输入参数DTO(data transfer obiect).&lt;/li&gt;
+&lt;li&gt;Flow programmer service 获取到服务的实例，然后引用服务中的“AddFlow”RPC。MD-SAL将会将请求路由到适当的OF plugin。&lt;/li&gt;
+&lt;li&gt;"AddFlow"RPC 请求被路由到OF plugin，然后“AddFlow”RPC的实现方法被引用。&lt;/li&gt;
+&lt;li&gt;“AddFlow”RPC实现通过OF plugin API去读取RPC 输入参数的DTO.&lt;/li&gt;
+&lt;li&gt;"AddFlow"RPC 被远程运行，相应的flow_mod被下发到相应的交换机。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;后语&lt;/h2&gt;
+&lt;p&gt;其实官网上已经有很多资料，在学习的过程中，OpenDaylight SDN研究群（194240432）的共享资料帮助了我很多。接下来我将学习官网教程toaster,希望能在那个例子中得到实践经验，为以后的工程开发打下基础。以目前的状况来看，我还需要花很多时间来学习ODL，之后才是真正的SDN应用开发。&lt;/p&gt;</summary><category term="opendaylight"></category><category term="md-sal"></category></entry><entry><title>OpenFlow1.3学习笔记</title><link href="http://www.muzixing.com/pages/2014/08/10/openflow13xue-xi-bi-ji.html" rel="alternate"></link><updated>2014-08-10T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-10:pages/2014/08/10/openflow13xue-xi-bi-ji.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。&lt;/p&gt;
 &lt;h2&gt;OpenFlow端口&lt;/h2&gt;
 &lt;p&gt;OF端口是OF处理流程和网络其他部分进行转发数据包的网络接口。
