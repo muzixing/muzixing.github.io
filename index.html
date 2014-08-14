@@ -79,7 +79,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>MD-SAL使得在SDN控制器那些丰富的服务和模块可以使用统一的数据结构和南向和北向的API。</p>
 <p><img alt="sal-comparison" src="https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png" /></p>
 <p>上图引用地址：https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png</p>
-<p>MD-SAL提供请求路由（request routing）和基础设施去支持服务的适配，但它不提供服务的适应本身;业务适配是由插件提供。MD-SAL的认为适配插件是一个普通的插件：它向SAL提供数据，并通过模型生产的API来读取消费数据。</p>
+<p>MD-SAL提供请求路由（request routing）和基础设施去支持服务的适配，但它不提供服务的适应本身;业务适配是由插件提供。MD-SAL认为适配插件是一个普通的插件：它向SAL提供数据，并通过模型生产的API来读取消费数据。</p>
 <h3>Request outing</h3>
 <p>为SAL中，request routing可用于消费者的请求路由，从而寻找到对应的生产者。当一个plugin注册之后，就会在routing table中有对应记录，consumer向SAL发起RPC应用申请的时候，会由request routing查找routing table，找到对应的plugin。</p>
 <p>在md-sal/sal-binding-api/...、binding/api/rpc目录下可以找到RpcRouter.java等文件，都与RPC routing有关。当然request routing还有notification的routing,并不仅仅只是rpc。</p>
@@ -134,6 +134,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <li>"AddFlow"RPC 被远程运行，相应的flow_mod被下发到相应的交换机。</li>
 </ol>
 <h2>后语</h2>
+<p>对于MD-SAL，我只是有一个概念，离真正了解还有很多距离。文中若有错误指出，敬请指出，共同进步！</p>
 <p>其实官网上已经有很多资料，在学习的过程中，OpenDaylight SDN研究群（194240432）的共享资料帮助了我很多。接下来我将学习官网教程toaster,希望能在那个例子中得到实践经验，为以后的工程开发打下基础。以目前的状况来看，我还需要花很多时间来学习ODL，之后才是真正的SDN应用开发。</p></div>
         <hr />
     </div>

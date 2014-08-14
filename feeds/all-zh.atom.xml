@@ -6,7 +6,7 @@
 &lt;p&gt;MD-SAL使得在SDN控制器那些丰富的服务和模块可以使用统一的数据结构和南向和北向的API。&lt;/p&gt;
 &lt;p&gt;&lt;img alt="sal-comparison" src="https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png" /&gt;&lt;/p&gt;
 &lt;p&gt;上图引用地址：https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png&lt;/p&gt;
-&lt;p&gt;MD-SAL提供请求路由（request routing）和基础设施去支持服务的适配，但它不提供服务的适应本身;业务适配是由插件提供。MD-SAL的认为适配插件是一个普通的插件：它向SAL提供数据，并通过模型生产的API来读取消费数据。&lt;/p&gt;
+&lt;p&gt;MD-SAL提供请求路由（request routing）和基础设施去支持服务的适配，但它不提供服务的适应本身;业务适配是由插件提供。MD-SAL认为适配插件是一个普通的插件：它向SAL提供数据，并通过模型生产的API来读取消费数据。&lt;/p&gt;
 &lt;h3&gt;Request outing&lt;/h3&gt;
 &lt;p&gt;为SAL中，request routing可用于消费者的请求路由，从而寻找到对应的生产者。当一个plugin注册之后，就会在routing table中有对应记录，consumer向SAL发起RPC应用申请的时候，会由request routing查找routing table，找到对应的plugin。&lt;/p&gt;
 &lt;p&gt;在md-sal/sal-binding-api/...、binding/api/rpc目录下可以找到RpcRouter.java等文件，都与RPC routing有关。当然request routing还有notification的routing,并不仅仅只是rpc。&lt;/p&gt;
@@ -61,6 +61,7 @@
 &lt;li&gt;"AddFlow"RPC 被远程运行，相应的flow_mod被下发到相应的交换机。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2&gt;后语&lt;/h2&gt;
+&lt;p&gt;对于MD-SAL，我只是有一个概念，离真正了解还有很多距离。文中若有错误指出，敬请指出，共同进步！&lt;/p&gt;
 &lt;p&gt;其实官网上已经有很多资料，在学习的过程中，OpenDaylight SDN研究群（194240432）的共享资料帮助了我很多。接下来我将学习官网教程toaster,希望能在那个例子中得到实践经验，为以后的工程开发打下基础。以目前的状况来看，我还需要花很多时间来学习ODL，之后才是真正的SDN应用开发。&lt;/p&gt;</summary><category term="opendaylight"></category><category term="md-sal"></category></entry><entry><title>OpenFlow1.3学习笔记</title><link href="http://www.muzixing.com/pages/2014/08/10/openflow13xue-xi-bi-ji.html" rel="alternate"></link><updated>2014-08-10T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-10:pages/2014/08/10/openflow13xue-xi-bi-ji.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。&lt;/p&gt;
 &lt;h2&gt;OpenFlow端口&lt;/h2&gt;
