@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 17 Sep 2014 00:00:00 +0800</lastBuildDate><item><title>qemu+vrit-manager+phoronix-test-suite服务器测试</title><link>http://www.muzixing.com/pages/2014/09/17/qemuvrit-managerphoronix-test-suitefu-wu-qi-ce-shi.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 17 Sep 2014 00:00:00 +0800</lastBuildDate><item><title>QEMU+virt-manager+phoronix-test-suite服务器测试</title><link>http://www.muzixing.com/pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
 &lt;p&gt;这是研究生开学的第一个任务，学习测试服务器性能。首先我们需要在一台新服务器上面安装ubuntu12.04，这个步骤很简单。安装完之后，可以使用top命令查看系统的cpu,mem等性能指标。然后我们就需要安装phoronix-test-suite，用于测试服务器的某些性能。接下来，使用qemu安装虚拟机，在虚拟机有负载的情况下，继续测量服务器的性能。&lt;/p&gt;
 &lt;h3&gt;PHORONIX-TEST-SUITE&lt;/h3&gt;
 &lt;p&gt;这是一个相当牛逼的服务器测试工具：[phoronix-test-suite]:http://www.phoronix-test-suite.com/&lt;/p&gt;
@@ -147,7 +147,7 @@
 
 
 &lt;p&gt;将10.108.144.100root用户的/home/root/music.mp3 复制到本机的home/music，命名为music.mp3。传文件的远端类似，将参数位置调换即可。&lt;/p&gt;
-&lt;p&gt;在如今云计算的时代，虚拟化技术已经是最基本的技术，有时间学一学还是很好玩的。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Wed, 17 Sep 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-09-17:pages/2014/09/17/qemuvrit-managerphoronix-test-suitefu-wu-qi-ce-shi.html</guid></item><item><title>OpenDayLight中MD-SAL学习笔记</title><link>http://www.muzixing.com/pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html</link><description>&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;在如今云计算的时代，虚拟化技术已经是最基本的技术，有时间学一学还是很好玩的。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Wed, 17 Sep 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-09-17:pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html</guid></item><item><title>OpenDayLight中MD-SAL学习笔记</title><link>http://www.muzixing.com/pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html</link><description>&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;在学习opendaylight的过程中，总是遇到AD-SAL( API-Driven SAL)和MD-SAL（Model-Driven SAL）等概念。在努力查找资料学习之后，有了一点学习笔记，写出来加深印象。同时也给同样迷惑的同学一点帮助。&lt;/p&gt;
 &lt;p&gt;转载请声明：北邮-李呈：www.muzixing.com&lt;/p&gt;
 &lt;h2&gt;About MD-SAL&lt;/h2&gt;
