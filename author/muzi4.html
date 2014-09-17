@@ -62,6 +62,39 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html"><h2>mininet与外部host通信</h2></a>
+        <div class= "well small"> 2014-03-25
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>好多同学都在尝试使用mininet搭建拓扑。有的同学在尝试如何让mininet与外网通信，比如虚拟机，比如mininet之外的另一个网络。问题已经存在很久，本文将介绍如何使用mininet的接口实现与外界通信。</p>
+<h3>Intf()接口</h3>
+<p>在mininet的源码中，我们可以找到一个link的文件，也是一个类。这个文件中有一个接口类Intf()</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">Intf</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
+
+    <span class="s">&quot;Basic interface object that can configure itself.&quot;</span>
+
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
+</pre></div>
+
+
+<p>使用这个接口类，可以把安装mininet的机器的网卡接到mininet的ovs之上。</p>
+<p>剩下的就简单了。最重要的接口解决之后一切就都解决了。</p>
+<p>如果需要例子，可以在本站查看：mininet搭建自定义拓扑
+http://www.muzixing.com/pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi ...</p> <a class="btn btn-info xsmall" href="../pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html"><h2>【转】linux常用命令</h2></a>
         <div class= "well small"> 2014-03-25
 
@@ -163,36 +196,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <div class="highlight"><pre><span class="o">\</span><span class="c1">#!/usr/bin/python</span>
 <span class="s">&quot;&quot;&quot;</span>
 <span class="s">    This is a topu of our test. It shows that how to add an ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/01/01/shu-yu-wo-de-2013he-2014.html"><h2>属于我的2013和2014</h2></a>
-        <div class= "well small"> 2014-01-01
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>过去的我，站在风中，微笑向现在的我招手</h2>
-<p>远去了，2013的那个我！</p>
-<h3>心变了，世界就变了</h3>
-<p>我不再像前三年一样，喜欢每一堂课都坐在前排，和老师交流。也许是因为大四的课已经不那么重要，也许是因为我对学习有了其他的认识。</p>
-<p>依然和每一个任课老师都关系很好，依然会被老师记住，只是那个忠实的听众已经不满足于课堂上的知识。</p>
-<p>当外面的世界，给你带来更多的冲击与进步的时候，你很容易就做出选择。</p>
-<p>走出校园，开始实习的生活让我懂得太多太多，那种心理变化，心理成长的过程不是三年在象牙塔里乖乖读书能得到的。</p>
-<p>我开始认识到生存的压力，我开始为自己自力更生而自豪！我开始迷恋上自己赚钱自己花的日子，我为伸手要钱而感到羞愧!</p>
-<p>我开始思考我想要的未来，我开始掂量自己到底几斤几两，我开始计划怎么提升自己，直到满意。</p>
-<h3>实习那些事</h3>
-<p>我一直都是幸运儿，我坚信这一点。当我第一次接触到SDN的时候，我不知道我会继续下去，我不知道这是我第几次尝试，那是大三刚开始的时候。</p>
-<p>大三的暑假到了，保研的事情还没有着落，回家并不是一种明智的选择，实习才是。</p>
-<p>可是我高估了自己的实力。第一次面试是腾讯后台，竞争对手是谁这些都不重要，重要的是自己真的很嫩，真的懂得太少。那是我的第一个面试官，很和蔼，很耐心。我们聊了半个多小时 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/01/01/shu-yu-wo-de-2013he-2014.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

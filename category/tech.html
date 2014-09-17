@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html"><h1>OpenDayLight中MD-SAL学习笔记</h1></a>
-2014-08-13
+            <a href="../pages/2014/09/17/qemuvrit-managerphoronix-test-suitefu-wu-qi-ce-shi.html"><h1>qemu+vrit-manager+phoronix-test-suite服务器测试</h1></a>
+2014-09-17
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,174 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h2>前言</h2>
+        <div><h3>前言</h3>
+<p>这是研究生开学的第一个任务，学习测试服务器性能。首先我们需要在一台新服务器上面安装ubuntu12.04，这个步骤很简单。安装完之后，可以使用top命令查看系统的cpu,mem等性能指标。然后我们就需要安装phoronix-test-suite，用于测试服务器的某些性能。接下来，使用qemu安装虚拟机，在虚拟机有负载的情况下，继续测量服务器的性能。</p>
+<h3>PHORONIX-TEST-SUITE</h3>
+<p>这是一个相当牛逼的服务器测试工具：[phoronix-test-suite]:http://www.phoronix-test-suite.com/</p>
+<p>下载安装：http://get.ubuntusoft.com/app/phoronix-test-suite</p>
+<p>先将安装包下载到本地，然后解压。进入phoronix-test-suite目录，运行install_sh进行安装。</p>
+<p>安装之后可以通过</p>
+<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">suite</span>  <span class="n">list</span><span class="o">-</span><span class="n">available</span>
+</pre></div>
+
+
+<p>查看可使用的测试列表。</p>
+<p>选择某一个测试项进行测试</p>
+<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">suite</span>  <span class="n">benchmark</span> <span class="o">&lt;</span><span class="n">test</span> <span class="n">name</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p>如：</p>
+<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">suite</span>  <span class="n">benchmark</span> <span class="n">c</span><span class="o">-</span><span class="n">ray</span>
+</pre></div>
+
+
+<p>接下来只需要按照步骤将测试结果提交给网站，你就可以通过网站查看到测试结果。若想保存测试结果页面，在chrome浏览器中打开，选择打印页面-&gt;保存页面为pdf,则可以将网页保存为pdf文件。</p>
+<p>更多的测试工具如IOZONE等，可自行google.</p>
+<h3>QEMU</h3>
+<p>QEMU is a generic and open source machine emulator and virtualizer.</p>
+<p>When used as a machine emulator, QEMU can run OSes and programs made for one machine (e.g. an ARM board) on a different machine (e.g. your own PC). By using dynamic translation, it achieves very good performance.</p>
+<p>When used as a virtualizer, QEMU achieves near native performances by executing the guest code directly on the host CPU. QEMU supports virtualization when executing under the Xen hypervisor or using the KVM kernel module in Linux. When using KVM, QEMU can virtualize x86, server and embedded PowerPC, and S390 guests.</p>
+<p>QEMU是一套由Fabrice Bellard所编写的模拟处理器的自由软件。它与Bochs，PearPC近似，但其具有某些后两者所不具备的特性，如高速度及跨平台的特性。经由kqemu这个开源的加速器，QEMU能模拟至接近真实电脑的速度。</p>
+<p>简单的说就是一个开源的虚拟化软件，可通过qemu创建虚拟机。</p>
+<ul>
+<li>
+<p>安装</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">qemu</span>
+</pre></div>
+
+
+</li>
+</ul>
+<p>按照提示将依赖全部安装好即可。若不成功，可自行google.</p>
+<ul>
+<li>
+<p>创建虚拟磁盘</p>
+<p>qemu-img create -f qcow2 ubuntu.img 10G</p>
+</li>
+</ul>
+<p>创建一个10G大小的格式为qcow2的虚拟磁盘ubuntu.img，磁盘名字用户自定。 -f为format参数，格式fmt=qcow2,是qemu中最常见的格式。</p>
+<ul>
+<li>安装虚拟机</li>
+</ul>
+<p>创建完虚拟磁盘之后，需要将系统安装到这个磁盘上。</p>
+<div class="highlight"><pre><span class="n">qemu</span><span class="o">-</span><span class="nb">system</span><span class="o">-</span><span class="n">x86_64</span> <span class="o">-</span><span class="n">hda</span> <span class="n">ubuntu</span><span class="o">.</span><span class="n">img</span> <span class="o">-</span><span class="n">cdrom</span> <span class="n">ubuntu</span><span class="o">.</span><span class="n">iso</span> <span class="o">-</span><span class="nb">localtime</span> <span class="o">-</span><span class="n">m</span> <span class="mi">1024</span> <span class="o">-</span><span class="n">smp</span> <span class="mi">2</span>
+</pre></div>
+
+
+<p>参数介绍：-hda指定虚拟磁盘位置，如我们创建的ubuntu.img，-cdrom，指定光驱位置，可以是光驱，也可以是iso文件。 -localtime是本地时间。-m 指定内存， -smp指定cpu个数。</p>
+<p>进入虚拟机有一些简单的快捷键可以进行窗口的切换。如 ctrl+alt+f 切换全屏等。</p>
+<p>当然这是在有图形化界面的情况下。若没有图形化界面就会报错：could not initialize SDL.</p>
+<p>这个时候我们就需要在另一台有图形化界面的linux上ssh远程登录，进行后续操作。</p>
+<h3>SSH登录</h3>
+<p>在另一台有图形化界面的linux系统上远程登录服务器。</p>
+<div class="highlight"><pre><span class="n">ssh</span> <span class="o">-</span><span class="n">X</span> <span class="n">hostname</span><span class="nv">@IP</span>
+</pre></div>
+
+
+<p>输入对应密码进入系统。然后在服务器上安装libvirt和virt-manager。</p>
+<h3>Libvirt和Virt-manager</h3>
+<p><strong>libvirt</strong></p>
+<p>libvirt is:</p>
+<ul>
+<li>A toolkit to interact with the virtualization capabilities of recent versions of Linux (and other OSes), see our project goals for details.</li>
+<li>Free software available under the GNU Lesser General Public License.</li>
+<li>A long term stable C API</li>
+<li>A set of bindings for common languages</li>
+<li>A CIM provider for the DMTF virtualization schema</li>
+<li>A QMF agent for the AMQP/QPid messaging system</li>
+<li>A technical meritocracy, in which participants gain influence over a project through recognition of their contributions.</li>
+</ul>
+<p>more:http://libvirt.org/</p>
+<p>我们所需要使用的virt-manager是通过libvirt来远程管理虚拟机的。</p>
+<p>*安装</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libvirt</span>
+</pre></div>
+
+
+<p><strong>virt-manager</strong></p>
+<p>The virt-manager application is a desktop user interface for managing virtual machines through libvirt. It primarily targets KVM VMs, but also manages Xen and LXC (linux containers). It presents a summary view of running domains, their live performance &amp; resource utilization statistics. Wizards enable the creation of new domains, and configuration &amp; adjustment of a domain’s resource allocation &amp; virtual hardware. An embedded VNC and SPICE client viewer presents a full graphical console to the guest domain.</p>
+<p>virt-manager是一个有可视化窗口的，通过libvirt管理虚拟机的管理平台。</p>
+<ul>
+<li>
+<p>安装</p>
+<p>sudo apt-get install virt-manager</p>
+</li>
+</ul>
+<p>按照提示安装完所有的依赖。</p>
+<h3>Virt-manager管理虚拟机</h3>
+<p>virt-manager是一个远程虚拟机管理软件，可以提供可视化的操作界面来创建虚拟机和管理虚拟机。</p>
+<p>远程登录到服务器安装完virt-manager之后，运行virt-manager</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">virt</span><span class="o">-</span><span class="n">manager</span>
+</pre></div>
+
+
+<p>如果之前的ssh没有加-X参数的话，这个命令不会任何反应。加了-X参数之后，virt-manager会弹出一个运行窗口。</p>
+<p>点击左上角的创建虚拟机，在指定步骤选择由qemu创建好的img文件和以下载的iso文件。点击确定进行安装。这一步相信不难。接下来就是普通的安装系统，这里不再赘述。</p>
+<h3>Libvirt管理虚拟机</h3>
+<p>通过libvirt可以在不需要图形化界面的情况下管理虚拟机。这将使用到virsh。virsh是libvirt的一套shell指令。</p>
+<p>我们通过virsh可以创建和管理虚拟机。</p>
+<p>help:           显示该命令的说明</p>
+<p>quit:           结束 virsh，回到 Shell</p>
+<p>connect:            连接到指定的虚拟机服务器</p>
+<p>create:        启动一个新的虚拟机</p>
+<p>destroy:            删除一个虚拟机</p>
+<p>start:        开启（已定义的）非启动的虚拟机</p>
+<p>define:         从 XML 定义一个虚拟机</p>
+<p>undefine:        取消定义的虚拟机</p>
+<p>dumpxml:            转储虚拟机的设置值</p>
+<p>list:           列出虚拟机</p>
+<p>reboot:         重新启动虚拟机</p>
+<p>save:           存储虚拟机的状态</p>
+<p>restore:            回复虚拟机的状态</p>
+<p>suspend:            暂停虚拟机的执行</p>
+<p>resume:         继续执行该虚拟机</p>
+<p>dump:           将虚拟机的内核转储到指定的文件，以便进行分析与排错</p>
+<p>shutdown:        关闭虚拟机</p>
+<p>setmem:         修改内存的大小</p>
+<p>setmaxmem:       设置内存的最大值</p>
+<p>setvcpus:        修改虚拟处理器的数量</p>
+<p>如关闭一个正在运行的名称为ubuntu的虚拟机：</p>
+<div class="highlight"><pre><span class="n">virsh</span> <span class="nb">shutdown</span> <span class="n">ubuntu</span>
+</pre></div>
+
+
+<p><strong>克隆虚拟机</strong></p>
+<p>在创建虚拟机之后，我们还可以通过克隆虚拟机来快速创建虚拟机。实例如下：</p>
+<div class="highlight"><pre><span class="n">virt</span><span class="o">-</span><span class="n">clone</span> <span class="o">--</span><span class="nb">connect</span><span class="o">=</span><span class="n">qemu:</span><span class="sr">//</span><span class="o">/</span><span class="nb">system</span> <span class="o">-</span><span class="n">o</span> <span class="n">template</span> <span class="o">-</span><span class="n">n</span> <span class="n">clone</span> <span class="o">-</span><span class="n">f</span> <span class="n">clone</span><span class="o">.</span><span class="n">img</span>
+</pre></div>
+
+
+<p>其中template替换成被克隆虚拟机名称，clone替换成克隆输出的虚拟机名称，clone.img是格式化好的虚拟磁盘，可使用qemu制作。</p>
+<h3>测试</h3>
+<p>目前位置我们已尽完成了服务器性能测试和虚拟机创建和管理，只需要重复以上工作即可完成指定要求的服务器性能测试。</p>
+<h3>后语</h3>
+<p>至此为止我们完成了服务器测试的准备工作。在搭建环境的过程中学习到了许多有用的知识，如虚拟化技，ssh登录等等。感觉非常好玩。通过scp去拖拽文件，让我感觉网络的神奇，我在不知不觉中就被小伙伴修改了许多文件。感觉被偷了还不知道。囧囧的。scp例子如下：</p>
+<div class="highlight"><pre><span class="n">scp</span> <span class="n">root</span><span class="nv">@10</span><span class="mf">.108.144.100</span><span class="p">:</span><span class="sr">/home/</span><span class="n">root</span><span class="sr">/music.mp3 /</span><span class="n">home</span><span class="sr">/music/m</span><span class="n">usic</span><span class="o">.</span><span class="n">mp3</span>
+</pre></div>
+
+
+<p>将10.108.144.100root用户的/home/root/music.mp3 复制到本机的home/music，命名为music.mp3。传文件的远端类似，将参数位置调换即可。</p>
+<p>在如今云计算的时代，虚拟化技术已经是最基本的技术，有时间学一学还是很好玩的。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html"><h2>OpenDayLight中MD-SAL学习笔记</h2></a>
+        <div class= "well small"> 2014-08-13
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
 <p>在学习opendaylight的过程中，总是遇到AD-SAL( API-Driven SAL)和MD-SAL（Model-Driven SAL）等概念。在努力查找资料学习之后，有了一点学习笔记，写出来加深印象。同时也给同样迷惑的同学一点帮助。</p>
 <p>转载请声明：北邮-李呈：www.muzixing.com</p>
 <h2>About MD-SAL</h2>
@@ -81,64 +248,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>上图引用地址：https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png</p>
 <p>MD-SAL提供请求路由（request routing）和基础设施去支持服务的适配，但它不提供服务的适应本身;业务适配是由插件提供。MD-SAL认为适配插件是一个普通的插件：它向SAL提供数据，并通过模型生产的API来读取消费数据。</p>
 <h3>Request outing</h3>
-<p>为SAL中，request routing可用于消费者的请求路由，从而寻找到对应的生产者。当一个plugin注册之后，就会在routing table中有对应记录，consumer向SAL发起RPC应用申请的时候，会由request routing查找routing table，找到对应的plugin。</p>
-<p>在md-sal/sal-binding-api/...、binding/api/rpc目录下可以找到RpcRouter.java等文件，都与RPC routing有关。当然request routing还有notification的routing,并不仅仅只是rpc。</p>
-<h2>Bundle register</h2>
-<h3>AbstractBrokerAwareActivator</h3>
-<p><strong>在一个具体的plugin实现中会继承AbstractBindingAwareProvider类,而AbstractBindingAwareProvider继承了AbstractBrokerAwareActivator类。</strong></p>
-<p>当一个bundle启动时就会调用AbstractBrokerAwareActivator。这个类实现了org.osgi.framework.BundleActivator接口。BunbleActivator中的start（BundleContext context）和stop(BundleContext context)方法用于开启bundle和关闭bundle.在AbstractBrokerAwareActivator中，实现了start和stop两个方法，分别调用了startImpl和stopImpl两个具体的方法。startImpl是在bundle开始的时候，用于初始化，资源申请等。同理，stopImpl是bundle关闭时，资源的释放。</p>
-<p>同理，消费者类似。</p>
-<h3>onSessionInitialized</h3>
-<p>每一个消费者或生产者和SAL之间的通信都可以具体称之为Session(会话)。上一小节提到的BundleActivator接口中有两个方法start和stop的参数都是BundleConetxt.在BundleContext接口中定义了许多方法，如：</p>
-<div class="highlight"><pre><span class="n">registerService</span><span class="p">(</span><span class="n">java</span><span class="o">.</span><span class="n">lang</span><span class="o">.</span><span class="n">Class</span><span class="sr">&lt;S\&gt;</span> <span class="n">clazz</span><span class="p">,</span> <span class="n">S</span> <span class="n">service</span><span class="p">,</span> <span class="n">java</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">Dictionary</span><span class="sr">&lt;java.lang.String,?&gt;</span> <span class="n">properties</span><span class="p">)</span>
-</pre></div>
-
-
-<p>可实现bundle的注册。具体链接：http://www.osgi.org/javadoc/r4v43/core/org/osgi/framework/BundleContext.html</p>
-<p>在onSessionInitialized方法中，通常会调用session.addRpcImplementation(Class<T> Serviceinterface,T implementation)。其方法定义在RpcProvider.java中，用于指明bunlde初始化时的接口和实现等运行实体。</p>
-<h2>Register to MD-SAL</h2>
-<h3>BindingAwareBroker</h3>
-<p>BindingAwareProvider和BindingAwareConsumer都实现了BindingAwareBroker interface,用
-于实现生产者和消费者的在MD-SAL注册。此接口可以消除生产者和消费者之间的直接关系。</p>
-<p>其他文件的功能根据文件名称基本可以了解。博主也没有太多深究。</p>
-<h3>RPC register</h3>
-<p>调用<strong>addRpcImplementation(class &lt;T> serviceInterface, T implementation)</strong>方法将RPC注册到MD-SAL,具体可查看RpcProviderRegister.java。举例如下：</p>
-<div class="highlight"><pre><span class="n">providerContext</span><span class="o">.</span><span class="n">addRpcImplementation</span><span class="p">(</span><span class="n">ShapeService</span><span class="o">.</span><span class="n">class</span><span class="p">,</span> <span class="n">shape</span><span class="p">);</span>
-</pre></div>
-
-
-<p>具体链接：http://sdntutorials.com/how-to-register-a-service-to-md-sal/</p>
-<p>消费者可以通过<strong>getRpcService(class <T/> serviceInterface)</strong>调用对应的RPC。</p>
-<div class="highlight"><pre><span class="n">session</span><span class="o">.</span><span class="n">getRpcService</span><span class="p">(</span><span class="n">ShapeService</span><span class="o">.</span><span class="n">class</span><span class="p">)</span>
-</pre></div>
-
-
-<h2>Plugin development process</h2>
-<p><img alt="plugin_development_process" src="https://wiki.opendaylight.org/images/3/39/Plugin_design_process.png" /></p>
-<p>上图引用地址：https://wiki.opendaylight.org/images/3/39/Plugin_design_process.png</p>
-<p>在ODL中开发一个plugin的流程如上所示。以<a href="http://www.muzixing.com/pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html">Ping</a>为例，首先需要使用YANG定义一个model,即model-ping。使用maven编译的时候，会调用YANG Tools自动生成对应的API.然后生成API OSGI Bundle。</p>
-<p>接着我们需要对接口进行实现，也即plugin source code.在ping例子中ping-plugin就是plugin source code。通过maven编译生成plugin OSGI Bundle.最后都部署到OSGI上。将对应的jar包放到controller对应目录中，运行controller时就会和控制器一起运行。但是在全局编译的时候还需要再对应的pom.xml中对其进行描述，从而使得在编译时将对应的bundle编译并生成对应的jar，从而成功在controller中添加功能。</p>
-<h3>Example</h3>
-<p>借用<a href="https://wiki.opendaylight.org/view/OpenDaylight_Controller:MD-SAL:FAQ">官网</a>的一张图，解（翻）释（译）一下添加新流表时，ODL内部运行的场景。</p>
-<p><img alt="add_flow_case" src="https://wiki.opendaylight.org/images/1/17/Add_Flow_use_case.png" /></p>
-<ol>
-<li>当plugin/app启动时，对应的bundle已经完成了注册。a）流编程服务(还是flow programmer service舒服)在md-sal注册，提供流数据配置通知服务。b）OF 插件和其他的插件在SAL上注册AddFlow RPF实现。注意RPC在plugin model中定义，而API是在编译过程中生成的。</li>
-<li>一个客户app通过控制器提供的REST API请求add flow。客户端app需要提供这个REST调用的全部参数。</li>
-<li>从“add flow”来的数据发序列化，然后一个新流就在flow service 配置数据树上创建了。若成功REST调用马上回回复调用者成功信息。</li>
-<li>由于flow programmer service已经注册去接收在flow service data tree上的数据变化消息的通知。MD-SAL产生一个data changed的通知并发给Flow programmer service.</li>
-<li>flow programmer service 读取该消息，并产生添加动作。</li>
-<li>在这个过程中还其他的操作中，flow programmer service 需要告诉OF plugin在适当的交换机上添加flow。Flow programmer service 使用OF plugin生成的API去创建"AddFlow"RPC所需要的输入参数DTO(data transfer obiect).</li>
-<li>Flow programmer service 获取到服务的实例，然后引用服务中的“AddFlow”RPC。MD-SAL将会将请求路由到适当的OF plugin。</li>
-<li>"AddFlow"RPC 请求被路由到OF plugin，然后“AddFlow”RPC的实现方法被引用。</li>
-<li>“AddFlow”RPC实现通过OF plugin API去读取RPC 输入参数的DTO.</li>
-<li>"AddFlow"RPC 被远程运行，相应的flow_mod被下发到相应的交换机。</li>
-</ol>
-<h2>后语</h2>
-<p>对于MD-SAL，我只是有一个概念，离真正了解还有很多距离。文中若有错误指出，敬请指出，共同进步！</p>
-<p>其实官网上已经有很多资料，在学习的过程中，OpenDaylight SDN研究群（194240432）的共享资料帮助了我很多。接下来我将学习官网教程toaster,希望能在那个例子中得到实践经验，为以后的工程开发打下基础。以目前的状况来看，我还需要花很多时间来学习ODL，之后才是真正的SDN应用开发。</p></div>
-        <hr />
-    </div>
-		
+<p>为SAL中，request routing可用于消费者的请求路由，从而寻找到对应的生产者。当一个plugin注册之后，就会在routing table中有对应记录，consumer向SAL发起RPC应用申请的时候 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -234,38 +346,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 </li>
 </ul>
 <p>更多安装信息请查看:https://wiki.opendaylight.org/view ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/02/opendaylightru-men-jiao-cheng.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html"><h2>【python爬虫】抓取淘宝模特图片——20分钟爬虫之旅</h2></a>
-        <div class= "well small"> 2014-07-24
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h1>前言</h1>
-<p>很多人说学Python最终需要写一个爬虫才能算是学成出山了，而我就是那个留级生，一直没有写过。炎热的夏日，以及看java的抑郁，让我无聊之中萌生了这个想法。于是在百度的帮助下，写完了这个教程。视频教程可以去百度学堂看，我就是在那里看的。</p>
-<h1>spider</h1>
-<p>代码详解就不多加介绍，注释相信已经很明确了，请看代码。</p>
-<div class="highlight"><pre><span class="nb">import</span> <span class="n">urllib2</span>
-<span class="nb">import</span> <span class="n">urllib</span>
-<span class="nb">import</span> <span class="n">sys</span>
-
-<span class="n">class</span> <span class="n">get_mm_pic</span><span class="p">(</span><span class="n">object</span><span class="p">):</span>
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="n">page_num</span><span class="p">):</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">page_num</span> <span class="o">=</span> <span class="n">page_num</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">mmurl</span><span class="o">=</span> <span class="s">&quot;http://mm.taobao.com/json/request_top_list.htm?type=0&amp;page=&quot;</span><span class="c1">#抓取的链接</span>
-    <span class="n">def</span> <span class="n">get_pic</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">page_num ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

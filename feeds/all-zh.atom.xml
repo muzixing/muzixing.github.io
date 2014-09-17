@@ -1,5 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/all-zh.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-08-13T00:00:00+08:00</updated><entry><title>OpenDayLight中MD-SAL学习笔记</title><link href="http://www.muzixing.com/pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html" rel="alternate"></link><updated>2014-08-13T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-13:pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/all-zh.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-09-17T00:00:00+08:00</updated><entry><title>qemu+vrit-manager+phoronix-test-suite服务器测试</title><link href="http://www.muzixing.com/pages/2014/09/17/qemuvrit-managerphoronix-test-suitefu-wu-qi-ce-shi.html" rel="alternate"></link><updated>2014-09-17T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-09-17:pages/2014/09/17/qemuvrit-managerphoronix-test-suitefu-wu-qi-ce-shi.html</id><summary type="html">&lt;h3&gt;前言&lt;/h3&gt;
+&lt;p&gt;这是研究生开学的第一个任务，学习测试服务器性能。首先我们需要在一台新服务器上面安装ubuntu12.04，这个步骤很简单。安装完之后，可以使用top命令查看系统的cpu,mem等性能指标。然后我们就需要安装phoronix-test-suite，用于测试服务器的某些性能。接下来，使用qemu安装虚拟机，在虚拟机有负载的情况下，继续测量服务器的性能。&lt;/p&gt;
+&lt;h3&gt;PHORONIX-TEST-SUITE&lt;/h3&gt;
+&lt;p&gt;这是一个相当牛逼的服务器测试工具：[phoronix-test-suite]:http://www.phoronix-test-suite.com/&lt;/p&gt;
+&lt;p&gt;下载安装：http://get.ubuntusoft.com/app/phoronix-test-suite&lt;/p&gt;
+&lt;p&gt;先将安装包下载到本地，然后解压。进入phoronix-test-suite目录，运行install_sh进行安装。&lt;/p&gt;
+&lt;p&gt;安装之后可以通过&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;phoronix&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;suite&lt;/span&gt;  &lt;span class="n"&gt;list&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;available&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;查看可使用的测试列表。&lt;/p&gt;
+&lt;p&gt;选择某一个测试项进行测试&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;phoronix&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;suite&lt;/span&gt;  &lt;span class="n"&gt;benchmark&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt; &lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;phoronix&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;suite&lt;/span&gt;  &lt;span class="n"&gt;benchmark&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ray&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;接下来只需要按照步骤将测试结果提交给网站，你就可以通过网站查看到测试结果。若想保存测试结果页面，在chrome浏览器中打开，选择打印页面-&amp;gt;保存页面为pdf,则可以将网页保存为pdf文件。&lt;/p&gt;
+&lt;p&gt;更多的测试工具如IOZONE等，可自行google.&lt;/p&gt;
+&lt;h3&gt;QEMU&lt;/h3&gt;
+&lt;p&gt;QEMU is a generic and open source machine emulator and virtualizer.&lt;/p&gt;
+&lt;p&gt;When used as a machine emulator, QEMU can run OSes and programs made for one machine (e.g. an ARM board) on a different machine (e.g. your own PC). By using dynamic translation, it achieves very good performance.&lt;/p&gt;
+&lt;p&gt;When used as a virtualizer, QEMU achieves near native performances by executing the guest code directly on the host CPU. QEMU supports virtualization when executing under the Xen hypervisor or using the KVM kernel module in Linux. When using KVM, QEMU can virtualize x86, server and embedded PowerPC, and S390 guests.&lt;/p&gt;
+&lt;p&gt;QEMU是一套由Fabrice Bellard所编写的模拟处理器的自由软件。它与Bochs，PearPC近似，但其具有某些后两者所不具备的特性，如高速度及跨平台的特性。经由kqemu这个开源的加速器，QEMU能模拟至接近真实电脑的速度。&lt;/p&gt;
+&lt;p&gt;简单的说就是一个开源的虚拟化软件，可通过qemu创建虚拟机。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;安装&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;qemu&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;按照提示将依赖全部安装好即可。若不成功，可自行google.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;创建虚拟磁盘&lt;/p&gt;
+&lt;p&gt;qemu-img create -f qcow2 ubuntu.img 10G&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;创建一个10G大小的格式为qcow2的虚拟磁盘ubuntu.img，磁盘名字用户自定。 -f为format参数，格式fmt=qcow2,是qemu中最常见的格式。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;安装虚拟机&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;创建完虚拟磁盘之后，需要将系统安装到这个磁盘上。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;qemu&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nb"&gt;system&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;x86_64&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;hda&lt;/span&gt; &lt;span class="n"&gt;ubuntu&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;cdrom&lt;/span&gt; &lt;span class="n"&gt;ubuntu&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;iso&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nb"&gt;localtime&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt; &lt;span class="mi"&gt;1024&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;smp&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;参数介绍：-hda指定虚拟磁盘位置，如我们创建的ubuntu.img，-cdrom，指定光驱位置，可以是光驱，也可以是iso文件。 -localtime是本地时间。-m 指定内存， -smp指定cpu个数。&lt;/p&gt;
+&lt;p&gt;进入虚拟机有一些简单的快捷键可以进行窗口的切换。如 ctrl+alt+f 切换全屏等。&lt;/p&gt;
+&lt;p&gt;当然这是在有图形化界面的情况下。若没有图形化界面就会报错：could not initialize SDL.&lt;/p&gt;
+&lt;p&gt;这个时候我们就需要在另一台有图形化界面的linux上ssh远程登录，进行后续操作。&lt;/p&gt;
+&lt;h3&gt;SSH登录&lt;/h3&gt;
+&lt;p&gt;在另一台有图形化界面的linux系统上远程登录服务器。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ssh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="n"&gt;hostname&lt;/span&gt;&lt;span class="nv"&gt;@IP&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;输入对应密码进入系统。然后在服务器上安装libvirt和virt-manager。&lt;/p&gt;
+&lt;h3&gt;Libvirt和Virt-manager&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;libvirt&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;libvirt is:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A toolkit to interact with the virtualization capabilities of recent versions of Linux (and other OSes), see our project goals for details.&lt;/li&gt;
+&lt;li&gt;Free software available under the GNU Lesser General Public License.&lt;/li&gt;
+&lt;li&gt;A long term stable C API&lt;/li&gt;
+&lt;li&gt;A set of bindings for common languages&lt;/li&gt;
+&lt;li&gt;A CIM provider for the DMTF virtualization schema&lt;/li&gt;
+&lt;li&gt;A QMF agent for the AMQP/QPid messaging system&lt;/li&gt;
+&lt;li&gt;A technical meritocracy, in which participants gain influence over a project through recognition of their contributions.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;more:http://libvirt.org/&lt;/p&gt;
+&lt;p&gt;我们所需要使用的virt-manager是通过libvirt来远程管理虚拟机的。&lt;/p&gt;
+&lt;p&gt;*安装&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;libvirt&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;virt-manager&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The virt-manager application is a desktop user interface for managing virtual machines through libvirt. It primarily targets KVM VMs, but also manages Xen and LXC (linux containers). It presents a summary view of running domains, their live performance &amp;amp; resource utilization statistics. Wizards enable the creation of new domains, and configuration &amp;amp; adjustment of a domain’s resource allocation &amp;amp; virtual hardware. An embedded VNC and SPICE client viewer presents a full graphical console to the guest domain.&lt;/p&gt;
+&lt;p&gt;virt-manager是一个有可视化窗口的，通过libvirt管理虚拟机的管理平台。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;安装&lt;/p&gt;
+&lt;p&gt;sudo apt-get install virt-manager&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;按照提示安装完所有的依赖。&lt;/p&gt;
+&lt;h3&gt;Virt-manager管理虚拟机&lt;/h3&gt;
+&lt;p&gt;virt-manager是一个远程虚拟机管理软件，可以提供可视化的操作界面来创建虚拟机和管理虚拟机。&lt;/p&gt;
+&lt;p&gt;远程登录到服务器安装完virt-manager之后，运行virt-manager&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;virt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;manager&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果之前的ssh没有加-X参数的话，这个命令不会任何反应。加了-X参数之后，virt-manager会弹出一个运行窗口。&lt;/p&gt;
+&lt;p&gt;点击左上角的创建虚拟机，在指定步骤选择由qemu创建好的img文件和以下载的iso文件。点击确定进行安装。这一步相信不难。接下来就是普通的安装系统，这里不再赘述。&lt;/p&gt;
+&lt;h3&gt;Libvirt管理虚拟机&lt;/h3&gt;
+&lt;p&gt;通过libvirt可以在不需要图形化界面的情况下管理虚拟机。这将使用到virsh。virsh是libvirt的一套shell指令。&lt;/p&gt;
+&lt;p&gt;我们通过virsh可以创建和管理虚拟机。&lt;/p&gt;
+&lt;p&gt;help:           显示该命令的说明&lt;/p&gt;
+&lt;p&gt;quit:           结束 virsh，回到 Shell&lt;/p&gt;
+&lt;p&gt;connect:            连接到指定的虚拟机服务器&lt;/p&gt;
+&lt;p&gt;create:        启动一个新的虚拟机&lt;/p&gt;
+&lt;p&gt;destroy:            删除一个虚拟机&lt;/p&gt;
+&lt;p&gt;start:        开启（已定义的）非启动的虚拟机&lt;/p&gt;
+&lt;p&gt;define:         从 XML 定义一个虚拟机&lt;/p&gt;
+&lt;p&gt;undefine:        取消定义的虚拟机&lt;/p&gt;
+&lt;p&gt;dumpxml:            转储虚拟机的设置值&lt;/p&gt;
+&lt;p&gt;list:           列出虚拟机&lt;/p&gt;
+&lt;p&gt;reboot:         重新启动虚拟机&lt;/p&gt;
+&lt;p&gt;save:           存储虚拟机的状态&lt;/p&gt;
+&lt;p&gt;restore:            回复虚拟机的状态&lt;/p&gt;
+&lt;p&gt;suspend:            暂停虚拟机的执行&lt;/p&gt;
+&lt;p&gt;resume:         继续执行该虚拟机&lt;/p&gt;
+&lt;p&gt;dump:           将虚拟机的内核转储到指定的文件，以便进行分析与排错&lt;/p&gt;
+&lt;p&gt;shutdown:        关闭虚拟机&lt;/p&gt;
+&lt;p&gt;setmem:         修改内存的大小&lt;/p&gt;
+&lt;p&gt;setmaxmem:       设置内存的最大值&lt;/p&gt;
+&lt;p&gt;setvcpus:        修改虚拟处理器的数量&lt;/p&gt;
+&lt;p&gt;如关闭一个正在运行的名称为ubuntu的虚拟机：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;virsh&lt;/span&gt; &lt;span class="nb"&gt;shutdown&lt;/span&gt; &lt;span class="n"&gt;ubuntu&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;克隆虚拟机&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在创建虚拟机之后，我们还可以通过克隆虚拟机来快速创建虚拟机。实例如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;virt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;clone&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="nb"&gt;connect&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;qemu:&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nb"&gt;system&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt; &lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="n"&gt;clone&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt; &lt;span class="n"&gt;clone&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;其中template替换成被克隆虚拟机名称，clone替换成克隆输出的虚拟机名称，clone.img是格式化好的虚拟磁盘，可使用qemu制作。&lt;/p&gt;
+&lt;h3&gt;测试&lt;/h3&gt;
+&lt;p&gt;目前位置我们已尽完成了服务器性能测试和虚拟机创建和管理，只需要重复以上工作即可完成指定要求的服务器性能测试。&lt;/p&gt;
+&lt;h3&gt;后语&lt;/h3&gt;
+&lt;p&gt;至此为止我们完成了服务器测试的准备工作。在搭建环境的过程中学习到了许多有用的知识，如虚拟化技，ssh登录等等。感觉非常好玩。通过scp去拖拽文件，让我感觉网络的神奇，我在不知不觉中就被小伙伴修改了许多文件。感觉被偷了还不知道。囧囧的。scp例子如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;scp&lt;/span&gt; &lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="nv"&gt;@10&lt;/span&gt;&lt;span class="mf"&gt;.108.144.100&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="sr"&gt;/home/&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="sr"&gt;/music.mp3 /&lt;/span&gt;&lt;span class="n"&gt;home&lt;/span&gt;&lt;span class="sr"&gt;/music/m&lt;/span&gt;&lt;span class="n"&gt;usic&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;mp3&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;将10.108.144.100root用户的/home/root/music.mp3 复制到本机的home/music，命名为music.mp3。传文件的远端类似，将参数位置调换即可。&lt;/p&gt;
+&lt;p&gt;在如今云计算的时代，虚拟化技术已经是最基本的技术，有时间学一学还是很好玩的。&lt;/p&gt;</summary></entry><entry><title>OpenDayLight中MD-SAL学习笔记</title><link href="http://www.muzixing.com/pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html" rel="alternate"></link><updated>2014-08-13T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-08-13:pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;在学习opendaylight的过程中，总是遇到AD-SAL( API-Driven SAL)和MD-SAL（Model-Driven SAL）等概念。在努力查找资料学习之后，有了一点学习笔记，写出来加深印象。同时也给同样迷惑的同学一点帮助。&lt;/p&gt;
 &lt;p&gt;转载请声明：北邮-李呈：www.muzixing.com&lt;/p&gt;
 &lt;h2&gt;About MD-SAL&lt;/h2&gt;
