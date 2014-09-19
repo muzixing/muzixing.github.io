@@ -79,11 +79,12 @@
 &lt;/ul&gt;
 &lt;p&gt;more:http://libvirt.org/&lt;/p&gt;
 &lt;p&gt;我们所需要使用的virt-manager是通过libvirt来远程管理虚拟机的。&lt;/p&gt;
-&lt;p&gt;*安装&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;libvirt&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;安装&lt;/p&gt;
+&lt;p&gt;sudo apt-get install libvirt&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;virt-manager&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;The virt-manager application is a desktop user interface for managing virtual machines through libvirt. It primarily targets KVM VMs, but also manages Xen and LXC (linux containers). It presents a summary view of running domains, their live performance &amp;amp; resource utilization statistics. Wizards enable the creation of new domains, and configuration &amp;amp; adjustment of a domain’s resource allocation &amp;amp; virtual hardware. An embedded VNC and SPICE client viewer presents a full graphical console to the guest domain.&lt;/p&gt;
 &lt;p&gt;virt-manager是一个有可视化窗口的，通过libvirt管理虚拟机的管理平台。&lt;/p&gt;
