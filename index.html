@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html"><h1>QEMU+virt-manager+phoronix-test-suite服务器测试</h1></a>
-2014-09-17
+            <a href="./pages/2014/09/20/ryukai-fa-jiao-cheng.html"><h1>RYU开发教程</h1></a>
+2014-09-20
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
  
@@ -73,6 +73,293 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         </div>
         
         <div><h3>前言</h3>
+<p>辗转了POX,NOX,OpenDaylight等多个控制器之后，我终于意识到我只喜欢python语言的控制器。但是我依然记得OpenDaylight的Nullpointer的Exception,还记得YANG文件的深奥，但是OpenDaylight让我对控制器开发的兴趣减少了，这不是我想要的事情。最后，我下决定转向RYU。我突然发现，生活突然变得很美好。我用着我熟悉的，喜欢的，优美的python，写着充满美感的语句，犹如写诗一般的惬意。</p>
+<p>本篇主要介绍如何安装RYU，和如何在RYU上开发APP。</p>
+<h3>RYU的安装</h3>
+<p>安装RYU，需要安装一些python的套件：</p>
+<ul>
+<li>python-eventlet</li>
+<li>python-routes</li>
+<li>python-webob</li>
+<li>python-paramiko</li>
+</ul>
+<p>安装RYU主要有两种方式：</p>
+<ul>
+<li>
+<p>pip安装</p>
+<div class="highlight"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">ryu</span>
+</pre></div>
+
+
+</li>
+<li>
+<p>下载源文件安装</p>
+<div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">git:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/osrg/</span><span class="n">ryu</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">ryu</span>
+<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+
+
+</li>
+</ul>
+<p>若还有更多问题，可参考@linton小伙伴的博客：http://linton.tw/2014/02/15/note-install-ryu-36-sdn-framework/</p>
+<h3>RYU使用</h3>
+<p>安装RYU之后，进入ryu目录，输入：</p>
+<div class="highlight"><pre> <span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="n">yourapp</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+
+
+<p>运行对应的APP，如</p>
+<div class="highlight"><pre><span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+
+
+<h3>RYU源码分析</h3>
+<p>当我安装好了RYU之后，第一件事就是迫不及待地去看它的源码，其可读性之高，超出我的想象。</p>
+<p>下面介绍ryu/ryu目录下的主要目录内容。</p>
+<ul>
+<li>
+<p><strong>base</strong></p>
+<p>base中有一个非常重要的文件：app_manager.py.其作用是RYU 应用的管理中心。用于加载RYU应用程序，接受从APP发送过来的信息，同时也完成消息的路由。</p>
+<p>The central management of Ryu applications.
+<em> Load Ryu applications
+</em> Provide <code>contexts</code> to Ryu applications
+* Route messages among Ryu applications</p>
+<p>其主要的函数有app注册、注销、查找、并定义了RYUAPP基类，定义了RYUAPP的基本属性。包含name,threads,events、event_handlers和observers等成员，以及对应的许多基本函数。如：start(),stop()等。</p>
+<p>这个文件中还定义了AppManager基类,用于管理APP。定义了加载APP等函数。不过如果仅仅是开发APP的话，这个类可以不必关心。</p>
+</li>
+<li>
+<p><strong>controller</strong></p>
+<p>controller文件夹中许多非常重要的文件，如events.py,ofp_handler.py,controller.py等。其中controller.py中定义了OpenFlowController基类。用于定义OpenFlow的控制器，用于处理交换机和控制器的连接等事件，同时还可以产生事件和路由事件。其事件系统的定义，可以查看events.py和ofp_events.py。</p>
+<p>在ofp_handler.py中定义了基本的handler(应该怎么称呼呢？句柄？处理函数？)，完成了基本的如：握手，错误信息处理和keep alive 等功能。更多的如packet_in_handler应该在app中定义。</p>
+<p>在dpset.py文件中，定义了交换机端的一些消息，如端口状态信息等，用于描述和操作交换机。如添加端口，删除端口等操作。</p>
+<p>其他的文件不再赘述。</p>
+</li>
+<li>
+<p><strong>lib</strong></p>
+<p>lib中定义了我们需要使用到的基本的数据结构，如dpid,mac和ip等数据结构。在lib/packet目录下，还定义了许多网络协议，如ICMP,DHCP，MPLS和IGMP等协议内容。而每一个数据包的类中都有parser和serialize两个函数。用于解析和序列化数据包。</p>
+<p>lib目录下，还有ovs,netconf目录，对应的目录下有一些定义好的数据类型，不再赘述。</p>
+</li>
+<li>
+<p><strong>ofproto</strong></p>
+<p>在这个目录下，基本分为两类文件，一类是协议的数据结构定义，另一类是协议解析，也即数据包处理函数文件。如ofproto_v1_0.py是1.0版本的OpenFlow协议数据结构的定义，而ofproto_v1_0_parser.py则定义了1.0版本的协议编码和解码。具体内容不赘述，实现功能与协议相同。</p>
+</li>
+<li>
+<p><strong>topology</strong></p>
+<p>包含了switches.py等文件，基本定义了一套交换机的数据结构。event.py定义了交换上的事件。dumper.py定义了获取网络拓扑的内容。最后api.py向上提供了一套调用topology目录中定义函数的接口。</p>
+</li>
+<li>
+<p><strong>contrib</strong></p>
+<p>这个文件夹主要存放的是开源社区贡献者的代码。我没看过。</p>
+</li>
+<li>
+<p><strong>cmd</strong></p>
+<p>定义了RYU的命令系统，具体不赘述。</p>
+</li>
+<li>
+<p><strong>services</strong>  </p>
+<p>完成了BGP和vrrp的实现。具体我还没有使用这个模块。</p>
+</li>
+<li>
+<p><strong>tests</strong></p>
+<p>tests目录下存放了单元测试以及整合测试的代码，有兴趣的读者可以自行研究。</p>
+</li>
+</ul>
+<h3>开发你自己的RYU应用程序</h3>
+<p>大概浏览了一下RYU的源代码，相信看过OpenDaylight的同学会发现，太轻松了！哈哈，我想我真的不喜欢maven,osgi,xml，yang以及java，但是不能不承认OpenDaylight还是很牛逼的，在学习的读者要坚持啊！</p>
+<p>开发RYU的APP，真的再简单不过了。</p>
+<p>先来最简单的：</p>
+<div class="highlight"><pre><span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">base</span> <span class="nb">import</span> <span class="n">app_manager</span>
+
+<span class="n">class</span> <span class="n">L2Switch</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">L2Switch</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+
+
+<p>如果你觉得非常熟悉，不要怀疑，我确实是在拿官网的例子再讲。</p>
+<p>首先，我们从ryu.base import app_manager，在前面我们也提到过这个文件中定义了RyuApp基类。我们在开发APP的时候只需要继承这个基类，就获得你想要的一个APP的一切了。于是，我们就不用去注册了？！是的，不需要了！</p>
+<p>保存文件，可以取一个名字为L2Switch.py。</p>
+<p>现在你可以运行你的APP了。快得有点不敢相信吧！但是目前什么都没有，运行之后，马上就会结束，但起码我们的代码没有报错。</p>
+<p>运行:</p>
+<div class="highlight"><pre><span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="n">L2Switch</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+
+
+<p>继续往里面添加内容：</p>
+<div class="highlight"><pre><span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">base</span> <span class="nb">import</span> <span class="n">app_manager</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span> <span class="nb">import</span> <span class="n">ofp_event</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">MAIN_DISPATCHER</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">set_ev_cls</span>
+
+<span class="n">class</span> <span class="n">L2Switch</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">L2Switch</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="n">def</span> <span class="n">packet_in_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofp</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofp</span><span class="o">.</span><span class="n">OFPP_FLOOD</span><span class="p">)]</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span> <span class="n">in_port</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">in_port</span><span class="p">,</span>
+            <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</pre></div>
+
+
+<p>其中ofp_event完成了事件的定义，从而我们可以在函数中注册handler，监听事件，并作出回应。</p>
+<p>packet_in_handler方法用于处理packet_in事件。@set_ev_cls修饰符用于告知RYU，被修饰的函数应该被调用。（翻译得有点烂这句）</p>
+<p>set_ev_cls第一个参数表示事件发生时应该调用的函数，第二个参数告诉交换机只有在交换机握手完成之后，才可以被调用。</p>
+<p>下面分析具体的数据操作：</p>
+<ul>
+<li>ev.msg：每一个事件类ev中都有msg成员，用于携带触发事件的数据包。</li>
+<li>msg.datapath:已经格式化的msg其实就是一个packet_in报文，msg.datapath直接可以获得packet_in报文的datapath结构。datapath用于描述一个交换网桥。也是和控制器通信的实体单元。datapath.send_msg()函数用于发送数据到指定datapath。通过datapath.id可获得dpid数据，在后续的教程中会有使用。</li>
+<li>datapath.ofproto对象是一个OpenFlow协议数据结构的对象，成员包含OpenFlow协议的数据结构，如动作类型OFPP_FLOOD。</li>
+<li>datapath.ofp_parser则是一个按照OpenFlow解析的数据结构。</li>
+<li>actions是一个列表，用于存放action list，可在其中添加动作。</li>
+<li>通过ofp_parser类，可以构造构造packet_out数据结构。括弧中填写对应字段的赋值即可。</li>
+</ul>
+<p>如果datapath.send_msg()函数发送的是一个OpenFlow的数据结构，RYU将把这个数据发送到对应的datapath。</p>
+<p>至此，一个简单的HUB已经完成。</p>
+<h3>RYU进阶——二层交换机</h3>
+<p>在以上的基础之上，继续修改就可以完成二层交换机的功能。具体代码如下：</p>
+<div class="highlight"><pre><span class="nb">import</span> <span class="n">struct</span>
+<span class="nb">import</span> <span class="n">logging</span>
+
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">base</span> <span class="nb">import</span> <span class="n">app_manager</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span> <span class="nb">import</span> <span class="n">mac_to_port</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span> <span class="nb">import</span> <span class="n">ofp_event</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">MAIN_DISPATCHER</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">set_ev_cls</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">ofproto</span> <span class="nb">import</span> <span class="n">ofproto_v1_0</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">mac</span> <span class="nb">import</span> <span class="n">haddr_to_bin</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">packet</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">ethernet</span>
+
+<span class="n">class</span> <span class="n">L2Switch</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_0</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span><span class="c1">#define the version of OpenFlow</span>
+
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">L2Switch</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">def</span> <span class="n">add_flow</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span>
+            <span class="n">in_port</span> <span class="o">=</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">dl_dst</span> <span class="o">=</span> <span class="n">haddr_to_bin</span><span class="p">(</span><span class="n">dst</span><span class="p">))</span>
+
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span>
+            <span class="n">datapath</span> <span class="o">=</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span> <span class="o">=</span> <span class="n">match</span><span class="p">,</span> <span class="n">cookie</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span> <span class="n">idle_timeout</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span><span class="n">hard_timeout</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+            <span class="n">priority</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_DEFAULT_PRIORITY</span><span class="p">,</span>
+            <span class="n">flags</span> <span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFF_SEND_FLOW_REM</span><span class="p">,</span> <span class="n">actions</span> <span class="o">=</span> <span class="n">actions</span><span class="p">)</span>
+
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="n">def</span> <span class="n">packet_in_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+
+        <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">eth</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)</span>
+
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">dst</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span>
+
+        <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>    <span class="c1">#get the dpid</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet in %s %s %s %s&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">in_port</span><span class="p">)</span>
+        <span class="c1">#To learn a mac address to avoid FLOOD next time.</span>
+
+        <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">in_port</span>
+
+
+        <span class="n">out_port</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span>
+
+        <span class="c1">#Look up the out_port </span>
+        <span class="k">if</span> <span class="n">dst</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
+            <span class="n">out_port</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
+
+        <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD:</span>
+            <span class="n">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">in_port</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+
+        <span class="c1">#We always send the packet_out to handle the first packet.</span>
+        <span class="n">packet_out</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span> <span class="o">=</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
+            <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span> <span class="o">=</span> <span class="n">actions</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">packet_out</span><span class="p">)</span>
+    <span class="c1">#To show the message of ports&#39; status.</span>
+    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPortStatus</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="n">def</span> <span class="n">_port_status_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">reason</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">reason</span>
+        <span class="n">port_no</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">port_no</span>
+
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+
+        <span class="k">if</span> <span class="n">reason</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPPR_ADD:</span>
+            <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;port added %s&quot;</span><span class="p">,</span> <span class="n">port_no</span><span class="p">)</span>
+        <span class="n">elif</span> <span class="n">reason</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPPR_DELETE:</span>
+            <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;port deleted %s&quot;</span><span class="p">,</span> <span class="n">port_no</span><span class="p">)</span>
+        <span class="n">elif</span> <span class="n">reason</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPPR_MODIFY:</span>
+            <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;port modified %s&quot;</span><span class="p">,</span> <span class="n">port_no</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Illeagal port state %s %s&quot;</span><span class="p">,</span> <span class="n">port_no</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
+</pre></div>
+
+
+<p>相信代码中的注释已经足以让读者理解这个程序。完成之后，运行:</p>
+<div class="highlight"><pre><span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="n">L2Switch</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+
+
+<p>然后可以使用mininet进行pingall测试，成功！</p>
+<h3>后语</h3>
+<p>习惯性还是写一写总结。RYU的方便简洁大大超出我的预料，比我使用过的任何一个控制器都要易于使用和开发。 这些是我学RYU一两天的收获，希望在后续的学习中还能有所收获，写出更好的博文。如果你有什么意见或建议可以评论，相互学习，共同进步。</p>
+<p>最后提供一些有用的链接：</p>
+<ul>
+<li>
+<p>http://osrg.github.io/ryu/resources.html</p>
+<p>我比较喜欢里里面的   http://ryu.readthedocs.org/en/latest/</p>
+<p>当然里面的电子书也是相当好的：http://osrg.github.io/ryu-book/en/html/</p>
+</li>
+<li>
+<p>推荐一个小伙伴的博客：linton.tw </p>
+<p>他在RYU上有更多的学习和研究。欢迎访问！</p>
+</li>
+</ul></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html"><h2>QEMU+virt-manager+phoronix-test-suite服务器测试</h2></a>
+        <div class= "well small"> 2014-09-17
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
 <p>这是研究生开学的第一个任务，学习测试服务器性能。首先我们需要在一台新服务器上面安装ubuntu12.04，这个步骤很简单。安装完之后，可以使用top命令查看系统的cpu,mem等性能指标。然后我们就需要安装phoronix-test-suite，用于测试服务器的某些性能。接下来，使用qemu安装虚拟机，在虚拟机有负载的情况下，继续测量服务器的性能。</p>
 <h3>PHORONIX-TEST-SUITE</h3>
 <p>这是一个相当牛逼的服务器测试工具：[phoronix-test-suite]:http://www.phoronix-test-suite.com/</p>
@@ -90,141 +377,9 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 
 
 <p>如：</p>
-<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">suite</span>  <span class="n">benchmark</span> <span class="n">c</span><span class="o">-</span><span class="n">ray</span>
-</pre></div>
-
-
-<p>接下来只需要按照步骤将测试结果提交给网站，你就可以通过网站查看到测试结果。若想保存测试结果页面，在chrome浏览器中打开，选择打印页面-&gt;保存页面为pdf,则可以将网页保存为pdf文件。</p>
-<p>更多的测试工具如IOZONE等，可自行google.</p>
-<h3>QEMU</h3>
-<p>QEMU is a generic and open source machine emulator and virtualizer.</p>
-<p>When used as a machine emulator, QEMU can run OSes and programs made for one machine (e.g. an ARM board) on a different machine (e.g. your own PC). By using dynamic translation, it achieves very good performance.</p>
-<p>When used as a virtualizer, QEMU achieves near native performances by executing the guest code directly on the host CPU. QEMU supports virtualization when executing under the Xen hypervisor or using the KVM kernel module in Linux. When using KVM, QEMU can virtualize x86, server and embedded PowerPC, and S390 guests.</p>
-<p>QEMU是一套由Fabrice Bellard所编写的模拟处理器的自由软件。它与Bochs，PearPC近似，但其具有某些后两者所不具备的特性，如高速度及跨平台的特性。经由kqemu这个开源的加速器，QEMU能模拟至接近真实电脑的速度。</p>
-<p>简单的说就是一个开源的虚拟化软件，可通过qemu创建虚拟机。</p>
-<ul>
-<li>
-<p>安装</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">qemu</span>
-</pre></div>
-
-
-</li>
-</ul>
-<p>按照提示将依赖全部安装好即可。若不成功，可自行google.</p>
-<ul>
-<li>
-<p>创建虚拟磁盘</p>
-<p>qemu-img create -f qcow2 ubuntu.img 10G</p>
-</li>
-</ul>
-<p>创建一个10G大小的格式为qcow2的虚拟磁盘ubuntu.img，磁盘名字用户自定。 -f为format参数，格式fmt=qcow2,是qemu中最常见的格式。</p>
-<ul>
-<li>安装虚拟机</li>
-</ul>
-<p>创建完虚拟磁盘之后，需要将系统安装到这个磁盘上。</p>
-<div class="highlight"><pre><span class="n">qemu</span><span class="o">-</span><span class="nb">system</span><span class="o">-</span><span class="n">x86_64</span> <span class="o">-</span><span class="n">hda</span> <span class="n">ubuntu</span><span class="o">.</span><span class="n">img</span> <span class="o">-</span><span class="n">cdrom</span> <span class="n">ubuntu</span><span class="o">.</span><span class="n">iso</span> <span class="o">-</span><span class="nb">localtime</span> <span class="o">-</span><span class="n">m</span> <span class="mi">1024</span> <span class="o">-</span><span class="n">smp</span> <span class="mi">2</span>
-</pre></div>
-
-
-<p>参数介绍：-hda指定虚拟磁盘位置，如我们创建的ubuntu.img，-cdrom，指定光驱位置，可以是光驱，也可以是iso文件。 -localtime是本地时间。-m 指定内存， -smp指定cpu个数。</p>
-<p>进入虚拟机有一些简单的快捷键可以进行窗口的切换。如 ctrl+alt+f 切换全屏等。</p>
-<p>当然这是在有图形化界面的情况下。若没有图形化界面就会报错：could not initialize SDL.</p>
-<p>这个时候我们就需要在另一台有图形化界面的linux上ssh远程登录，进行后续操作。</p>
-<h3>SSH登录</h3>
-<p>在另一台有图形化界面的linux系统上远程登录服务器。</p>
-<div class="highlight"><pre><span class="n">ssh</span> <span class="o">-</span><span class="n">X</span> <span class="n">hostname</span><span class="nv">@IP</span>
-</pre></div>
-
-
-<p>输入对应密码进入系统。然后在服务器上安装libvirt和virt-manager。</p>
-<h3>Libvirt和Virt-manager</h3>
-<p><strong>libvirt</strong></p>
-<p>libvirt is:</p>
-<ul>
-<li>A toolkit to interact with the virtualization capabilities of recent versions of Linux (and other OSes), see our project goals for details.</li>
-<li>Free software available under the GNU Lesser General Public License.</li>
-<li>A long term stable C API</li>
-<li>A set of bindings for common languages</li>
-<li>A CIM provider for the DMTF virtualization schema</li>
-<li>A QMF agent for the AMQP/QPid messaging system</li>
-<li>A technical meritocracy, in which participants gain influence over a project through recognition of their contributions.</li>
-</ul>
-<p>more:http://libvirt.org/</p>
-<p>我们所需要使用的virt-manager是通过libvirt来远程管理虚拟机的。</p>
-<ul>
-<li>
-<p>安装</p>
-<p>sudo apt-get install libvirt</p>
-</li>
-</ul>
-<p><strong>virt-manager</strong></p>
-<p>The virt-manager application is a desktop user interface for managing virtual machines through libvirt. It primarily targets KVM VMs, but also manages Xen and LXC (linux containers). It presents a summary view of running domains, their live performance &amp; resource utilization statistics. Wizards enable the creation of new domains, and configuration &amp; adjustment of a domain’s resource allocation &amp; virtual hardware. An embedded VNC and SPICE client viewer presents a full graphical console to the guest domain.</p>
-<p>virt-manager是一个有可视化窗口的，通过libvirt管理虚拟机的管理平台。</p>
-<ul>
-<li>
-<p>安装</p>
-<p>sudo apt-get install virt-manager</p>
-</li>
-</ul>
-<p>按照提示安装完所有的依赖。</p>
-<h3>Virt-manager管理虚拟机</h3>
-<p>virt-manager是一个远程虚拟机管理软件，可以提供可视化的操作界面来创建虚拟机和管理虚拟机。</p>
-<p>远程登录到服务器安装完virt-manager之后，运行virt-manager</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">virt</span><span class="o">-</span><span class="n">manager</span>
-</pre></div>
-
-
-<p>如果之前的ssh没有加-X参数的话，这个命令不会任何反应。加了-X参数之后，virt-manager会弹出一个运行窗口。</p>
-<p>点击左上角的创建虚拟机，在指定步骤选择由qemu创建好的img文件和以下载的iso文件。点击确定进行安装。这一步相信不难。接下来就是普通的安装系统，这里不再赘述。</p>
-<h3>Libvirt管理虚拟机</h3>
-<p>通过libvirt可以在不需要图形化界面的情况下管理虚拟机。这将使用到virsh。virsh是libvirt的一套shell指令。</p>
-<p>我们通过virsh可以创建和管理虚拟机。</p>
-<p>help:           显示该命令的说明</p>
-<p>quit:           结束 virsh，回到 Shell</p>
-<p>connect:            连接到指定的虚拟机服务器</p>
-<p>create:        启动一个新的虚拟机</p>
-<p>destroy:            删除一个虚拟机</p>
-<p>start:        开启（已定义的）非启动的虚拟机</p>
-<p>define:         从 XML 定义一个虚拟机</p>
-<p>undefine:        取消定义的虚拟机</p>
-<p>dumpxml:            转储虚拟机的设置值</p>
-<p>list:           列出虚拟机</p>
-<p>reboot:         重新启动虚拟机</p>
-<p>save:           存储虚拟机的状态</p>
-<p>restore:            回复虚拟机的状态</p>
-<p>suspend:            暂停虚拟机的执行</p>
-<p>resume:         继续执行该虚拟机</p>
-<p>dump:           将虚拟机的内核转储到指定的文件，以便进行分析与排错</p>
-<p>shutdown:        关闭虚拟机</p>
-<p>setmem:         修改内存的大小</p>
-<p>setmaxmem:       设置内存的最大值</p>
-<p>setvcpus:        修改虚拟处理器的数量</p>
-<p>如关闭一个正在运行的名称为ubuntu的虚拟机：</p>
-<div class="highlight"><pre><span class="n">virsh</span> <span class="nb">shutdown</span> <span class="n">ubuntu</span>
-</pre></div>
-
-
-<p><strong>克隆虚拟机</strong></p>
-<p>在创建虚拟机之后，我们还可以通过克隆虚拟机来快速创建虚拟机。实例如下：</p>
-<div class="highlight"><pre><span class="n">virt</span><span class="o">-</span><span class="n">clone</span> <span class="o">--</span><span class="nb">connect</span><span class="o">=</span><span class="n">qemu:</span><span class="sr">//</span><span class="o">/</span><span class="nb">system</span> <span class="o">-</span><span class="n">o</span> <span class="n">template</span> <span class="o">-</span><span class="n">n</span> <span class="n">clone</span> <span class="o">-</span><span class="n">f</span> <span class="n">clone</span><span class="o">.</span><span class="n">img</span>
-</pre></div>
-
-
-<p>其中template替换成被克隆虚拟机名称，clone替换成克隆输出的虚拟机名称，clone.img是格式化好的虚拟磁盘，可使用qemu制作。</p>
-<h3>测试</h3>
-<p>目前位置我们已尽完成了服务器性能测试和虚拟机创建和管理，只需要重复以上工作即可完成指定要求的服务器性能测试。</p>
-<h3>后语</h3>
-<p>至此为止我们完成了服务器测试的准备工作。在搭建环境的过程中学习到了许多有用的知识，如虚拟化技，ssh登录等等。感觉非常好玩。通过scp去拖拽文件，让我感觉网络的神奇，我在不知不觉中就被小伙伴修改了许多文件。感觉被偷了还不知道。囧囧的。scp例子如下：</p>
-<div class="highlight"><pre><span class="n">scp</span> <span class="n">root</span><span class="nv">@10</span><span class="mf">.108.144.100</span><span class="p">:</span><span class="sr">/home/</span><span class="n">root</span><span class="sr">/music.mp3 /</span><span class="n">home</span><span class="sr">/music/m</span><span class="n">usic</span><span class="o">.</span><span class="n">mp3</span>
-</pre></div>
-
-
-<p>将10.108.144.100root用户的/home/root/music.mp3 复制到本机的home/music，命名为music.mp3。传文件的远端类似，将参数位置调换即可。</p>
-<p>在如今云计算的时代，虚拟化技术已经是最基本的技术，有时间学一学还是很好玩的。</p></div>
-        <hr />
-    </div>
-		
+<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -318,35 +473,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <li>
 <p>Northbound API / Implementation [ping-northbound]</p>
 <p>The northbound API defines the interface for interacting with the given service. For example, a REST ...</p></li></ul> <a class="btn btn-info xsmall" href="./pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/08/02/opendaylightru-men-jiao-cheng.html"><h2>OpenDaylight入门教程</h2></a>
-        <div class= "well small"> 2014-08-02
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>关于OpenDaylight</h3>
-<p>OpenDaylight is an open platform for network programmability to enable SDN and create a solid foundation for NFV for networks at any size and scale.</p>
-<p>对于SDN而言，ODL（OpenDaylight）是一个开源的可编程的平台，简单的说是一个非常有野心开源控制器而不仅仅只是控制器。</p>
-<p>opendaylight官网:http://www.opendaylight.org/</p>
-<h3>环境配置</h3>
-<ul>
-<li>
-<p>jdk需要1.6以上。</p>
-<p>sudo apt-get -y install openjdk-7-jdk</p>
-</li>
-</ul>
-<p>更多安装信息请查看:https://wiki.opendaylight.org/view ...</p> <a class="btn btn-info xsmall" href="./pages/2014/08/02/opendaylightru-men-jiao-cheng.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

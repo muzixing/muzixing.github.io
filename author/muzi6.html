@@ -62,6 +62,43 @@
  
 
     <div class='article'>
+        <a href="../pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html"><h2>【原创】OpenFlow通信流程解读</h2></a>
+        <div class= "well small"> 2013-12-12
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>接触了这么久的SDN，OpenFlow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对OpenFlow协议通信流程的一些理解。</p>
+<h2>SDN中Switch和controller</h2>
+<p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
+<h3>switch组成与传统交换机的差异</h3>
+<h4>switch组成</h4>
+<p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
+<ul>
+<li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
+<li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
+</ul>
+<h4>of中sw与传统交换机的差异</h4>
+<ul>
+<li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
+<li>运行of协议，实现许多路由器的功能，比如组播。</li>
+<li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
+</ul>
+<h4>OpenFlow的switch可以从以下方式获得</h4>
+<ul>
+<li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2013/12/11/wo-ceng-jing-qi-ci-bi-shi-zi-ji-de-ling-hun.html"><h2>我曾经七次鄙视自己的灵魂</h2></a>
         <div class= "well small"> 2013-12-11
 
@@ -175,43 +212,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="nb">import</span> <span class="n">Queue</span>
 
 <span class="n">sock</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">socket</span>    <span class="p">(</span><span class="nb">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span><span class="nb">socket ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/11/29/nge-zheng-shu-qiu-qi-zhong-ren-yi-n-1ge-shu-de-cheng-ji-zhong-de-zui-da-de-ge-jin-yong-chu-fa.html"><h2>N个整数，求其中任意N-1个数的乘积中的最大的一个(禁用除法)</h2></a>
-        <div class= "well small"> 2013-11-29
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>刚才看程序员面试宝典的时候看到这个有趣的题目，也是google2007年的笔试题目。<strong>只能用乘法，不能用除法。</strong></p>
-<p>看了网上一些扯到不行算法之后，我决定把我自己的想法写一下，不一定对。</p>
-<p>PS：好久没写C++,语法都忘了，跟python语法混乱了……哎。。</p>
-<h3>整个问题只会有一下3种情况</h3>
-<ul>
-<li>
-<p>有两个0，最大必为0。</p>
-</li>
-<li>
-<p>数组全非负，最好办，在没有两个及以上的0的情况下，把最小的剔除即可。</p>
-</li>
-<li>
-<p>数组有正有负，有0，最困难。</p>
-</li>
-</ul>
-<p>具体代码如下：</p>
-<div class="highlight"><pre><span class="sr">//</span><span class="err">数组</span><span class="n">a</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
-<span class="sr">//</span><span class="err">——————————————————————————————————————————————</span>
-<span class="nb">int</span> <span class="n">min1</span> <span class="o">=</span> <span class="o">-</span><span class="mi">65534</span><span class="p">,</span><span class="n">min2</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">No</span><span class="p">,</span><span class="n">No_1</span><span class="p">,</span><span class="n">No_2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span><span class="n">total</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">z_num</span><span class="o">=-</span><span class="mi">1</span><span class="p">;</span><span class="sr">//</span><span class="err">初始化参数；</span>
-<span class="k">for</span><span class="p">(</span><span class="nb">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;(</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">)</span><span class="o">||</span><span class="p">(</span><span class="n">j</span><span class="o">&lt;</span><span class="mi">1 ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2013/11/29/nge-zheng-shu-qiu-qi-zhong-ren-yi-n-1ge-shu-de-cheng-ji-zhong-de-zui-da-de-ge-jin-yong-chu-fa.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

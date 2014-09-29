@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="../pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/09/20/ryukai-fa-jiao-cheng.html"><h1>RYU开发教程</h1></a>
+            <h1>RYU开发教程</h1>
 2014-09-20
 
-by <a class="url fn" href="../author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><h3>前言</h3>
 <p>辗转了POX,NOX,OpenDaylight等多个控制器之后，我终于意识到我只喜欢python语言的控制器。但是我依然记得OpenDaylight的Nullpointer的Exception,还记得YANG文件的深奥，但是OpenDaylight让我对控制器开发的兴趣减少了，这不是我想要的事情。最后，我下决定转向RYU。我突然发现，生活突然变得很美好。我用着我熟悉的，喜欢的，优美的python，写着充满美感的语句，犹如写诗一般的惬意。</p>
 <p>本篇主要介绍如何安装RYU，和如何在RYU上开发APP。</p>
@@ -341,157 +335,23 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>他在RYU上有更多的学习和研究。欢迎访问！</p>
 </li>
 </ul></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = 'RYU开发教程';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html"><h2>QEMU+virt-manager+phoronix-test-suite服务器测试</h2></a>
-        <div class= "well small"> 2014-09-17
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>这是研究生开学的第一个任务，学习测试服务器性能。首先我们需要在一台新服务器上面安装ubuntu12.04，这个步骤很简单。安装完之后，可以使用top命令查看系统的cpu,mem等性能指标。然后我们就需要安装phoronix-test-suite，用于测试服务器的某些性能。接下来，使用qemu安装虚拟机，在虚拟机有负载的情况下，继续测量服务器的性能。</p>
-<h3>PHORONIX-TEST-SUITE</h3>
-<p>这是一个相当牛逼的服务器测试工具：[phoronix-test-suite]:http://www.phoronix-test-suite.com/</p>
-<p>下载安装：http://get.ubuntusoft.com/app/phoronix-test-suite</p>
-<p>先将安装包下载到本地，然后解压。进入phoronix-test-suite目录，运行install_sh进行安装。</p>
-<p>安装之后可以通过</p>
-<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">suite</span>  <span class="n">list</span><span class="o">-</span><span class="n">available</span>
-</pre></div>
-
-
-<p>查看可使用的测试列表。</p>
-<p>选择某一个测试项进行测试</p>
-<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">suite</span>  <span class="n">benchmark</span> <span class="o">&lt;</span><span class="n">test</span> <span class="n">name</span><span class="o">&gt;</span>
-</pre></div>
-
-
-<p>如：</p>
-<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html"><h2>OpenDayLight中MD-SAL学习笔记</h2></a>
-        <div class= "well small"> 2014-08-13
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>在学习opendaylight的过程中，总是遇到AD-SAL( API-Driven SAL)和MD-SAL（Model-Driven SAL）等概念。在努力查找资料学习之后，有了一点学习笔记，写出来加深印象。同时也给同样迷惑的同学一点帮助。</p>
-<p>转载请声明：北邮-李呈：www.muzixing.com</p>
-<h2>About MD-SAL</h2>
-<p>MD-SAL使得在SDN控制器那些丰富的服务和模块可以使用统一的数据结构和南向和北向的API。</p>
-<p><img alt="sal-comparison" src="https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png" /></p>
-<p>上图引用地址：https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png</p>
-<p>MD-SAL提供请求路由（request routing）和基础设施去支持服务的适配，但它不提供服务的适应本身;业务适配是由插件提供。MD-SAL认为适配插件是一个普通的插件：它向SAL提供数据，并通过模型生产的API来读取消费数据。</p>
-<h3>Request outing</h3>
-<p>为SAL中，request routing可用于消费者的请求路由，从而寻找到对应的生产者。当一个plugin注册之后，就会在routing table中有对应记录，consumer向SAL发起RPC应用申请的时候 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html"><h2>OpenFlow1.3学习笔记</h2></a>
-        <div class= "well small"> 2014-08-10
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。</p>
-<h2>OpenFlow端口</h2>
-<p>OF端口是OF处理流程和网络其他部分进行转发数据包的网络接口。
-OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必须支持的端口类型为</p>
-<ul>
-<li>物理端口</li>
-<li>逻辑端口</li>
-<li>保留端口</li>
-</ul>
-<p>逻辑端口和物理端口的不同在于，逻辑端口比物理端口更高一级，是对物理端口的虚拟化，提高可复用性，逻辑端口的数据包需要有tunnel_id，而物理端口没有。    </p>
-<p>保留端口中又分为：</p>
-<ul>
-<li>ALL</li>
-<li>CONTROLLER</li>
-<li>TABLE</li>
-<li>IN_PORT</li>
-<li>ANY</li>
-<li>LOCAL</li>
-<li>NORMAL</li>
-<li>FLOOD</li>
-</ul>
-<p>其中所有OF交换机都要支持ALL,CONTROLLER,TABLE,IN_PORT,ANY类型端口，OF_ONLY不要求支持LOCAL,NORMAL,FLOOD端口。</p>
-<h2>OpenFlow Table</h2>
-<p>OpenFlow ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html"><h2>Opendaylight中开发模块Ping</h2></a>
-        <div class= "well small"> 2014-08-06
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>在安装和运行opendaylight之后，我们需要了解opendaylight各个目录的作用，运行机制。在此基础之上，我们需要动手进行第一个ODL模块的开发，在开发中找到ODL的重要所在。接下来的教程是在完成官网的一篇教程的基础上的总结和介绍，希望读者能有所收获。</p>
-<h3>摘要</h3>
-<p>本篇教程主要介绍如何在ODL上使用MD-SAL开发一个简单的TCP ping插件。这个插件实现了向指定地址发送ICMP，探测IP地址可达性的功能。首先我们需要使用YANG定义一个ping model,然后我们需要实现一个ping plugin,实现ping功能，再然后创建ping service 用于提供ping服务，最后我们通过REST API来实现北向接口使用ping service。</p>
-<p>其中每一个功能，我们将其创建为maven工程，并作为osgi的bundle。所以我们总共需要创建4个OSGI 的bundle：</p>
-<ul>
-<li>
-<p>Northbound API / Implementation [ping-northbound]</p>
-<p>The northbound API defines the interface for interacting with the given service. For example, a REST ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../category/tech.html">1</a></li>
-    <li class=""><a href="../category/tech2.html">2</a></li>
-    <li class=""><a href="../category/tech3.html">3</a></li>
-    <li class=""><a href="../category/tech4.html">4</a></li>
-    <li class=""><a href="../category/tech5.html">5</a></li>
-    <li class=""><a href="../category/tech6.html">6</a></li>
-
-    <li class="next"><a href="../category/tech2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -502,8 +362,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a></li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
             </ul>
@@ -516,8 +376,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -553,7 +413,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
