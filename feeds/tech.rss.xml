@@ -29,7 +29,7 @@
 
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;若还有更多问题，可参考［@linton小伙伴的博客］（http://linton.tw/2014/02/15/note-install-ryu-36-sdn-framework/）&lt;/p&gt;
+&lt;p&gt;若还有更多问题，可参考&lt;a href="http://linton.tw/2014/02/15/note-install-ryu-36-sdn-framework/"&gt;@linton小伙伴的博客&lt;/a&gt;&lt;/p&gt;
 &lt;h3&gt;RYU使用&lt;/h3&gt;
 &lt;p&gt;安装RYU之后，进入ryu目录，输入：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt; &lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;manager&lt;/span&gt; &lt;span class="n"&gt;yourapp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt;
