@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Sat, 20 Sep 2014 00:00:00 +0800</lastBuildDate><item><title>RYU开发教程</title><link>http://www.muzixing.com/pages/2014/09/20/ryukai-fa-jiao-cheng.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Sat, 20 Sep 2014 00:00:00 +0800</lastBuildDate><item><title>RYU入门教程</title><link>http://www.muzixing.com/pages/2014/09/20/ryuru-men-jiao-cheng.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
 &lt;p&gt;辗转了POX,NOX,OpenDaylight等多个控制器之后，我终于意识到我只喜欢python语言的控制器。但是我依然记得OpenDaylight的Nullpointer的Exception,还记得YANG文件的深奥，但是OpenDaylight让我对控制器开发的兴趣减少了，这不是我想要的事情。最后，我下决定转向RYU。我突然发现，生活突然变得很美好。我用着我熟悉的，喜欢的，优美的python，写着充满美感的语句，犹如写诗一般的惬意。&lt;/p&gt;
 &lt;p&gt;本篇主要介绍如何安装RYU，和如何在RYU上开发APP。&lt;/p&gt;
 &lt;h3&gt;RYU的安装&lt;/h3&gt;
@@ -29,7 +29,7 @@
 
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;若还有更多问题，可参考@linton小伙伴的博客：http://linton.tw/2014/02/15/note-install-ryu-36-sdn-framework/&lt;/p&gt;
+&lt;p&gt;若还有更多问题，可参考［@linton小伙伴的博客］（http://linton.tw/2014/02/15/note-install-ryu-36-sdn-framework/）&lt;/p&gt;
 &lt;h3&gt;RYU使用&lt;/h3&gt;
 &lt;p&gt;安装RYU之后，进入ryu目录，输入：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt; &lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;manager&lt;/span&gt; &lt;span class="n"&gt;yourapp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt;
@@ -48,10 +48,6 @@
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;base&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;base中有一个非常重要的文件：app_manager.py.其作用是RYU 应用的管理中心。用于加载RYU应用程序，接受从APP发送过来的信息，同时也完成消息的路由。&lt;/p&gt;
-&lt;p&gt;The central management of Ryu applications.
-&lt;em&gt; Load Ryu applications
-&lt;/em&gt; Provide &lt;code&gt;contexts&lt;/code&gt; to Ryu applications
-* Route messages among Ryu applications&lt;/p&gt;
 &lt;p&gt;其主要的函数有app注册、注销、查找、并定义了RYUAPP基类，定义了RYUAPP的基本属性。包含name,threads,events、event_handlers和observers等成员，以及对应的许多基本函数。如：start(),stop()等。&lt;/p&gt;
 &lt;p&gt;这个文件中还定义了AppManager基类,用于管理APP。定义了加载APP等函数。不过如果仅仅是开发APP的话，这个类可以不必关心。&lt;/p&gt;
 &lt;/li&gt;
@@ -267,7 +263,7 @@
 &lt;p&gt;推荐一个小伙伴的博客：linton.tw &lt;/p&gt;
 &lt;p&gt;他在RYU上有更多的学习和研究。欢迎访问！&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Sat, 20 Sep 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-09-20:pages/2014/09/20/ryukai-fa-jiao-cheng.html</guid></item><item><title>QEMU+virt-manager+phoronix-test-suite服务器测试</title><link>http://www.muzixing.com/pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
+&lt;/ul&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Sat, 20 Sep 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-09-20:pages/2014/09/20/ryuru-men-jiao-cheng.html</guid></item><item><title>QEMU+virt-manager+phoronix-test-suite服务器测试</title><link>http://www.muzixing.com/pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
 &lt;p&gt;这是研究生开学的第一个任务，学习测试服务器性能。首先我们需要在一台新服务器上面安装ubuntu12.04，这个步骤很简单。安装完之后，可以使用top命令查看系统的cpu,mem等性能指标。然后我们就需要安装phoronix-test-suite，用于测试服务器的某些性能。接下来，使用qemu安装虚拟机，在虚拟机有负载的情况下，继续测量服务器的性能。&lt;/p&gt;
 &lt;h3&gt;PHORONIX-TEST-SUITE&lt;/h3&gt;
 &lt;p&gt;这是一个相当牛逼的服务器测试工具：[phoronix-test-suite]:http://www.phoronix-test-suite.com/&lt;/p&gt;

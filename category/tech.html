@@ -62,7 +62,7 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/09/20/ryukai-fa-jiao-cheng.html"><h1>RYU开发教程</h1></a>
+            <a href="../pages/2014/09/20/ryuru-men-jiao-cheng.html"><h1>RYU入门教程</h1></a>
 2014-09-20
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
@@ -102,7 +102,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 
 </li>
 </ul>
-<p>若还有更多问题，可参考@linton小伙伴的博客：http://linton.tw/2014/02/15/note-install-ryu-36-sdn-framework/</p>
+<p>若还有更多问题，可参考［@linton小伙伴的博客］（http://linton.tw/2014/02/15/note-install-ryu-36-sdn-framework/）</p>
 <h3>RYU使用</h3>
 <p>安装RYU之后，进入ryu目录，输入：</p>
 <div class="highlight"><pre> <span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="n">yourapp</span><span class="o">.</span><span class="n">py</span>
@@ -121,10 +121,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <li>
 <p><strong>base</strong></p>
 <p>base中有一个非常重要的文件：app_manager.py.其作用是RYU 应用的管理中心。用于加载RYU应用程序，接受从APP发送过来的信息，同时也完成消息的路由。</p>
-<p>The central management of Ryu applications.
-<em> Load Ryu applications
-</em> Provide <code>contexts</code> to Ryu applications
-* Route messages among Ryu applications</p>
 <p>其主要的函数有app注册、注销、查找、并定义了RYUAPP基类，定义了RYUAPP的基本属性。包含name,threads,events、event_handlers和observers等成员，以及对应的许多基本函数。如：start(),stop()等。</p>
 <p>这个文件中还定义了AppManager基类,用于管理APP。定义了加载APP等函数。不过如果仅仅是开发APP的话，这个类可以不必关心。</p>
 </li>
