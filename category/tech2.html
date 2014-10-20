@@ -62,6 +62,32 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html"><h2>Opendaylight中开发模块Ping</h2></a>
+        <div class= "well small"> 2014-08-06
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>在安装和运行opendaylight之后，我们需要了解opendaylight各个目录的作用，运行机制。在此基础之上，我们需要动手进行第一个ODL模块的开发，在开发中找到ODL的重要所在。接下来的教程是在完成官网的一篇教程的基础上的总结和介绍，希望读者能有所收获。</p>
+<h3>摘要</h3>
+<p>本篇教程主要介绍如何在ODL上使用MD-SAL开发一个简单的TCP ping插件。这个插件实现了向指定地址发送ICMP，探测IP地址可达性的功能。首先我们需要使用YANG定义一个ping model,然后我们需要实现一个ping plugin,实现ping功能，再然后创建ping service 用于提供ping服务，最后我们通过REST API来实现北向接口使用ping service。</p>
+<p>其中每一个功能，我们将其创建为maven工程，并作为osgi的bundle。所以我们总共需要创建4个OSGI 的bundle：</p>
+<ul>
+<li>
+<p>Northbound API / Implementation [ping-northbound]</p>
+<p>The northbound API defines the interface for interacting with the given service. For example, a REST ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/08/02/opendaylightru-men-jiao-cheng.html"><h2>OpenDaylight入门教程</h2></a>
         <div class= "well small"> 2014-08-02
 
@@ -181,45 +207,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <div class="highlight"><pre><span class="c1">#ifndef ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html"><h2>[c]生产者消费者模式实现</h2></a>
-        <div class= "well small"> 2014-04-19
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>本文主要内容是：使用多线程，运行生产者函数和消费者函数，去实现队列（临界区）的读写操作。</p>
-<p>其意义在与熟悉多线程的互斥过程。生产者消费者模式是最好，最简单的选择。</p>
-<h3>数据结构</h3>
-<p>首先我们要操作的数据结构是队列。那么我首先要构造一个队列：</p>
-<p>queue.h</p>
-<div class="highlight"><pre><span class="c1">#ifndef _QUEUE_</span>
-<span class="c1">#define _QUEUE_</span>
-
-
-<span class="n">typedef</span> <span class="n">struct</span> <span class="n">_QUEUE_</span>
-<span class="p">{</span>
-    <span class="nb">int</span> <span class="n">maxsize</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>  <span class="sr">//</span><span class="n">bad</span> <span class="n">design</span>
-    <span class="nb">int</span> <span class="n">end</span><span class="p">;</span>
-    <span class="nb">int</span> <span class="n">begin</span><span class="p">;</span>
-
-<span class="p">}</span><span class="n">queue_t</span><span class="p">;</span>
-
-<span class="n">void</span> <span class="n">queue_init</span><span class="p">(</span><span class="n">queue_t</span><span class="o">*</span> <span class="n">queue</span><span class="p">);</span> <span class="sr">//</span><span class="err">队列的初始化。如</span><span class="n">end</span><span class="p">,</span><span class="n">begin</span><span class="err">，</span><span class="n">maxsize</span><span class="err">的设置。</span>
-<span class="nb">int</span> <span class="n">get_len</span><span class="p">(</span><span class="n">queue_t</span><span class="o">*</span> <span class="n">queue</span><span class="p">);</span>     <span class="sr">//</span><span class="err">获取队列的长度</span>
-<span class="n">void ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../category/tech.html">&larr; Previous</a></li>
@@ -230,6 +217,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../category/tech4.html">4</a></li>
     <li class=""><a href="../category/tech5.html">5</a></li>
     <li class=""><a href="../category/tech6.html">6</a></li>
+    <li class=""><a href="../category/tech7.html">7</a></li>
 
     <li class="next"><a href="../category/tech3.html">Next &rarr;</a></li>
 
