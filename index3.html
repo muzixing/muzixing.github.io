@@ -62,6 +62,38 @@
  
 
     <div class='article'>
+        <a href="./pages/2014/05/04/noxshi-xian-natgong-neng.html"><h2>nox实现nat功能</h2></a>
+        <div class= "well small"> 2014-05-04
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>nat功能是一个非常简单，但却非常重要的功能。保留10，127,192三个网段作为公网地址，通过nat实现地址复用，可以解决现网IPV4地址不够用的尴尬局面。本篇主要讲如何使用nox实现nat的demo.</p>
+<h3>环境</h3>
+<ul>
+<li>nox  安装比较困难，请参看其他教程</li>
+<li>mininet    网络环境搭建神器</li>
+</ul>
+<h3>控制器</h3>
+<p>首先在nox/src/coreapps/switch中找到switch.cc。
+在class switch中添加成员变量uint32_t src_ip，nat_ip；由于只是一个简单的demo，就不做映射列表了。</p>
+<p>handle_packet_in中将if(setup_flows &amp;&amp; out_port!=-1)的逻辑修改如下：</p>
+<div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">setup_flows</span> <span class="o">&amp;&amp;</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">auto</span> <span class="n">fm</span> <span class="o">=</span> <span class="nn">v1::</span><span class="n">ofp_flow_mod</span><span class="p">()</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">())</span>
+               <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/05/04/noxshi-xian-natgong-neng.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html"><h2>[c]线程池的实现</h2></a>
         <div class= "well small"> 2014-04-28
 
@@ -207,39 +239,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p><strong>可读性</strong>：可读性的重点是对编程者而言 ...</p></li></ul> <a class="btn btn-info xsmall" href="./pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html"><h2>[C语言]两个栈实现队列</h2></a>
-        <div class= "well small"> 2014-04-15
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>这是学习c语言的第一个训练题。刚开始写得真的非常差！！后来在大男哥的知道下学会了如何写c语言。本篇教程是：如何使用两个栈实现队列的功能。基本上这个代码也是他手把手教的。</p>
-<h3>算法</h3>
-<p>如何使用两个栈实现队列？
-大家都能想到需要在pop的时候从一个栈到另一个栈倒一下，再pop，这样就有做到先入先出了。但是如何判别哪一个是目前正在使用的，而哪一个又是用来接收第一个栈pop数据的呢？</p>
-<p>其实有一个好办法就是，指定一个是专门用于入栈的栈in_stack，所有数据入栈的时候必须入到这个栈中，而出栈的时候，需要将数据pop到另一个栈中，然后再从另一个栈中出栈。第二次出栈的时候直接从out_stack。直到out_stack的数据为空，则将in_stack的数据pop到out_stack中。这样就能保证出栈的顺序是FIFO了。</p>
-<p>同时，in_stack的深度就是队列的最小深度。</p>
-<p>最大深度是len(in_stack+out_stack).当且仅当第一次push时，全部push到满，然后pop数据，之后继续push直到满。严格意义上来说应该是len(in_stack+out_stack)-1，因为有一个pop掉了。</p>
-<h3>实现</h3>
-<h4>stack的实现</h4>
-<p>首先我们要实现stack。以下是stack.h</p>
-<div class="highlight"><pre><span class="o">/*</span>
-<span class="c1">##################</span>
-<span class="n">Author:</span> <span class="n">muzi</span>
-<span class="n">Date:2014</span><span class="sr">/4/</span><span class="mi">10</span>
-<span class="n">TODO ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="./index2.html">&larr; Previous</a></li>
@@ -251,6 +250,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     <li class=""><a href="./index5.html">5</a></li>
     <li class=""><a href="./index6.html">6</a></li>
     <li class=""><a href="./index7.html">7</a></li>
+    <li class=""><a href="./index8.html">8</a></li>
 
     <li class="next"><a href="./index4.html">Next &rarr;</a></li>
 

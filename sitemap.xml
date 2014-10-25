@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2014-10-20T23:51:25-00:00</lastmod>
+<lastmod>2014-10-25T10:42:53-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2014-10-20T23:51:25-00:00</lastmod>
+<lastmod>2014-10-25T10:42:53-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2014-10-20T23:51:25-00:00</lastmod>
+<lastmod>2014-10-25T10:42:53-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2014-10-20T23:51:25-00:00</lastmod>
+<lastmod>2014-10-25T10:42:53-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2013-12-27T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html</loc>
+<lastmod>2014-10-23T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -292,7 +299,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/category/tech.html</loc>
-<lastmod>2014-10-19T00:00:00-00:00</lastmod>
+<lastmod>2014-10-23T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -403,6 +410,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
+<loc>http://www.muzixing.com/tag/network-virtualization.html</loc>
+<lastmod>2014-10-23T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
 <loc>http://www.muzixing.com/tag/nox.html</loc>
 <lastmod>2014-05-04T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
@@ -467,7 +481,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/author/muzi.html</loc>
-<lastmod>2014-10-19T00:00:00-00:00</lastmod>
+<lastmod>2014-10-23T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
