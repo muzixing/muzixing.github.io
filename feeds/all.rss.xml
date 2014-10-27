@@ -6,7 +6,7 @@
 &lt;h3&gt;网络虚拟化&lt;/h3&gt;
 &lt;p&gt;网络虚拟化允许多租户占用同一个网络基础设施，同时允许租户对其网络的控制能力，对于租户而言，感觉上是自己控制了整个网络。OVX通过使租户能够获取到自己的虚拟拓扑和全网的地址空间来实现网络虚拟化。前者可以允许租户自定义网络拓扑，后者则是用于隔离不同租户的流量，防止冲突。&lt;/p&gt;
 &lt;p&gt;与flowspace的切分slice，使租户使用网络的一部分不一样的是，OVX通过同一个header space来区分所有租户的数据。举个例子就是：两个用户可以设置同样的IP，子网掩码，相同的TCP/UDP端口号，而不会引起冲突，这在flowspace理论下是不能成立的。其根本的区别在于OVX做了地址虚拟化，即面向用户的地址是OVXIPAddress，而真正在core datapath中使用的地址其实还是PhysicalIPAddress，只是在edge port的地方，OVX需要做一个translation，把地址把OVXIPAddress的地址映射成唯一的PhysicalIPAddress,而在core datapath的数据转发过程中，其实数据一直是有OVX来处理，而不需要转发到tenant的controller，从而实现了地址虚拟化。这一部分是OVX最重要最核心的部分，我将在后续的部分中详细介绍。&lt;/p&gt;
-&lt;p&gt;与切分slice原理不一样的另一点是，以前切分的slice限制在底层网络的同构子图中，即用户的虚拟拓扑实际上是物理真是拓扑的一个同构子图，也就是说，租户是可以看到真是的网络拓扑的。而在OVX中不一样的是，用户不需要关心底层的拓扑，而可以任意的定义自己的虚网拓扑，OVX会完成虚网拓扑到物理网络拓扑的映射，这是OVX区别于FlowVisor的重要特性。&lt;/p&gt;
+&lt;p&gt;与切分slice原理不一样的另一点是，以前切分的slice限制在底层网络的同构子图中，即用户的虚拟拓扑实际上是物理真实拓扑的一个同构子图，也就是说，租户是可以看到真实的网络拓扑的。而在OVX中不一样的是，用户不需要关心底层的拓扑，而可以任意的定义自己的虚网拓扑，OVX会完成虚网拓扑到物理网络拓扑的映射，这是OVX区别于FlowVisor的重要特性。&lt;/p&gt;
 &lt;p&gt;OVX作为一个翻译者（代理），存在于租户的控制器和底层网络之间。对于租户而言，OVX通过修改、重写OpenFlow报文来实现租户控制器与租户租用的物理网元之间的通信。这种方法使得OVX具有以下两种能力：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -143,7 +143,7 @@
 &lt;/ul&gt;
 &lt;p&gt;从图中我们也可以看出，在这个FSM中，并不是所有的状态都可以相互转换的。比如只有在INACTIVE状态才能通过调用boot()函数来将状态转换成ACTIVE,而不能直接从INIT状态转换成ACTIVE，显然这是非常合理的。&lt;/p&gt;
 &lt;h3&gt;Component Persistence&lt;/h3&gt;
-&lt;p&gt;租户希望及时OVX重启或者升级之类的，租户的信息以及网络的状态都可以恢复，保持。在OVX中确实也有这方面的功能:OVX通过存储用户的配置信息来完成租户网络的重建。这样就可以保证及时OVX down掉，也没有关系，只要数据库没有损坏就可以恢复了。具体的接口这里不在赘述，详情可以直接查看官网：http://ovx.onlab.us/documentation/architecture/components/&lt;/p&gt;
+&lt;p&gt;租户希望即使OVX重启或者升级之类的，租户的信息以及网络的状态都可以恢复，保持。在OVX中确实也有这方面的功能:OVX通过存储用户的配置信息来完成租户网络的重建。这样就可以保证即使OVX down掉，也没有关系，只要数据库没有损坏就可以恢复了。具体的接口这里不在赘述，详情可以直接查看官网：http://ovx.onlab.us/documentation/architecture/components/&lt;/p&gt;
 &lt;h3&gt;Switches&lt;/h3&gt;
 &lt;p&gt;一个Switch类是一个datapath的描述，包含了端口的信息和它的DPID，以及他的features，正如features_reply中的信息一样，当然还有某些其他成员，如isConnected,具体的Switch类的成员变量如下所示：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;protected&lt;/span&gt; &lt;span class="n"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;isConnected&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;false&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;          &lt;span class="sr"&gt;//&lt;/span&gt; &lt;span class="n"&gt;Channel&lt;/span&gt; &lt;span class="n"&gt;liveness&lt;/span&gt; &lt;span class="n"&gt;indication&lt;/span&gt;
@@ -193,11 +193,11 @@
 &lt;p&gt;与其他部分一样，同样分为PhysicalIPAddress和OVXIPAddress两个子类。但是OVX最核心的部分也是最复杂的部分就是地址的虚拟化！将在后续章节进行详细描述。&lt;/p&gt;
 &lt;h3&gt;Hosts&lt;/h3&gt;
 &lt;p&gt;Host类相对其他类要特殊一些，因为他只有并没有派生成其他子类。因为OVX并没有对Host进行虚拟化，而且也没有必要对Host进行虚拟化。Host类中的Mac地址是区分不同租户的关键标识。通过不同的Host硬件地址，判断属于不同的虚网，且必须遵循每一个Host只属于一个虚网的假设，否则在添加tenantId时会产生冲突，从而无法产生唯一对应的tenantId，影响到流量隔离的功能。所以整个OVX的虚拟化的根基都是基于物理地址全网唯一，而对不同的Host打tenanId来实现虚网隔离，或者流量隔离的。&lt;/p&gt;
-&lt;p&gt;租户可以任意设置Host的IP，但是OVX必须将这些可能和其他租户地址冲突的虚拟IP地址转化成底层物理网络中唯一的IP地址，然后流量在core datapath中将使用PhysicalIPAddress进行交换与路由，其处理逻辑都由OVX完成，而不需要上交tenant的控制器。只有在边缘端口出才会通过重写IP的方式，将数据的IP换成租户定义的IP，从而实现网络的通信。这一点应该得到重视，这是OVX虚拟化的核心部分。&lt;/p&gt;
+&lt;p&gt;租户可以任意设置Host的IP，但是OVX必须将这些可能和其他租户地址冲突的虚拟IP地址转化成底层物理网络中唯一的IP地址，然后流量在core datapath中将使用PhysicalIPAddress进行交换与路由，其处理逻辑都由OVX完成，而不需要上交tenant的控制器。只有在边缘端口处才会通过重写IP的方式，将数据的IP换成租户定义的IP，从而实现网络的通信。这一点应该得到重视，这是OVX虚拟化的核心部分。&lt;/p&gt;
 &lt;h3&gt;Networks&lt;/h3&gt;
 &lt;p&gt;Network基类，包含了switchSet，linkSet等成员，储存了整个网络的信息。同时和其他的基类一样，也会派生两个子类：PhysicalNetwork和OVXNetwork&lt;/p&gt;
 &lt;p&gt;PhysicalNetwork是1:1与底层基础设施对应的，并保存了真实的网络数据，包括交换机，端口，链路和网元状态等。&lt;/p&gt;
-&lt;p&gt;OVXNetwork面向租户描述了网络的状况。OVX为每一个租户维持了一个OVXNetwork的类，并通过唯一的tenantId来映射到底层的网络设施。同时这个唯一的tenantId将出现在网络中所有的交换机，端口以及链路等数据结构中，从而使得OVX能够根据这个ID来识别OpenFlow消息的正确翻译和转发。&lt;/p&gt;
+&lt;p&gt;OVXNetwork面向租户描述了网络的状况。OVX为每一个租户维持了一个OVXNetwork的类，并通过唯一的tenantId来映射到底层的网络设施。同时这个唯一的tenantId将出现在OVXNetwork中所有的交换机，端口以及链路等数据结构中，从而使得OVX能够根据这个ID来识别OpenFlow消息的正确翻译和转发。&lt;/p&gt;
 &lt;h3&gt;Shared Global Mappings&lt;/h3&gt;
 &lt;p&gt;OVX保存着物理网络和租户网络之间的映射关系表，其存储在全局共享的OVXMap的结构中。其包含的Map表如下所示：&lt;/p&gt;
 &lt;table class="table-bordered table-striped table-condensed"&gt;
