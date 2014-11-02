@@ -1,5 +1,147 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/all-zh.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-10-28T00:00:00+08:00</updated><entry><title>OpenVirteX：Operation and Subsystems</title><link href="http://www.muzixing.com/pages/2014/10/28/openvirtexoperation-and-subsystems.html" rel="alternate"></link><updated>2014-10-28T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-10-28:pages/2014/10/28/openvirtexoperation-and-subsystems.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/all-zh.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-11-02T00:00:00+08:00</updated><entry><title>OpenvSwitch2.3.0 mininet install</title><link href="http://www.muzixing.com/pages/2014/11/02/openvswitch230-mininet-install.html" rel="alternate"></link><updated>2014-11-02T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-11-02:pages/2014/11/02/openvswitch230-mininet-install.html</id><summary type="html">&lt;h3&gt;前言&lt;/h3&gt;
+&lt;p&gt;折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助！多亏了他的信息，我才知道如何安装成功。&lt;/p&gt;
+&lt;h3&gt;安装OpenvSwitch2.3.0&lt;/h3&gt;
+&lt;p&gt;不需要自己安装了！但是我还是可以提供一下意见安装脚本的：&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
+
+&lt;span class="c"&gt;# Make sure only root can run our script&lt;/span&gt;
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;$(id -u)&amp;quot;&lt;/span&gt; !&lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;0&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;]&lt;/span&gt;; &lt;span class="k"&gt;then&lt;/span&gt;
+&lt;span class="k"&gt;   &lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;You need to be &amp;#39;root&amp;#39; dude.&amp;quot;&lt;/span&gt; 1&amp;gt;&amp;amp;2
+   &lt;span class="nb"&gt;exit &lt;/span&gt;1
+&lt;span class="k"&gt;fi&lt;/span&gt;
+
+&lt;span class="c"&gt;#install&lt;/span&gt;
+&lt;span class="c"&gt;#apt-get update&lt;/span&gt;
+&lt;span class="c"&gt;#apt-get install -y build-essential&lt;/span&gt;
+
+
+&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;====================INSTALL OpenvSwitch-2.3.0====================&amp;quot;&lt;/span&gt;
+&lt;span class="c"&gt;#apt-get install -y   uml-utilities libtool python-qt4 python-twisted-conch debhelper python-all&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt;  -f openvswitch-2.3.0.tar.gz &lt;span class="o"&gt;]&lt;/span&gt;
+&lt;span class="k"&gt;then &lt;/span&gt;
+&lt;span class="k"&gt;    &lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;openvswitch-2.3.0.tar.gz has exist&amp;quot;&lt;/span&gt;
+&lt;span class="k"&gt;else&lt;/span&gt;
+&lt;span class="k"&gt;    &lt;/span&gt;wget http://openvswitch.org/releases/openvswitch-2.3.0.tar.gz
+&lt;span class="k"&gt;fi&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt;  -d openvswitch-2.3.0 &lt;span class="o"&gt;]&lt;/span&gt;
+&lt;span class="k"&gt;then&lt;/span&gt;
+&lt;span class="k"&gt;   &lt;/span&gt;rm -r openvswitch-2.3.0
+&lt;span class="k"&gt;fi&lt;/span&gt;
+tar -xzf openvswitch-2.3.0.tar.gz
+
+&lt;span class="c"&gt;# Install openvswitch&lt;/span&gt;
+&lt;span class="nb"&gt;cd &lt;/span&gt;openvswitch-2.3.0
+make clean
+./configure --with-linux&lt;span class="o"&gt;=&lt;/span&gt;/lib/modules/&lt;span class="sb"&gt;`&lt;/span&gt;uname -r&lt;span class="sb"&gt;`&lt;/span&gt;/build 2&amp;gt;/dev/null
+make &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; make install
+
+&lt;span class="c"&gt;# install Open vSwitch kernel module&lt;/span&gt;
+insmod datapath/linux/openvswitch.ko
+make modules_install
+
+
+mkdir -p /usr/local/etc/openvswitch
+ovsdb-tool create /usr/local/etc/openvswitch/conf.db vswitchd/vswitch.ovsschema  2&amp;gt;/dev/null
+
+ovsdb-server -v --remote&lt;span class="o"&gt;=&lt;/span&gt;punix:/usr/local/var/run/openvswitch/db.sock &lt;span class="se"&gt;\&lt;/span&gt;
+             --remote&lt;span class="o"&gt;=&lt;/span&gt;db:Open_vSwitch,Open_vSwitch,manager_options &lt;span class="se"&gt;\&lt;/span&gt;
+             --private-key&lt;span class="o"&gt;=&lt;/span&gt;db:Open_vSwitch,SSL,private_key &lt;span class="se"&gt;\&lt;/span&gt;
+             --certificate&lt;span class="o"&gt;=&lt;/span&gt;db:Open_vSwitch,SSL,certificate &lt;span class="se"&gt;\&lt;/span&gt;
+             --bootstrap-ca-cert&lt;span class="o"&gt;=&lt;/span&gt;db:Open_vSwitch,SSL,ca_cert &lt;span class="se"&gt;\&lt;/span&gt;
+             --pidfile --detach
+
+ovs-vsctl --no-wait init
+ovs-vswitchd --pidfile --detach
+ovs-vsctl show
+depmod -A openvswitch
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+
+&lt;h3&gt;Mininet安装&lt;/h3&gt;
+&lt;p&gt;如果以前有安装mininet，那么你需要先卸载mininet&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;rm&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;rf&lt;/span&gt; &lt;span class="sr"&gt;/usr/&lt;/span&gt;&lt;span class="nb"&gt;local&lt;/span&gt;&lt;span class="sr"&gt;/bin/m&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="sr"&gt;/usr/&lt;/span&gt;&lt;span class="nb"&gt;local&lt;/span&gt;&lt;span class="sr"&gt;/bin/m&lt;/span&gt;&lt;span class="n"&gt;nexec&lt;/span&gt; &lt;span class="o"&gt;\&lt;/span&gt;
+        &lt;span class="sr"&gt;/usr/&lt;/span&gt;&lt;span class="nb"&gt;local&lt;/span&gt;&lt;span class="sr"&gt;/lib/&lt;/span&gt;&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="sr"&gt;/*/&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;mininet&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="o"&gt;\&lt;/span&gt;
+        &lt;span class="sr"&gt;/usr/&lt;/span&gt;&lt;span class="nb"&gt;local&lt;/span&gt;&lt;span class="sr"&gt;/bin/o&lt;/span&gt;&lt;span class="n"&gt;vs&lt;/span&gt;&lt;span class="o"&gt;-*&lt;/span&gt; &lt;span class="sr"&gt;/usr/&lt;/span&gt;&lt;span class="nb"&gt;local&lt;/span&gt;&lt;span class="sr"&gt;/sbin/o&lt;/span&gt;&lt;span class="n"&gt;vs&lt;/span&gt;&lt;span class="o"&gt;-*&lt;/span&gt;
+
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;remove&lt;/span&gt; &lt;span class="n"&gt;mininet&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;下载最新版本的mininet&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;git&lt;/span&gt; &lt;span class="n"&gt;clone&lt;/span&gt; &lt;span class="n"&gt;git:&lt;/span&gt;&lt;span class="sr"&gt;//gi&lt;/span&gt;&lt;span class="n"&gt;thub&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="sr"&gt;/mininet/mi&lt;/span&gt;&lt;span class="n"&gt;ninet&lt;/span&gt;
+
+&lt;span class="n"&gt;mininet&lt;/span&gt;&lt;span class="sr"&gt;/util/i&lt;/span&gt;&lt;span class="n"&gt;nstall&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;关键在options。查看详细的内容可以通过查看：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;h&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;而我们需要安装的是OpenFlow13和OpenvSwitch2.3.0,所以命令如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;n3V&lt;/span&gt; &lt;span class="mf"&gt;2.3.0&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;后语&lt;/h3&gt;
+&lt;p&gt;再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！&lt;/p&gt;</summary><category term="OVS"></category><category term="mininet"></category></entry><entry><title>OpenVirteX：Operation and Subsystems</title><link href="http://www.muzixing.com/pages/2014/10/28/openvirtexoperation-and-subsystems.html" rel="alternate"></link><updated>2014-10-28T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-10-28:pages/2014/10/28/openvirtexoperation-and-subsystems.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;继上篇&lt;a href="http://www.muzixing.com/pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html"&gt;《OpenVirteX文档概述（一）：Overview and Components》&lt;/a&gt;之后，本篇将继续介绍OVX的Operation and Subsystems部分。主要讲述OVX内部的运作原理，本文属于个人简介，有误之处敬请指出，希望对读者有所帮助。本篇的顺序依然是按照官网文档的顺序介绍。&lt;/p&gt;
 &lt;h2&gt;简介&lt;/h2&gt;
 &lt;p&gt;本部分将介绍OVX内部的工作原理，如哪些内部子系统实现了哪一些功能，从而使得OVX能支持OpenFlow网络的虚拟化。以下的内容将分为如下的小点介绍：&lt;/p&gt;
