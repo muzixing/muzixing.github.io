@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Sun, 02 Nov 2014 00:00:00 +0800</lastBuildDate><item><title>OpenvSwitch2.3.0 mininet install</title><link>http://www.muzixing.com/pages/2014/11/02/openvswitch230-mininet-install.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Sun, 02 Nov 2014 00:00:00 +0800</lastBuildDate><item><title>OpenvSwitch2.3.0 and Mininet install</title><link>http://www.muzixing.com/pages/2014/11/02/openvswitch230-and-mininet-install.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
 &lt;p&gt;折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助！多亏了他的信息，我才知道如何安装成功。&lt;/p&gt;
 &lt;h3&gt;安装OpenvSwitch2.3.0&lt;/h3&gt;
 &lt;p&gt;不需要自己安装了！但是我还是可以提供一下意见安装脚本的：&lt;/p&gt;
@@ -141,7 +141,7 @@ depmod -A openvswitch
 
 
 &lt;h3&gt;后语&lt;/h3&gt;
-&lt;p&gt;再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Sun, 02 Nov 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-11-02:pages/2014/11/02/openvswitch230-mininet-install.html</guid><category>OVS</category><category>mininet</category></item><item><title>OpenVirteX：Operation and Subsystems</title><link>http://www.muzixing.com/pages/2014/10/28/openvirtexoperation-and-subsystems.html</link><description>&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Sun, 02 Nov 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-11-02:pages/2014/11/02/openvswitch230-and-mininet-install.html</guid><category>OVS</category><category>mininet</category></item><item><title>OpenVirteX：Operation and Subsystems</title><link>http://www.muzixing.com/pages/2014/10/28/openvirtexoperation-and-subsystems.html</link><description>&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;继上篇&lt;a href="http://www.muzixing.com/pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html"&gt;《OpenVirteX文档概述（一）：Overview and Components》&lt;/a&gt;之后，本篇将继续介绍OVX的Operation and Subsystems部分。主要讲述OVX内部的运作原理，本文属于个人简介，有误之处敬请指出，希望对读者有所帮助。本篇的顺序依然是按照官网文档的顺序介绍。&lt;/p&gt;
 &lt;h2&gt;简介&lt;/h2&gt;
 &lt;p&gt;本部分将介绍OVX内部的工作原理，如哪些内部子系统实现了哪一些功能，从而使得OVX能支持OpenFlow网络的虚拟化。以下的内容将分为如下的小点介绍：&lt;/p&gt;
