@@ -1071,6 +1071,19 @@ Multicast? &lt;span class="o"&gt;--------------------------------------------&am
 
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;如果遇到lxml的问题，可以通过安装lxml来解决。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;libxml2&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt; &lt;span class="n"&gt;libxslt1&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt; &lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;
+&lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;lxml&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;若遇到six版本不够的问题，则：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;pip&lt;/span&gt; &lt;span class="n"&gt;uninstall&lt;/span&gt; &lt;span class="n"&gt;six&lt;/span&gt; 
+&lt;span class="n"&gt;pip&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;six&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;来安装高版本的six.&lt;/p&gt;
 &lt;p&gt;若还有更多问题，可参考&lt;a href="http://linton.tw/2014/02/15/note-install-ryu-36-sdn-framework/"&gt;@linton小伙伴的博客&lt;/a&gt;&lt;/p&gt;
 &lt;h3&gt;RYU使用&lt;/h3&gt;
 &lt;p&gt;安装RYU之后，进入ryu目录，输入：&lt;/p&gt;

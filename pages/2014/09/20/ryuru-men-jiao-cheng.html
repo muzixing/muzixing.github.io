@@ -96,6 +96,19 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 
 </li>
 </ul>
+<p>如果遇到lxml的问题，可以通过安装lxml来解决。</p>
+<div class="highlight"><pre><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libxml2</span><span class="o">-</span><span class="n">dev</span> <span class="n">libxslt1</span><span class="o">-</span><span class="n">dev</span> <span class="n">python</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">lxml</span>
+</pre></div>
+
+
+<p>若遇到six版本不够的问题，则：</p>
+<div class="highlight"><pre><span class="n">pip</span> <span class="n">uninstall</span> <span class="n">six</span> 
+<span class="n">pip</span> <span class="n">install</span> <span class="n">six</span>
+</pre></div>
+
+
+<p>来安装高版本的six.</p>
 <p>若还有更多问题，可参考<a href="http://linton.tw/2014/02/15/note-install-ryu-36-sdn-framework/">@linton小伙伴的博客</a></p>
 <h3>RYU使用</h3>
 <p>安装RYU之后，进入ryu目录，输入：</p>
