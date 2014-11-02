@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/tech.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-11-02T00:00:00+08:00</updated><entry><title>OpenvSwitch2.3.0 and Mininet install</title><link href="http://www.muzixing.com/pages/2014/11/02/openvswitch230-and-mininet-install.html" rel="alternate"></link><updated>2014-11-02T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-11-02:pages/2014/11/02/openvswitch230-and-mininet-install.html</id><summary type="html">&lt;h3&gt;前言&lt;/h3&gt;
-&lt;p&gt;折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助！多亏了他的信息，我才知道如何安装成功。&lt;/p&gt;
+&lt;p&gt;折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助。&lt;/p&gt;
 &lt;h3&gt;安装OpenvSwitch2.3.0&lt;/h3&gt;
-&lt;p&gt;不需要自己安装了！但是我还是可以提供一下意见安装脚本的：&lt;/p&gt;
+&lt;p&gt;不需要安装。&lt;/p&gt;
+&lt;p&gt;但是提供一键安装脚本：&lt;/p&gt;
 &lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
  2
  3
@@ -125,12 +126,15 @@ depmod -A openvswitch
 
 &lt;p&gt;下载最新版本的mininet&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;git&lt;/span&gt; &lt;span class="n"&gt;clone&lt;/span&gt; &lt;span class="n"&gt;git:&lt;/span&gt;&lt;span class="sr"&gt;//gi&lt;/span&gt;&lt;span class="n"&gt;thub&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="sr"&gt;/mininet/mi&lt;/span&gt;&lt;span class="n"&gt;ninet&lt;/span&gt;
-
-&lt;span class="n"&gt;mininet&lt;/span&gt;&lt;span class="sr"&gt;/util/i&lt;/span&gt;&lt;span class="n"&gt;nstall&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;关键在options。查看详细的内容可以通过查看：&lt;/p&gt;
+&lt;p&gt;然后运行install.sh -options&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;mininet&lt;/span&gt;&lt;span class="sr"&gt;/util/i&lt;/span&gt;&lt;span class="n"&gt;nstall&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;安装的关键在options。查看详细的内容可以通过查看：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;h&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -140,6 +144,7 @@ depmod -A openvswitch
 &lt;/pre&gt;&lt;/div&gt;
 
 
+&lt;p&gt;执行，安装成功！&lt;/p&gt;
 &lt;h3&gt;后语&lt;/h3&gt;
 &lt;p&gt;再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！&lt;/p&gt;</summary><category term="OVS"></category><category term="mininet"></category></entry><entry><title>OpenVirteX：Operation and Subsystems</title><link href="http://www.muzixing.com/pages/2014/10/28/openvirtexoperation-and-subsystems.html" rel="alternate"></link><updated>2014-10-28T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-10-28:pages/2014/10/28/openvirtexoperation-and-subsystems.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;继上篇&lt;a href="http://www.muzixing.com/pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html"&gt;《OpenVirteX文档概述（一）：Overview and Components》&lt;/a&gt;之后，本篇将继续介绍OVX的Operation and Subsystems部分。主要讲述OVX内部的运作原理，本文属于个人简介，有误之处敬请指出，希望对读者有所帮助。本篇的顺序依然是按照官网文档的顺序介绍。&lt;/p&gt;

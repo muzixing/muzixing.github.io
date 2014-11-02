@@ -67,9 +67,10 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
         </div>
 	
         <div><h3>前言</h3>
-<p>折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助！多亏了他的信息，我才知道如何安装成功。</p>
+<p>折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助。</p>
 <h3>安装OpenvSwitch2.3.0</h3>
-<p>不需要自己安装了！但是我还是可以提供一下意见安装脚本的：</p>
+<p>不需要安装。</p>
+<p>但是提供一键安装脚本：</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -192,12 +193,15 @@ depmod -A openvswitch
 
 <p>下载最新版本的mininet</p>
 <div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">git:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/mininet/mi</span><span class="n">ninet</span>
-
-<span class="n">mininet</span><span class="sr">/util/i</span><span class="n">nstall</span><span class="o">.</span><span class="n">sh</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span>
 </pre></div>
 
 
-<p>关键在options。查看详细的内容可以通过查看：</p>
+<p>然后运行install.sh -options</p>
+<div class="highlight"><pre><span class="n">mininet</span><span class="sr">/util/i</span><span class="n">nstall</span><span class="o">.</span><span class="n">sh</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span>
+</pre></div>
+
+
+<p>安装的关键在options。查看详细的内容可以通过查看：</p>
 <div class="highlight"><pre><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">h</span>
 </pre></div>
 
@@ -207,6 +211,7 @@ depmod -A openvswitch
 </pre></div>
 
 
+<p>执行，安装成功！</p>
 <h3>后语</h3>
 <p>再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！</p></div>
 	
