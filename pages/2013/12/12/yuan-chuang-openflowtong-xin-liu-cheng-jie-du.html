@@ -247,11 +247,11 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 <p>很多人不是特别了解packet_out的作用。</p>
 <ul>
 <li>作用：通过控制器发送交换机希望发送的数据</li>
-<li>例子：arp在广播的时候，在ofsw中不能直接将arp广播，需要上报控制器，控制器下发packet_out，指定交换机对该数据包做泛洪操作。</li>
+<li>例子：当一个没有匹配上流表项的数据上报控制器时，控制器可以下发packet_out，指定交换机对该数据包做泛洪或丢弃动作。</li>
 </ul>
-<p>PS：前一个版本此处有误：特此声明。packet_out的作用在与指导交换机做flood操作，并把ARP包广播出去，packet_out本身并不携带arp数据包。</p>
+<p>当packet_out中的buffer_id=-1时，指明该数据并不在交换机的buffer中，而在packet_out的data。当buffer_id不为-1时，指明要操作的数据包是交换机中该buffer_id的数据。</p>
 <h3>OFPT_FLOW_MOD</h3>
-<p>OFPT_FLOW_MOD是整一个OpenFlow协议中最重要的数据结构，没有之一。</p>
+<p>OFPT_FLOW_MOD是整一个OpenFlow协议中最重要的数据结构。</p>
 <p>OFPT_FLOW_MOD由<strong>header+match+flow_mod+action[]</strong>组成。为了操作简单，以下的结构是将wildcards和match分开的形式，形成两个结构，在编程的时候能更方便一些。由于这个数据包很重要，所以，我将把这个数据包仔细拆分解读。</p>
 <div class="highlight"><pre><span class="n">flow_mod</span> <span class="o">=</span> <span class="n">of</span><span class="o">.</span><span class="n">ofp_header</span><span class="p">(</span><span class="n">type</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span><span class="nb">length</span><span class="o">=</span><span class="mi">72</span><span class="p">)</span><span class="o">/</span><span class="n">of</span><span class="o">.</span><span class="n">ofp_flow_wildcards</span><span class="p">(</span><span class="n">OFPFW_NW_TOS</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                                   <span class="n">OFPFW_DL_VLAN_PCP</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>

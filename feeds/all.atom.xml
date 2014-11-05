@@ -6005,11 +6005,11 @@ accept函数的第一个参数为服务器的socket描述字，第二个参数�
 &lt;p&gt;很多人不是特别了解packet_out的作用。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;作用：通过控制器发送交换机希望发送的数据&lt;/li&gt;
-&lt;li&gt;例子：arp在广播的时候，在ofsw中不能直接将arp广播，需要上报控制器，控制器下发packet_out，指定交换机对该数据包做泛洪操作。&lt;/li&gt;
+&lt;li&gt;例子：当一个没有匹配上流表项的数据上报控制器时，控制器可以下发packet_out，指定交换机对该数据包做泛洪或丢弃动作。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;PS：前一个版本此处有误：特此声明。packet_out的作用在与指导交换机做flood操作，并把ARP包广播出去，packet_out本身并不携带arp数据包。&lt;/p&gt;
+&lt;p&gt;当packet_out中的buffer_id=-1时，指明该数据并不在交换机的buffer中，而在packet_out的data。当buffer_id不为-1时，指明要操作的数据包是交换机中该buffer_id的数据。&lt;/p&gt;
 &lt;h3&gt;OFPT_FLOW_MOD&lt;/h3&gt;
-&lt;p&gt;OFPT_FLOW_MOD是整一个OpenFlow协议中最重要的数据结构，没有之一。&lt;/p&gt;
+&lt;p&gt;OFPT_FLOW_MOD是整一个OpenFlow协议中最重要的数据结构。&lt;/p&gt;
 &lt;p&gt;OFPT_FLOW_MOD由&lt;strong&gt;header+match+flow_mod+action[]&lt;/strong&gt;组成。为了操作简单，以下的结构是将wildcards和match分开的形式，形成两个结构，在编程的时候能更方便一些。由于这个数据包很重要，所以，我将把这个数据包仔细拆分解读。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;flow_mod&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ofp_header&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;14&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nb"&gt;length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;72&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;of&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ofp_flow_wildcards&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;OFPFW_NW_TOS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
                                   &lt;span class="n"&gt;OFPFW_DL_VLAN_PCP&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
