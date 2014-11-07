@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2014/11/02/openvswitch230-and-mininet-install.html"><h1>OpenvSwitch2.3.0 and Mininet install</h1></a>
-2014-11-02
+            <a href="./pages/2014/11/07/multipath-and-qos-by-ryu.html"><h1>Multipath and QoS by RYU</h1></a>
+2014-11-07
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
  
@@ -72,7 +72,345 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h3>前言</h3>
+        <div><h2>前言</h2>
+<p>本篇博文介绍的是如何在RYU上实现multipath和qos功能。在OpenFlow13中有group table,可以用于实现组播和多径故障恢复等功能，而使用queue,可以实现带宽的保障。</p>
+<h2>相关工作</h2>
+<p>要完成多径，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。</p>
+<h3>网络拓扑</h3>
+<div class="highlight"><pre><span class="s">&quot;&quot;&quot;Custom loop topo example</span>
+
+<span class="s">   There are two paths between host1 and host2.</span>
+
+
+<span class="s">                |--------switch2 --------|</span>
+<span class="s">                |                        |</span>
+<span class="s">   host1 --- switch1                   switch4 -----host2</span>
+<span class="s">                |                        |   |------host3</span>
+<span class="s">                -------- switch3 ---------</span>
+<span class="s">                            |</span>
+<span class="s">                          host4</span>
+
+<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate our newly defined</span>
+<span class="s">topology enables one to pass in &#39;--topo=mytopo&#39; from the command line.</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">topo</span> <span class="nb">import</span> <span class="n">Topo</span>
+
+
+<span class="n">class</span> <span class="n">MyTopo</span><span class="p">(</span><span class="n">Topo</span><span class="p">):</span>
+    <span class="s">&quot;Simple loop topology example.&quot;</span>
+
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="s">&quot;Create custom loop topo.&quot;</span>
+
+        <span class="c1"># Initialize topology</span>
+        <span class="n">Topo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
+
+        <span class="c1"># Add hosts and switches</span>
+        <span class="n">host1</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h1&#39;</span><span class="p">)</span>
+        <span class="n">host2</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h2&#39;</span><span class="p">)</span>
+        <span class="n">host3</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h3&#39;</span><span class="p">)</span>
+        <span class="c1">#host4 = self.addHost(&#39;h4&#39;)</span>
+        <span class="n">switch1</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s1&quot;</span><span class="p">)</span>
+        <span class="n">switch2</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s2&quot;</span><span class="p">)</span>
+        <span class="n">switch3</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s3&quot;</span><span class="p">)</span>
+        <span class="n">switch4</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s4&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Add links</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch1</span><span class="p">,</span> <span class="n">host1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch1</span><span class="p">,</span> <span class="n">switch2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch1</span><span class="p">,</span> <span class="n">switch3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch2</span><span class="p">,</span> <span class="n">switch4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch3</span><span class="p">,</span> <span class="n">switch4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch4</span><span class="p">,</span> <span class="n">host2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch4</span><span class="p">,</span> <span class="n">host3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="c1">#self.addLink(switch3, host4, 3)</span>
+
+
+<span class="n">topos</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;mytopo&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">lambda:</span> <span class="n">MyTopo</span><span class="p">())}</span>
+</pre></div>
+
+
+<h2>Multipath</h2>
+<p>解决网络可能形成风暴的问题之后，可以使用select类型的group_table来实现多径功能。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">send_group_mod</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+    <span class="n">ofp</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+    <span class="n">port_1</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">actions_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_1</span><span class="p">)]</span>
+
+    <span class="n">port_2</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
+
+    <span class="n">weight_1</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">weight_2</span> <span class="o">=</span> <span class="mi">50</span>
+
+    <span class="n">watch_port</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPP_ANY</span>
+    <span class="n">watch_group</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPQ_ALL</span>
+
+    <span class="n">buckets</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_1</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">),</span>
+        <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_2</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_2</span><span class="p">)]</span>
+
+    <span class="n">group_id</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPGroupMod</span><span class="p">(</span>
+        <span class="n">datapath</span><span class="p">,</span> <span class="n">ofp</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
+        <span class="n">ofp</span><span class="o">.</span><span class="n">OFPGT_SELECT</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">buckets</span><span class="p">)</span>
+
+    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+</pre></div>
+
+
+<p>不知道现在OVS的select的key是否已经改变，原先的key为dl_dst。匹配成功的flow，在执行select时，是以dl_dst为key,进行判断，从而从buckets中选择一个action_list。</p>
+<p>查看组表信息：</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="nb">dump</span><span class="o">-</span><span class="n">groups</span> <span class="n">s1</span> <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
+</pre></div>
+
+
+<p>查看流表信息：</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="nb">dump</span><span class="o">-</span><span class="n">flows</span> <span class="n">s1</span> <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
+</pre></div>
+
+
+<h2>QoS</h2>
+<p>首先我们知道OpenFlow无法创建队列。所以我们可以通过<a href="http://osrg.github.io/ryu-book/ja/html/rest_qos.html">ovsdb来配置队列</a>，也可以直接使用ovs命令配置:</p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span> <span class="n">set</span> <span class="n">Port</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth2</span> <span class="n">qos</span><span class="o">=</span><span class="nv">@newqos</span> <span class="o">\</span>
+     <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@newqos</span> <span class="n">create</span> <span class="n">QoS</span> <span class="n">type</span><span class="o">=</span><span class="n">linux</span><span class="o">-</span><span class="n">htb</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">250000000</span> <span class="n">queues</span><span class="o">=</span><span class="mi">0</span><span class="o">=</span><span class="nv">@q0</span><span class="o">\</span>
+     <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@q0</span> <span class="n">create</span> <span class="n">Queue</span> <span class="n">other</span><span class="o">-</span><span class="n">config:min</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">8000000</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">150000000</span><span class="o">\</span>
+
+<span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span> <span class="n">set</span> <span class="n">Port</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth3</span> <span class="n">qos</span><span class="o">=</span><span class="nv">@defaultqos</span><span class="o">\</span>
+    <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@defaultqos</span> <span class="n">create</span> <span class="n">QoS</span> <span class="n">type</span><span class="o">=</span><span class="n">linux</span><span class="o">-</span><span class="n">htb</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">300000000</span> <span class="n">queues</span><span class="o">=</span><span class="mi">1</span><span class="o">=</span><span class="nv">@q1</span><span class="o">\</span>
+     <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@q1</span> <span class="n">create</span> <span class="n">Queue</span> <span class="n">other</span><span class="o">-</span><span class="n">config:min</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">5000000</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">200000000</span>
+
+<span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">queue</span>
+</pre></div>
+
+
+<p>以上代码在s1-eth2上创建了queue 0,在s1-eth3上创建了queue 0和queue 1。并配置了max_rate和min_rate。</p>
+<p>查看queue的信息可以使用：</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="n">queue</span><span class="o">-</span><span class="n">stats</span> <span class="n">s1</span> <span class="mi">2</span>  <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
+</pre></div>
+
+
+<p>列举port查看qos：</p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">port</span>
+</pre></div>
+
+
+<p>列举queue：</p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">queue</span>
+</pre></div>
+
+
+<p>删除QOS:</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span><span class="n">all</span> <span class="n">destroy</span> <span class="n">qos</span>
+<span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span><span class="n">all</span> <span class="n">destroy</span> <span class="n">queue</span>
+</pre></div>
+
+
+<p>区别于OpenFlow1.0, OpenFlow1.3中的入队操作只有一个queue_id,需要额外指定port。即指定数据如某一个队列的话需要如下的actions:</p>
+<div class="highlight"><pre><span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
+</pre></div>
+
+
+<p>所以使用group的情况下，完成QoS功能函数如下：</p>
+<div class="highlight"><pre>    <span class="n">def</span> <span class="n">send_group_mod</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+        <span class="n">ofp</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">port_1</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">queue_1</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">actions_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_1</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_1</span><span class="p">)]</span>
+
+        <span class="n">port_2</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">queue_2</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_2</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
+
+        <span class="n">weight_1</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">weight_2</span> <span class="o">=</span> <span class="mi">50</span>
+
+        <span class="n">watch_port</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPP_ANY</span>
+        <span class="n">watch_group</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPQ_ALL</span>
+
+        <span class="n">buckets</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_1</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">),</span>
+            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_2</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_2</span><span class="p">)]</span>
+
+        <span class="n">group_id</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPGroupMod</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">ofp</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
+            <span class="n">ofp</span><span class="o">.</span><span class="n">OFPGT_SELECT</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">buckets</span><span class="p">)</span>
+
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+</pre></div>
+
+
+<h2>实验结果</h2>
+<p><img alt="mininet" src="https://lh5.googleusercontent.com/-7h0W4vxm8q0/VFzmQn2OqUI/AAAAAAAAAB0/UJZsmdXBv-A/s728/flow.png" /></p>
+<p>从图中我们可以看到，pingall连通性没有问题。第一个iperf是在没有设置队列的情况下，由于找不到队列，所以不如队，只转发，此时带宽为26.4Gbits/sec。之后的测试数据为设置队列之后的数据。可以看出h1到h2之间的带宽是300Mbits/sec，而h1到h3的带宽是150Mbits/sec。 </p>
+<p>原因在于我们将h1到h2的数据流在组表中选择了s1-eth3的queue 0，而该队列的最大带宽是300M。</p>
+<p>同时另一个从h1到h3的数据流，在hash过程中，选择了s1-eth2端口的queue 0，该队列的最大速度为150M。</p>
+<p>下图为queue information：</p>
+<p><img alt="" src="https://lh4.googleusercontent.com/-4Y6u3sBvs04/VFzl0q3hRTI/AAAAAAAAABM/p__qVJZxrtk/s723/queue.png" /></p>
+<p>可以看到，port 2 queue 0和port 3 queue 0有数据，而port 3 queue 1没有数据。</p>
+<p><img alt="" src="https://lh6.googleusercontent.com/-sPNF4yt8f7Y/VFzl0gu_QxI/AAAAAAAAABI/ISEWbEwbF-Q/s728/flow.png" /></p>
+<p>上图为s1和s4的组表和流表信息，从s4的流表信息（后部分流表）可知，同样是s1到s4的数据，dl_dst为h2的数据从port 2进入，而dl_dst为h3的数据从port 1进入，从而可以验证多径完成。</p>
+<h2>后语</h2>
+<p>这其实是简单的实验，但是由于在安装OVS的过程中遇到了很多的问题，所以过程比较痛苦，写下来，以备不时之需，也有可能帮助到别人吧。提供一个纯从<a href="http://hwchiu.logdown.com/posts/207387-multipath-routing-with-group-table-at-mininet">OVS上配置的方案</a>，相比之下比开发控制要简单一些。</p>
+<p>折叠版代码如下：</p>
+<div class="highlight"><pre><span class="c1"># Author:muzixing</span>
+<span class="c1"># Time:2014/10/19</span>
+<span class="c1">#</span>
+
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">base</span> <span class="nb">import</span> <span class="n">app_manager</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span> <span class="nb">import</span> <span class="n">ofp_event</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">CONFIG_DISPATCHER</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">HANDSHAKE_DISPATCHER</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">set_ev_cls</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">ofproto</span> <span class="nb">import</span> <span class="n">ofproto_v1_3</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">packet</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">ethernet</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">arp</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">ipv4</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">icmp</span>
+<span class="n">from</span> <span class="n">ryu</span> <span class="nb">import</span> <span class="n">utils</span>
+
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span> <span class="nb">import</span> <span class="n">addrconv</span>
+<span class="nb">import</span> <span class="n">struct</span>
+<span class="nb">import</span> <span class="nb">socket</span>
+
+<span class="n">ETHERNET</span> <span class="o">=</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="o">.</span><span class="n">__name__</span>
+<span class="n">ETHERNET_MULTICAST</span> <span class="o">=</span> <span class="s">&quot;ff:ff:ff:ff:ff:ff&quot;</span>
+<span class="n">ARP</span> <span class="o">=</span> <span class="n">arp</span><span class="o">.</span><span class="n">arp</span><span class="o">.</span><span class="n">__name__</span>
+<span class="n">ICMP</span> <span class="o">=</span> <span class="n">icmp</span><span class="o">.</span><span class="n">icmp</span><span class="o">.</span><span class="n">__name__</span>
+<span class="n">IPV4</span> <span class="o">=</span> <span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="o">.</span><span class="n">__name__</span>
+
+<span class="n">def</span> <span class="n">ip2long</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="nb">unpack</span><span class="p">(</span><span class="s">&quot;!I&quot;</span><span class="p">,</span> <span class="nb">socket</span><span class="o">.</span><span class="n">inet_aton</span><span class="p">(</span><span class="n">ip</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="n">class</span> <span class="n">MULTIPATH_13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">MULTIPATH_13</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">arp_table</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">sw</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+    <span class="n">def</span> <span class="n">switch_features_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="c1"># install table-miss flow entry</span>
+        <span class="c1">#</span>
+        <span class="c1"># We specify NO BUFFER to max_len of the output action due to</span>
+        <span class="c1"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
+        <span class="c1"># 128, OVS will send Packet-In with invalid buffer_id and</span>
+        <span class="c1"># truncated packet data. In that case, we cannot output packets</span>
+        <span class="c1"># correctly.</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
+                                          <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+    <span class="n">def</span> <span class="n">add_flow</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">hard_timeout</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
+                                             <span class="n">actions</span><span class="p">)]</span>
+
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
+                                <span class="n">hard_timeout</span><span class="o">=</span><span class="n">hard_timeout</span><span class="p">,</span>
+                                <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+        <span class="c1">#print mod.__dict__</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="nv">@set_ev_cls</span><span class="p">(</span>
+        <span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPErrorMsg</span><span class="p">,</span>
+        <span class="p">[</span><span class="n">HANDSHAKE_DISPATCHER</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">])</span>
+    <span class="n">def</span> <span class="n">error_msg_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s">&#39;OFPErrorMsg received: type=0x%02x code=0x%02x &#39;</span>
+            <span class="s">&#39;message=%s&#39;</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">hex_array</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+
+    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="n">def</span> <span class="n">_packet_in_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="n">def</span> <span class="n">send_packet_out</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">None</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
+                                  <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="n">def</span> <span class="n">arp_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">header_list</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg_buffer_id</span><span class="p">)</span>
+        <span class="o">...</span>
+
+    <span class="n">def</span> <span class="n">send_group_mod</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+        <span class="n">ofp</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">port_1</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">queue_1</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">actions_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_1</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_1</span><span class="p">)]</span>
+
+        <span class="n">port_2</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">queue_2</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_2</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
+
+        <span class="n">weight_1</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">weight_2</span> <span class="o">=</span> <span class="mi">50</span>
+
+        <span class="n">watch_port</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPP_ANY</span>
+        <span class="n">watch_group</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPQ_ALL</span>
+
+        <span class="n">buckets</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_1</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">),</span>
+            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_2</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_2</span><span class="p">)]</span>
+
+        <span class="n">group_id</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPGroupMod</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">ofp</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
+            <span class="n">ofp</span><span class="o">.</span><span class="n">OFPGT_SELECT</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">buckets</span><span class="p">)</span>
+
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+</pre></div>
+
+
+<p>进来接触了许多网络方面的知识，深深觉得自己努力不够，接下来的日子需要好好静下心来读书学习了。希望我也能写出不错的论文。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2014/11/02/openvswitch230-and-mininet-install.html"><h2>OpenvSwitch2.3.0 and Mininet install</h2></a>
+        <div class= "well small"> 2014-11-02
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
 <p>折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助。</p>
 <h3>安装OpenvSwitch2.3.0</h3>
 <p>不需要安装。</p>
@@ -116,113 +454,9 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 37
 38
 39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
-
-<span class="c"># Make sure only root can run our script</span>
-<span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$(id -u)&quot;</span> !<span class="o">=</span> <span class="s2">&quot;0&quot;</span> <span class="o">]</span>; <span class="k">then</span>
-<span class="k">   </span><span class="nb">echo</span> <span class="s2">&quot;You need to be &#39;root&#39; dude.&quot;</span> 1&gt;&amp;2
-   <span class="nb">exit </span>1
-<span class="k">fi</span>
-
-<span class="c">#install</span>
-<span class="c">#apt-get update</span>
-<span class="c">#apt-get install -y build-essential</span>
-
-
-<span class="nb">echo</span> <span class="s2">&quot;====================INSTALL OpenvSwitch-2.3.0====================&quot;</span>
-<span class="c">#apt-get install -y   uml-utilities libtool python-qt4 python-twisted-conch debhelper python-all</span>
-
-<span class="k">if</span> <span class="o">[</span>  -f openvswitch-2.3.0.tar.gz <span class="o">]</span>
-<span class="k">then </span>
-<span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;openvswitch-2.3.0.tar.gz has exist&quot;</span>
-<span class="k">else</span>
-<span class="k">    </span>wget http://openvswitch.org/releases/openvswitch-2.3.0.tar.gz
-<span class="k">fi</span>
-
-<span class="k">if</span> <span class="o">[</span>  -d openvswitch-2.3.0 <span class="o">]</span>
-<span class="k">then</span>
-<span class="k">   </span>rm -r openvswitch-2.3.0
-<span class="k">fi</span>
-tar -xzf openvswitch-2.3.0.tar.gz
-
-<span class="c"># Install openvswitch</span>
-<span class="nb">cd </span>openvswitch-2.3.0
-make clean
-./configure --with-linux<span class="o">=</span>/lib/modules/<span class="sb">`</span>uname -r<span class="sb">`</span>/build 2&gt;/dev/null
-make <span class="o">&amp;&amp;</span> make install
-
-<span class="c"># install Open vSwitch kernel module</span>
-insmod datapath/linux/openvswitch.ko
-make modules_install
-
-
-mkdir -p /usr/local/etc/openvswitch
-ovsdb-tool create /usr/local/etc/openvswitch/conf.db vswitchd/vswitch.ovsschema  2&gt;/dev/null
-
-ovsdb-server -v --remote<span class="o">=</span>punix:/usr/local/var/run/openvswitch/db.sock <span class="se">\</span>
-             --remote<span class="o">=</span>db:Open_vSwitch,Open_vSwitch,manager_options <span class="se">\</span>
-             --private-key<span class="o">=</span>db:Open_vSwitch,SSL,private_key <span class="se">\</span>
-             --certificate<span class="o">=</span>db:Open_vSwitch,SSL,certificate <span class="se">\</span>
-             --bootstrap-ca-cert<span class="o">=</span>db:Open_vSwitch,SSL,ca_cert <span class="se">\</span>
-             --pidfile --detach
-
-ovs-vsctl --no-wait init
-ovs-vswitchd --pidfile --detach
-ovs-vsctl show
-depmod -A openvswitch
-</pre></div>
-</td></tr></table>
-
-<h3>Mininet安装</h3>
-<p>如果以前有安装mininet，那么你需要先卸载mininet</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="sr">/usr/</span><span class="nb">local</span><span class="sr">/bin/m</span><span class="n">n</span> <span class="sr">/usr/</span><span class="nb">local</span><span class="sr">/bin/m</span><span class="n">nexec</span> <span class="o">\</span>
-        <span class="sr">/usr/</span><span class="nb">local</span><span class="sr">/lib/</span><span class="n">python</span><span class="o">*</span><span class="sr">/*/</span><span class="o">*</span><span class="n">mininet</span><span class="o">*</span> <span class="o">\</span>
-        <span class="sr">/usr/</span><span class="nb">local</span><span class="sr">/bin/o</span><span class="n">vs</span><span class="o">-*</span> <span class="sr">/usr/</span><span class="nb">local</span><span class="sr">/sbin/o</span><span class="n">vs</span><span class="o">-*</span>
-
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">remove</span> <span class="n">mininet</span>
-</pre></div>
-
-
-<p>下载最新版本的mininet</p>
-<div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">git:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/mininet/mi</span><span class="n">ninet</span>
-</pre></div>
-
-
-<p>然后运行install.sh -options</p>
-<div class="highlight"><pre><span class="n">mininet</span><span class="sr">/util/i</span><span class="n">nstall</span><span class="o">.</span><span class="n">sh</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span>
-</pre></div>
-
-
-<p>安装的关键在options。查看详细的内容可以通过查看：</p>
-<div class="highlight"><pre><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">h</span>
-</pre></div>
-
-
-<p>而我们需要安装的是OpenFlow13和OpenvSwitch2.3.0,所以命令如下：</p>
-<div class="highlight"><pre><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">n3V</span> <span class="mf">2.3.0</span>
-</pre></div>
-
-
-<p>执行，安装成功！</p>
-<h3>后语</h3>
-<p>再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！</p></div>
-        <hr />
-    </div>
-		
+40 ...</pre></div></td></tr></table> <a class="btn btn-info xsmall" href="./pages/2014/11/02/openvswitch230-and-mininet-install.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -335,54 +569,6 @@ Multicast? <span class="o">--------------------------------------------&gt;|</sp
 
 
 <h3>解决环路风暴 ...</h3> <a class="btn btn-info xsmall" href="./pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/09/20/ryuru-men-jiao-cheng.html"><h2>RYU入门教程</h2></a>
-        <div class= "well small"> 2014-09-20
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>辗转了POX,NOX,OpenDaylight等多个控制器之后，我终于意识到我只喜欢python语言的控制器。但是我依然记得OpenDaylight的Nullpointer的Exception,还记得YANG文件的深奥，但是OpenDaylight让我对控制器开发的兴趣减少了，这不是我想要的事情。最后，我下决定转向RYU。我突然发现，生活突然变得很美好。我用着我熟悉的，喜欢的，优美的python，写着充满美感的语句，犹如写诗一般的惬意。</p>
-<p>本篇主要介绍如何安装RYU，和如何在RYU上开发APP。</p>
-<h3>RYU的安装</h3>
-<p>安装RYU，需要安装一些python的套件：</p>
-<ul>
-<li>python-eventlet</li>
-<li>python-routes</li>
-<li>python-webob</li>
-<li>python-paramiko</li>
-</ul>
-<p>安装RYU主要有两种方式：</p>
-<ul>
-<li>
-<p>pip安装</p>
-<div class="highlight"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">ryu</span>
-</pre></div>
-
-
-</li>
-<li>
-<p>下载源文件安装</p>
-<div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">git:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/osrg/</span><span class="n">ryu</span><span class="o">.</span><span class="n">git</span>
-<span class="n">cd</span> <span class="n">ryu</span>
-<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
-</pre></div>
-
-
-</li>
-</ul>
-<p>如果遇到lxml的问题 ...</p> <a class="btn btn-info xsmall" href="./pages/2014/09/20/ryuru-men-jiao-cheng.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

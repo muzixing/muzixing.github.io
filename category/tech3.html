@@ -62,6 +62,35 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/08/02/opendaylightru-men-jiao-cheng.html"><h2>OpenDaylight入门教程</h2></a>
+        <div class= "well small"> 2014-08-02
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>关于OpenDaylight</h3>
+<p>OpenDaylight is an open platform for network programmability to enable SDN and create a solid foundation for NFV for networks at any size and scale.</p>
+<p>对于SDN而言，ODL（OpenDaylight）是一个开源的可编程的平台，简单的说是一个非常有野心开源控制器而不仅仅只是控制器。</p>
+<p>opendaylight官网:http://www.opendaylight.org/</p>
+<h3>环境配置</h3>
+<ul>
+<li>
+<p>jdk需要1.6以上。</p>
+<p>sudo apt-get -y install openjdk-7-jdk</p>
+</li>
+</ul>
+<p>更多安装信息请查看:https://wiki.opendaylight.org/view ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/02/opendaylightru-men-jiao-cheng.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html"><h2>【python爬虫】抓取淘宝模特图片——20分钟爬虫之旅</h2></a>
         <div class= "well small"> 2014-07-24
 
@@ -189,49 +218,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="n">void</span> <span class="n">queue_init</span><span class="p">(</span><span class="n">queue_t</span><span class="o">*</span> <span class="n">queue</span><span class="p">);</span> <span class="sr">//</span><span class="err">队列的初始化。如</span><span class="n">end</span><span class="p">,</span><span class="n">begin</span><span class="err">，</span><span class="n">maxsize</span><span class="err">的设置。</span>
 <span class="nb">int</span> <span class="n">get_len</span><span class="p">(</span><span class="n">queue_t</span><span class="o">*</span> <span class="n">queue</span><span class="p">);</span>     <span class="sr">//</span><span class="err">获取队列的长度</span>
 <span class="n">void ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/04/18/ctime_server.html"><h2>[c]time_server</h2></a>
-        <div class= "well small"> 2014-04-18
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>本篇内容主要是介绍如何编写一个通过socket通信，实现获取服务器当前时间的例子。</p>
-<h3>实现</h3>
-<p>首先我们需要定义两个函数：</p>
-<div class="highlight"><pre><span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-</pre></div>
-
-
-<p>这两个函数是用于提供时间获取服务和，客户端调用去获取时间的函数。</p>
-<p>以下是time_server.h的内容：</p>
-<div class="highlight"><pre><span class="c1">#ifndef _TIME_SERVER_</span>
-<span class="c1">#define _TIME_SERVER_</span>
-<span class="c1">#include &lt;sys/socket.h&gt;</span>
-<span class="c1">#include &lt;string.h&gt;</span>
-
-<span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-<span class="c1">#endif</span>
-</pre></div>
-
-
-<p>time_server.c文件是实现time_server中的函数声明。
-头文件如下：</p>
-<div class="highlight"><pre><span class="c">#include &lt;stdlib.h&gt;</span>
-<span class="c">#include &quot;time_server.h ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/18/ctime_server.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

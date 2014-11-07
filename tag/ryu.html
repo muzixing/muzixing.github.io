@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"><h1>基于SDN的RYU应用——ARP_PROXY</h1></a>
-2014-10-19
+            <a href="../pages/2014/11/07/multipath-and-qos-by-ryu.html"><h1>Multipath and QoS by RYU</h1></a>
+2014-11-07
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,345 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h3>前言</h3>
+        <div><h2>前言</h2>
+<p>本篇博文介绍的是如何在RYU上实现multipath和qos功能。在OpenFlow13中有group table,可以用于实现组播和多径故障恢复等功能，而使用queue,可以实现带宽的保障。</p>
+<h2>相关工作</h2>
+<p>要完成多径，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。</p>
+<h3>网络拓扑</h3>
+<div class="highlight"><pre><span class="s">&quot;&quot;&quot;Custom loop topo example</span>
+
+<span class="s">   There are two paths between host1 and host2.</span>
+
+
+<span class="s">                |--------switch2 --------|</span>
+<span class="s">                |                        |</span>
+<span class="s">   host1 --- switch1                   switch4 -----host2</span>
+<span class="s">                |                        |   |------host3</span>
+<span class="s">                -------- switch3 ---------</span>
+<span class="s">                            |</span>
+<span class="s">                          host4</span>
+
+<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate our newly defined</span>
+<span class="s">topology enables one to pass in &#39;--topo=mytopo&#39; from the command line.</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">topo</span> <span class="nb">import</span> <span class="n">Topo</span>
+
+
+<span class="n">class</span> <span class="n">MyTopo</span><span class="p">(</span><span class="n">Topo</span><span class="p">):</span>
+    <span class="s">&quot;Simple loop topology example.&quot;</span>
+
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="s">&quot;Create custom loop topo.&quot;</span>
+
+        <span class="c1"># Initialize topology</span>
+        <span class="n">Topo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
+
+        <span class="c1"># Add hosts and switches</span>
+        <span class="n">host1</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h1&#39;</span><span class="p">)</span>
+        <span class="n">host2</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h2&#39;</span><span class="p">)</span>
+        <span class="n">host3</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h3&#39;</span><span class="p">)</span>
+        <span class="c1">#host4 = self.addHost(&#39;h4&#39;)</span>
+        <span class="n">switch1</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s1&quot;</span><span class="p">)</span>
+        <span class="n">switch2</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s2&quot;</span><span class="p">)</span>
+        <span class="n">switch3</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s3&quot;</span><span class="p">)</span>
+        <span class="n">switch4</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s4&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Add links</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch1</span><span class="p">,</span> <span class="n">host1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch1</span><span class="p">,</span> <span class="n">switch2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch1</span><span class="p">,</span> <span class="n">switch3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch2</span><span class="p">,</span> <span class="n">switch4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch3</span><span class="p">,</span> <span class="n">switch4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch4</span><span class="p">,</span> <span class="n">host2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch4</span><span class="p">,</span> <span class="n">host3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="c1">#self.addLink(switch3, host4, 3)</span>
+
+
+<span class="n">topos</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;mytopo&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">lambda:</span> <span class="n">MyTopo</span><span class="p">())}</span>
+</pre></div>
+
+
+<h2>Multipath</h2>
+<p>解决网络可能形成风暴的问题之后，可以使用select类型的group_table来实现多径功能。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">send_group_mod</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+    <span class="n">ofp</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+    <span class="n">port_1</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">actions_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_1</span><span class="p">)]</span>
+
+    <span class="n">port_2</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
+
+    <span class="n">weight_1</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">weight_2</span> <span class="o">=</span> <span class="mi">50</span>
+
+    <span class="n">watch_port</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPP_ANY</span>
+    <span class="n">watch_group</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPQ_ALL</span>
+
+    <span class="n">buckets</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_1</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">),</span>
+        <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_2</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_2</span><span class="p">)]</span>
+
+    <span class="n">group_id</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPGroupMod</span><span class="p">(</span>
+        <span class="n">datapath</span><span class="p">,</span> <span class="n">ofp</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
+        <span class="n">ofp</span><span class="o">.</span><span class="n">OFPGT_SELECT</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">buckets</span><span class="p">)</span>
+
+    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+</pre></div>
+
+
+<p>不知道现在OVS的select的key是否已经改变，原先的key为dl_dst。匹配成功的flow，在执行select时，是以dl_dst为key,进行判断，从而从buckets中选择一个action_list。</p>
+<p>查看组表信息：</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="nb">dump</span><span class="o">-</span><span class="n">groups</span> <span class="n">s1</span> <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
+</pre></div>
+
+
+<p>查看流表信息：</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="nb">dump</span><span class="o">-</span><span class="n">flows</span> <span class="n">s1</span> <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
+</pre></div>
+
+
+<h2>QoS</h2>
+<p>首先我们知道OpenFlow无法创建队列。所以我们可以通过<a href="http://osrg.github.io/ryu-book/ja/html/rest_qos.html">ovsdb来配置队列</a>，也可以直接使用ovs命令配置:</p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span> <span class="n">set</span> <span class="n">Port</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth2</span> <span class="n">qos</span><span class="o">=</span><span class="nv">@newqos</span> <span class="o">\</span>
+     <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@newqos</span> <span class="n">create</span> <span class="n">QoS</span> <span class="n">type</span><span class="o">=</span><span class="n">linux</span><span class="o">-</span><span class="n">htb</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">250000000</span> <span class="n">queues</span><span class="o">=</span><span class="mi">0</span><span class="o">=</span><span class="nv">@q0</span><span class="o">\</span>
+     <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@q0</span> <span class="n">create</span> <span class="n">Queue</span> <span class="n">other</span><span class="o">-</span><span class="n">config:min</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">8000000</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">150000000</span><span class="o">\</span>
+
+<span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span> <span class="n">set</span> <span class="n">Port</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth3</span> <span class="n">qos</span><span class="o">=</span><span class="nv">@defaultqos</span><span class="o">\</span>
+    <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@defaultqos</span> <span class="n">create</span> <span class="n">QoS</span> <span class="n">type</span><span class="o">=</span><span class="n">linux</span><span class="o">-</span><span class="n">htb</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">300000000</span> <span class="n">queues</span><span class="o">=</span><span class="mi">1</span><span class="o">=</span><span class="nv">@q1</span><span class="o">\</span>
+     <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@q1</span> <span class="n">create</span> <span class="n">Queue</span> <span class="n">other</span><span class="o">-</span><span class="n">config:min</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">5000000</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">200000000</span>
+
+<span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">queue</span>
+</pre></div>
+
+
+<p>以上代码在s1-eth2上创建了queue 0,在s1-eth3上创建了queue 0和queue 1。并配置了max_rate和min_rate。</p>
+<p>查看queue的信息可以使用：</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="n">queue</span><span class="o">-</span><span class="n">stats</span> <span class="n">s1</span> <span class="mi">2</span>  <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
+</pre></div>
+
+
+<p>列举port查看qos：</p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">port</span>
+</pre></div>
+
+
+<p>列举queue：</p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">queue</span>
+</pre></div>
+
+
+<p>删除QOS:</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span><span class="n">all</span> <span class="n">destroy</span> <span class="n">qos</span>
+<span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span><span class="n">all</span> <span class="n">destroy</span> <span class="n">queue</span>
+</pre></div>
+
+
+<p>区别于OpenFlow1.0, OpenFlow1.3中的入队操作只有一个queue_id,需要额外指定port。即指定数据如某一个队列的话需要如下的actions:</p>
+<div class="highlight"><pre><span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
+</pre></div>
+
+
+<p>所以使用group的情况下，完成QoS功能函数如下：</p>
+<div class="highlight"><pre>    <span class="n">def</span> <span class="n">send_group_mod</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+        <span class="n">ofp</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">port_1</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">queue_1</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">actions_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_1</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_1</span><span class="p">)]</span>
+
+        <span class="n">port_2</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">queue_2</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_2</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
+
+        <span class="n">weight_1</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">weight_2</span> <span class="o">=</span> <span class="mi">50</span>
+
+        <span class="n">watch_port</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPP_ANY</span>
+        <span class="n">watch_group</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPQ_ALL</span>
+
+        <span class="n">buckets</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_1</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">),</span>
+            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_2</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_2</span><span class="p">)]</span>
+
+        <span class="n">group_id</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPGroupMod</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">ofp</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
+            <span class="n">ofp</span><span class="o">.</span><span class="n">OFPGT_SELECT</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">buckets</span><span class="p">)</span>
+
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+</pre></div>
+
+
+<h2>实验结果</h2>
+<p><img alt="mininet" src="https://lh5.googleusercontent.com/-7h0W4vxm8q0/VFzmQn2OqUI/AAAAAAAAAB0/UJZsmdXBv-A/s728/flow.png" /></p>
+<p>从图中我们可以看到，pingall连通性没有问题。第一个iperf是在没有设置队列的情况下，由于找不到队列，所以不如队，只转发，此时带宽为26.4Gbits/sec。之后的测试数据为设置队列之后的数据。可以看出h1到h2之间的带宽是300Mbits/sec，而h1到h3的带宽是150Mbits/sec。 </p>
+<p>原因在于我们将h1到h2的数据流在组表中选择了s1-eth3的queue 0，而该队列的最大带宽是300M。</p>
+<p>同时另一个从h1到h3的数据流，在hash过程中，选择了s1-eth2端口的queue 0，该队列的最大速度为150M。</p>
+<p>下图为queue information：</p>
+<p><img alt="" src="https://lh4.googleusercontent.com/-4Y6u3sBvs04/VFzl0q3hRTI/AAAAAAAAABM/p__qVJZxrtk/s723/queue.png" /></p>
+<p>可以看到，port 2 queue 0和port 3 queue 0有数据，而port 3 queue 1没有数据。</p>
+<p><img alt="" src="https://lh6.googleusercontent.com/-sPNF4yt8f7Y/VFzl0gu_QxI/AAAAAAAAABI/ISEWbEwbF-Q/s728/flow.png" /></p>
+<p>上图为s1和s4的组表和流表信息，从s4的流表信息（后部分流表）可知，同样是s1到s4的数据，dl_dst为h2的数据从port 2进入，而dl_dst为h3的数据从port 1进入，从而可以验证多径完成。</p>
+<h2>后语</h2>
+<p>这其实是简单的实验，但是由于在安装OVS的过程中遇到了很多的问题，所以过程比较痛苦，写下来，以备不时之需，也有可能帮助到别人吧。提供一个纯从<a href="http://hwchiu.logdown.com/posts/207387-multipath-routing-with-group-table-at-mininet">OVS上配置的方案</a>，相比之下比开发控制要简单一些。</p>
+<p>折叠版代码如下：</p>
+<div class="highlight"><pre><span class="c1"># Author:muzixing</span>
+<span class="c1"># Time:2014/10/19</span>
+<span class="c1">#</span>
+
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">base</span> <span class="nb">import</span> <span class="n">app_manager</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span> <span class="nb">import</span> <span class="n">ofp_event</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">CONFIG_DISPATCHER</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">HANDSHAKE_DISPATCHER</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">set_ev_cls</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">ofproto</span> <span class="nb">import</span> <span class="n">ofproto_v1_3</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">packet</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">ethernet</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">arp</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">ipv4</span>
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">icmp</span>
+<span class="n">from</span> <span class="n">ryu</span> <span class="nb">import</span> <span class="n">utils</span>
+
+<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span> <span class="nb">import</span> <span class="n">addrconv</span>
+<span class="nb">import</span> <span class="n">struct</span>
+<span class="nb">import</span> <span class="nb">socket</span>
+
+<span class="n">ETHERNET</span> <span class="o">=</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="o">.</span><span class="n">__name__</span>
+<span class="n">ETHERNET_MULTICAST</span> <span class="o">=</span> <span class="s">&quot;ff:ff:ff:ff:ff:ff&quot;</span>
+<span class="n">ARP</span> <span class="o">=</span> <span class="n">arp</span><span class="o">.</span><span class="n">arp</span><span class="o">.</span><span class="n">__name__</span>
+<span class="n">ICMP</span> <span class="o">=</span> <span class="n">icmp</span><span class="o">.</span><span class="n">icmp</span><span class="o">.</span><span class="n">__name__</span>
+<span class="n">IPV4</span> <span class="o">=</span> <span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="o">.</span><span class="n">__name__</span>
+
+<span class="n">def</span> <span class="n">ip2long</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="nb">unpack</span><span class="p">(</span><span class="s">&quot;!I&quot;</span><span class="p">,</span> <span class="nb">socket</span><span class="o">.</span><span class="n">inet_aton</span><span class="p">(</span><span class="n">ip</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="n">class</span> <span class="n">MULTIPATH_13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">MULTIPATH_13</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">arp_table</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">sw</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+    <span class="n">def</span> <span class="n">switch_features_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="c1"># install table-miss flow entry</span>
+        <span class="c1">#</span>
+        <span class="c1"># We specify NO BUFFER to max_len of the output action due to</span>
+        <span class="c1"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
+        <span class="c1"># 128, OVS will send Packet-In with invalid buffer_id and</span>
+        <span class="c1"># truncated packet data. In that case, we cannot output packets</span>
+        <span class="c1"># correctly.</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
+                                          <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+    <span class="n">def</span> <span class="n">add_flow</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">hard_timeout</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
+                                             <span class="n">actions</span><span class="p">)]</span>
+
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
+                                <span class="n">hard_timeout</span><span class="o">=</span><span class="n">hard_timeout</span><span class="p">,</span>
+                                <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+        <span class="c1">#print mod.__dict__</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="nv">@set_ev_cls</span><span class="p">(</span>
+        <span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPErrorMsg</span><span class="p">,</span>
+        <span class="p">[</span><span class="n">HANDSHAKE_DISPATCHER</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">])</span>
+    <span class="n">def</span> <span class="n">error_msg_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s">&#39;OFPErrorMsg received: type=0x%02x code=0x%02x &#39;</span>
+            <span class="s">&#39;message=%s&#39;</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">hex_array</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+
+    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="n">def</span> <span class="n">_packet_in_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="n">def</span> <span class="n">send_packet_out</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">None</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
+                                  <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="n">def</span> <span class="n">arp_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">header_list</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg_buffer_id</span><span class="p">)</span>
+        <span class="o">...</span>
+
+    <span class="n">def</span> <span class="n">send_group_mod</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+        <span class="n">ofp</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">port_1</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">queue_1</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">actions_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_1</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_1</span><span class="p">)]</span>
+
+        <span class="n">port_2</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">queue_2</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_2</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
+
+        <span class="n">weight_1</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">weight_2</span> <span class="o">=</span> <span class="mi">50</span>
+
+        <span class="n">watch_port</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPP_ANY</span>
+        <span class="n">watch_group</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPQ_ALL</span>
+
+        <span class="n">buckets</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_1</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">),</span>
+            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_2</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_2</span><span class="p">)]</span>
+
+        <span class="n">group_id</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPGroupMod</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">ofp</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
+            <span class="n">ofp</span><span class="o">.</span><span class="n">OFPGT_SELECT</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">buckets</span><span class="p">)</span>
+
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+</pre></div>
+
+
+<p>进来接触了许多网络方面的知识，深深觉得自己努力不够，接下来的日子需要好好静下心来读书学习了。希望我也能写出不错的论文。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"><h2>基于SDN的RYU应用——ARP_PROXY</h2></a>
+        <div class= "well small"> 2014-10-19
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
 <p>在传统网络中，存在着一定的广播流量，占据了一部分的网络带宽。同时，在有环的拓扑中，如果不运行某些协议，广播数据还会引起网络风暴，使网络瘫痪。传统的解决方案是运行STP（生成树协议），来解决环路带来的风暴隐患。但是这样的难题在SDN之后，解决起来似乎变得要简单一些。本文将介绍如何在控制器RYU上开发ARP代理模块，用于代理回复ARP请求，以及解决环状拓扑风暴的问题。</p>
 <h3>算法逻辑</h3>
 <p>具体的算法流程图如下：</p>
@@ -108,253 +446,9 @@ Multicast? <span class="o">--------------------------------------------&gt;|</sp
 </pre></div>
 
 
-<h3>解决环路风暴</h3>
-<p>在回复ARP请求之前，必须要解决的是网络环路问题。我们的解决方案是：以（dpid, eth_src,arp_dst_ip）为key，记录第一个数据包的in_port，并将从网络中返回的数据包丢弃，保证同一个交换机中的某一个广播数据包只能有一个入口，从而防止成环。在此应用中默认网络中发起通信的第一个数据包都是ARP数据包。</p>
-<div class="highlight"><pre><span class="n">sw</span><span class="p">[(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">eth_src</span><span class="p">,</span> <span class="n">arp_dst_ip</span><span class="p">)]</span> <span class="o">=</span> <span class="n">in_port</span>
-</pre></div>
-
-
-<p><strong>代码如下：</strong></p>
-<div class="highlight"><pre><span class="k">if</span> <span class="n">eth_dst</span> <span class="o">==</span> <span class="n">ETHERNET_MULTICAST</span> <span class="ow">and</span> <span class="n">ARP</span> <span class="n">in</span> <span class="n">header_list:</span>
-    <span class="n">arp_dst_ip</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">dst_ip</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">eth_src</span><span class="p">,</span> <span class="n">arp_dst_ip</span><span class="p">)</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">sw:</span>  <span class="c1"># Break the loop</span>
-        <span class="k">if</span> <span class="n">self</span><span class="o">.</span><span class="n">sw</span><span class="p">[(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">eth_src</span><span class="p">,</span> <span class="n">arp_dst_ip</span><span class="p">)]</span> <span class="o">!=</span> <span class="n">in_port:</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span>
-                <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
-                <span class="n">buffer_id</span><span class="o">=</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">,</span>
-                <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span>
-                <span class="n">actions</span><span class="o">=[]</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">None</span><span class="p">)</span>
-            <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">True</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">sw</span><span class="p">[(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">eth_src</span><span class="p">,</span> <span class="n">arp_dst_ip</span><span class="p">)]</span> <span class="o">=</span> <span class="n">in_port</span>
-</pre></div>
-
-
-<h3>ARP回复</h3>
-<p>解决完环路拓扑中存在的广播风暴问题之后，我们还需要利用SDN控制器可获取网络全局的信息的能力，去代理回复ARP请求，从而减少网络中泛洪的ARP请求数据。这个逻辑非常简单，和二层学习原理基本一样，也是通过自学习主机ARP记录，再通过查询记录并回复。具体代码实现如下：</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="n">ARP</span> <span class="n">in</span> <span class="n">header_list:</span>
-    <span class="n">hwtype</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">hwtype</span>
-    <span class="n">proto</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">proto</span>
-    <span class="n">hlen</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">hlen</span>
-    <span class="n">plen</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">plen</span>
-    <span class="n">opcode</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">opcode</span>
-
-    <span class="n">arp_src_ip</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">src_ip</span>
-    <span class="n">arp_dst_ip</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">dst_ip</span>
-
-    <span class="n">actions</span> <span class="o">=</span> <span class="o">[]</span>
-
-    <span class="k">if</span> <span class="n">opcode</span> <span class="o">==</span> <span class="n">arp</span><span class="o">.</span><span class="n">ARP_REQUEST:</span>
-        <span class="k">if</span> <span class="n">arp_dst_ip</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">arp_table:</span>  <span class="c1"># arp reply</span>
-            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span>
-                <span class="n">in_port</span><span class="p">)</span>
-            <span class="p">)</span>
-
-            <span class="n">ARP_Reply</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">()</span>
-            <span class="n">ARP_Reply</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">(</span>
-                <span class="n">ethertype</span><span class="o">=</span><span class="n">header_list</span><span class="p">[</span><span class="n">ETHERNET</span><span class="p">]</span><span class="o">.</span><span class="n">ethertype</span><span class="p">,</span>
-                <span class="n">dst</span><span class="o">=</span><span class="n">eth_src</span><span class="p">,</span>
-                <span class="n">src</span><span class="o">=</span><span class="n">self</span><span class="o">.</span><span class="n">arp_table</span><span class="p">[</span><span class="n">arp_dst_ip</span><span class="p">]))</span>
-            <span class="n">ARP_Reply</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">arp</span><span class="o">.</span><span class="n">arp</span><span class="p">(</span>
-                <span class="n">opcode</span><span class="o">=</span><span class="n">arp</span><span class="o">.</span><span class="n">ARP_REPLY</span><span class="p">,</span>
-                <span class="n">src_mac</span><span class="o">=</span><span class="n">self</span><span class="o">.</span><span class="n">arp_table</span><span class="p">[</span><span class="n">arp_dst_ip</span><span class="p">],</span>
-                <span class="n">src_ip</span><span class="o">=</span><span class="n">arp_dst_ip</span><span class="p">,</span>
-                <span class="n">dst_mac</span><span class="o">=</span><span class="n">eth_src</span><span class="p">,</span>
-                <span class="n">dst_ip</span><span class="o">=</span><span class="n">arp_src_ip</span><span class="p">))</span>
-
-            <span class="n">ARP_Reply</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
-
-            <span class="n">out</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span>
-                <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
-                <span class="n">buffer_id</span><span class="o">=</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">,</span>
-                <span class="n">in_port</span><span class="o">=</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
-                <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">ARP_Reply</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-            <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">True</span>
-<span class="k">return</span> <span class="n">False</span>
-</pre></div>
-
-
-<h3>后语</h3>
-<p>在环状拓扑中解决广播风暴问题基本都是使用STP协议，而SDN的网络架构，给我们提供了一个更高效的解决方案。不仅如此，我们还可以在解决风暴之后，进一步完成ARP代理应用。然而这个简单的APP，并没有很好地解决ARP的问题，因为ARP也有生存时间。而过时的数据会影响网络的正常运行，所以，进一步的优化将是设置ARP记录的刷新时间。以及sw{dpid, eth_src,arp_dst_ip}的刷新时间。以保证数据的有效性。</p>
-<p>推而广之，我们可以按照这样的模式去处理其他的广播数据，如DHCP。更多的功能数据包或者信令数据包的代理，都可以模仿本篇的流程实现。文章的最后，附上完整的代码实现。</p>
-<div class="highlight"><pre><span class="c1"># Author:muzixing</span>
-<span class="c1"># Time:2014/10/19</span>
-<span class="c1">#</span>
-
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">base</span> <span class="nb">import</span> <span class="n">app_manager</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span> <span class="nb">import</span> <span class="n">ofp_event</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">set_ev_cls</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">ofproto</span> <span class="nb">import</span> <span class="n">ofproto_v1_3</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">packet</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">ethernet</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">arp</span>
-
-<span class="n">ETHERNET</span> <span class="o">=</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="o">.</span><span class="n">__name__</span>
-<span class="n">ETHERNET_MULTICAST</span> <span class="o">=</span> <span class="s">&quot;ff:ff:ff:ff:ff:ff&quot;</span>
-<span class="n">ARP</span> <span class="o">=</span> <span class="n">arp</span><span class="o">.</span><span class="n">arp</span><span class="o">.</span><span class="n">__name__</span>
-
-
-<span class="n">class</span> <span class="n">ARP_PROXY_13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
-    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">super</span><span class="p">(</span><span class="n">ARP_PROXY_13</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">arp_table</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">sw</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
-    <span class="n">def</span> <span class="n">switch_features_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
-        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-        <span class="c1"># install table-miss flow entry</span>
-        <span class="c1">#</span>
-        <span class="c1"># We specify NO BUFFER to max_len of the output action due to</span>
-        <span class="c1"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
-        <span class="c1"># 128, OVS will send Packet-In with invalid buffer_id and</span>
-        <span class="c1"># truncated packet data. In that case, we cannot output packets</span>
-        <span class="c1"># correctly.</span>
-
-        <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
-        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
-                                          <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">add_flow</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
-        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-        <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
-                                             <span class="n">actions</span><span class="p">)]</span>
-
-        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
-                                <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">hard_timeout</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
-                                <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
-        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
-
-    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-    <span class="n">def</span> <span class="n">_packet_in_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
-        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
-
-        <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-
-        <span class="n">eth</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">dst</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">dst</span>
-        <span class="n">src</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span>
-        <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
-
-        <span class="n">header_list</span> <span class="o">=</span> <span class="n">dict</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">protocol_name</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span><span class="k">for</span> <span class="n">p</span> <span class="n">in</span> <span class="n">pkt</span><span class="o">.</span><span class="n">protocols</span> <span class="k">if</span> <span class="n">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">!=</span> <span class="n">str</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">ARP</span> <span class="n">in</span> <span class="n">header_list:</span>
-            <span class="n">self</span><span class="o">.</span><span class="n">arp_table</span><span class="p">[</span><span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">src_ip</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span>  <span class="c1"># ARP learning</span>
-
-        <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet in %s %s %s %s&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
-
-        <span class="c1"># learn a mac address to avoid FLOOD next time.</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_port</span>
-
-        <span class="k">if</span> <span class="n">dst</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
-            <span class="n">out_port</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">self</span><span class="o">.</span><span class="n">arp_handler</span><span class="p">(</span><span class="n">header_list</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">):</span>
-                <span class="c1"># 1:reply or drop;  0: flood</span>
-                <span class="k">print</span> <span class="s">&quot;ARP_PROXY_13&quot;</span>
-                <span class="k">return</span> <span class="n">None</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">out_port</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span>
-                <span class="k">print</span> <span class="s">&#39;OFPP_FLOOD&#39;</span>
-
-        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
-
-        <span class="c1"># install a flow to avoid packet_in next time</span>
-        <span class="k">if</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD:</span>
-            <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
-            <span class="n">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="n">None</span>
-        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
-                                  <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">arp_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">header_list</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg_buffer_id</span><span class="p">):</span>
-        <span class="n">header_list</span> <span class="o">=</span> <span class="n">header_list</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">datapath</span>
-        <span class="n">in_port</span> <span class="o">=</span> <span class="n">in_port</span>
-
-        <span class="k">if</span> <span class="n">ETHERNET</span> <span class="n">in</span> <span class="n">header_list:</span>
-            <span class="n">eth_dst</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ETHERNET</span><span class="p">]</span><span class="o">.</span><span class="n">dst</span>
-            <span class="n">eth_src</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ETHERNET</span><span class="p">]</span><span class="o">.</span><span class="n">src</span>
-
-        <span class="k">if</span> <span class="n">eth_dst</span> <span class="o">==</span> <span class="n">ETHERNET_MULTICAST</span> <span class="ow">and</span> <span class="n">ARP</span> <span class="n">in</span> <span class="n">header_list:</span>
-            <span class="n">arp_dst_ip</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">dst_ip</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">eth_src</span><span class="p">,</span> <span class="n">arp_dst_ip</span><span class="p">)</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">sw:</span>  <span class="c1"># Break the loop</span>
-                <span class="k">if</span> <span class="n">self</span><span class="o">.</span><span class="n">sw</span><span class="p">[(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">eth_src</span><span class="p">,</span> <span class="n">arp_dst_ip</span><span class="p">)]</span> <span class="o">!=</span> <span class="n">in_port:</span>
-                    <span class="n">out</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span>
-                        <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
-                        <span class="n">buffer_id</span><span class="o">=</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">,</span>
-                        <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span>
-                        <span class="n">actions</span><span class="o">=[]</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">None</span><span class="p">)</span>
-                    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="n">True</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">self</span><span class="o">.</span><span class="n">sw</span><span class="p">[(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">eth_src</span><span class="p">,</span> <span class="n">arp_dst_ip</span><span class="p">)]</span> <span class="o">=</span> <span class="n">in_port</span>
-
-        <span class="k">if</span> <span class="n">ARP</span> <span class="n">in</span> <span class="n">header_list:</span>
-            <span class="n">hwtype</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">hwtype</span>
-            <span class="n">proto</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">proto</span>
-            <span class="n">hlen</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">hlen</span>
-            <span class="n">plen</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">plen</span>
-            <span class="n">opcode</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">opcode</span>
-
-            <span class="n">arp_src_ip</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">src_ip</span>
-            <span class="n">arp_dst_ip</span> <span class="o">=</span> <span class="n">header_list</span><span class="p">[</span><span class="n">ARP</span><span class="p">]</span><span class="o">.</span><span class="n">dst_ip</span>
-
-            <span class="n">actions</span> <span class="o">=</span> <span class="o">[]</span>
-
-            <span class="k">if</span> <span class="n">opcode</span> <span class="o">==</span> <span class="n">arp</span><span class="o">.</span><span class="n">ARP_REQUEST:</span>
-                <span class="k">if</span> <span class="n">arp_dst_ip</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">arp_table:</span>  <span class="c1"># arp reply</span>
-                    <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span>
-                        <span class="n">in_port</span><span class="p">)</span>
-                    <span class="p">)</span>
-
-                    <span class="n">ARP_Reply</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">()</span>
-                    <span class="n">ARP_Reply</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">(</span>
-                        <span class="n">ethertype</span><span class="o">=</span><span class="n">header_list</span><span class="p">[</span><span class="n">ETHERNET</span><span class="p">]</span><span class="o">.</span><span class="n">ethertype</span><span class="p">,</span>
-                        <span class="n">dst</span><span class="o">=</span><span class="n">eth_src</span><span class="p">,</span>
-                        <span class="n">src</span><span class="o">=</span><span class="n">self</span><span class="o">.</span><span class="n">arp_table</span><span class="p">[</span><span class="n">arp_dst_ip</span><span class="p">]))</span>
-                    <span class="n">ARP_Reply</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">arp</span><span class="o">.</span><span class="n">arp</span><span class="p">(</span>
-                        <span class="n">opcode</span><span class="o">=</span><span class="n">arp</span><span class="o">.</span><span class="n">ARP_REPLY</span><span class="p">,</span>
-                        <span class="n">src_mac</span><span class="o">=</span><span class="n">self</span><span class="o">.</span><span class="n">arp_table</span><span class="p">[</span><span class="n">arp_dst_ip</span><span class="p">],</span>
-                        <span class="n">src_ip</span><span class="o">=</span><span class="n">arp_dst_ip</span><span class="p">,</span>
-                        <span class="n">dst_mac</span><span class="o">=</span><span class="n">eth_src</span><span class="p">,</span>
-                        <span class="n">dst_ip</span><span class="o">=</span><span class="n">arp_src_ip</span><span class="p">))</span>
-
-                    <span class="n">ARP_Reply</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
-
-                    <span class="n">out</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span>
-                        <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
-                        <span class="n">buffer_id</span><span class="o">=</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">,</span>
-                        <span class="n">in_port</span><span class="o">=</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
-                        <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">ARP_Reply</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-                    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="n">True</span>
-        <span class="k">return</span> <span class="n">False</span>
-</pre></div></div>
-        <hr />
-    </div>
-		
+<h3>解决环路风暴 ...</h3> <a class="btn btn-info xsmall" href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">read more</a></div>
+    </div>	
+				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
