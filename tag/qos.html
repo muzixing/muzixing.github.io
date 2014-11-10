@@ -62,7 +62,7 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/11/07/multipath-and-qos-by-ryu.html"><h1>Multipath and QoS by RYU</h1></a>
+            <a href="../pages/2014/11/07/multipath-and-qos-application-on-ryu.html"><h1>Multipath and QoS Application on RYU</h1></a>
 2014-11-07
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
@@ -247,14 +247,14 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 
 
 <h2>实验结果</h2>
-<p><img alt="mininet" src="https://lh5.googleusercontent.com/-7h0W4vxm8q0/VFzmQn2OqUI/AAAAAAAAAB0/UJZsmdXBv-A/s728/flow.png" /></p>
+<p><img alt="mininet" src="http://ww1.sinaimg.cn/mw690/7f593341jw1em5uu5i76qj20k40cr0v8.jpg" /></p>
 <p>从图中我们可以看到，pingall连通性没有问题。第一个iperf是在没有设置队列的情况下，由于找不到队列，所以不如队，只转发，此时带宽为26.4Gbits/sec。之后的测试数据为设置队列之后的数据。可以看出h1到h2之间的带宽是300Mbits/sec，而h1到h3的带宽是150Mbits/sec。 </p>
 <p>原因在于我们将h1到h2的数据流在组表中选择了s1-eth3的queue 0，而该队列的最大带宽是300M。</p>
 <p>同时另一个从h1到h3的数据流，在hash过程中，选择了s1-eth2端口的queue 0，该队列的最大速度为150M。</p>
 <p>下图为queue information：</p>
-<p><img alt="" src="https://lh4.googleusercontent.com/-4Y6u3sBvs04/VFzl0q3hRTI/AAAAAAAAABM/p__qVJZxrtk/s723/queue.png" /></p>
+<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1em5uu6ecr8j20k30cuq63.jpg" /></p>
 <p>可以看到，port 2 queue 0和port 3 queue 0有数据，而port 3 queue 1没有数据。</p>
-<p><img alt="" src="https://lh6.googleusercontent.com/-sPNF4yt8f7Y/VFzl0gu_QxI/AAAAAAAAABI/ISEWbEwbF-Q/s728/flow.png" /></p>
+<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1em5uu5dgjfj20k80cu0xb.jpg" /></p>
 <p>上图为s1和s4的组表和流表信息，从s4的流表信息（后部分流表）可知，同样是s1到s4的数据，dl_dst为h2的数据从port 2进入，而dl_dst为h3的数据从port 1进入，从而可以验证多径完成。</p>
 <h2>后语</h2>
 <p>这其实是简单的实验，但是由于在安装OVS的过程中遇到了很多的问题，所以过程比较痛苦，写下来，以备不时之需，也有可能帮助到别人吧。提供一个纯从<a href="http://hwchiu.logdown.com/posts/207387-multipath-routing-with-group-table-at-mininet">OVS上配置的方案</a>，相比之下比开发控制要简单一些。</p>

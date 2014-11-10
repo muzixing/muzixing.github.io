@@ -107,7 +107,7 @@
 <li>
 <p><strong>Acceleration application of HTTP     ------ Key Laboratory of Universal Wireless Communications Ministry of Education</strong></p>
 <ul>
-<li>Build the test platform by Pox+Openvswitch+Nginx to accelerate the speed of HTTP.</li>
+<li>Build the test platform by RYU/POX+OpenvSwitch+Nginx to accelerate the speed of HTTP.</li>
 </ul>
 </li>
 <li>
@@ -115,6 +115,14 @@
 <ul>
 <li>Start communication thread to achieve communication between two POXs.</li>
 <li>Design and test the west-east interface.</li>
+</ul>
+</li>
+<li>
+<p><strong>Multipath and QoS Application on RYU</strong></p>
+<ul>
+<li>Implement <a href="https://github.com/muzixing/ryu/blob/master/ryu/app/arp_proxy_13.py">ARP proxy</a> to avoid storm.</li>
+<li>Use select type group table to implement multipath.</li>
+<li>Use queue to implement QoS.</li>
 </ul>
 </li>
 </ul>
@@ -196,15 +204,23 @@
 <li>
 <p><strong>北京邮电大学•泛网无线教育部重点实验室——SDN应用：HTTP引流</strong></p>
 <ul>
-<li>使用Pox+Openvswitch+Nginx，搭建SDN(Software Defined Network)网络，现实HTTP流量引导。</li>
+<li>使用RYU/POX+Openvswitch+Nginx，搭建SDN(Software Defined Network)网络，现实HTTP流量引导。</li>
 <li>实现不同优先级业务区别对待，vlan切换等功能。</li>
 </ul>
 </li>
 <li>
 <p><strong>实现控制器东西向接口</strong></p>
 <ul>
-<li>编写通信模块communication实现P2P的POX通信</li>
-<li>原创开发东西向接口协议并测试</li>
+<li>编写通信模块communication实现P2P的POX通信；</li>
+<li>原创开发东西向接口协议并测试。</li>
+</ul>
+</li>
+<li>
+<p><strong>实现多径和QoS</strong></p>
+<ul>
+<li>部署<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/arp_proxy_13.py">ARP代理</a>取代STP，解除广播风暴；</li>
+<li>使用select group table实现多径；</li>
+<li>使用队列实现带宽QoS保障。</li>
 </ul>
 </li>
 </ul>
