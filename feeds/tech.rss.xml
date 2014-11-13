@@ -318,7 +318,7 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;进来接触了许多网络方面的知识，深深觉得自己努力不够，接下来的日子需要好好静下心来读书学习了。希望我也能写出不错的论文。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 07 Nov 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-11-07:pages/2014/11/07/multipath-and-qos-application-on-ryu.html</guid><category>multipath</category><category>qos</category><category>queue</category><category>SDN</category><category>RYU</category></item><item><title>OpenvSwitch2.3.0 and Mininet install</title><link>http://www.muzixing.com/pages/2014/11/02/openvswitch230-and-mininet-install.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
+&lt;p&gt;最近接触了许多网络方面的知识，深深觉得自己努力不够，接下来的日子需要好好静下心来读书学习了。希望我也能写出不错的论文。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 07 Nov 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-11-07:pages/2014/11/07/multipath-and-qos-application-on-ryu.html</guid><category>multipath</category><category>qos</category><category>queue</category><category>SDN</category><category>RYU</category></item><item><title>OpenvSwitch2.3.0 and Mininet install</title><link>http://www.muzixing.com/pages/2014/11/02/openvswitch230-and-mininet-install.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
 &lt;p&gt;折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助。&lt;/p&gt;
 &lt;h3&gt;安装OpenvSwitch2.3.0&lt;/h3&gt;
 &lt;p&gt;不需要安装。&lt;/p&gt;
