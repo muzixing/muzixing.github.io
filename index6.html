@@ -62,36 +62,6 @@
  
 
     <div class='article'>
-        <a href="./pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html"><h2>【原】基于mininet的OpenFlow拓展性拓扑搭建</h2></a>
-        <div class= "well small"> 2014-03-11
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>我们普遍情况下，都是单一控制器去控制一个网络。但是如果多控制器呢？我们如何实现多控制情况下的通信要求呢？</p>
-<p>这有点难度！需要一些东西向的协议来实现控制器之间的数据共享与交换。不是我一个人一两天能搞定的事情。且不同控制器对拓扑信息等存储方式不一样，需要一个统一的标准就显得比较困难。我们先不去想太多。首先，我们需要完成的第一项工作就是数据平面上，不同控制器之间的网络可以相互通信。</p>
-<p>最简单的通信莫过于ping了！</p>
-<h2>实验目的</h2>
-<p>使用mininet搭建两个独立的网络，分别属于不同的控制器。同时，底层数据平面可以相互ping通。这就是我们这个实验的目的。</p>
-<h2>拓扑搭建</h2>
-<p>底层拓扑搭建我们使用mininet2.0，因为mininet1.0版本好像没有link文件，也没有intf类。也许是我没有找到吧。</p>
-<p>以下的代码的作用在于创建一个OVS的网络，并使虚拟机的某个（无ip）网卡连接到这个网中。</p>
-<p>直接上代码：</p>
-<div class="highlight"><pre><span class="o">\</span><span class="c1">#!/usr/bin/python</span>
-<span class="s">&quot;&quot;&quot;</span>
-<span class="s">    This is a topu of our test. It shows that how to add an ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
         <a href="./pages/2014/01/01/shu-yu-wo-de-2013he-2014.html"><h2>属于我的2013和2014</h2></a>
         <div class= "well small"> 2014-01-01
 
@@ -198,6 +168,43 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <li>若干网络协议的熟悉与掌握。</li>
 <li>最重要的，你自己从无到有，经历了一个开发过程，所有出现的你想到的想不到的问题，你都需要自己去解决。你会在解决问题的过程中收获太多太多你想不到的财富。</li>
 <li>自信！你可以大声对自己说 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html"><h2>【原创】OpenFlow通信流程解读</h2></a>
+        <div class= "well small"> 2013-12-12
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>接触了这么久的SDN，OpenFlow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对OpenFlow协议通信流程的一些理解。</p>
+<h2>SDN中Switch和controller</h2>
+<p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
+<h3>switch组成与传统交换机的差异</h3>
+<h4>switch组成</h4>
+<p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
+<ul>
+<li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
+<li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
+</ul>
+<h4>of中sw与传统交换机的差异</h4>
+<ul>
+<li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
+<li>运行of协议，实现许多路由器的功能，比如组播。</li>
+<li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
+</ul>
+<h4>OpenFlow的switch可以从以下方式获得</h4>
+<ul>
+<li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

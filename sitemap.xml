@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2014-11-13T15:31:55-00:00</lastmod>
+<lastmod>2014-11-15T16:16:12-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2014-11-13T15:31:55-00:00</lastmod>
+<lastmod>2014-11-15T16:16:12-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2014-11-13T15:31:55-00:00</lastmod>
+<lastmod>2014-11-15T16:16:12-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2014-11-13T15:31:55-00:00</lastmod>
+<lastmod>2014-11-15T16:16:12-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -193,13 +193,6 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/pages/2014/03/25/zhuan-linuxchang-yong-ming-ling.html</loc>
-<lastmod>2014-03-25T00:00:00-00:00</lastmod>
-<changefreq>monthly</changefreq>
-<priority>0.7</priority>
-</url>
-
-<url>
 <loc>http://www.muzixing.com/pages/2014/03/21/markdowntian-jia-shi-pin-jiao-cheng-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html</loc>
 <lastmod>2014-03-21T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
@@ -251,13 +244,6 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>http://www.muzixing.com/pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html</loc>
 <lastmod>2013-12-12T00:00:00-00:00</lastmod>
-<changefreq>monthly</changefreq>
-<priority>0.7</priority>
-</url>
-
-<url>
-<loc>http://www.muzixing.com/pages/2013/12/11/wo-ceng-jing-qi-ci-bi-shi-zi-ji-de-ling-hun.html</loc>
-<lastmod>2013-12-11T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
