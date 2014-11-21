@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2014-11-19T11:21:55-00:00</lastmod>
+<lastmod>2014-11-21T22:14:06-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2014-11-19T11:21:55-00:00</lastmod>
+<lastmod>2014-11-21T22:14:06-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2014-11-19T11:21:55-00:00</lastmod>
+<lastmod>2014-11-21T22:14:06-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2014-11-19T11:21:55-00:00</lastmod>
+<lastmod>2014-11-21T22:14:06-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2013-12-27T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/pages/2014/11/21/sflowru-men-chu-she.html</loc>
+<lastmod>2014-11-21T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -306,7 +313,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/category/tech.html</loc>
-<lastmod>2014-11-07T00:00:00-00:00</lastmod>
+<lastmod>2014-11-21T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -362,7 +369,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/tag/mininet.html</loc>
-<lastmod>2014-11-02T00:00:00-00:00</lastmod>
+<lastmod>2014-11-21T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -370,6 +377,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>http://www.muzixing.com/tag/suan-fa.html</loc>
 <lastmod>2013-11-29T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/tag/moniter.html</loc>
+<lastmod>2014-11-21T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -480,6 +494,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
+<loc>http://www.muzixing.com/tag/sflow.html</loc>
+<lastmod>2014-11-21T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
 <loc>http://www.muzixing.com/tag/sdn-ewbridge.html</loc>
 <lastmod>2014-04-10T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
@@ -516,7 +537,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/author/muzi.html</loc>
-<lastmod>2014-11-07T00:00:00-00:00</lastmod>
+<lastmod>2014-11-21T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

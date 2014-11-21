@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/11/02/openvswitch230-and-mininet-install.html"><h1>OpenvSwitch2.3.0 and Mininet install</h1></a>
-2014-11-02
+            <a href="../pages/2014/11/21/sflowru-men-chu-she.html"><h1>sFlow入门初涉</h1></a>
+2014-11-21
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -73,6 +73,93 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         </div>
         
         <div><h3>前言</h3>
+<p><a href="http://www.sflow.org/sFlowOverview.pdf">sFlow</a>是一个应用在高速交换网络中的监控软件。sFlow需要交换机支持才能使用，万幸OpenvSwitch支持这个功能。netflow同样也是类似功能的软件，可惜没有接触过，也只是听过名字而已。第一次接触到sFlow之后，就觉得很感兴趣，跟着<a href="http://www.sdnlab.com/3760">SDNLAB</a>的教程做了一遍之后，记录下自己的学习过程。</p>
+<h3>安装sFlow</h3>
+<p>下载sFlow代码：</p>
+<div class="highlight"><pre><span class="n">http:</span><span class="sr">//</span><span class="n">pan</span><span class="o">.</span><span class="n">baidu</span><span class="o">.</span><span class="n">com</span><span class="sr">/s/</span><span class="mi">1</span><span class="n">mgmOVck</span>
+</pre></div>
+
+
+<p>解压缩，安装：</p>
+<div class="highlight"><pre><span class="n">tar</span> <span class="o">-</span><span class="n">zxvf</span> <span class="n">sflow</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">cd</span> <span class="n">sflow</span><span class="o">/</span><span class="n">sflow</span><span class="o">-</span><span class="n">rt</span>
+<span class="o">./</span><span class="n">start</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+
+
+<p>此时通过浏览器127:0.0.1:8008可以查看到生成的页面。</p>
+<h3>实验步骤</h3>
+<p>本实验步骤将介绍如何在一台机器上完成sflow流量监控实验。实验需要运行一个控制器，可以使用mininet自带的控制器，也可以使用RYU等控制器。然后运行mininet，设置OVS的sFlow功能，从而从8008端口上查看到相应的数据。</p>
+<h3>启动mininet</h3>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">mn</span>
+</pre></div>
+
+
+<p>或者</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">mn</span> <span class="o">--</span><span class="n">controller</span><span class="o">=</span><span class="n">remote</span><span class="p">,</span><span class="n">ip</span><span class="o">=</span><span class="p">[</span><span class="n">controllerip</span><span class="p">]</span>
+</pre></div>
+
+
+<h4>开启OVS的sFlow功能</h4>
+<p>为了让mininet中创建的OVS和本地网卡相连，从而使得8008端口可以通过网卡获取到mininet中流量数据，我们需要将某个网卡加入到OVS生成的bridge上。选择最简单的eth0即可，不过如果eth0是连接外网的网卡的话，很可能添加到bridge之后，就无法上网了。</p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">port</span> <span class="n">s1</span> <span class="n">eth0</span>
+</pre></div>
+
+
+<p>设置s1的IP，使得交换机可以作为sFlow agent与sFlow Collector通信。例如，给s1使用eth的IP：10.108.144.45，此举确保IP是可用的。</p>
+<div class="highlight"><pre> <span class="n">ifconfig</span> <span class="n">s1</span> <span class="mf">10.108.144.45</span> <span class="n">netmask</span> <span class="mf">255.255.255.248</span>
+</pre></div>
+
+
+<p>配置之后，查看配置是否生效：</p>
+<div class="highlight"><pre><span class="n">ifconfig</span> <span class="n">s1</span>
+</pre></div>
+
+
+<p>开启OVS的sFlow功能：</p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@sflow_id</span> <span class="n">create</span> <span class="n">sFlow</span> <span class="n">agent</span><span class="o">=</span><span class="n">s1</span> <span class="n">target</span><span class="o">=\</span><span class="s">&quot;127.0.0.1:6343\&quot;</span> <span class="n">header</span><span class="o">=</span><span class="mi">128</span> <span class="n">sampling</span><span class="o">=</span><span class="mi">64</span> <span class="n">polling</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span> <span class="n">set</span> <span class="n">bridge</span> <span class="n">s1</span> <span class="n">sflow</span><span class="o">=</span><span class="nv">@sflow_id</span>
+</pre></div>
+
+
+<p>其中agent指的是需要作为sFlow agent的网卡，target是目标的sFlow Collector。</p>
+<p>查看配置是否生效：</p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">sflow</span>
+</pre></div>
+
+
+<p>查看结果如下图：</p>
+<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emisnsk7gmj20fb06emxu.jpg" /></p>
+<p>list功能可以查看很多内容，如：</p>
+<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">port</span>
+<span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">queue</span>
+<span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">qos</span>
+</pre></div>
+
+
+<h3>监控网络流量</h3>
+<p>打开127.0.0.1：8008，点击agent等栏目能看到对应的信息。在mininet中使用pingall，iperf iperfudp等命令产生流量，并查看统计情况。实例如下：</p>
+<p><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emismf2z9nj21da0dz0wn.jpg" /></p>
+<h3>后语</h3>
+<p>在网络中，如果能实时监控到网络的流量，那么就可以根据网络流量数据做出许多Traffic Engineering的操作。所以对于一个网络而言，实时的网络流量数据至关重要。本篇教程是在阅读了SDNLAB网站的教程之后，自己总结的单机版sFlow部署。更多详细的内容，大家可以到<a href="http://www.sdnlab.com">SDNLAB</a>去查看。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/11/02/openvswitch230-and-mininet-install.html"><h2>OpenvSwitch2.3.0 and Mininet install</h2></a>
+        <div class= "well small"> 2014-11-02
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
 <p>折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助。</p>
 <h3>安装OpenvSwitch2.3.0</h3>
 <p>不需要安装。</p>
@@ -116,113 +203,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 37
 38
 39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
-
-<span class="c"># Make sure only root can run our script</span>
-<span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$(id -u)&quot;</span> !<span class="o">=</span> <span class="s2">&quot;0&quot;</span> <span class="o">]</span>; <span class="k">then</span>
-<span class="k">   </span><span class="nb">echo</span> <span class="s2">&quot;You need to be &#39;root&#39; dude.&quot;</span> 1&gt;&amp;2
-   <span class="nb">exit </span>1
-<span class="k">fi</span>
-
-<span class="c">#install</span>
-<span class="c">#apt-get update</span>
-<span class="c">#apt-get install -y build-essential</span>
-
-
-<span class="nb">echo</span> <span class="s2">&quot;====================INSTALL OpenvSwitch-2.3.0====================&quot;</span>
-<span class="c">#apt-get install -y   uml-utilities libtool python-qt4 python-twisted-conch debhelper python-all</span>
-
-<span class="k">if</span> <span class="o">[</span>  -f openvswitch-2.3.0.tar.gz <span class="o">]</span>
-<span class="k">then </span>
-<span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;openvswitch-2.3.0.tar.gz has exist&quot;</span>
-<span class="k">else</span>
-<span class="k">    </span>wget http://openvswitch.org/releases/openvswitch-2.3.0.tar.gz
-<span class="k">fi</span>
-
-<span class="k">if</span> <span class="o">[</span>  -d openvswitch-2.3.0 <span class="o">]</span>
-<span class="k">then</span>
-<span class="k">   </span>rm -r openvswitch-2.3.0
-<span class="k">fi</span>
-tar -xzf openvswitch-2.3.0.tar.gz
-
-<span class="c"># Install openvswitch</span>
-<span class="nb">cd </span>openvswitch-2.3.0
-make clean
-./configure --with-linux<span class="o">=</span>/lib/modules/<span class="sb">`</span>uname -r<span class="sb">`</span>/build 2&gt;/dev/null
-make <span class="o">&amp;&amp;</span> make install
-
-<span class="c"># install Open vSwitch kernel module</span>
-insmod datapath/linux/openvswitch.ko
-make modules_install
-
-
-mkdir -p /usr/local/etc/openvswitch
-ovsdb-tool create /usr/local/etc/openvswitch/conf.db vswitchd/vswitch.ovsschema  2&gt;/dev/null
-
-ovsdb-server -v --remote<span class="o">=</span>punix:/usr/local/var/run/openvswitch/db.sock <span class="se">\</span>
-             --remote<span class="o">=</span>db:Open_vSwitch,Open_vSwitch,manager_options <span class="se">\</span>
-             --private-key<span class="o">=</span>db:Open_vSwitch,SSL,private_key <span class="se">\</span>
-             --certificate<span class="o">=</span>db:Open_vSwitch,SSL,certificate <span class="se">\</span>
-             --bootstrap-ca-cert<span class="o">=</span>db:Open_vSwitch,SSL,ca_cert <span class="se">\</span>
-             --pidfile --detach
-
-ovs-vsctl --no-wait init
-ovs-vswitchd --pidfile --detach
-ovs-vsctl show
-depmod -A openvswitch
-</pre></div>
-</td></tr></table>
-
-<h3>Mininet安装</h3>
-<p>如果以前有安装mininet，那么你需要先卸载mininet</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="sr">/usr/</span><span class="nb">local</span><span class="sr">/bin/m</span><span class="n">n</span> <span class="sr">/usr/</span><span class="nb">local</span><span class="sr">/bin/m</span><span class="n">nexec</span> <span class="o">\</span>
-        <span class="sr">/usr/</span><span class="nb">local</span><span class="sr">/lib/</span><span class="n">python</span><span class="o">*</span><span class="sr">/*/</span><span class="o">*</span><span class="n">mininet</span><span class="o">*</span> <span class="o">\</span>
-        <span class="sr">/usr/</span><span class="nb">local</span><span class="sr">/bin/o</span><span class="n">vs</span><span class="o">-*</span> <span class="sr">/usr/</span><span class="nb">local</span><span class="sr">/sbin/o</span><span class="n">vs</span><span class="o">-*</span>
-
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">remove</span> <span class="n">mininet</span>
-</pre></div>
-
-
-<p>下载最新版本的mininet</p>
-<div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">git:</span><span class="sr">//gi</span><span class="n">thub</span><span class="o">.</span><span class="n">com</span><span class="sr">/mininet/mi</span><span class="n">ninet</span>
-</pre></div>
-
-
-<p>然后运行install.sh -options</p>
-<div class="highlight"><pre><span class="n">mininet</span><span class="sr">/util/i</span><span class="n">nstall</span><span class="o">.</span><span class="n">sh</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span>
-</pre></div>
-
-
-<p>安装的关键在options。查看详细的内容可以通过查看：</p>
-<div class="highlight"><pre><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">h</span>
-</pre></div>
-
-
-<p>而我们需要安装的是OpenFlow13和OpenvSwitch2.3.0,所以命令如下：</p>
-<div class="highlight"><pre><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">n3V</span> <span class="mf">2.3.0</span>
-</pre></div>
-
-
-<p>执行，安装成功！</p>
-<h3>后语</h3>
-<p>再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！</p></div>
-        <hr />
-    </div>
-		
+40 ...</pre></div></td></tr></table> <a class="btn btn-info xsmall" href="../pages/2014/11/02/openvswitch230-and-mininet-install.html">read more</a></div>
+    </div>	
+				
 
  
         

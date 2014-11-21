@@ -1,5 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Fri, 07 Nov 2014 00:00:00 +0800</lastBuildDate><item><title>Multipath and QoS Application on RYU</title><link>http://www.muzixing.com/pages/2014/11/07/multipath-and-qos-application-on-ryu.html</link><description>&lt;h2&gt;前言&lt;/h2&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Fri, 21 Nov 2014 00:00:00 +0800</lastBuildDate><item><title>sFlow入门初涉</title><link>http://www.muzixing.com/pages/2014/11/21/sflowru-men-chu-she.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
+&lt;p&gt;&lt;a href="http://www.sflow.org/sFlowOverview.pdf"&gt;sFlow&lt;/a&gt;是一个应用在高速交换网络中的监控软件。sFlow需要交换机支持才能使用，万幸OpenvSwitch支持这个功能。netflow同样也是类似功能的软件，可惜没有接触过，也只是听过名字而已。第一次接触到sFlow之后，就觉得很感兴趣，跟着&lt;a href="http://www.sdnlab.com/3760"&gt;SDNLAB&lt;/a&gt;的教程做了一遍之后，记录下自己的学习过程。&lt;/p&gt;
+&lt;h3&gt;安装sFlow&lt;/h3&gt;
+&lt;p&gt;下载sFlow代码：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;http:&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="n"&gt;pan&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;baidu&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="sr"&gt;/s/&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="n"&gt;mgmOVck&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解压缩，安装：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;tar&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;zxvf&lt;/span&gt; &lt;span class="n"&gt;sflow&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tar&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt;
+&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="n"&gt;sflow&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;sflow&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;rt&lt;/span&gt;
+&lt;span class="o"&gt;./&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;此时通过浏览器127:0.0.1:8008可以查看到生成的页面。&lt;/p&gt;
+&lt;h3&gt;实验步骤&lt;/h3&gt;
+&lt;p&gt;本实验步骤将介绍如何在一台机器上完成sflow流量监控实验。实验需要运行一个控制器，可以使用mininet自带的控制器，也可以使用RYU等控制器。然后运行mininet，设置OVS的sFlow功能，从而从8008端口上查看到相应的数据。&lt;/p&gt;
+&lt;h3&gt;启动mininet&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;mn&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;或者&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;mn&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;remote&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;ip&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;controllerip&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;开启OVS的sFlow功能&lt;/h4&gt;
+&lt;p&gt;为了让mininet中创建的OVS和本地网卡相连，从而使得8008端口可以通过网卡获取到mininet中流量数据，我们需要将某个网卡加入到OVS生成的bridge上。选择最简单的eth0即可，不过如果eth0是连接外网的网卡的话，很可能添加到bridge之后，就无法上网了。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ovs&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;vsctl&lt;/span&gt; &lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;port&lt;/span&gt; &lt;span class="n"&gt;s1&lt;/span&gt; &lt;span class="n"&gt;eth0&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;设置s1的IP，使得交换机可以作为sFlow agent与sFlow Collector通信。例如，给s1使用eth的IP：10.108.144.45，此举确保IP是可用的。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt; &lt;span class="n"&gt;ifconfig&lt;/span&gt; &lt;span class="n"&gt;s1&lt;/span&gt; &lt;span class="mf"&gt;10.108.144.45&lt;/span&gt; &lt;span class="n"&gt;netmask&lt;/span&gt; &lt;span class="mf"&gt;255.255.255.248&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;配置之后，查看配置是否生效：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ifconfig&lt;/span&gt; &lt;span class="n"&gt;s1&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;开启OVS的sFlow功能：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ovs&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;vsctl&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;@sflow_id&lt;/span&gt; &lt;span class="n"&gt;create&lt;/span&gt; &lt;span class="n"&gt;sFlow&lt;/span&gt; &lt;span class="n"&gt;agent&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;s1&lt;/span&gt; &lt;span class="n"&gt;target&lt;/span&gt;&lt;span class="o"&gt;=\&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;127.0.0.1:6343\&amp;quot;&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;128&lt;/span&gt; &lt;span class="n"&gt;sampling&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;64&lt;/span&gt; &lt;span class="n"&gt;polling&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt; &lt;span class="n"&gt;set&lt;/span&gt; &lt;span class="n"&gt;bridge&lt;/span&gt; &lt;span class="n"&gt;s1&lt;/span&gt; &lt;span class="n"&gt;sflow&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;@sflow_id&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;其中agent指的是需要作为sFlow agent的网卡，target是目标的sFlow Collector。&lt;/p&gt;
+&lt;p&gt;查看配置是否生效：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ovs&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;vsctl&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="n"&gt;sflow&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;查看结果如下图：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emisnsk7gmj20fb06emxu.jpg" /&gt;&lt;/p&gt;
+&lt;p&gt;list功能可以查看很多内容，如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ovs&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;vsctl&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="n"&gt;port&lt;/span&gt;
+&lt;span class="n"&gt;ovs&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;vsctl&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="n"&gt;queue&lt;/span&gt;
+&lt;span class="n"&gt;ovs&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;vsctl&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="n"&gt;qos&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;监控网络流量&lt;/h3&gt;
+&lt;p&gt;打开127.0.0.1：8008，点击agent等栏目能看到对应的信息。在mininet中使用pingall，iperf iperfudp等命令产生流量，并查看统计情况。实例如下：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emismf2z9nj21da0dz0wn.jpg" /&gt;&lt;/p&gt;
+&lt;h3&gt;后语&lt;/h3&gt;
+&lt;p&gt;在网络中，如果能实时监控到网络的流量，那么就可以根据网络流量数据做出许多Traffic Engineering的操作。所以对于一个网络而言，实时的网络流量数据至关重要。本篇教程是在阅读了SDNLAB网站的教程之后，自己总结的单机版sFlow部署。更多详细的内容，大家可以到&lt;a href="http://www.sdnlab.com"&gt;SDNLAB&lt;/a&gt;去查看。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 21 Nov 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-11-21:pages/2014/11/21/sflowru-men-chu-she.html</guid><category>Moniter</category><category>sflow</category><category>mininet</category></item><item><title>Multipath and QoS Application on RYU</title><link>http://www.muzixing.com/pages/2014/11/07/multipath-and-qos-application-on-ryu.html</link><description>&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;本篇博文介绍的是如何在RYU上实现multipath和qos功能。在OpenFlow13中有group table,可以用于实现组播和多径故障恢复等功能，而使用queue,可以实现带宽的保障。&lt;/p&gt;
 &lt;h2&gt;相关工作&lt;/h2&gt;
 &lt;p&gt;要完成多径，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个&lt;a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"&gt;博文&lt;/a&gt;中已经提出。&lt;/p&gt;
