@@ -62,6 +62,43 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html"><h2>The study notes of East-west Bridge for SDN Network Peering</h2></a>
+        <div class= "well small"> 2014-04-10
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>这是一篇学习笔记，是在阅读了林萍萍女士的论文"East-West Bridge for SDN Network Peering  "之后的总结与思考。</p>
+<p>东西向接口通信中交换的数据是一个域中的数据。</p>
+<h3>控制器之间的发现</h3>
+<p>最简单的方式就是直接指定,但是这明显不是一个合理的方法。比较好的做法是让所有的控制器在开启的时候向一个注册服务器注册自己的信息，然后再获取所有控制器的信息，如IP,PORT,用于建立控制器之间的连接。另有更智能的方法是通过lldp去发现邻居。即LLDP报文中携带本域中控制器的信息。
+即有如下三种方式：</p>
+<ul>
+<li>通过配置信息设置</li>
+<li>访问注册服务器获取</li>
+<li>通过LLDP去发现邻居 </li>
+</ul>
+<p>我认为，第一种方法最简单，但是需要手动配置。第二种方法最易于设计。第三种方法最智能。我觉得使用LLDP去发现邻居是一种不错的方式。每一次接入网络都需要探测自己的邻居，然后发送自己的拓扑信息给邻居，同时当拓扑发生变化时也需要给邻居同步，此处的拓扑发生变化可以包含如下两点：</p>
+<ul>
+<li>域内拓扑发生变化，如link down</li>
+<li>邻居C拓扑变化传送过来导致本地存储拓扑变化，从而需要更新拓扑，并通知其他邻居。</li>
+</ul>
+<h3>网络信息的存储</h3>
+<ul>
+<li>分布式存储在每一个控制器，每一个控制器只保存自己的视图，需要全局数据时再发送请求从别的控制器获取。此方式为主动请求方式，能减少拓扑信息传递的数量。但是耗时大。</li>
+<li>分布式存储在每一个控制器，每一个控制器都有全网视图 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/03/26/poxmessenger-component-getting-started.html"><h2>[POX]messenger component getting started</h2></a>
         <div class= "well small"> 2014-03-26
 
@@ -161,25 +198,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="s">    This is a topu of our test. It shows that how to add an ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html"><h2>SDN的初步认识</h2></a>
-        <div class= "well small"> 2013-12-24
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>（习惯性乱扯两句，可跳过）一年之前第一次接触SDN的时候，我甚至连pox的发音都发不对。第一次看OF1.0spec的时候，更是不懂secure channel到底是什么概念，Datapath一样是云里雾里。我不知道流是一个什么概念，不知道SDN如何DN，我只是觉得，我可能会比较喜欢IP这一方面的东西，具体哪一方面我也不知道。但是无所谓啊，我还年轻，我有选择的机会。抱着试一试的态度，去学习了SDN的一些知识，慢慢地就喜欢上了。不仅仅是因为知识本身，更是因为当我获得成功时刻的成就感与自豪感，让我觉得我愿意去做这件事情！一年之后，我写过Openflow协议通信流程的教程，画过所有Openflow协议的数据结构，写完自己的一个控制器，还写了一边关于如何编写控制器的教程，懂得怎么使用mininet搭建自定义的拓扑，懂得使用spirent testcenter去打流测试，懂得pox是如何运作的，等等。我甚至可以去教一些新手一些关于SDN的技术，但是，当我想要写点东西的时候，我却突然发现，我不知道什么是SDN！我并不清楚SDN是从何而来，不知道SDN发展历程，不知道SDN目前面临的问题，不明白SDN的现状到底什么状态，不知道SDN的未来有什么前景。我只知道一些具体的技术细节，也许对于一个本科生已经不错了。但是这也正是我们本科生的弱点所在吧。缺少大局观，目光不够长远，对知识的掌握更倾向于操作而非原理 ...</p> <a class="btn btn-info xsmall" href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../category/tech4.html">&larr; Previous</a></li>
@@ -191,6 +209,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class="active"><a href="../category/tech5.html">5</a></li>
     <li class=""><a href="../category/tech6.html">6</a></li>
     <li class=""><a href="../category/tech7.html">7</a></li>
+    <li class=""><a href="../category/tech8.html">8</a></li>
 
     <li class="next"><a href="../category/tech6.html">Next &rarr;</a></li>
 

@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="./theme/html5.js"></script>
+    <script src="../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="./theme/bootstrap.min.css" rel="stylesheet">
-    <link href="./theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="./theme/local.css" rel="stylesheet">
-    <link href="./theme/pygments.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../theme/local.css" rel="stylesheet">
+    <link href="../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href=".">Milestone</a>
+        <a class="brand" href="..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="./pages/about-me.html">About me</a></li>
+            <li><a href="../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -62,10 +62,10 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2014/11/26/onoslun-wen-jie-xi.html"><h1>ONOS论文解析</h1></a>
+            <a href="../pages/2014/11/26/onoslun-wen-jie-xi.html"><h1>ONOS论文解析</h1></a>
 2014-11-26
 
-by <a class="url fn" href="./author/muzi.html">muzi</a>
+by <a class="url fn" href="../author/muzi.html">muzi</a>
  
 
 
@@ -155,191 +155,13 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         <hr />
     </div>
 		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/11/21/sflowru-men-chu-she.html"><h2>sFlow入门初涉</h2></a>
-        <div class= "well small"> 2014-11-21
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p><a href="http://www.sflow.org/sFlowOverview.pdf">sFlow</a>是一个应用在高速交换网络中的监控软件。sFlow需要交换机支持才能使用，万幸OpenvSwitch支持这个功能。netflow同样也是类似功能的软件，可惜没有接触过，也只是听过名字而已。第一次接触到sFlow之后，就觉得很感兴趣，跟着<a href="http://www.sdnlab.com/3760">SDNLAB</a>的教程做了一遍之后，记录下自己的学习过程。</p>
-<h3>安装sFlow</h3>
-<p>下载sFlow代码：</p>
-<div class="highlight"><pre><span class="n">http:</span><span class="sr">//</span><span class="n">pan</span><span class="o">.</span><span class="n">baidu</span><span class="o">.</span><span class="n">com</span><span class="sr">/s/</span><span class="mi">1</span><span class="n">mgmOVck</span>
-</pre></div>
-
-
-<p>解压缩，安装：</p>
-<div class="highlight"><pre><span class="n">tar</span> <span class="o">-</span><span class="n">zxvf</span> <span class="n">sflow</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
-<span class="n">cd</span> <span class="n">sflow</span><span class="o">/</span><span class="n">sflow</span><span class="o">-</span><span class="n">rt</span>
-<span class="o">./</span><span class="n">start</span><span class="o">.</span><span class="n">sh</span>
-</pre></div>
-
-
-<p>此时通过浏览器127:0.0.1:8008可以查看到生成的页面。</p>
-<h3>实验步骤</h3>
-<p>本实验步骤将介绍如何在一台机器上完成sflow流量监控实验。实验需要运行一个控制器，可以使用mininet自带的控制器，也可以使用RYU等控制器。然后运行mininet，设置OVS的sFlow功能，从而从8008端口上查看到相应的数据。</p>
-<h3>启动mininet ...</h3> <a class="btn btn-info xsmall" href="./pages/2014/11/21/sflowru-men-chu-she.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/11/07/multipath-and-qos-application-on-ryu.html"><h2>Multipath and QoS Application on RYU</h2></a>
-        <div class= "well small"> 2014-11-07
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>本篇博文介绍的是如何在RYU上实现multipath和qos功能。在OpenFlow13中有group table,可以用于实现组播和多径故障恢复等功能，而使用queue,可以实现带宽的保障。</p>
-<h2>相关工作</h2>
-<p>要完成多径，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。</p>
-<h3>网络拓扑</h3>
-<div class="highlight"><pre><span class="s">&quot;&quot;&quot;Custom loop topo example</span>
-
-<span class="s">   There are two paths between host1 and host2.</span>
-
-
-<span class="s">                |--------switch2 --------|</span>
-<span class="s">                |                        |</span>
-<span class="s">   host1 --- switch1                   switch4 -----host2</span>
-<span class="s">                |                        |   |------host3</span>
-<span class="s">                -------- switch3 ---------</span>
-<span class="s">                            |</span>
-<span class="s">                          host4</span>
-
-<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate our newly defined</span>
-<span class="s">topology ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/11/07/multipath-and-qos-application-on-ryu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/11/02/openvswitch230-and-mininet-install.html"><h2>OpenvSwitch2.3.0 and Mininet install</h2></a>
-        <div class= "well small"> 2014-11-02
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助。</p>
-<h3>安装OpenvSwitch2.3.0</h3>
-<p>不需要安装。</p>
-<p>但是提供一键安装脚本：</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40 ...</pre></div></td></tr></table> <a class="btn btn-info xsmall" href="./pages/2014/11/02/openvswitch230-and-mininet-install.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/10/28/openvirtexoperation-and-subsystems.html"><h2>OpenVirteX：Operation and Subsystems</h2></a>
-        <div class= "well small"> 2014-10-28
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>继上篇<a href="http://www.muzixing.com/pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html">《OpenVirteX文档概述（一）：Overview and Components》</a>之后，本篇将继续介绍OVX的Operation and Subsystems部分。主要讲述OVX内部的运作原理，本文属于个人简介，有误之处敬请指出，希望对读者有所帮助。本篇的顺序依然是按照官网文档的顺序介绍。</p>
-<h2>简介</h2>
-<p>本部分将介绍OVX内部的工作原理，如哪些内部子系统实现了哪一些功能，从而使得OVX能支持OpenFlow网络的虚拟化。以下的内容将分为如下的小点介绍：</p>
-<ul>
-<li>System Overview</li>
-<li>Startup and Shutdown</li>
-<li>The Event Loops</li>
-<li>Network Discovery and Presentation</li>
-<li>Virtualization and De-virtualization</li>
-<li>State Synchronization</li>
-<li>Reslience</li>
-<li>persistence</li>
-<li>The JSONRPC API</li>
-</ul>
-<h2>System Overveiw</h2>
-<p>OVX分为以下几个主要的部分：</p>
-<ul>
-<li>一半是面向南向物理基础设施的部分 ，管理了datapath到OVX之间的OpenFlow通道，并建立和维持了一系列数据结构，用于描述物理基础网络 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2014/10/28/openvirtexoperation-and-subsystems.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
-    <li class="active"><a href="./index.html">1</a></li>
-    <li class=""><a href="./index2.html">2</a></li>
-    <li class=""><a href="./index3.html">3</a></li>
-    <li class=""><a href="./index4.html">4</a></li>
-    <li class=""><a href="./index5.html">5</a></li>
-    <li class=""><a href="./index6.html">6</a></li>
-    <li class=""><a href="./index7.html">7</a></li>
-    <li class=""><a href="./index8.html">8</a></li>
+    <li class="active"><a href="../tag/controller.html">1</a></li>
 
-    <li class="next"><a href="./index2.html">Next &rarr;</a></li>
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
 
 </ul>
 </div>
@@ -355,8 +177,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="./archives.html">Archives</a>
-                <li><a href="./tags.html">Tags</a>
+                <li><a href="../archives.html">Archives</a>
+                <li><a href="../tags.html">Tags</a>
                 <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a></li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
             </ul>
@@ -369,8 +191,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="./category/life.html">life</a></li>
-                <li><a href="./category/tech.html">Tech</a></li>
+                <li><a href="../category/life.html">life</a></li>
+                <li><a href="../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -407,7 +229,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href=".">Milestone</a> &copy; muzi 2012</p>
+<p><a href="..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
