@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2014-11-30T22:06:39-00:00</lastmod>
+<lastmod>2014-11-30T22:48:18-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2014-11-30T22:06:39-00:00</lastmod>
+<lastmod>2014-11-30T22:48:18-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2014-11-30T22:06:39-00:00</lastmod>
+<lastmod>2014-11-30T22:48:18-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2014-11-30T22:06:39-00:00</lastmod>
+<lastmod>2014-11-30T22:48:18-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -53,7 +53,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/pages/2014/11/07/multipath-and-qos-application-on-ryu.html</loc>
+<loc>http://www.muzixing.com/pages/2014/11/07/load-balancemultipath-application-on-ryu.html</loc>
 <lastmod>2014-11-07T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
@@ -391,6 +391,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>http://www.muzixing.com/tag/moniter.html</loc>
 <lastmod>2014-11-21T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/tag/load-balance.html</loc>
+<lastmod>2014-11-07T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

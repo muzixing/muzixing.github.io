@@ -146,10 +146,10 @@
 &lt;p&gt;打开127.0.0.1：8008，点击agent等栏目能看到对应的信息。在mininet中使用pingall，iperf iperfudp等命令产生流量，并查看统计情况。实例如下：&lt;/p&gt;
 &lt;p&gt;&lt;img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emismf2z9nj21da0dz0wn.jpg" /&gt;&lt;/p&gt;
 &lt;h3&gt;后语&lt;/h3&gt;
-&lt;p&gt;在网络中，如果能实时监控到网络的流量，那么就可以根据网络流量数据做出许多Traffic Engineering的操作。所以对于一个网络而言，实时的网络流量数据至关重要。本篇教程是在阅读了SDNLAB网站的教程之后，自己总结的单机版sFlow部署。更多详细的内容，大家可以到&lt;a href="http://www.sdnlab.com"&gt;SDNLAB&lt;/a&gt;去查看。&lt;/p&gt;</summary><category term="Moniter"></category><category term="sflow"></category><category term="mininet"></category></entry><entry><title>Multipath and QoS Application on RYU</title><link href="http://www.muzixing.com/pages/2014/11/07/multipath-and-qos-application-on-ryu.html" rel="alternate"></link><updated>2014-11-07T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-11-07:pages/2014/11/07/multipath-and-qos-application-on-ryu.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
-&lt;p&gt;本篇博文介绍的是如何在RYU上实现multipath和qos功能。在OpenFlow13中有group table,可以用于实现组播和多径故障恢复等功能，而使用queue,可以实现带宽的保障。&lt;/p&gt;
+&lt;p&gt;在网络中，如果能实时监控到网络的流量，那么就可以根据网络流量数据做出许多Traffic Engineering的操作。所以对于一个网络而言，实时的网络流量数据至关重要。本篇教程是在阅读了SDNLAB网站的教程之后，自己总结的单机版sFlow部署。更多详细的内容，大家可以到&lt;a href="http://www.sdnlab.com"&gt;SDNLAB&lt;/a&gt;去查看。&lt;/p&gt;</summary><category term="Moniter"></category><category term="sflow"></category><category term="mininet"></category></entry><entry><title>Load balance(Multipath) Application on RYU</title><link href="http://www.muzixing.com/pages/2014/11/07/load-balancemultipath-application-on-ryu.html" rel="alternate"></link><updated>2014-11-07T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-11-07:pages/2014/11/07/load-balancemultipath-application-on-ryu.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;本篇博文介绍的是如何在RYU上通过使用select group 来实现multipath，从而实现流量的调度，完成简单的负载均衡Demo。OpenFlow13中有group table,可用于实现组播和冗余容灾等功能。实验中还是用了queue,完成了链路带宽的保障。&lt;/p&gt;
 &lt;h2&gt;相关工作&lt;/h2&gt;
-&lt;p&gt;要完成多径，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个&lt;a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"&gt;博文&lt;/a&gt;中已经提出。&lt;/p&gt;
+&lt;p&gt;要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个&lt;a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"&gt;博文&lt;/a&gt;中已经提出。&lt;/p&gt;
 &lt;h3&gt;网络拓扑&lt;/h3&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;Custom loop topo example&lt;/span&gt;
 
@@ -320,7 +320,7 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h2&gt;实验结果&lt;/h2&gt;
+&lt;h2&gt;Load balancing&lt;/h2&gt;
 &lt;p&gt;&lt;img alt="mininet" src="http://ww1.sinaimg.cn/mw690/7f593341jw1em5uu5i76qj20k40cr0v8.jpg" /&gt;&lt;/p&gt;
 &lt;p&gt;从图中我们可以看到，pingall连通性没有问题。第一个iperf是在没有设置队列的情况下，由于找不到队列，所以不如队，只转发，此时带宽为26.4Gbits/sec。之后的测试数据为设置队列之后的数据。可以看出h1到h2之间的带宽是300Mbits/sec，而h1到h3的带宽是150Mbits/sec。 &lt;/p&gt;
 &lt;p&gt;原因在于我们将h1到h2的数据流在组表中选择了s1-eth3的queue 0，而该队列的最大带宽是300M。&lt;/p&gt;
@@ -329,9 +329,9 @@
 &lt;p&gt;&lt;img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1em5uu6ecr8j20k30cuq63.jpg" /&gt;&lt;/p&gt;
 &lt;p&gt;可以看到，port 2 queue 0和port 3 queue 0有数据，而port 3 queue 1没有数据。&lt;/p&gt;
 &lt;p&gt;&lt;img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1em5uu5dgjfj20k80cu0xb.jpg" /&gt;&lt;/p&gt;
-&lt;p&gt;上图为s1和s4的组表和流表信息，从s4的流表信息（后部分流表）可知，同样是s1到s4的数据，dl_dst为h2的数据从port 2进入，而dl_dst为h3的数据从port 1进入，从而可以验证多径完成。&lt;/p&gt;
+&lt;p&gt;上图为s1和s4的组表和流表信息，从s4的流表信息（后部分流表）可知，同样是s1到s4的数据，dl_dst为h2的数据从port 2进入，而dl_dst为h3的数据从port 1进入，验证了数据传输过程使用了多径传输，合理利用了带宽空间。多径传输可以充分利用链路带宽，提高链路利用率。同时这个实验简单粗暴地完成了两条链路的负载均衡（将不同的数据流平均地分摊到了两条path上，由于对不同Path限制了不同的带宽，所以，流量并不是平均的）。根据拓扑及流量情况，添加算法计算合理流量路径，可以完成更灵活有效的负载均衡功能。&lt;/p&gt;
 &lt;h2&gt;后语&lt;/h2&gt;
-&lt;p&gt;这其实是简单的实验，但是由于在安装OVS的过程中遇到了很多的问题，所以过程比较痛苦，写下来，以备不时之需，也有可能帮助到别人吧。提供一个纯从&lt;a href="http://hwchiu.logdown.com/posts/207387-multipath-routing-with-group-table-at-mininet"&gt;OVS上配置的方案&lt;/a&gt;，相比之下比开发控制要简单一些。&lt;/p&gt;
+&lt;p&gt;这其实是简单的实验，但是由于在安装OVS的过程中遇到了很多的问题，所以过程比较痛苦，写下来，以备不时之需，也有可能帮助到别人吧。提供一个纯从&lt;a href="http://hwchiu.logdown.com/posts/207387-multipath-routing-with-group-table-at-mininet"&gt;OVS上配置的方案&lt;/a&gt;，相比之下比开发控制要简单一些。之前的博文的名字是：Multipath and QoS Application on RYU,但是后来导师提醒Multipath 和QoS不是一个层面的，才发现自己学识粗浅。需要努力的地方还太多。所以本篇博文被我生生改成Load balance的题目，虽然很牵强，但是相比之下，犯的错误更少一些。源码没有全部贴出来是因为我写的APP也可以出售的。后续应该会上传Github。详情可以邮件沟通。&lt;/p&gt;
 &lt;p&gt;折叠版代码如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="c1"&gt;# Author:muzixing&lt;/span&gt;
 &lt;span class="c1"&gt;# Time:2014/10/19&lt;/span&gt;
@@ -465,7 +465,7 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;最近接触了许多网络方面的知识，深深觉得自己努力不够，接下来的日子需要好好静下心来读书学习了。希望我也能写出不错的论文。&lt;/p&gt;</summary><category term="multipath"></category><category term="qos"></category><category term="queue"></category><category term="SDN"></category><category term="RYU"></category></entry><entry><title>OpenvSwitch2.3.0 and Mininet install</title><link href="http://www.muzixing.com/pages/2014/11/02/openvswitch230-and-mininet-install.html" rel="alternate"></link><updated>2014-11-02T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-11-02:pages/2014/11/02/openvswitch230-and-mininet-install.html</id><summary type="html">&lt;h3&gt;前言&lt;/h3&gt;
+&lt;p&gt;最近接触了许多网络方面的知识，深深觉得自己努力不够，接下来的日子需要好好静下心来读书学习了。希望我也能写出不错的论文。&lt;/p&gt;</summary><category term="multipath"></category><category term="qos"></category><category term="queue"></category><category term="SDN"></category><category term="RYU"></category><category term="load balance"></category></entry><entry><title>OpenvSwitch2.3.0 and Mininet install</title><link href="http://www.muzixing.com/pages/2014/11/02/openvswitch230-and-mininet-install.html" rel="alternate"></link><updated>2014-11-02T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-11-02:pages/2014/11/02/openvswitch230-and-mininet-install.html</id><summary type="html">&lt;h3&gt;前言&lt;/h3&gt;
 &lt;p&gt;折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助。&lt;/p&gt;
 &lt;h3&gt;安装OpenvSwitch2.3.0&lt;/h3&gt;
 &lt;p&gt;不需要安装。&lt;/p&gt;
