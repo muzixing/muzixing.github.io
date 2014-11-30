@@ -89,14 +89,14 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>ONOS的第一个模型使用了若干的开源软件来构建整个系统。比如使用FloodLight的一些现有模块，如switch manger、I/O loop、link discovery、module management、以及REST API。也使用到了Zookeeper, Titan, Cassandra以及Blueprints等开源软件。</p>
 <p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emoijpm69xj20g50c2dha.jpg" /></p>
 <h4>Global Network View</h4>
-<p>ONOS维持了一个全网拓扑试图，从而允许一个ONOS集群内的实例能相互之间分享和管理网路信息。其全网拓扑信息包括switch、port、link和host等信息。ONOS使用<a href="http://thinkaurelius.github.io/titan/">Titan</a> graph database来存储，并使用Cassandra 来保障分布式和可持续性。由于Cassandra具有一致性存储的特性，所以保障了网络试图的最终一致性。</p>
+<p>ONOS维持了一个全网拓扑视图，从而允许一个ONOS集群内的实例能相互之间分享和管理网路信息。其全网拓扑信息包括switch、port、link和host等信息。ONOS使用<a href="http://thinkaurelius.github.io/titan/">Titan</a> graph database来存储，并使用Cassandra 来保障分布式和可持续性。由于Cassandra具有一致性存储的特性，所以保障了网络视图的最终一致性。</p>
 <h4>Scale-out.</h4>
-<p>ONOS的一个关键特性就是拓展性。ONOS分布式运行在多个服务器上，每一个实例是其管理的网络子集中的交换机的控制器。一个独立的ONOS实例将独立地完成网络的控制，并始终保持与全网试图的一致，即网络中发生状态变化，如添加交换机等时间，都应该由ONOS实例负责将这个事件传播到全局网络视图（Global Network View）。</p>
+<p>ONOS的一个关键特性就是拓展性。ONOS分布式运行在多个服务器上，每一个实例是其管理的网络子集中的交换机的控制器。一个独立的ONOS实例将独立地完成网络的控制，并始终保持与全网视图的一致，即网络中发生状态变化，如添加交换机等时间，都应该由ONOS实例负责将这个事件传播到全局网络视图（Global Network View）。</p>
 <h4>Fault tolerance</h4>
 <p>分布式的ONOS允许即使某一个组件甚至某一个ONOS实例Down掉也不会影响整个系统的运行。ONOS允许component作为一个单独的实例去运作，不过也提供了多冗余容灾的能力。多实例的情况下，需要选择出leader，这个在分布式系统中是分厂必要的行为。在OpenFlow1.3版本中，有多控制器的定义。ONOS可以允许交换机连接到多控制器，但是对于交换机而言只有一个控制器是master，其他的是slaver。当某一个ONOS发生故障Down掉之后，他所管理的交换机将由别的ONOS实例接管。ONOS使用<a href="http://zookeeper.apache.org/">Zookeeper</a>来存储交换机和控制器之间的关系数据。每一个ONOS实例都需要连接Zookeeper。<a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-zookeeper/">Zookeeper</a>曾经是<a href="http://hadoop.apache.org/">Hadoop</a>的一个子项目。现在已经好似一个顶级项目。它主要是用来解决分布式应用中经常遇到的一些数据管理问题，如：统一命名服务、状态同步服务、集群管理、分布式应用配置项的管理等。</p>
 <h3>Evaluation</h3>
 <p>ONOS的第一个模型花了4个月的时间（好快！）。但是，这个Prototype的性能表现并不好。论文中举例分析如下：</p>
-<p><strong>Consistency and Integrity</strong>:  关于数据的一致性和完整性，Titan始终需要维持数据的结构完整性，比如一个link必须要由两个port来描述。</p>
+<p><strong>Consistency and Integrity</strong>:  这一部分论文写得比较模糊，没有看懂，所以不发表评论。</p>
 <p><strong>Low Performance and Visibility</strong></p>
 <p>模型一的性能并不好，特别是延迟比预期的要差许多，比如30s才可以获取到网络拓扑状态变化情况。主要原因在与使用了开源软件，虽然很快可以完成开发，但是这些开源软件之间的协调，并不容易。而且ONOS的开发者并不是特别熟悉这些开源代码，导致性能并不高。</p>
 <p><strong>Data Model Issues</strong></p>
@@ -112,7 +112,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqixkwgv8j20jw0f5762.jpg" /></p>
 <p><strong>RAMCloud Data Store</strong>: <a href="https://ramcloud.atlassian.net/wiki/display/RAM/RAMCloud">RAMCloud</a>中文名字应该叫“内存云”，顾名思义，使用内存来代替普通硬盘来存储，从而大大提高存储速度。
 <strong>Optimized Data Model</strong>： 优化向来都是一个复杂的事情。他们新设计了一个data model（中文怎么称呼都不舒服），也不追求数据完整性了，许多更新都是相对独立的，从而大大减少了数据的读写操作，优化了性能。</p>
-<p><strong>Topology Cache</strong>： 读取拓扑是一个非常耗时的操作，所以新的ONOS将拓扑信息存在高速缓存中，从而提高了读取拓扑的速度。除此之外，他们还构建了一个索引用于更快速地查找数据。构建索引的过程可以在任何时刻由全部的数据生成，但是一般情况下，只有心的ONOS节点接入时，才会读取全部数据，所以从全局来看，这并不会消耗太多时间。</p>
+<p><strong>Topology Cache</strong>： 读取拓扑是一个非常耗时的操作，所以新的ONOS将拓扑信息存在高速缓存中，从而提高了读取拓扑的速度。除此之外，他们还构建了一个索引用于更快速地查找数据。构建索引的过程可以在任何时刻由全部的数据生成，但是一般情况下，只有新的ONOS节点接入时，才会读取全部数据，所以从全局来看，这并不会消耗太多时间。</p>
 <p><strong>Event Notification</strong>： 前面已经提到由于周期获取数据而引起的性能问题，所以一个事件通知机制非常必要。模型二创建了一个实例内部的发布-订阅的事件机制，然后将这个通信系统部署在了<a href="http://hazelcast.com/">Hazelcast</a>上（又一个牛逼的开源软件。）发布订阅模式无需赘述。</p>
 <p><strong>Network View API</strong>： 关于API的改动，ONOS用自己设计的API取代了生成的Blueprints graph API。Figure4展示了网络视图所包含的内容。ONOS的API主要由以下三个主要部分组成：</p>
 <ul>
