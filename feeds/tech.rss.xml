@@ -596,23 +596,23 @@ depmod -A openvswitch
 
 
 &lt;p&gt;然后运行install.sh -options&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;mininet&lt;/span&gt;&lt;span class="sr"&gt;/util/i&lt;/span&gt;&lt;span class="n"&gt;nstall&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;mininet&lt;/span&gt;&lt;span class="sr"&gt;/util/&lt;/span&gt;&lt;span class="o"&gt;./&lt;/span&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;安装的关键在options。查看详细的内容可以通过查看：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;h&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;./&lt;/span&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;h&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;而我们需要安装的是OpenFlow13和OpenvSwitch2.3.0,所以命令如下：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;n3V&lt;/span&gt; &lt;span class="mf"&gt;2.3.0&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;./&lt;/span&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;n3V&lt;/span&gt; &lt;span class="mf"&gt;2.3.0&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;执行，安装成功！&lt;/p&gt;
 &lt;h3&gt;后语&lt;/h3&gt;
-&lt;p&gt;再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Sun, 02 Nov 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-11-02:pages/2014/11/02/openvswitch230-and-mininet-install.html</guid><category>OVS</category><category>mininet</category></item><item><title>OpenVirteX：Operation and Subsystems</title><link>http://www.muzixing.com/pages/2014/10/28/openvirtexoperation-and-subsystems.html</link><description>&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看./install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Sun, 02 Nov 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-11-02:pages/2014/11/02/openvswitch230-and-mininet-install.html</guid><category>OVS</category><category>mininet</category></item><item><title>OpenVirteX：Operation and Subsystems</title><link>http://www.muzixing.com/pages/2014/10/28/openvirtexoperation-and-subsystems.html</link><description>&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;继上篇&lt;a href="http://www.muzixing.com/pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html"&gt;《OpenVirteX文档概述（一）：Overview and Components》&lt;/a&gt;之后，本篇将继续介绍OVX的Operation and Subsystems部分。主要讲述OVX内部的运作原理，本文属于个人简介，有误之处敬请指出，希望对读者有所帮助。本篇的顺序依然是按照官网文档的顺序介绍。&lt;/p&gt;
 &lt;h2&gt;简介&lt;/h2&gt;
 &lt;p&gt;本部分将介绍OVX内部的工作原理，如哪些内部子系统实现了哪一些功能，从而使得OVX能支持OpenFlow网络的虚拟化。以下的内容将分为如下的小点介绍：&lt;/p&gt;

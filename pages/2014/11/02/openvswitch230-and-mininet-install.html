@@ -197,23 +197,23 @@ depmod -A openvswitch
 
 
 <p>然后运行install.sh -options</p>
-<div class="highlight"><pre><span class="n">mininet</span><span class="sr">/util/i</span><span class="n">nstall</span><span class="o">.</span><span class="n">sh</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span>
+<div class="highlight"><pre><span class="n">mininet</span><span class="sr">/util/</span><span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span>
 </pre></div>
 
 
 <p>安装的关键在options。查看详细的内容可以通过查看：</p>
-<div class="highlight"><pre><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">h</span>
+<div class="highlight"><pre><span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">h</span>
 </pre></div>
 
 
 <p>而我们需要安装的是OpenFlow13和OpenvSwitch2.3.0,所以命令如下：</p>
-<div class="highlight"><pre><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">n3V</span> <span class="mf">2.3.0</span>
+<div class="highlight"><pre><span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">n3V</span> <span class="mf">2.3.0</span>
 </pre></div>
 
 
 <p>执行，安装成功！</p>
 <h3>后语</h3>
-<p>再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！</p></div>
+<p>再次感谢sdnap群@南京-小L的信息。不然我还要折腾一阵子。然后感兴趣的朋友可以去仔细看看./install.sh -h里面的内容，-y可以装ryu!!-x可以装nox！还是非常有用的！</p></div>
 	
         <hr>
     	   
