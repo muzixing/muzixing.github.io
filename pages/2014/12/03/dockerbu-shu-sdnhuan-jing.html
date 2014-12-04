@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="../pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/12/03/dockerbu-shu-sdnhuan-jing.html"><h1>Docker部署SDN环境</h1></a>
+            <h1>Docker部署SDN环境</h1>
 2014-12-03
 
-by <a class="url fn" href="../author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><h3>前言</h3>
 <p>5月份的时候，当我还是一个大学生的时候，有个网友问我，你有研究Docker吗？当时我连Docker是什么都不知道。谷歌之后，对Docker产生兴趣，但是一直没有时间去学习。这个周终于将这个学习计划列入了Todolist。所以我花了3天时间，认真地把这<a href="http://dockerpool.com/static/books/docker_practice/index.html">《Docker 从入门到实践》</a>看完并实践了一遍，收获颇丰。虽然我的导师以及我自己还是觉得我在瞎转，而且我觉得没有方向的日子很痛苦。所以只好自己做计划，学习点新知识，打打基础了。本篇内容主要介绍什么是Docker、Docker简单入门以及如何使用Docker部署SDN环境，以及docker的网络配置等内容。What is Docker和Why Docker部分摘自《Docker从入门到实践》。</p>
 <h3><a href="https://www.docker.com/whatisdocker/">What is Docker</a></h3>
@@ -237,171 +231,23 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>文件配置则如同正常的主机配置，进入到/etc/目录下，修改制定文件即可。同样的，Dokcer可以配置网络链接的网桥，可以不选择docker0网桥，而选择其他网桥，如使用brctl创建的网桥，或者使用OpenvSwitch创建的网桥，具体操作不再赘述。</p>
 <h3>后语</h3>
 <p>工欲善其事，必先利其器。Docker可以允许我们更灵活地使用资源，并且可以很方便地迁移环境。比如以后需要安装RYU的同学就不需要再去关注，为什么six版本不够？为什么gcc报错这些问题了。只需要有一台64位的机器，然后安装docker,理论上是不会有错的。然后将镜像下载下来，创建并运行容易，就可以得到ryu控制器运行的环境。同理Nginx，Tornado和MySQL等软件也可以直接获取，而不需要自己安装配置环境。这大大加快了生产环境的部署，也显著提高了资源的利用率，个人认为将在未来对虚拟机产生强烈的冲击。</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = 'Docker部署SDN环境';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html"><h2>Load balance(Multipath) Application on RYU</h2></a>
-        <div class= "well small"> 2014-11-07
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>本篇博文介绍的是如何在RYU上通过使用select group 来实现multipath，从而实现流量的调度，完成简单的负载均衡Demo。OpenFlow13中有group table,可用于实现组播和冗余容灾等功能。实验中还是用了queue,完成了链路带宽的保障。</p>
-<h2>相关工作</h2>
-<p>要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。</p>
-<h3>网络拓扑</h3>
-<div class="highlight"><pre><span class="s">&quot;&quot;&quot;Custom loop topo example</span>
-
-<span class="s">   There are two paths between host1 and host2.</span>
-
-
-<span class="s">                |--------switch2 --------|</span>
-<span class="s">                |                        |</span>
-<span class="s">   host1 --- switch1                   switch4 -----host2</span>
-<span class="s">                |                        |   |------host3</span>
-<span class="s">                -------- switch3 ---------</span>
-<span class="s">                            |</span>
-<span class="s">                          host4</span>
-
-<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"><h2>基于SDN的RYU应用——ARP_PROXY</h2></a>
-        <div class= "well small"> 2014-10-19
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>在传统网络中，存在着一定的广播流量，占据了一部分的网络带宽。同时，在有环的拓扑中，如果不运行某些协议，广播数据还会引起网络风暴，使网络瘫痪。传统的解决方案是运行STP（生成树协议），来解决环路带来的风暴隐患。但是这样的难题在SDN之后，解决起来似乎变得要简单一些。本文将介绍如何在控制器RYU上开发ARP代理模块，用于代理回复ARP请求，以及解决环状拓扑风暴的问题。</p>
-<h3>算法逻辑</h3>
-<p>具体的算法流程图如下：</p>
-<div class="highlight"><pre>packet_in
-    <span class="o">|</span>
-    <span class="o">|</span>
-  ARP learning
-  MAC_to_Port learning
-    <span class="o">|</span>
-    <span class="o">|</span>
-    <span class="o">|</span>               No  
-Multicast? <span class="o">--------------------------------------------&gt;|</span>
-    <span class="o">|</span>                                                   <span class="o">|</span>
-    <span class="o">|</span> Yes                                               <span class="o">|</span>
-    <span class="o">|</span>                                                   <span class="o">|</span>
-    <span class="o">|</span>                                                   <span class="o">|</span>
-    <span class="o">|</span>      No                                           <span class="o">|</span>
-   loop? <span class="o">-----&gt;</span><span class="p">(</span>dpid<span class="p">,</span>eth_src<span class="p">,</span>dst_ip<span class="p">)</span>learning            <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>               No              <span class="o">|</span>         No
-    <span class="o">|</span>Yes        dst_ip in arp_table? <span class="o">-------&gt;</span>dst in mac_to_port? <span class="o">----&gt;</span>Flood
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>Yes                            <span class="o">|</span>Yes            <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-   drop             ARP_REPLY                       flow_mod            <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-    <span class="o">|&lt;------------------|&lt;------------------------------|&lt;--------------|</span>               
-    <span class="o">|</span>
-    <span class="o">|</span>
-    end
-</pre></div>
-
-
-<h3>解决环路风暴 ...</h3> <a class="btn btn-info xsmall" href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html"><h2>Opendaylight中开发模块Ping</h2></a>
-        <div class= "well small"> 2014-08-06
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>在安装和运行opendaylight之后，我们需要了解opendaylight各个目录的作用，运行机制。在此基础之上，我们需要动手进行第一个ODL模块的开发，在开发中找到ODL的重要所在。接下来的教程是在完成官网的一篇教程的基础上的总结和介绍，希望读者能有所收获。</p>
-<h3>摘要</h3>
-<p>本篇教程主要介绍如何在ODL上使用MD-SAL开发一个简单的TCP ping插件。这个插件实现了向指定地址发送ICMP，探测IP地址可达性的功能。首先我们需要使用YANG定义一个ping model,然后我们需要实现一个ping plugin,实现ping功能，再然后创建ping service 用于提供ping服务，最后我们通过REST API来实现北向接口使用ping service。</p>
-<p>其中每一个功能，我们将其创建为maven工程，并作为osgi的bundle。所以我们总共需要创建4个OSGI 的bundle：</p>
-<ul>
-<li>
-<p>Northbound API / Implementation [ping-northbound]</p>
-<p>The northbound API defines the interface for interacting with the given service. For example, a REST ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/05/04/noxshi-xian-natgong-neng.html"><h2>nox实现nat功能</h2></a>
-        <div class= "well small"> 2014-05-04
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>nat功能是一个非常简单，但却非常重要的功能。保留10，127,192三个网段作为公网地址，通过nat实现地址复用，可以解决现网IPV4地址不够用的尴尬局面。本篇主要讲如何使用nox实现nat的demo.</p>
-<h3>环境</h3>
-<ul>
-<li>nox  安装比较困难，请参看其他教程</li>
-<li>mininet    网络环境搭建神器</li>
-</ul>
-<h3>控制器</h3>
-<p>首先在nox/src/coreapps/switch中找到switch.cc。
-在class switch中添加成员变量uint32_t src_ip，nat_ip；由于只是一个简单的demo，就不做映射列表了。</p>
-<p>handle_packet_in中将if(setup_flows &amp;&amp; out_port!=-1)的逻辑修改如下：</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">setup_flows</span> <span class="o">&amp;&amp;</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">auto</span> <span class="n">fm</span> <span class="o">=</span> <span class="nn">v1::</span><span class="n">ofp_flow_mod</span><span class="p">()</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">())</span>
-               <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/05/04/noxshi-xian-natgong-neng.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../tag/sdn.html">1</a></li>
-    <li class=""><a href="../tag/sdn2.html">2</a></li>
-    <li class=""><a href="../tag/sdn3.html">3</a></li>
-
-    <li class="next"><a href="../tag/sdn2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -412,8 +258,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a></li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
             </ul>
@@ -426,8 +272,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -464,7 +310,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->

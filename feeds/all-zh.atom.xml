@@ -1,5 +1,169 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/all-zh.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-11-26T00:00:00+08:00</updated><entry><title>ONOS论文解析</title><link href="http://www.muzixing.com/pages/2014/11/26/onoslun-wen-jie-xi.html" rel="alternate"></link><updated>2014-11-26T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-11-26:pages/2014/11/26/onoslun-wen-jie-xi.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/all-zh.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2014-12-03T00:00:00+08:00</updated><entry><title>Docker部署SDN环境</title><link href="http://www.muzixing.com/pages/2014/12/03/dockerbu-shu-sdnhuan-jing.html" rel="alternate"></link><updated>2014-12-03T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-12-03:pages/2014/12/03/dockerbu-shu-sdnhuan-jing.html</id><summary type="html">&lt;h3&gt;前言&lt;/h3&gt;
+&lt;p&gt;5月份的时候，当我还是一个大学生的时候，有个网友问我，你有研究Docker吗？当时我连Docker是什么都不知道。谷歌之后，对Docker产生兴趣，但是一直没有时间去学习。这个周终于将这个学习计划列入了Todolist。所以我花了3天时间，认真地把这&lt;a href="http://dockerpool.com/static/books/docker_practice/index.html"&gt;《Docker 从入门到实践》&lt;/a&gt;看完并实践了一遍，收获颇丰。虽然我的导师以及我自己还是觉得我在瞎转，而且我觉得没有方向的日子很痛苦。所以只好自己做计划，学习点新知识，打打基础了。本篇内容主要介绍什么是Docker、Docker简单入门以及如何使用Docker部署SDN环境，以及docker的网络配置等内容。What is Docker和Why Docker部分摘自《Docker从入门到实践》。&lt;/p&gt;
+&lt;h3&gt;&lt;a href="https://www.docker.com/whatisdocker/"&gt;What is Docker&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Docker 是一个开源项目，诞生于 2013 年初，最初是 dotCloud 公司内部的一个业余项目。它基于 Google 公司推出的 Go 语言实现。 项目后来加入了 Linux 基金会，遵从了 Apache 2.0 协议，项目代码在 GitHub 上进行维护。Redhat 已经在其 RHEL6.5 中集中支持 Docker；Google 也在其 PaaS 产品中广泛应用。&lt;/p&gt;
+&lt;p&gt;Docker 项目的目标是实现轻量级的操作系统虚拟化解决方案。 Docker 的基础是 Linux 容器（LXC）等技术。&lt;/p&gt;
+&lt;p&gt;下面的图片比较了 Docker 和传统虚拟化方式的不同之处，可见容器是在操作系统层面上实现虚拟化，直接复用本地主机的操作系统，而传统方式则是在硬件层面实现。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://dockerpool.com/static/books/docker_practice/_images/virtualization.png" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://dockerpool.com/static/books/docker_practice/_images/docker.png" /&gt;&lt;/p&gt;
+&lt;p&gt;图1：Docker和虚拟机对比&lt;/p&gt;
+&lt;h3&gt;&lt;a href="http://dockerpool.com/static/books/docker_practice/introduction/why.html"&gt;Why Docker&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;首先，Docker 容器的启动可以在秒级实现，这相比传统的虚拟机方式要快得多。 其次，Docker 对系统资源的利用率很高，一台主机上可以同时运行数千个 Docker 容器。&lt;/p&gt;
+&lt;p&gt;容器除了运行其中应用外，基本不消耗额外的系统资源，使得应用的性能很高，同时系统的开销尽量小。传统虚拟机方式运行 10 个不同的应用就要起 10 个虚拟机，而Docker 只需要启动 10 个隔离的应用即可。&lt;/p&gt;
+&lt;p&gt;具体说来，Docker 在如下几个方面具有较大的优势。&lt;/p&gt;
+&lt;h4&gt;更快速的交付和部署&lt;/h4&gt;
+&lt;p&gt;对开发和运维（devop）人员来说，最希望的就是一次创建或配置，可以在任意地方正常运行。&lt;/p&gt;
+&lt;p&gt;开发者可以使用一个标准的镜像来构建一套开发容器，开发完成之后，运维人员可以直接使用这个容器来部署代码。 Docker 可以快速创建容器，快速迭代应用程序，并让整个过程全程可见，使团队中的其他成员更容易理解应用程序是如何创建和工作的。 Docker 容器很轻很快！容器的启动时间是秒级的，大量地节约开发、测试、部署的时间。&lt;/p&gt;
+&lt;h4&gt;更高效的虚拟化&lt;/h4&gt;
+&lt;p&gt;Docker 容器的运行不需要额外的 hypervisor 支持，它是内核级的虚拟化，因此可以实现更高的性能和效率。&lt;/p&gt;
+&lt;h4&gt;更轻松的迁移和扩展&lt;/h4&gt;
+&lt;p&gt;Docker 容器几乎可以在任意的平台上运行，包括物理机、虚拟机、公有云、私有云、个人电脑、服务器等。 这种兼容性可以让用户把一个应用程序从一个平台直接迁移到另外一个。&lt;/p&gt;
+&lt;h4&gt;更简单的管理&lt;/h4&gt;
+&lt;p&gt;使用 Docker，只需要小小的修改，就可以替代以往大量的更新工作。所有的修改都以增量的方式被分发和更新，从而实现自动化并且高效的管理。&lt;/p&gt;
+&lt;h3&gt;Docker简单入门&lt;/h3&gt;
+&lt;p&gt;谷歌出来的教程实在太多了。所以我也不打算太多介绍，只讲一些我觉得对于网络研究人员而言比较有用的命令。&lt;/p&gt;
+&lt;h4&gt;基本概念&lt;/h4&gt;
+&lt;p&gt;镜像（Image）:镜像是一个只读模板。用户上传制作好的镜像供其他人下载使用。用户可以基于镜像去创建Container。
+容器（Container）:容器可以理解为一个隔离起来的linux环境，用于运行应用，Namespace可以帮助你理解。
+仓库（Repository）:如果你会使用Git/Github的话，不难理解，就是用于存放镜像的场所。&lt;/p&gt;
+&lt;h4&gt;Docker安装&lt;/h4&gt;
+&lt;p&gt;本文的实验环境是Ubuntu14.04-amd64。非常需要注意的一点是，目前&lt;strong&gt;Docker只支持64位机器&lt;/strong&gt;。Ubuntu14.04安装方式有两种：1）通过系统自带包安装和2）通过Docker源安装。推荐第二种方式，能安装比较新的版本。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;transport&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;https&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="n"&gt;adv&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;keyserver&lt;/span&gt; &lt;span class="n"&gt;hkp:&lt;/span&gt;&lt;span class="sr"&gt;//&lt;/span&gt;&lt;span class="n"&gt;keyserver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ubuntu&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com:80&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="nb"&gt;recv&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nb"&gt;keys&lt;/span&gt; &lt;span class="mi"&gt;36&lt;/span&gt;&lt;span class="n"&gt;A1D7869245C8950F966E92D8576A8BA88D21E9&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;bash&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;echo deb https://get.docker.io/ubuntu docker main &amp;gt; /etc/apt/sources.list.d/docker.list&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;update&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;lxc&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;docker&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;获取镜像&lt;/h3&gt;
+&lt;p&gt;首先，推荐到&lt;a href="hubhub.docke.com"&gt;Docker&lt;/a&gt;注册帐号，这样可以向使用Git/Github那样使用Docker/Dockerhub。注册和登陆可通过如下命令完成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;login&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;注册之后，可以通过如下命令进行搜索,如搜索ryu:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;search&lt;/span&gt; &lt;span class="n"&gt;ryu&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以从搜索结果中的Star来确定资源的好坏，从而找到合适的images,如muzixing/ryu。然后使用如下命令，将其拉到本地：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;pull&lt;/span&gt;  &lt;span class="n"&gt;muzixing&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ryu&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;下载完成后，可以通过如下命令查看已存在的images&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;images&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emxdzs4wf6j20qp04rdh0.jpg" /&gt;&lt;/p&gt;
+&lt;p&gt;图2：images&lt;/p&gt;
+&lt;h3&gt;创建容器&lt;/h3&gt;
+&lt;p&gt;创建容器使用示例如下，-t=tty,  -i=interactive,  -d=debug, -p=port, --name &lt;name&gt;可以用于命名container。 其他的命令可以通过--help来查看。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;run&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="sr"&gt;&amp;lt;name&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;muzixing&lt;/span&gt;&lt;span class="sr"&gt;/ryu:SDN  /&lt;/span&gt;&lt;span class="n"&gt;bin&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;bash&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果你需要对端口映射，或者网络配置方面的设置，还需要仔细去查看手册。举例如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;run&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;  &lt;span class="sr"&gt;&amp;lt;ip&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;host&lt;/span&gt; &lt;span class="n"&gt;port&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;container&lt;/span&gt; &lt;span class="n"&gt;port&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;  &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="sr"&gt;&amp;lt;name&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;muzixing&lt;/span&gt;&lt;span class="sr"&gt;/ryu:SDN  /&lt;/span&gt;&lt;span class="n"&gt;bin&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;bash&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;以上命令创建并运行了一个名字叫&lt;name&gt;的container，并且将容器内部的端口port映射到主机的某个port，完成了端口映射，允许外网访问容器。这是容器与外界通信的方式之一。如果希望永久绑定到某个固定的 IP 地址，可以在 Docker 配置文件 /etc/default/docker 中指定 DOCKER_OPTS="--ip=IP_ADDRESS"，之后重启 Docker 服务即可生效。设置网络访问的参数默认是 --icc=ture，如果--icc=false,则禁止网络访问。&lt;/p&gt;
+&lt;p&gt;查看容器：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;ps&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;opt&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;-a为全部容器。&lt;/p&gt;
+&lt;p&gt;查看打印信息可以通过：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;dokcer&lt;/span&gt; &lt;span class="n"&gt;logs&lt;/span&gt; &lt;span class="sr"&gt;&amp;lt;name&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;暂停容器：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;stop&lt;/span&gt; &lt;span class="sr"&gt;&amp;lt;name&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;开启暂停的容器：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;start&lt;/span&gt; &lt;span class="sr"&gt;&amp;lt;name&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;重启容器：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;restart&lt;/span&gt; &lt;span class="sr"&gt;&amp;lt;name&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;有时候我们开启了容器，但是没有开窗口，在后台运行，可以通过一下命令进入容器：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;attach&lt;/span&gt; &lt;span class="sr"&gt;&amp;lt;name&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;部署SDN控制器RYU&lt;/h3&gt;
+&lt;p&gt;首先获取镜像：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;pull&lt;/span&gt;  &lt;span class="n"&gt;muzixing&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ryu&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后创建容器，并将容器的6633端口绑定到主机的6633端口。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;run&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;  &lt;span class="mf"&gt;0.0.0.0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;6633&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;6633&lt;/span&gt;  &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="n"&gt;ryu3&lt;/span&gt;&lt;span class="mf"&gt;.15&lt;/span&gt; &lt;span class="n"&gt;muzixing&lt;/span&gt;&lt;span class="sr"&gt;/ryu:SDN  /&lt;/span&gt;&lt;span class="n"&gt;bin&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;bash&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;进入容器之后，运行ryu.&lt;/p&gt;
+&lt;p&gt;在另一个能ping通运行容器主机的机器上运行mininet.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1emxf7rriqyj20k10cp75p.jpg" /&gt;&lt;/p&gt;
+&lt;p&gt;图3：mininet运行图&lt;/p&gt;
+&lt;p&gt;从上图可以看出控制器IP是172.16.192.128。这个IP地址的主机网卡信息如下：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1emxdzrwx4nj20k20jadkv.jpg" /&gt;&lt;/p&gt;
+&lt;p&gt;图4：Host地址信息&lt;/p&gt;
+&lt;p&gt;从图上可以看出，与mininet通信的是主机（实际情况下会是某台服务器）eth0的地址。但是从下面的图中看出运行的RYU地址是172.17.0.5。为什么可以通信呢？&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emxdzrkaswj20k50hqwjb.jpg" /&gt;&lt;/p&gt;
+&lt;p&gt;图5：容器信息&lt;/p&gt;
+&lt;p&gt;因为做了端口映射，将主机的所有接口的6633端口的地址都转发到容器172.17.0.5的6633端口，从而完成数据通信。其实现的原理是：Docker在启动之后，会创建一个docker0的网桥,从图4可以看到。然后还会创建veth pair。其中一端挂载在网桥上，如图4的vethba5f9f3，另一端是容器的网卡eth0，此案例中是172.17.0.5的网卡。其实这相当与一个link。原理图如下：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1emxfusmbzoj20l30dhmy1.jpg" /&gt;&lt;/p&gt;
+&lt;p&gt;图6：Docker网络通信原理&lt;/p&gt;
+&lt;p&gt;在运行容器的主机上使用iptables命令查看nat规则：
+&lt;img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emxf7rim1mj20jj082dh5.jpg" /&gt;&lt;/p&gt;
+&lt;p&gt;图7：iptables查看NAT。&lt;/p&gt;
+&lt;p&gt;同理mininet，或者其他的应用程序也可以使用容器部署，不再赘述，读者可自行尝试。&lt;/p&gt;
+&lt;h3&gt;上传镜像&lt;/h3&gt;
+&lt;p&gt;首先需要将部署了应用的容器导出为tar文件。可以使用docker export container &amp;gt; file 命令。举例如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;export&lt;/span&gt; &lt;span class="n"&gt;ryu3&lt;/span&gt;&lt;span class="mf"&gt;.15&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tar&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后使用docker import命令将其导入为镜像：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cat&lt;/span&gt; &lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tar&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="nb"&gt;import&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;muzixing&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ryu:sdn&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;以上命令为读取ryu.tar 将其导入成muzixing/ryu:sdn的image。完成之后可通过docker images查看。&lt;/p&gt;
+&lt;p&gt;确保无误之后，可将其推送到Dockerhub。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="nb"&gt;push&lt;/span&gt; &lt;span class="n"&gt;muzixing&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ryu&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;读者也可以尝试更好的自动创建方式。&lt;/p&gt;
+&lt;h3&gt;网络配置&lt;/h3&gt;
+&lt;p&gt;我们完全可以将Docker理解成一个独立的主机，可以对其网络进行配置，如配置DNS，iptables等。可以通过启动时配置，也可以通过修改文件的方式配置。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="n"&gt;BRIDGE&lt;/span&gt; &lt;span class="ow"&gt;or&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;bridge&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;BRIDGE&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="err"&gt;指定容器挂载的网桥&lt;/span&gt;
+&lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;bip&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;CIDR&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="err"&gt;定制&lt;/span&gt; &lt;span class="n"&gt;docker0&lt;/span&gt; &lt;span class="err"&gt;的掩码&lt;/span&gt;
+&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;H&lt;/span&gt; &lt;span class="n"&gt;SOCKET&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt; &lt;span class="ow"&gt;or&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;host&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;SOCKET&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;Docker&lt;/span&gt; &lt;span class="err"&gt;服务端接收命令的通道&lt;/span&gt;
+&lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;icc&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;true&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="n"&gt;false&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="err"&gt;是否支持容器之间进行通信&lt;/span&gt;
+&lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;ip&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;forward&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;true&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="n"&gt;false&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="err"&gt;请看下文容器之间的通信&lt;/span&gt;
+&lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;iptables&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;true&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="n"&gt;false&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="err"&gt;禁止&lt;/span&gt; &lt;span class="n"&gt;Docker&lt;/span&gt; &lt;span class="err"&gt;添加&lt;/span&gt; &lt;span class="n"&gt;iptables&lt;/span&gt; &lt;span class="err"&gt;规则&lt;/span&gt;
+&lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;mtu&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;BYTES&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="err"&gt;容器网络中的&lt;/span&gt; &lt;span class="n"&gt;MTU&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;文件配置则如同正常的主机配置，进入到/etc/目录下，修改制定文件即可。同样的，Dokcer可以配置网络链接的网桥，可以不选择docker0网桥，而选择其他网桥，如使用brctl创建的网桥，或者使用OpenvSwitch创建的网桥，具体操作不再赘述。&lt;/p&gt;
+&lt;h3&gt;后语&lt;/h3&gt;
+&lt;p&gt;工欲善其事，必先利其器。Docker可以允许我们更灵活地使用资源，并且可以很方便地迁移环境。比如以后需要安装RYU的同学就不需要再去关注，为什么six版本不够？为什么gcc报错这些问题了。只需要有一台64位的机器，然后安装docker,理论上是不会有错的。然后将镜像下载下来，创建并运行容易，就可以得到ryu控制器运行的环境。同理Nginx，Tornado和MySQL等软件也可以直接获取，而不需要自己安装配置环境。这大大加快了生产环境的部署，也显著提高了资源的利用率，个人认为将在未来对虚拟机产生强烈的冲击。&lt;/p&gt;</summary><category term="Docker"></category><category term="sdn"></category><category term="RYU"></category></entry><entry><title>ONOS论文解析</title><link href="http://www.muzixing.com/pages/2014/11/26/onoslun-wen-jie-xi.html" rel="alternate"></link><updated>2014-11-26T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2014-11-26:pages/2014/11/26/onoslun-wen-jie-xi.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
 &lt;p&gt;不久之前，onlab的那群人，发布了ONOS。同时也在SIGCOMM上发表了一篇论文&lt;a href="http://onos.wpengine.com/wp-content/uploads/2014/11/HotSDN-paper-2014-ONOS-Towards-an-Open-Distributed-SDN-OS.pdf"&gt;ONOS: Towards an Open, Distributed SDN OS&lt;/a&gt;,这引起了很多人的关注。博主刚好得知这个消息，阅读了一遍ONOS的论文，总（翻）结（译）了一下论文的内容，作为自己的论文笔记（好长的笔记）。但是越来越感觉读论文，然后写一些读书或者读论文笔记没有意思。因为写着写着，写成了翻译，完全没有自己的观点。还不如去做些实验，写点教程来得实在。读研究生的生活也感觉有些无所事事了，我想我应该做点有意义的事情，比如学一下Docker, OpenStack之类的。搞学术，学术不让啊！&lt;/p&gt;
 &lt;h2&gt;ABSTRACT&lt;/h2&gt;
 &lt;p&gt;ONOS(Open Networking Operating System)是一个分布式的SDN控制平台。ONOS满足了大规模网络操作系统对性能，拓展性等需求。在论文中，他们提出了来那个个ONOS的模型。第一个模型实现了核心的特性，完成了一个分布式的网络操作系统模型，但是性能不够好。第二个模型则在第一个模型的基础之上，大大提高了ONOS的性能。&lt;/p&gt;

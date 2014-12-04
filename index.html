@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2014/11/26/onoslun-wen-jie-xi.html"><h1>ONOS论文解析</h1></a>
-2014-11-26
+            <a href="./pages/2014/12/03/dockerbu-shu-sdnhuan-jing.html"><h1>Docker部署SDN环境</h1></a>
+2014-12-03
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
  
@@ -72,89 +72,195 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h2>前言</h2>
-<p>不久之前，onlab的那群人，发布了ONOS。同时也在SIGCOMM上发表了一篇论文<a href="http://onos.wpengine.com/wp-content/uploads/2014/11/HotSDN-paper-2014-ONOS-Towards-an-Open-Distributed-SDN-OS.pdf">ONOS: Towards an Open, Distributed SDN OS</a>,这引起了很多人的关注。博主刚好得知这个消息，阅读了一遍ONOS的论文，总（翻）结（译）了一下论文的内容，作为自己的论文笔记（好长的笔记）。但是越来越感觉读论文，然后写一些读书或者读论文笔记没有意思。因为写着写着，写成了翻译，完全没有自己的观点。还不如去做些实验，写点教程来得实在。读研究生的生活也感觉有些无所事事了，我想我应该做点有意义的事情，比如学一下Docker, OpenStack之类的。搞学术，学术不让啊！</p>
-<h2>ABSTRACT</h2>
-<p>ONOS(Open Networking Operating System)是一个分布式的SDN控制平台。ONOS满足了大规模网络操作系统对性能，拓展性等需求。在论文中，他们提出了来那个个ONOS的模型。第一个模型实现了核心的特性，完成了一个分布式的网络操作系统模型，但是性能不够好。第二个模型则在第一个模型的基础之上，大大提高了ONOS的性能。</p>
-<h2>INTRODUCTION</h2>
-<p>为了支持大规模网络的需求，ONOS可能需要满足一下极具挑战性的需求：</p>
-<ul>
-<li>High Throughput: up to 1M requests/second</li>
-<li>Low Latency: 10 - 100 ms event processing</li>
-<li>Global Network State Size: up to 1TB of data</li>
-<li>High Availability: 99.99% service availability</li>
-</ul>
-<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1emom6fdh4rj20ir0b4gmw.jpg" /></p>
-<h2>PROTOTYPE 1: NETWORK VIEW, SCALE-OUT, FAULT TOLERANCE</h2>
-<p>ONOS的第一个模型使用了若干的开源软件来构建整个系统。比如使用FloodLight的一些现有模块，如switch manger、I/O loop、link discovery、module management、以及REST API。也使用到了Zookeeper, Titan, Cassandra以及Blueprints等开源软件。</p>
-<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emoijpm69xj20g50c2dha.jpg" /></p>
-<h4>Global Network View</h4>
-<p>ONOS维持了一个全网拓扑视图，从而允许一个ONOS集群内的实例能相互之间分享和管理网路信息。其全网拓扑信息包括switch、port、link和host等信息。ONOS使用<a href="http://thinkaurelius.github.io/titan/">Titan</a> graph database来存储，并使用Cassandra 来保障分布式和可持续性。由于Cassandra具有一致性存储的特性，所以保障了网络视图的最终一致性。</p>
-<h4>Scale-out.</h4>
-<p>ONOS的一个关键特性就是拓展性。ONOS分布式运行在多个服务器上，每一个实例是其管理的网络子集中的交换机的控制器。一个独立的ONOS实例将独立地完成网络的控制，并始终保持与全网视图的一致，即网络中发生状态变化，如添加交换机等时间，都应该由ONOS实例负责将这个事件传播到全局网络视图（Global Network View）。</p>
-<h4>Fault tolerance</h4>
-<p>分布式的ONOS允许即使某一个组件甚至某一个ONOS实例Down掉也不会影响整个系统的运行。ONOS允许component作为一个单独的实例去运作，不过也提供了多冗余容灾的能力。多实例的情况下，需要选择出leader，这个在分布式系统中是分厂必要的行为。在OpenFlow1.3版本中，有多控制器的定义。ONOS可以允许交换机连接到多控制器，但是对于交换机而言只有一个控制器是master，其他的是slaver。当某一个ONOS发生故障Down掉之后，他所管理的交换机将由别的ONOS实例接管。ONOS使用<a href="http://zookeeper.apache.org/">Zookeeper</a>来存储交换机和控制器之间的关系数据。每一个ONOS实例都需要连接Zookeeper。<a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-zookeeper/">Zookeeper</a>曾经是<a href="http://hadoop.apache.org/">Hadoop</a>的一个子项目。现在已经好似一个顶级项目。它主要是用来解决分布式应用中经常遇到的一些数据管理问题，如：统一命名服务、状态同步服务、集群管理、分布式应用配置项的管理等。</p>
-<h3>Evaluation</h3>
-<p>ONOS的第一个模型花了4个月的时间（好快！）。但是，这个Prototype的性能表现并不好。论文中举例分析如下：</p>
-<p><strong>Consistency and Integrity</strong>:  这一部分论文写得比较模糊，没有看懂，所以不发表评论。</p>
-<p><strong>Low Performance and Visibility</strong></p>
-<p>模型一的性能并不好，特别是延迟比预期的要差许多，比如30s才可以获取到网络拓扑状态变化情况。主要原因在与使用了开源软件，虽然很快可以完成开发，但是这些开源软件之间的协调，并不容易。而且ONOS的开发者并不是特别熟悉这些开源代码，导致性能并不高。</p>
-<p><strong>Data Model Issues</strong></p>
-<p>由于使用Titan存储，所以所有数据如Port,flow entries等都需要以Vertices存储。而且需要构建一个索引来查询数据如交换机数据。当大量节点加入网络时，并发的数据量就会很大，所以索引构建就会成为瓶颈。即使一个很小的改动，也会引起许多许多数据库更新的操作。</p>
-<p><strong>Excessive Data Store Operations</strong></p>
-<p>由于使用了Cassandra和Titan,完成这两者之间的数据转换则产生过多的数据存储操作。每一个简单的网络操作都会由于过多的数据读取和写入操作而延迟。原因如下：</p>
-<p><strong>Polling</strong></p>
-<p>由于时间紧张，第一个模型，并没有实现订阅分发，而是通过周期同步数据，显然这样增加了CPU的使用率。</p>
-<p><strong>Lessons Learned</strong></p>
-<p>第一个模型的测试能学到一些教训，比如设计更高效的数据模型，减少多余的数据操作，以及更简化的API等等。</p>
-<h2>PROTOTYPE 2: IMPROVING PERFORMANCE</h2>
-<p>第二个模型关注于提升性能。所以第二个模型改变了network view architecture,还增加了一个事件通知框架。在第一个模型中，远程操作是造成性能瓶颈的重要原因之一，所以在模型二中，通过减少远程操作的数量和加快远程操作的速度来解决这个问题。改变之后的模型二如下图所示：</p>
-<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqixkwgv8j20jw0f5762.jpg" /></p>
-<p><strong>RAMCloud Data Store</strong>: <a href="https://ramcloud.atlassian.net/wiki/display/RAM/RAMCloud">RAMCloud</a>中文名字应该叫“内存云”，顾名思义，使用内存来代替普通硬盘来存储，从而大大提高存储速度。
-<strong>Optimized Data Model</strong>： 优化向来都是一个复杂的事情。他们新设计了一个data model（中文怎么称呼都不舒服），也不追求数据完整性了，许多更新都是相对独立的，从而大大减少了数据的读写操作，优化了性能。</p>
-<p><strong>Topology Cache</strong>： 读取拓扑是一个非常耗时的操作，所以新的ONOS将拓扑信息存在高速缓存中，从而提高了读取拓扑的速度。除此之外，他们还构建了一个索引用于更快速地查找数据。构建索引的过程可以在任何时刻由全部的数据生成，但是一般情况下，只有新的ONOS节点接入时，才会读取全部数据，所以从全局来看，这并不会消耗太多时间。</p>
-<p><strong>Event Notification</strong>： 前面已经提到由于周期获取数据而引起的性能问题，所以一个事件通知机制非常必要。模型二创建了一个实例内部的发布-订阅的事件机制，然后将这个通信系统部署在了<a href="http://hazelcast.com/">Hazelcast</a>上（又一个牛逼的开源软件。）发布订阅模式无需赘述。</p>
-<p><strong>Network View API</strong>： 关于API的改动，ONOS用自己设计的API取代了生成的Blueprints graph API。Figure4展示了网络视图所包含的内容。ONOS的API主要由以下三个主要部分组成：</p>
-<ul>
-<li>对底层设施拓扑的抽象描述的接口;</li>
-<li>处理网络或系统Events（事件）的接口;</li>
-<li>提供安装流表等信息的接口。</li>
-</ul>
-<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqk7nvjdwj20m10e175m.jpg" /></p>
-<h3>Evaluation</h3>
-<p>对于模型二的性能主要分为一下三个方面进行测试和评价：</p>
-<ul>
-<li>对基础网络状态改变的反应</li>
-<li>对网络事件的反应</li>
-<li>下发流表路径部署</li>
-</ul>
-<p><strong>Basic Network State Changes</strong></p>
-<p>网络中状态的改变会阻塞ONOS的操作，直到数据更新完成。所以这一点对整个ONOS的性能影响巨大。</p>
-<p>测试案例中使用了三个节点的ONOS集群，连接了81个OpenFlow交换机，组成了一个典型的WAN拓扑，每一个交换机上都有四个活跃的端口。</p>
-<p>为测试这个性能，ONOS采用了对比的方式。Table 1中展示了添加一个交换机这个动作所需要的latency。从表中可以看出，使用通用的API，速度最慢。使用自定义的API速度快了很多。因为使用新的Data model仅仅需要一个操作可以完成添加交换机的操作，所以时间从22.2ms下降到了1.19ms。在序列化方面还尝试了<a href="http://www.ibm.com/developerworks/cn/linux/l-cn-gpb/">Google Protocol Buffers</a>，这个尝试可以将latency下降了0.244ms。最后他们还尝试了使用<a href="http://en.wikipedia.org/wiki/InfiniBand">Infiniband</a>的I/O架构，从而得到了更好的数据。</p>
-<p><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emql9ck45tj20gk05tgma.jpg" /></p>
-<p><strong>Reaction to Network Events</strong></p>
-<p>这项测试组要用于评价ONOS对网络事件的反应速度等性能。如网路中某一个link down掉之后，ONOS对流量重新路由的过程需要多长时间。这个性能直接关系到SLA（Service-Level Agreement）的性能。</p>
-<p>这个实验使用了6个节点的ONOS的集群，数据层面使用mininet模拟了206个软件交换机和416个link。他们将16000条flows添加到网络中，然后关掉网络中的某一个交换端口，则足以导致1000多条flow发生改变，从而重新路由这些flow。其中每一条流有六跳，当某个端口down掉之后，他们都变成7跳的流。</p>
-<p>Table 2展示了重新路由进度进行到一半和99%的数据。其中包括从网络时间被捕捉到到下发第一条flow_mod的过程。以及全部Flow_mod都下发。</p>
-<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqrajqucxj20em03ywer.jpg" /></p>
-<p><strong>Path Installation</strong></p>
-<p>第三个性能指标测试了ONOS系统的吞吐量。这次测试使用了与第二项性能指标一样的拓扑。但是预下发了15000条静态流表。他们添加了1000条6hops的flow。Table 3展示的测试结果。吞吐量和延时成反比，所以在进程进行到一半的时候吞吐量为18832paths/sec。（好像性能不够好！）</p>
-<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqrthq20mj20ex03w0sy.jpg" /></p>
-<p>在Prototype2中，ONOS对网络事件的延迟上达到了预期的要求，但是在吞吐量上还没有达到1M path/sec的标准。不过作者们将这个原因归咎与仅仅使用一个ONOS节点来计算路径。如果分布式计算路径效果肯定会更好一些吧。</p>
-<h3>Demonstration on Internet2</h3>
-<p>论文作者们将ONOS部署在Internet2上，运行正常。</p>
-<p><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1emqsv4wsd3j20f80b20uy.jpg" />
-<img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqsv58p7yj20fg0bd40z.jpg" /></p>
-<h2>DISCUSSION: TOWARDS AN OPEN, DISTRIBUTED NETWORK OS</h2>
-<h3>Use Cases</h3>
-<p>ONOS可以提供的使用案例如下图所示。</p>
-<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqt0ik8xej20up0li0v1.jpg" /></p>
+        <div><h3>前言</h3>
+<p>5月份的时候，当我还是一个大学生的时候，有个网友问我，你有研究Docker吗？当时我连Docker是什么都不知道。谷歌之后，对Docker产生兴趣，但是一直没有时间去学习。这个周终于将这个学习计划列入了Todolist。所以我花了3天时间，认真地把这<a href="http://dockerpool.com/static/books/docker_practice/index.html">《Docker 从入门到实践》</a>看完并实践了一遍，收获颇丰。虽然我的导师以及我自己还是觉得我在瞎转，而且我觉得没有方向的日子很痛苦。所以只好自己做计划，学习点新知识，打打基础了。本篇内容主要介绍什么是Docker、Docker简单入门以及如何使用Docker部署SDN环境，以及docker的网络配置等内容。What is Docker和Why Docker部分摘自《Docker从入门到实践》。</p>
+<h3><a href="https://www.docker.com/whatisdocker/">What is Docker</a></h3>
+<p>Docker 是一个开源项目，诞生于 2013 年初，最初是 dotCloud 公司内部的一个业余项目。它基于 Google 公司推出的 Go 语言实现。 项目后来加入了 Linux 基金会，遵从了 Apache 2.0 协议，项目代码在 GitHub 上进行维护。Redhat 已经在其 RHEL6.5 中集中支持 Docker；Google 也在其 PaaS 产品中广泛应用。</p>
+<p>Docker 项目的目标是实现轻量级的操作系统虚拟化解决方案。 Docker 的基础是 Linux 容器（LXC）等技术。</p>
+<p>下面的图片比较了 Docker 和传统虚拟化方式的不同之处，可见容器是在操作系统层面上实现虚拟化，直接复用本地主机的操作系统，而传统方式则是在硬件层面实现。</p>
+<p><img alt="" src="http://dockerpool.com/static/books/docker_practice/_images/virtualization.png" /></p>
+<p><img alt="" src="http://dockerpool.com/static/books/docker_practice/_images/docker.png" /></p>
+<p>图1：Docker和虚拟机对比</p>
+<h3><a href="http://dockerpool.com/static/books/docker_practice/introduction/why.html">Why Docker</a></h3>
+<p>首先，Docker 容器的启动可以在秒级实现，这相比传统的虚拟机方式要快得多。 其次，Docker 对系统资源的利用率很高，一台主机上可以同时运行数千个 Docker 容器。</p>
+<p>容器除了运行其中应用外，基本不消耗额外的系统资源，使得应用的性能很高，同时系统的开销尽量小。传统虚拟机方式运行 10 个不同的应用就要起 10 个虚拟机，而Docker 只需要启动 10 个隔离的应用即可。</p>
+<p>具体说来，Docker 在如下几个方面具有较大的优势。</p>
+<h4>更快速的交付和部署</h4>
+<p>对开发和运维（devop）人员来说，最希望的就是一次创建或配置，可以在任意地方正常运行。</p>
+<p>开发者可以使用一个标准的镜像来构建一套开发容器，开发完成之后，运维人员可以直接使用这个容器来部署代码。 Docker 可以快速创建容器，快速迭代应用程序，并让整个过程全程可见，使团队中的其他成员更容易理解应用程序是如何创建和工作的。 Docker 容器很轻很快！容器的启动时间是秒级的，大量地节约开发、测试、部署的时间。</p>
+<h4>更高效的虚拟化</h4>
+<p>Docker 容器的运行不需要额外的 hypervisor 支持，它是内核级的虚拟化，因此可以实现更高的性能和效率。</p>
+<h4>更轻松的迁移和扩展</h4>
+<p>Docker 容器几乎可以在任意的平台上运行，包括物理机、虚拟机、公有云、私有云、个人电脑、服务器等。 这种兼容性可以让用户把一个应用程序从一个平台直接迁移到另外一个。</p>
+<h4>更简单的管理</h4>
+<p>使用 Docker，只需要小小的修改，就可以替代以往大量的更新工作。所有的修改都以增量的方式被分发和更新，从而实现自动化并且高效的管理。</p>
+<h3>Docker简单入门</h3>
+<p>谷歌出来的教程实在太多了。所以我也不打算太多介绍，只讲一些我觉得对于网络研究人员而言比较有用的命令。</p>
+<h4>基本概念</h4>
+<p>镜像（Image）:镜像是一个只读模板。用户上传制作好的镜像供其他人下载使用。用户可以基于镜像去创建Container。
+容器（Container）:容器可以理解为一个隔离起来的linux环境，用于运行应用，Namespace可以帮助你理解。
+仓库（Repository）:如果你会使用Git/Github的话，不难理解，就是用于存放镜像的场所。</p>
+<h4>Docker安装</h4>
+<p>本文的实验环境是Ubuntu14.04-amd64。非常需要注意的一点是，目前<strong>Docker只支持64位机器</strong>。Ubuntu14.04安装方式有两种：1）通过系统自带包安装和2）通过Docker源安装。推荐第二种方式，能安装比较新的版本。</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">key</span> <span class="n">adv</span> <span class="o">--</span><span class="n">keyserver</span> <span class="n">hkp:</span><span class="sr">//</span><span class="n">keyserver</span><span class="o">.</span><span class="n">ubuntu</span><span class="o">.</span><span class="n">com:80</span> <span class="o">--</span><span class="nb">recv</span><span class="o">-</span><span class="nb">keys</span> <span class="mi">36</span><span class="n">A1D7869245C8950F966E92D8576A8BA88D21E9</span>
+<span class="n">sudo</span> <span class="n">bash</span> <span class="o">-</span><span class="n">c</span> <span class="s">&quot;echo deb https://get.docker.io/ubuntu docker main &gt; /etc/apt/sources.list.d/docker.list&quot;</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">lxc</span><span class="o">-</span><span class="n">docker</span>
+</pre></div>
+
+
+<h3>获取镜像</h3>
+<p>首先，推荐到<a href="hubhub.docke.com">Docker</a>注册帐号，这样可以向使用Git/Github那样使用Docker/Dockerhub。注册和登陆可通过如下命令完成：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">login</span>
+</pre></div>
+
+
+<p>注册之后，可以通过如下命令进行搜索,如搜索ryu:</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">search</span> <span class="n">ryu</span>
+</pre></div>
+
+
+<p>可以从搜索结果中的Star来确定资源的好坏，从而找到合适的images,如muzixing/ryu。然后使用如下命令，将其拉到本地：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">pull</span>  <span class="n">muzixing</span><span class="o">/</span><span class="n">ryu</span>
+</pre></div>
+
+
+<p>下载完成后，可以通过如下命令查看已存在的images</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">images</span>
+</pre></div>
+
+
+<p><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emxdzs4wf6j20qp04rdh0.jpg" /></p>
+<p>图2：images</p>
+<h3>创建容器</h3>
+<p>创建容器使用示例如下，-t=tty,  -i=interactive,  -d=debug, -p=port, --name <name>可以用于命名container。 其他的命令可以通过--help来查看。</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">i</span> <span class="o">-</span><span class="n">t</span> <span class="o">--</span><span class="n">name</span> <span class="sr">&lt;name&gt;</span> <span class="n">muzixing</span><span class="sr">/ryu:SDN  /</span><span class="n">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+
+
+<p>如果你需要对端口映射，或者网络配置方面的设置，还需要仔细去查看手册。举例如下：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">i</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">p</span>  <span class="sr">&lt;ip&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">host</span> <span class="n">port</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">container</span> <span class="n">port</span><span class="o">&gt;</span>  <span class="o">--</span><span class="n">name</span> <span class="sr">&lt;name&gt;</span> <span class="n">muzixing</span><span class="sr">/ryu:SDN  /</span><span class="n">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+
+
+<p>以上命令创建并运行了一个名字叫<name>的container，并且将容器内部的端口port映射到主机的某个port，完成了端口映射，允许外网访问容器。这是容器与外界通信的方式之一。如果希望永久绑定到某个固定的 IP 地址，可以在 Docker 配置文件 /etc/default/docker 中指定 DOCKER_OPTS="--ip=IP_ADDRESS"，之后重启 Docker 服务即可生效。设置网络访问的参数默认是 --icc=ture，如果--icc=false,则禁止网络访问。</p>
+<p>查看容器：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">ps</span> <span class="p">[</span><span class="o">-</span><span class="n">opt</span><span class="p">]</span>
+</pre></div>
+
+
+<p>-a为全部容器。</p>
+<p>查看打印信息可以通过：</p>
+<div class="highlight"><pre><span class="n">dokcer</span> <span class="n">logs</span> <span class="sr">&lt;name&gt;</span>
+</pre></div>
+
+
+<p>暂停容器：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">stop</span> <span class="sr">&lt;name&gt;</span>
+</pre></div>
+
+
+<p>开启暂停的容器：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">start</span> <span class="sr">&lt;name&gt;</span>
+</pre></div>
+
+
+<p>重启容器：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">restart</span> <span class="sr">&lt;name&gt;</span>
+</pre></div>
+
+
+<p>有时候我们开启了容器，但是没有开窗口，在后台运行，可以通过一下命令进入容器：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">attach</span> <span class="sr">&lt;name&gt;</span>
+</pre></div>
+
+
+<h3>部署SDN控制器RYU</h3>
+<p>首先获取镜像：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">pull</span>  <span class="n">muzixing</span><span class="o">/</span><span class="n">ryu</span>
+</pre></div>
+
+
+<p>然后创建容器，并将容器的6633端口绑定到主机的6633端口。</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">i</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">p</span>  <span class="mf">0.0.0.0</span><span class="p">:</span><span class="mi">6633</span><span class="p">:</span><span class="mi">6633</span>  <span class="o">--</span><span class="n">name</span> <span class="n">ryu3</span><span class="mf">.15</span> <span class="n">muzixing</span><span class="sr">/ryu:SDN  /</span><span class="n">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+
+
+<p>进入容器之后，运行ryu.</p>
+<p>在另一个能ping通运行容器主机的机器上运行mininet.</p>
+<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1emxf7rriqyj20k10cp75p.jpg" /></p>
+<p>图3：mininet运行图</p>
+<p>从上图可以看出控制器IP是172.16.192.128。这个IP地址的主机网卡信息如下：</p>
+<p><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1emxdzrwx4nj20k20jadkv.jpg" /></p>
+<p>图4：Host地址信息</p>
+<p>从图上可以看出，与mininet通信的是主机（实际情况下会是某台服务器）eth0的地址。但是从下面的图中看出运行的RYU地址是172.17.0.5。为什么可以通信呢？</p>
+<p><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emxdzrkaswj20k50hqwjb.jpg" /></p>
+<p>图5：容器信息</p>
+<p>因为做了端口映射，将主机的所有接口的6633端口的地址都转发到容器172.17.0.5的6633端口，从而完成数据通信。其实现的原理是：Docker在启动之后，会创建一个docker0的网桥,从图4可以看到。然后还会创建veth pair。其中一端挂载在网桥上，如图4的vethba5f9f3，另一端是容器的网卡eth0，此案例中是172.17.0.5的网卡。其实这相当与一个link。原理图如下：</p>
+<p><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1emxfusmbzoj20l30dhmy1.jpg" /></p>
+<p>图6：Docker网络通信原理</p>
+<p>在运行容器的主机上使用iptables命令查看nat规则：
+<img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emxf7rim1mj20jj082dh5.jpg" /></p>
+<p>图7：iptables查看NAT。</p>
+<p>同理mininet，或者其他的应用程序也可以使用容器部署，不再赘述，读者可自行尝试。</p>
+<h3>上传镜像</h3>
+<p>首先需要将部署了应用的容器导出为tar文件。可以使用docker export container &gt; file 命令。举例如下：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">export</span> <span class="n">ryu3</span><span class="mf">.15</span> <span class="o">&gt;</span> <span class="n">ryu</span><span class="o">.</span><span class="n">tar</span>
+</pre></div>
+
+
+<p>然后使用docker import命令将其导入为镜像：</p>
+<div class="highlight"><pre><span class="n">cat</span> <span class="n">ryu</span><span class="o">.</span><span class="n">tar</span> <span class="o">|</span> <span class="n">sudo</span> <span class="n">docker</span> <span class="nb">import</span> <span class="o">-</span> <span class="n">muzixing</span><span class="o">/</span><span class="n">ryu:sdn</span>
+</pre></div>
+
+
+<p>以上命令为读取ryu.tar 将其导入成muzixing/ryu:sdn的image。完成之后可通过docker images查看。</p>
+<p>确保无误之后，可将其推送到Dockerhub。</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="nb">push</span> <span class="n">muzixing</span><span class="o">/</span><span class="n">ryu</span>
+</pre></div>
+
+
+<p>读者也可以尝试更好的自动创建方式。</p>
+<h3>网络配置</h3>
+<p>我们完全可以将Docker理解成一个独立的主机，可以对其网络进行配置，如配置DNS，iptables等。可以通过启动时配置，也可以通过修改文件的方式配置。</p>
+<div class="highlight"><pre><span class="o">-</span><span class="n">b</span> <span class="n">BRIDGE</span> <span class="ow">or</span> <span class="o">--</span><span class="n">bridge</span><span class="o">=</span><span class="n">BRIDGE</span> <span class="o">--</span><span class="err">指定容器挂载的网桥</span>
+<span class="o">--</span><span class="n">bip</span><span class="o">=</span><span class="n">CIDR</span> <span class="o">--</span><span class="err">定制</span> <span class="n">docker0</span> <span class="err">的掩码</span>
+<span class="o">-</span><span class="n">H</span> <span class="n">SOCKET</span><span class="o">...</span> <span class="ow">or</span> <span class="o">--</span><span class="n">host</span><span class="o">=</span><span class="n">SOCKET</span><span class="o">...</span> <span class="o">--</span><span class="n">Docker</span> <span class="err">服务端接收命令的通道</span>
+<span class="o">--</span><span class="n">icc</span><span class="o">=</span><span class="n">true</span><span class="o">|</span><span class="n">false</span> <span class="o">--</span><span class="err">是否支持容器之间进行通信</span>
+<span class="o">--</span><span class="n">ip</span><span class="o">-</span><span class="n">forward</span><span class="o">=</span><span class="n">true</span><span class="o">|</span><span class="n">false</span> <span class="o">--</span><span class="err">请看下文容器之间的通信</span>
+<span class="o">--</span><span class="n">iptables</span><span class="o">=</span><span class="n">true</span><span class="o">|</span><span class="n">false</span> <span class="o">--</span><span class="err">禁止</span> <span class="n">Docker</span> <span class="err">添加</span> <span class="n">iptables</span> <span class="err">规则</span>
+<span class="o">--</span><span class="n">mtu</span><span class="o">=</span><span class="n">BYTES</span> <span class="o">--</span><span class="err">容器网络中的</span> <span class="n">MTU</span>
+</pre></div>
+
+
+<p>文件配置则如同正常的主机配置，进入到/etc/目录下，修改制定文件即可。同样的，Dokcer可以配置网络链接的网桥，可以不选择docker0网桥，而选择其他网桥，如使用brctl创建的网桥，或者使用OpenvSwitch创建的网桥，具体操作不再赘述。</p>
 <h3>后语</h3>
-<p>ONOS看起来应该是个不错的产品，希望性能和稳定度上能达到不错的水平。在读ONOS论文的过程中，学习到了许多关于分布式计算的知识，也看到了使用开源软件快速开发的模式。我想这些都是我们应该学习的。目前已经有太多优秀的开源软件，合理使用开源软件能够避免重新造轮子的过程。不过我们也从ONOS的例子中看到，并不是使用开源软件叠加就能出来一个非常好的产品，关键的数据模型等方面还是需要研发人员用心设计才能达到一个非常好的效果。希望ONOS能给SDN带来更多市场吧。</p></div>
+<p>工欲善其事，必先利其器。Docker可以允许我们更灵活地使用资源，并且可以很方便地迁移环境。比如以后需要安装RYU的同学就不需要再去关注，为什么six版本不够？为什么gcc报错这些问题了。只需要有一台64位的机器，然后安装docker,理论上是不会有错的。然后将镜像下载下来，创建并运行容易，就可以得到ryu控制器运行的环境。同理Nginx，Tornado和MySQL等软件也可以直接获取，而不需要自己安装配置环境。这大大加快了生产环境的部署，也显著提高了资源的利用率，个人认为将在未来对虚拟机产生强烈的冲击。</p></div>
         <hr />
     </div>
 		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2014/11/26/onoslun-wen-jie-xi.html"><h2>ONOS论文解析</h2></a>
+        <div class= "well small"> 2014-11-26
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>不久之前，onlab的那群人，发布了ONOS。同时也在SIGCOMM上发表了一篇论文<a href="http://onos.wpengine.com/wp-content/uploads/2014/11/HotSDN-paper-2014-ONOS-Towards-an-Open-Distributed-SDN-OS.pdf">ONOS: Towards an Open, Distributed SDN OS</a>,这引起了很多人的关注。博主刚好得知这个消息，阅读了一遍ONOS的论文，总（翻）结（译）了一下论文的内容，作为自己的论文笔记（好长的笔记）。但是越来越感觉读论文，然后写一些读书或者读论文笔记没有意思。因为写着写着，写成了翻译，完全没有自己的观点。还不如去做些实验，写点教程来得实在。读研究生的生活也感觉有些无所事事了，我想我应该做点有意义的事情，比如学一下Docker, OpenStack之类的。搞学术，学术不让啊！</p>
+<h2>ABSTRACT</h2>
+<p>ONOS(Open Networking Operating System)是一个分布式的SDN控制平台。ONOS满足了大规模网络操作系统对性能，拓展性等需求。在论文中，他们提出了来那个个ONOS的模型。第一个模型实现了核心的特性，完成了一个分布式的网络操作系统模型，但是性能不够好。第二个模型则在第一个模型的基础之上 ...</p> <a class="btn btn-info xsmall" href="./pages/2014/11/26/onoslun-wen-jie-xi.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -287,42 +393,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 38
 39
 40 ...</pre></div></td></tr></table> <a class="btn btn-info xsmall" href="./pages/2014/11/02/openvswitch230-and-mininet-install.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/10/28/openvirtexoperation-and-subsystems.html"><h2>OpenVirteX：Operation and Subsystems</h2></a>
-        <div class= "well small"> 2014-10-28
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>继上篇<a href="http://www.muzixing.com/pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html">《OpenVirteX文档概述（一）：Overview and Components》</a>之后，本篇将继续介绍OVX的Operation and Subsystems部分。主要讲述OVX内部的运作原理，本文属于个人简介，有误之处敬请指出，希望对读者有所帮助。本篇的顺序依然是按照官网文档的顺序介绍。</p>
-<h2>简介</h2>
-<p>本部分将介绍OVX内部的工作原理，如哪些内部子系统实现了哪一些功能，从而使得OVX能支持OpenFlow网络的虚拟化。以下的内容将分为如下的小点介绍：</p>
-<ul>
-<li>System Overview</li>
-<li>Startup and Shutdown</li>
-<li>The Event Loops</li>
-<li>Network Discovery and Presentation</li>
-<li>Virtualization and De-virtualization</li>
-<li>State Synchronization</li>
-<li>Reslience</li>
-<li>persistence</li>
-<li>The JSONRPC API</li>
-</ul>
-<h2>System Overveiw</h2>
-<p>OVX分为以下几个主要的部分：</p>
-<ul>
-<li>一半是面向南向物理基础设施的部分 ，管理了datapath到OVX之间的OpenFlow通道，并建立和维持了一系列数据结构，用于描述物理基础网络 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2014/10/28/openvirtexoperation-and-subsystems.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

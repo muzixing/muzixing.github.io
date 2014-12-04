@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html"><h1>Load balance(Multipath) Application on RYU</h1></a>
-2014-11-07
+            <a href="../pages/2014/12/03/dockerbu-shu-sdnhuan-jing.html"><h1>Docker部署SDN环境</h1></a>
+2014-12-03
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,190 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h2>前言</h2>
+        <div><h3>前言</h3>
+<p>5月份的时候，当我还是一个大学生的时候，有个网友问我，你有研究Docker吗？当时我连Docker是什么都不知道。谷歌之后，对Docker产生兴趣，但是一直没有时间去学习。这个周终于将这个学习计划列入了Todolist。所以我花了3天时间，认真地把这<a href="http://dockerpool.com/static/books/docker_practice/index.html">《Docker 从入门到实践》</a>看完并实践了一遍，收获颇丰。虽然我的导师以及我自己还是觉得我在瞎转，而且我觉得没有方向的日子很痛苦。所以只好自己做计划，学习点新知识，打打基础了。本篇内容主要介绍什么是Docker、Docker简单入门以及如何使用Docker部署SDN环境，以及docker的网络配置等内容。What is Docker和Why Docker部分摘自《Docker从入门到实践》。</p>
+<h3><a href="https://www.docker.com/whatisdocker/">What is Docker</a></h3>
+<p>Docker 是一个开源项目，诞生于 2013 年初，最初是 dotCloud 公司内部的一个业余项目。它基于 Google 公司推出的 Go 语言实现。 项目后来加入了 Linux 基金会，遵从了 Apache 2.0 协议，项目代码在 GitHub 上进行维护。Redhat 已经在其 RHEL6.5 中集中支持 Docker；Google 也在其 PaaS 产品中广泛应用。</p>
+<p>Docker 项目的目标是实现轻量级的操作系统虚拟化解决方案。 Docker 的基础是 Linux 容器（LXC）等技术。</p>
+<p>下面的图片比较了 Docker 和传统虚拟化方式的不同之处，可见容器是在操作系统层面上实现虚拟化，直接复用本地主机的操作系统，而传统方式则是在硬件层面实现。</p>
+<p><img alt="" src="http://dockerpool.com/static/books/docker_practice/_images/virtualization.png" /></p>
+<p><img alt="" src="http://dockerpool.com/static/books/docker_practice/_images/docker.png" /></p>
+<p>图1：Docker和虚拟机对比</p>
+<h3><a href="http://dockerpool.com/static/books/docker_practice/introduction/why.html">Why Docker</a></h3>
+<p>首先，Docker 容器的启动可以在秒级实现，这相比传统的虚拟机方式要快得多。 其次，Docker 对系统资源的利用率很高，一台主机上可以同时运行数千个 Docker 容器。</p>
+<p>容器除了运行其中应用外，基本不消耗额外的系统资源，使得应用的性能很高，同时系统的开销尽量小。传统虚拟机方式运行 10 个不同的应用就要起 10 个虚拟机，而Docker 只需要启动 10 个隔离的应用即可。</p>
+<p>具体说来，Docker 在如下几个方面具有较大的优势。</p>
+<h4>更快速的交付和部署</h4>
+<p>对开发和运维（devop）人员来说，最希望的就是一次创建或配置，可以在任意地方正常运行。</p>
+<p>开发者可以使用一个标准的镜像来构建一套开发容器，开发完成之后，运维人员可以直接使用这个容器来部署代码。 Docker 可以快速创建容器，快速迭代应用程序，并让整个过程全程可见，使团队中的其他成员更容易理解应用程序是如何创建和工作的。 Docker 容器很轻很快！容器的启动时间是秒级的，大量地节约开发、测试、部署的时间。</p>
+<h4>更高效的虚拟化</h4>
+<p>Docker 容器的运行不需要额外的 hypervisor 支持，它是内核级的虚拟化，因此可以实现更高的性能和效率。</p>
+<h4>更轻松的迁移和扩展</h4>
+<p>Docker 容器几乎可以在任意的平台上运行，包括物理机、虚拟机、公有云、私有云、个人电脑、服务器等。 这种兼容性可以让用户把一个应用程序从一个平台直接迁移到另外一个。</p>
+<h4>更简单的管理</h4>
+<p>使用 Docker，只需要小小的修改，就可以替代以往大量的更新工作。所有的修改都以增量的方式被分发和更新，从而实现自动化并且高效的管理。</p>
+<h3>Docker简单入门</h3>
+<p>谷歌出来的教程实在太多了。所以我也不打算太多介绍，只讲一些我觉得对于网络研究人员而言比较有用的命令。</p>
+<h4>基本概念</h4>
+<p>镜像（Image）:镜像是一个只读模板。用户上传制作好的镜像供其他人下载使用。用户可以基于镜像去创建Container。
+容器（Container）:容器可以理解为一个隔离起来的linux环境，用于运行应用，Namespace可以帮助你理解。
+仓库（Repository）:如果你会使用Git/Github的话，不难理解，就是用于存放镜像的场所。</p>
+<h4>Docker安装</h4>
+<p>本文的实验环境是Ubuntu14.04-amd64。非常需要注意的一点是，目前<strong>Docker只支持64位机器</strong>。Ubuntu14.04安装方式有两种：1）通过系统自带包安装和2）通过Docker源安装。推荐第二种方式，能安装比较新的版本。</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">key</span> <span class="n">adv</span> <span class="o">--</span><span class="n">keyserver</span> <span class="n">hkp:</span><span class="sr">//</span><span class="n">keyserver</span><span class="o">.</span><span class="n">ubuntu</span><span class="o">.</span><span class="n">com:80</span> <span class="o">--</span><span class="nb">recv</span><span class="o">-</span><span class="nb">keys</span> <span class="mi">36</span><span class="n">A1D7869245C8950F966E92D8576A8BA88D21E9</span>
+<span class="n">sudo</span> <span class="n">bash</span> <span class="o">-</span><span class="n">c</span> <span class="s">&quot;echo deb https://get.docker.io/ubuntu docker main &gt; /etc/apt/sources.list.d/docker.list&quot;</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">lxc</span><span class="o">-</span><span class="n">docker</span>
+</pre></div>
+
+
+<h3>获取镜像</h3>
+<p>首先，推荐到<a href="hubhub.docke.com">Docker</a>注册帐号，这样可以向使用Git/Github那样使用Docker/Dockerhub。注册和登陆可通过如下命令完成：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">login</span>
+</pre></div>
+
+
+<p>注册之后，可以通过如下命令进行搜索,如搜索ryu:</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">search</span> <span class="n">ryu</span>
+</pre></div>
+
+
+<p>可以从搜索结果中的Star来确定资源的好坏，从而找到合适的images,如muzixing/ryu。然后使用如下命令，将其拉到本地：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">pull</span>  <span class="n">muzixing</span><span class="o">/</span><span class="n">ryu</span>
+</pre></div>
+
+
+<p>下载完成后，可以通过如下命令查看已存在的images</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">images</span>
+</pre></div>
+
+
+<p><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emxdzs4wf6j20qp04rdh0.jpg" /></p>
+<p>图2：images</p>
+<h3>创建容器</h3>
+<p>创建容器使用示例如下，-t=tty,  -i=interactive,  -d=debug, -p=port, --name <name>可以用于命名container。 其他的命令可以通过--help来查看。</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">i</span> <span class="o">-</span><span class="n">t</span> <span class="o">--</span><span class="n">name</span> <span class="sr">&lt;name&gt;</span> <span class="n">muzixing</span><span class="sr">/ryu:SDN  /</span><span class="n">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+
+
+<p>如果你需要对端口映射，或者网络配置方面的设置，还需要仔细去查看手册。举例如下：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">i</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">p</span>  <span class="sr">&lt;ip&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">host</span> <span class="n">port</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">container</span> <span class="n">port</span><span class="o">&gt;</span>  <span class="o">--</span><span class="n">name</span> <span class="sr">&lt;name&gt;</span> <span class="n">muzixing</span><span class="sr">/ryu:SDN  /</span><span class="n">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+
+
+<p>以上命令创建并运行了一个名字叫<name>的container，并且将容器内部的端口port映射到主机的某个port，完成了端口映射，允许外网访问容器。这是容器与外界通信的方式之一。如果希望永久绑定到某个固定的 IP 地址，可以在 Docker 配置文件 /etc/default/docker 中指定 DOCKER_OPTS="--ip=IP_ADDRESS"，之后重启 Docker 服务即可生效。设置网络访问的参数默认是 --icc=ture，如果--icc=false,则禁止网络访问。</p>
+<p>查看容器：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">ps</span> <span class="p">[</span><span class="o">-</span><span class="n">opt</span><span class="p">]</span>
+</pre></div>
+
+
+<p>-a为全部容器。</p>
+<p>查看打印信息可以通过：</p>
+<div class="highlight"><pre><span class="n">dokcer</span> <span class="n">logs</span> <span class="sr">&lt;name&gt;</span>
+</pre></div>
+
+
+<p>暂停容器：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">stop</span> <span class="sr">&lt;name&gt;</span>
+</pre></div>
+
+
+<p>开启暂停的容器：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">start</span> <span class="sr">&lt;name&gt;</span>
+</pre></div>
+
+
+<p>重启容器：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">restart</span> <span class="sr">&lt;name&gt;</span>
+</pre></div>
+
+
+<p>有时候我们开启了容器，但是没有开窗口，在后台运行，可以通过一下命令进入容器：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">attach</span> <span class="sr">&lt;name&gt;</span>
+</pre></div>
+
+
+<h3>部署SDN控制器RYU</h3>
+<p>首先获取镜像：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">pull</span>  <span class="n">muzixing</span><span class="o">/</span><span class="n">ryu</span>
+</pre></div>
+
+
+<p>然后创建容器，并将容器的6633端口绑定到主机的6633端口。</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">i</span> <span class="o">-</span><span class="n">t</span> <span class="o">-</span><span class="n">p</span>  <span class="mf">0.0.0.0</span><span class="p">:</span><span class="mi">6633</span><span class="p">:</span><span class="mi">6633</span>  <span class="o">--</span><span class="n">name</span> <span class="n">ryu3</span><span class="mf">.15</span> <span class="n">muzixing</span><span class="sr">/ryu:SDN  /</span><span class="n">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+
+
+<p>进入容器之后，运行ryu.</p>
+<p>在另一个能ping通运行容器主机的机器上运行mininet.</p>
+<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1emxf7rriqyj20k10cp75p.jpg" /></p>
+<p>图3：mininet运行图</p>
+<p>从上图可以看出控制器IP是172.16.192.128。这个IP地址的主机网卡信息如下：</p>
+<p><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1emxdzrwx4nj20k20jadkv.jpg" /></p>
+<p>图4：Host地址信息</p>
+<p>从图上可以看出，与mininet通信的是主机（实际情况下会是某台服务器）eth0的地址。但是从下面的图中看出运行的RYU地址是172.17.0.5。为什么可以通信呢？</p>
+<p><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emxdzrkaswj20k50hqwjb.jpg" /></p>
+<p>图5：容器信息</p>
+<p>因为做了端口映射，将主机的所有接口的6633端口的地址都转发到容器172.17.0.5的6633端口，从而完成数据通信。其实现的原理是：Docker在启动之后，会创建一个docker0的网桥,从图4可以看到。然后还会创建veth pair。其中一端挂载在网桥上，如图4的vethba5f9f3，另一端是容器的网卡eth0，此案例中是172.17.0.5的网卡。其实这相当与一个link。原理图如下：</p>
+<p><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1emxfusmbzoj20l30dhmy1.jpg" /></p>
+<p>图6：Docker网络通信原理</p>
+<p>在运行容器的主机上使用iptables命令查看nat规则：
+<img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emxf7rim1mj20jj082dh5.jpg" /></p>
+<p>图7：iptables查看NAT。</p>
+<p>同理mininet，或者其他的应用程序也可以使用容器部署，不再赘述，读者可自行尝试。</p>
+<h3>上传镜像</h3>
+<p>首先需要将部署了应用的容器导出为tar文件。可以使用docker export container &gt; file 命令。举例如下：</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="n">export</span> <span class="n">ryu3</span><span class="mf">.15</span> <span class="o">&gt;</span> <span class="n">ryu</span><span class="o">.</span><span class="n">tar</span>
+</pre></div>
+
+
+<p>然后使用docker import命令将其导入为镜像：</p>
+<div class="highlight"><pre><span class="n">cat</span> <span class="n">ryu</span><span class="o">.</span><span class="n">tar</span> <span class="o">|</span> <span class="n">sudo</span> <span class="n">docker</span> <span class="nb">import</span> <span class="o">-</span> <span class="n">muzixing</span><span class="o">/</span><span class="n">ryu:sdn</span>
+</pre></div>
+
+
+<p>以上命令为读取ryu.tar 将其导入成muzixing/ryu:sdn的image。完成之后可通过docker images查看。</p>
+<p>确保无误之后，可将其推送到Dockerhub。</p>
+<div class="highlight"><pre><span class="n">docker</span> <span class="nb">push</span> <span class="n">muzixing</span><span class="o">/</span><span class="n">ryu</span>
+</pre></div>
+
+
+<p>读者也可以尝试更好的自动创建方式。</p>
+<h3>网络配置</h3>
+<p>我们完全可以将Docker理解成一个独立的主机，可以对其网络进行配置，如配置DNS，iptables等。可以通过启动时配置，也可以通过修改文件的方式配置。</p>
+<div class="highlight"><pre><span class="o">-</span><span class="n">b</span> <span class="n">BRIDGE</span> <span class="ow">or</span> <span class="o">--</span><span class="n">bridge</span><span class="o">=</span><span class="n">BRIDGE</span> <span class="o">--</span><span class="err">指定容器挂载的网桥</span>
+<span class="o">--</span><span class="n">bip</span><span class="o">=</span><span class="n">CIDR</span> <span class="o">--</span><span class="err">定制</span> <span class="n">docker0</span> <span class="err">的掩码</span>
+<span class="o">-</span><span class="n">H</span> <span class="n">SOCKET</span><span class="o">...</span> <span class="ow">or</span> <span class="o">--</span><span class="n">host</span><span class="o">=</span><span class="n">SOCKET</span><span class="o">...</span> <span class="o">--</span><span class="n">Docker</span> <span class="err">服务端接收命令的通道</span>
+<span class="o">--</span><span class="n">icc</span><span class="o">=</span><span class="n">true</span><span class="o">|</span><span class="n">false</span> <span class="o">--</span><span class="err">是否支持容器之间进行通信</span>
+<span class="o">--</span><span class="n">ip</span><span class="o">-</span><span class="n">forward</span><span class="o">=</span><span class="n">true</span><span class="o">|</span><span class="n">false</span> <span class="o">--</span><span class="err">请看下文容器之间的通信</span>
+<span class="o">--</span><span class="n">iptables</span><span class="o">=</span><span class="n">true</span><span class="o">|</span><span class="n">false</span> <span class="o">--</span><span class="err">禁止</span> <span class="n">Docker</span> <span class="err">添加</span> <span class="n">iptables</span> <span class="err">规则</span>
+<span class="o">--</span><span class="n">mtu</span><span class="o">=</span><span class="n">BYTES</span> <span class="o">--</span><span class="err">容器网络中的</span> <span class="n">MTU</span>
+</pre></div>
+
+
+<p>文件配置则如同正常的主机配置，进入到/etc/目录下，修改制定文件即可。同样的，Dokcer可以配置网络链接的网桥，可以不选择docker0网桥，而选择其他网桥，如使用brctl创建的网桥，或者使用OpenvSwitch创建的网桥，具体操作不再赘述。</p>
+<h3>后语</h3>
+<p>工欲善其事，必先利其器。Docker可以允许我们更灵活地使用资源，并且可以很方便地迁移环境。比如以后需要安装RYU的同学就不需要再去关注，为什么six版本不够？为什么gcc报错这些问题了。只需要有一台64位的机器，然后安装docker,理论上是不会有错的。然后将镜像下载下来，创建并运行容易，就可以得到ryu控制器运行的环境。同理Nginx，Tornado和MySQL等软件也可以直接获取，而不需要自己安装配置环境。这大大加快了生产环境的部署，也显著提高了资源的利用率，个人认为将在未来对虚拟机产生强烈的冲击。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html"><h2>Load balance(Multipath) Application on RYU</h2></a>
+        <div class= "well small"> 2014-11-07
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
 <p>本篇博文介绍的是如何在RYU上通过使用select group 来实现multipath，从而实现流量的调度，完成简单的负载均衡Demo。OpenFlow13中有group table,可用于实现组播和冗余容灾等功能。实验中还是用了queue,完成了链路带宽的保障。</p>
 <h2>相关工作</h2>
 <p>要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。</p>
@@ -90,311 +273,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="s">                            |</span>
 <span class="s">                          host4</span>
 
-<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate our newly defined</span>
-<span class="s">topology enables one to pass in &#39;--topo=mytopo&#39; from the command line.</span>
-<span class="s">&quot;&quot;&quot;</span>
-
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">topo</span> <span class="nb">import</span> <span class="n">Topo</span>
-
-
-<span class="n">class</span> <span class="n">MyTopo</span><span class="p">(</span><span class="n">Topo</span><span class="p">):</span>
-    <span class="s">&quot;Simple loop topology example.&quot;</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
-        <span class="s">&quot;Create custom loop topo.&quot;</span>
-
-        <span class="c1"># Initialize topology</span>
-        <span class="n">Topo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
-
-        <span class="c1"># Add hosts and switches</span>
-        <span class="n">host1</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h1&#39;</span><span class="p">)</span>
-        <span class="n">host2</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h2&#39;</span><span class="p">)</span>
-        <span class="n">host3</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h3&#39;</span><span class="p">)</span>
-        <span class="c1">#host4 = self.addHost(&#39;h4&#39;)</span>
-        <span class="n">switch1</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s1&quot;</span><span class="p">)</span>
-        <span class="n">switch2</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s2&quot;</span><span class="p">)</span>
-        <span class="n">switch3</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s3&quot;</span><span class="p">)</span>
-        <span class="n">switch4</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&quot;s4&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Add links</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch1</span><span class="p">,</span> <span class="n">host1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch1</span><span class="p">,</span> <span class="n">switch2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch1</span><span class="p">,</span> <span class="n">switch3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch2</span><span class="p">,</span> <span class="n">switch4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch3</span><span class="p">,</span> <span class="n">switch4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch4</span><span class="p">,</span> <span class="n">host2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch4</span><span class="p">,</span> <span class="n">host3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-        <span class="c1">#self.addLink(switch3, host4, 3)</span>
-
-
-<span class="n">topos</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;mytopo&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">lambda:</span> <span class="n">MyTopo</span><span class="p">())}</span>
-</pre></div>
-
-
-<h2>Multipath</h2>
-<p>解决网络可能形成风暴的问题之后，可以使用select类型的group_table来实现多径功能。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">send_group_mod</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
-    <span class="n">ofp</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-    <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-    <span class="n">port_1</span> <span class="o">=</span> <span class="mi">3</span>
-    <span class="n">actions_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_1</span><span class="p">)]</span>
-
-    <span class="n">port_2</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
-
-    <span class="n">weight_1</span> <span class="o">=</span> <span class="mi">50</span>
-    <span class="n">weight_2</span> <span class="o">=</span> <span class="mi">50</span>
-
-    <span class="n">watch_port</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPP_ANY</span>
-    <span class="n">watch_group</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPQ_ALL</span>
-
-    <span class="n">buckets</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_1</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">),</span>
-        <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_2</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_2</span><span class="p">)]</span>
-
-    <span class="n">group_id</span> <span class="o">=</span> <span class="mi">50</span>
-    <span class="n">req</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPGroupMod</span><span class="p">(</span>
-        <span class="n">datapath</span><span class="p">,</span> <span class="n">ofp</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
-        <span class="n">ofp</span><span class="o">.</span><span class="n">OFPGT_SELECT</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">buckets</span><span class="p">)</span>
-
-    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
-</pre></div>
-
-
-<p>不知道现在OVS的select的key是否已经改变，原先的key为dl_dst。匹配成功的flow，在执行select时，是以dl_dst为key,进行判断，从而从buckets中选择一个action_list。</p>
-<p>查看组表信息：</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="nb">dump</span><span class="o">-</span><span class="n">groups</span> <span class="n">s1</span> <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
-</pre></div>
-
-
-<p>查看流表信息：</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="nb">dump</span><span class="o">-</span><span class="n">flows</span> <span class="n">s1</span> <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
-</pre></div>
-
-
-<h2>QoS</h2>
-<p>首先我们知道OpenFlow无法创建队列。所以我们可以通过<a href="http://osrg.github.io/ryu-book/ja/html/rest_qos.html">ovsdb来配置队列</a>，也可以直接使用ovs命令配置:</p>
-<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span> <span class="n">set</span> <span class="n">Port</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth2</span> <span class="n">qos</span><span class="o">=</span><span class="nv">@newqos</span> <span class="o">\</span>
-     <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@newqos</span> <span class="n">create</span> <span class="n">QoS</span> <span class="n">type</span><span class="o">=</span><span class="n">linux</span><span class="o">-</span><span class="n">htb</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">250000000</span> <span class="n">queues</span><span class="o">=</span><span class="mi">0</span><span class="o">=</span><span class="nv">@q0</span><span class="o">\</span>
-     <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@q0</span> <span class="n">create</span> <span class="n">Queue</span> <span class="n">other</span><span class="o">-</span><span class="n">config:min</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">8000000</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">150000000</span><span class="o">\</span>
-
-<span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span> <span class="n">set</span> <span class="n">Port</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth3</span> <span class="n">qos</span><span class="o">=</span><span class="nv">@defaultqos</span><span class="o">\</span>
-    <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@defaultqos</span> <span class="n">create</span> <span class="n">QoS</span> <span class="n">type</span><span class="o">=</span><span class="n">linux</span><span class="o">-</span><span class="n">htb</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">300000000</span> <span class="n">queues</span><span class="o">=</span><span class="mi">1</span><span class="o">=</span><span class="nv">@q1</span><span class="o">\</span>
-     <span class="o">--</span> <span class="o">--</span><span class="n">id</span><span class="o">=</span><span class="nv">@q1</span> <span class="n">create</span> <span class="n">Queue</span> <span class="n">other</span><span class="o">-</span><span class="n">config:min</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">5000000</span> <span class="n">other</span><span class="o">-</span><span class="n">config:max</span><span class="o">-</span><span class="n">rate</span><span class="o">=</span><span class="mi">200000000</span>
-
-<span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">queue</span>
-</pre></div>
-
-
-<p>以上代码在s1-eth2上创建了queue 0,在s1-eth3上创建了queue 0和queue 1。并配置了max_rate和min_rate。</p>
-<p>查看queue的信息可以使用：</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">ofctl</span> <span class="n">queue</span><span class="o">-</span><span class="n">stats</span> <span class="n">s1</span> <span class="mi">2</span>  <span class="o">-</span><span class="n">O</span> <span class="n">OpenFlow13</span>
-</pre></div>
-
-
-<p>列举port查看qos：</p>
-<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">port</span>
-</pre></div>
-
-
-<p>列举queue：</p>
-<div class="highlight"><pre><span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">list</span> <span class="n">queue</span>
-</pre></div>
-
-
-<p>删除QOS:</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span><span class="n">all</span> <span class="n">destroy</span> <span class="n">qos</span>
-<span class="n">sudo</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span><span class="n">all</span> <span class="n">destroy</span> <span class="n">queue</span>
-</pre></div>
-
-
-<p>区别于OpenFlow1.0, OpenFlow1.3中的入队操作只有一个queue_id,需要额外指定port。即指定数据如某一个队列的话需要如下的actions:</p>
-<div class="highlight"><pre><span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
-</pre></div>
-
-
-<p>所以使用group的情况下，完成QoS功能函数如下：</p>
-<div class="highlight"><pre>    <span class="n">def</span> <span class="n">send_group_mod</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
-        <span class="n">ofp</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-        <span class="n">port_1</span> <span class="o">=</span> <span class="mi">3</span>
-        <span class="n">queue_1</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">actions_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_1</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_1</span><span class="p">)]</span>
-
-        <span class="n">port_2</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="n">queue_2</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_2</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
-
-        <span class="n">weight_1</span> <span class="o">=</span> <span class="mi">50</span>
-        <span class="n">weight_2</span> <span class="o">=</span> <span class="mi">50</span>
-
-        <span class="n">watch_port</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPP_ANY</span>
-        <span class="n">watch_group</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPQ_ALL</span>
-
-        <span class="n">buckets</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_1</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">),</span>
-            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_2</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_2</span><span class="p">)]</span>
-
-        <span class="n">group_id</span> <span class="o">=</span> <span class="mi">50</span>
-        <span class="n">req</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPGroupMod</span><span class="p">(</span>
-            <span class="n">datapath</span><span class="p">,</span> <span class="n">ofp</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
-            <span class="n">ofp</span><span class="o">.</span><span class="n">OFPGT_SELECT</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">buckets</span><span class="p">)</span>
-
-        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
-</pre></div>
-
-
-<h2>Load balancing</h2>
-<p><img alt="mininet" src="http://ww1.sinaimg.cn/mw690/7f593341jw1em5uu5i76qj20k40cr0v8.jpg" /></p>
-<p>从图中我们可以看到，pingall连通性没有问题。第一个iperf是在没有设置队列的情况下，由于找不到队列，所以不如队，只转发，此时带宽为26.4Gbits/sec。之后的测试数据为设置队列之后的数据。可以看出h1到h2之间的带宽是300Mbits/sec，而h1到h3的带宽是150Mbits/sec。 </p>
-<p>原因在于我们将h1到h2的数据流在组表中选择了s1-eth3的queue 0，而该队列的最大带宽是300M。</p>
-<p>同时另一个从h1到h3的数据流，在hash过程中，选择了s1-eth2端口的queue 0，该队列的最大速度为150M。</p>
-<p>下图为queue information：</p>
-<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1em5uu6ecr8j20k30cuq63.jpg" /></p>
-<p>可以看到，port 2 queue 0和port 3 queue 0有数据，而port 3 queue 1没有数据。</p>
-<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1em5uu5dgjfj20k80cu0xb.jpg" /></p>
-<p>上图为s1和s4的组表和流表信息，从s4的流表信息（后部分流表）可知，同样是s1到s4的数据，dl_dst为h2的数据从port 2进入，而dl_dst为h3的数据从port 1进入，验证了数据传输过程使用了多径传输，合理利用了带宽空间。多径传输可以充分利用链路带宽，提高链路利用率。同时这个实验简单粗暴地完成了两条链路的负载均衡（将不同的数据流平均地分摊到了两条path上，由于对不同Path限制了不同的带宽，所以，流量并不是平均的）。根据拓扑及流量情况，添加算法计算合理流量路径，可以完成更灵活有效的负载均衡功能。</p>
-<h2>后语</h2>
-<p>这其实是简单的实验，但是由于在安装OVS的过程中遇到了很多的问题，所以过程比较痛苦，写下来，以备不时之需，也有可能帮助到别人吧。提供一个纯从<a href="http://hwchiu.logdown.com/posts/207387-multipath-routing-with-group-table-at-mininet">OVS上配置的方案</a>，相比之下比开发控制要简单一些。之前的博文的名字是：Multipath and QoS Application on RYU,但是后来导师提醒Multipath 和QoS不是一个层面的，才发现自己学识粗浅。需要努力的地方还太多。所以本篇博文被我生生改成Load balance的题目，虽然很牵强，但是相比之下，犯的错误更少一些。源码没有全部贴出来是因为我写的APP也可以出售的。后续应该会上传Github。详情可以邮件沟通。</p>
-<p>折叠版代码如下：</p>
-<div class="highlight"><pre><span class="c1"># Author:muzixing</span>
-<span class="c1"># Time:2014/10/19</span>
-<span class="c1">#</span>
-
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">base</span> <span class="nb">import</span> <span class="n">app_manager</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span> <span class="nb">import</span> <span class="n">ofp_event</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">CONFIG_DISPATCHER</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">HANDSHAKE_DISPATCHER</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">handler</span> <span class="nb">import</span> <span class="n">set_ev_cls</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">ofproto</span> <span class="nb">import</span> <span class="n">ofproto_v1_3</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">packet</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">ethernet</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">arp</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">ipv4</span>
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">packet</span> <span class="nb">import</span> <span class="n">icmp</span>
-<span class="n">from</span> <span class="n">ryu</span> <span class="nb">import</span> <span class="n">utils</span>
-
-<span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span> <span class="nb">import</span> <span class="n">addrconv</span>
-<span class="nb">import</span> <span class="n">struct</span>
-<span class="nb">import</span> <span class="nb">socket</span>
-
-<span class="n">ETHERNET</span> <span class="o">=</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="o">.</span><span class="n">__name__</span>
-<span class="n">ETHERNET_MULTICAST</span> <span class="o">=</span> <span class="s">&quot;ff:ff:ff:ff:ff:ff&quot;</span>
-<span class="n">ARP</span> <span class="o">=</span> <span class="n">arp</span><span class="o">.</span><span class="n">arp</span><span class="o">.</span><span class="n">__name__</span>
-<span class="n">ICMP</span> <span class="o">=</span> <span class="n">icmp</span><span class="o">.</span><span class="n">icmp</span><span class="o">.</span><span class="n">__name__</span>
-<span class="n">IPV4</span> <span class="o">=</span> <span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="o">.</span><span class="n">__name__</span>
-
-<span class="n">def</span> <span class="n">ip2long</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="nb">unpack</span><span class="p">(</span><span class="s">&quot;!I&quot;</span><span class="p">,</span> <span class="nb">socket</span><span class="o">.</span><span class="n">inet_aton</span><span class="p">(</span><span class="n">ip</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
-
-
-<span class="n">class</span> <span class="n">MULTIPATH_13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
-    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">super</span><span class="p">(</span><span class="n">MULTIPATH_13</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">arp_table</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">sw</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
-    <span class="n">def</span> <span class="n">switch_features_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
-        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-        <span class="c1"># install table-miss flow entry</span>
-        <span class="c1">#</span>
-        <span class="c1"># We specify NO BUFFER to max_len of the output action due to</span>
-        <span class="c1"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
-        <span class="c1"># 128, OVS will send Packet-In with invalid buffer_id and</span>
-        <span class="c1"># truncated packet data. In that case, we cannot output packets</span>
-        <span class="c1"># correctly.</span>
-
-        <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
-        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
-                                          <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">add_flow</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">hard_timeout</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
-        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-        <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
-                                             <span class="n">actions</span><span class="p">)]</span>
-
-        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
-                                <span class="n">hard_timeout</span><span class="o">=</span><span class="n">hard_timeout</span><span class="p">,</span>
-                                <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
-        <span class="c1">#print mod.__dict__</span>
-        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
-
-    <span class="nv">@set_ev_cls</span><span class="p">(</span>
-        <span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPErrorMsg</span><span class="p">,</span>
-        <span class="p">[</span><span class="n">HANDSHAKE_DISPATCHER</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">])</span>
-    <span class="n">def</span> <span class="n">error_msg_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s">&#39;OFPErrorMsg received: type=0x%02x code=0x%02x &#39;</span>
-            <span class="s">&#39;message=%s&#39;</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">hex_array</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
-
-    <span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-    <span class="n">def</span> <span class="n">_packet_in_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="o">...</span>
-
-    <span class="n">def</span> <span class="n">send_packet_out</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
-        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="n">None</span>
-        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
-                                  <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">arp_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">header_list</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg_buffer_id</span><span class="p">)</span>
-        <span class="o">...</span>
-
-    <span class="n">def</span> <span class="n">send_group_mod</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
-        <span class="n">ofp</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">ofp_parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-        <span class="n">port_1</span> <span class="o">=</span> <span class="mi">3</span>
-        <span class="n">queue_1</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">actions_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_1</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_1</span><span class="p">)]</span>
-
-        <span class="n">port_2</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="n">queue_2</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionSetQueue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">actions_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">queue_2</span><span class="p">,</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port_2</span><span class="p">)]</span>
-
-        <span class="n">weight_1</span> <span class="o">=</span> <span class="mi">50</span>
-        <span class="n">weight_2</span> <span class="o">=</span> <span class="mi">50</span>
-
-        <span class="n">watch_port</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPP_ANY</span>
-        <span class="n">watch_group</span> <span class="o">=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPQ_ALL</span>
-
-        <span class="n">buckets</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_1</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_1</span><span class="p">),</span>
-            <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPBucket</span><span class="p">(</span><span class="n">weight_2</span><span class="p">,</span> <span class="n">watch_port</span><span class="p">,</span> <span class="n">watch_group</span><span class="p">,</span> <span class="n">actions_2</span><span class="p">)]</span>
-
-        <span class="n">group_id</span> <span class="o">=</span> <span class="mi">50</span>
-        <span class="n">req</span> <span class="o">=</span> <span class="n">ofp_parser</span><span class="o">.</span><span class="n">OFPGroupMod</span><span class="p">(</span>
-            <span class="n">datapath</span><span class="p">,</span> <span class="n">ofp</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
-            <span class="n">ofp</span><span class="o">.</span><span class="n">OFPGT_SELECT</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">buckets</span><span class="p">)</span>
-
-        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
-</pre></div>
-
-
-<p>最近接触了许多网络方面的知识，深深觉得自己努力不够，接下来的日子需要好好静下心来读书学习了。希望我也能写出不错的论文。</p></div>
-        <hr />
-    </div>
-		
+<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html">read more</a></div>
+    </div>	
+				
 
  
         
