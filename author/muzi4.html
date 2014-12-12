@@ -62,6 +62,38 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html"><h2>【python爬虫】抓取淘宝模特图片——20分钟爬虫之旅</h2></a>
+        <div class= "well small"> 2014-07-24
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h1>前言</h1>
+<p>很多人说学Python最终需要写一个爬虫才能算是学成出山了，而我就是那个留级生，一直没有写过。炎热的夏日，以及看java的抑郁，让我无聊之中萌生了这个想法。于是在百度的帮助下，写完了这个教程。视频教程可以去百度学堂看，我就是在那里看的。</p>
+<h1>spider</h1>
+<p>代码详解就不多加介绍，注释相信已经很明确了，请看代码。</p>
+<div class="highlight"><pre><span class="nb">import</span> <span class="n">urllib2</span>
+<span class="nb">import</span> <span class="n">urllib</span>
+<span class="nb">import</span> <span class="n">sys</span>
+
+<span class="n">class</span> <span class="n">get_mm_pic</span><span class="p">(</span><span class="n">object</span><span class="p">):</span>
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="n">page_num</span><span class="p">):</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">page_num</span> <span class="o">=</span> <span class="n">page_num</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">mmurl</span><span class="o">=</span> <span class="s">&quot;http://mm.taobao.com/json/request_top_list.htm?type=0&amp;page=&quot;</span><span class="c1">#抓取的链接</span>
+    <span class="n">def</span> <span class="n">get_pic</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">page_num ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/07/14/guan-yu-zhe-ge-shi-jie-de-si-kao.html"><h2>关于这个世界的思考</h2></a>
         <div class= "well small"> 2014-07-14
 
@@ -180,49 +212,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="n">void ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/04/18/ctime_server.html"><h2>[c]time_server</h2></a>
-        <div class= "well small"> 2014-04-18
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>本篇内容主要是介绍如何编写一个通过socket通信，实现获取服务器当前时间的例子。</p>
-<h3>实现</h3>
-<p>首先我们需要定义两个函数：</p>
-<div class="highlight"><pre><span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-</pre></div>
-
-
-<p>这两个函数是用于提供时间获取服务和，客户端调用去获取时间的函数。</p>
-<p>以下是time_server.h的内容：</p>
-<div class="highlight"><pre><span class="c1">#ifndef _TIME_SERVER_</span>
-<span class="c1">#define _TIME_SERVER_</span>
-<span class="c1">#include &lt;sys/socket.h&gt;</span>
-<span class="c1">#include &lt;string.h&gt;</span>
-
-<span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
-<span class="c1">#endif</span>
-</pre></div>
-
-
-<p>time_server.c文件是实现time_server中的函数声明。
-头文件如下：</p>
-<div class="highlight"><pre><span class="c">#include &lt;stdlib.h&gt;</span>
-<span class="c">#include &quot;time_server.h ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/18/ctime_server.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../author/muzi3.html">&larr; Previous</a></li>
@@ -235,6 +224,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../author/muzi6.html">6</a></li>
     <li class=""><a href="../author/muzi7.html">7</a></li>
     <li class=""><a href="../author/muzi8.html">8</a></li>
+    <li class=""><a href="../author/muzi9.html">9</a></li>
 
     <li class="next"><a href="../author/muzi5.html">Next &rarr;</a></li>
 

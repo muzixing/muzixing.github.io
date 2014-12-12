@@ -62,6 +62,49 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/04/18/ctime_server.html"><h2>[c]time_server</h2></a>
+        <div class= "well small"> 2014-04-18
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>本篇内容主要是介绍如何编写一个通过socket通信，实现获取服务器当前时间的例子。</p>
+<h3>实现</h3>
+<p>首先我们需要定义两个函数：</p>
+<div class="highlight"><pre><span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+</pre></div>
+
+
+<p>这两个函数是用于提供时间获取服务和，客户端调用去获取时间的函数。</p>
+<p>以下是time_server.h的内容：</p>
+<div class="highlight"><pre><span class="c1">#ifndef _TIME_SERVER_</span>
+<span class="c1">#define _TIME_SERVER_</span>
+<span class="c1">#include &lt;sys/socket.h&gt;</span>
+<span class="c1">#include &lt;string.h&gt;</span>
+
+<span class="nb">int</span> <span class="n">time_server</span><span class="p">(</span><span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+<span class="n">char</span><span class="o">*</span> <span class="n">get_time</span><span class="p">(</span><span class="nb">int</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">int</span> <span class="n">port</span><span class="p">);</span>
+<span class="c1">#endif</span>
+</pre></div>
+
+
+<p>time_server.c文件是实现time_server中的函数声明。
+头文件如下：</p>
+<div class="highlight"><pre><span class="c">#include &lt;stdlib.h&gt;</span>
+<span class="c">#include &quot;time_server.h ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/18/ctime_server.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/04/17/bian-cheng-zhen-de-bu-jian-dan.html"><h2>编程真的不简单</h2></a>
         <div class= "well small"> 2014-04-17
 
@@ -184,39 +227,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>The messenger component provides an interface for POX to interact with external processes via bidirectional JSON-based messages.  The messenger by itself is really ...</p> <a class="btn btn-info xsmall" href="../pages/2014/03/26/poxmessenger-component-getting-started.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html"><h2>mininet与外部host通信</h2></a>
-        <div class= "well small"> 2014-03-25
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>好多同学都在尝试使用mininet搭建拓扑。有的同学在尝试如何让mininet与外网通信，比如虚拟机，比如mininet之外的另一个网络。问题已经存在很久，本文将介绍如何使用mininet的接口实现与外界通信。</p>
-<h3>Intf()接口</h3>
-<p>在mininet的源码中，我们可以找到一个link的文件，也是一个类。这个文件中有一个接口类Intf()</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Intf</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
-
-    <span class="s">&quot;Basic interface object that can configure itself.&quot;</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
-</pre></div>
-
-
-<p>使用这个接口类，可以把安装mininet的机器的网卡接到mininet的ovs之上。</p>
-<p>剩下的就简单了。最重要的接口解决之后一切就都解决了。</p>
-<p>如果需要例子，可以在本站查看：mininet搭建自定义拓扑
-http://www.muzixing.com/pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi ...</p> <a class="btn btn-info xsmall" href="../pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../author/muzi4.html">&larr; Previous</a></li>
@@ -229,6 +239,7 @@ http://www.muzixing.com/pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-w
     <li class=""><a href="../author/muzi6.html">6</a></li>
     <li class=""><a href="../author/muzi7.html">7</a></li>
     <li class=""><a href="../author/muzi8.html">8</a></li>
+    <li class=""><a href="../author/muzi9.html">9</a></li>
 
     <li class="next"><a href="../author/muzi6.html">Next &rarr;</a></li>
 
