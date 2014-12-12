@@ -48,12 +48,10 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;这个main()函数的内容主要是完成了configure和初始化。configure使用了oslo，这个在后续的博文中应该会提到。初始化的构成主要包括将app_list里面的内容加入App_Manager的链表中，然后开启协程去协调这些APP完成工作。hub是from ryu.lib import hub的。继续查看ryu/lib/hub.py。最终找到许多关于eventlet的内容。在hub.py中定义了Event,StreamServer和WSGIServer等类，还有一些重要的重要函数如spawn()等。看到这里，我想认真学习一边coroutine和eventlet是非常有必要的了。&lt;/p&gt;
-&lt;h2&gt;Coroutine&lt;/h2&gt;
-&lt;p&gt;&lt;a href="http://en.wikipedia.org/wiki/Coroutine#Implementations_for_Python"&gt;Coroutines&lt;/a&gt; are computer program components that generalize subroutines for nonpreemptive multitasking, by allowing multiple entry points for suspending and resuming execution at certain locations. Coroutines are well-suited for implementing more familiar program components such as cooperative tasks, exceptions, event loop, iterators, infinite lists and pipes.&lt;/p&gt;
-&lt;p&gt;协程是一个程序组件。相比subroutine, coroutine更一般。coroutine相对与thread而言，又不一样。thread是资源抢占式的存在，而coroutine是通过yield来转移执行权，协程之间是平等的，没有等级关系。multi-thread一旦开始运行，就无法确定某一时刻到底是哪一个thread在占用cpu，临界资源也要加互斥锁。而coroutine则是需要程序员自己决定程序如何运行，同时也需要自己负责程序的风险。协程和线程一样，只共享堆，不共享栈。&lt;/p&gt;
-&lt;h2&gt;Eventlet&lt;/h2&gt;
-&lt;p&gt;&lt;a href="http://eventlet.net/"&gt;Eventlet&lt;/a&gt; is a concurrent networking library for Python that allows you to change how you run your code, not how you write it.&lt;/p&gt;
+&lt;p&gt;这个main()函数的内容主要是完成了RYU的初始化配置和启动。Configure使用了oslo，这个在后续的博文中应该会提到。初始化的构成主要包括将app_list里面的内容加入App_Manager的列表中，然后开启协程去协调这些APP完成工作。hub是from ryu.lib import hub的。继续查看ryu/lib/hub.py。最终找到许多关于eventlet的内容。在hub.py中定义了Event,StreamServer和WSGIServer等类，还有一些重要的重要函数如spawn()等。为了更好地学习RYU，学习coroutine和eventlet就非常有必要了。&lt;/p&gt;
+&lt;h2&gt;&lt;a href="http://en.wikipedia.org/wiki/Coroutine#Implementations_for_Python"&gt;Coroutine&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;协程[coroutine]是一个程序组件。相比subroutine, coroutine更一般。coroutine相对与thread而言，又不一样。thread是资源抢占式的存在，而coroutine是通过yield来转移执行权，协程之间是平等的，没有等级关系。multi-thread一旦开始运行，就无法确定某一时刻到底是哪一个thread在占用cpu，临界资源也要加互斥锁。而coroutine则是需要程序员自己决定程序如何运行，同时也需要自己负责程序的风险。协程和线程一样，只共享堆，不共享栈。&lt;/p&gt;
+&lt;h2&gt;&lt;a href="http://eventlet.net/"&gt;Eventlet&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;eventlet是一个可以提供高性能并发处理能力的python库。我们可以在/usr/lib/python2.7/dist-packages/eventlet中找到对应的文件。&lt;/p&gt;
 &lt;h3&gt;Installation&lt;/h3&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;pip&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;eventlet&lt;/span&gt;
@@ -181,12 +179,11 @@
 &lt;p&gt;从上图可以看到爬虫抓取了&lt;a href="http://www.muzixing.com"&gt;www.muzixing.com&lt;/a&gt;的网页中存在的url如&lt;a href="http://ikimi.net"&gt;http://ikimi.net&lt;/a&gt;，然后我们可以看到爬虫又跳到了&lt;a href="http://ikimi.net"&gt;http://ikimi.net&lt;/a&gt;上爬取页面的其他url,如&lt;a href="http://www.ikimi.net/wp-includes"&gt;http://www.ikimi.net/wp-includes&lt;/a&gt;。如果将起始页面换成&lt;a href="bbs.byr.cn"&gt;bbs.byr.cn&lt;/a&gt;会发现爬虫会以更快的速度在整个互联网蔓延开来！&lt;/p&gt;
 &lt;p&gt;上述例子中可以学习到GreenPool类的使用。GreenPool可以类比于线程池，这有利于理解。在GreenPool中的元素都是GreenThread。其中最重要的函数是spawn/spawn_n函数。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;spawn&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;function&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-&lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="err"&gt;&amp;quot;&lt;/span&gt;&lt;span class="n"&gt;Run&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;function&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;with&lt;/span&gt; &lt;span class="n"&gt;its&lt;/span&gt; &lt;span class="n"&gt;arguments&lt;/span&gt; &lt;span class="n"&gt;in&lt;/span&gt; &lt;span class="n"&gt;its&lt;/span&gt; &lt;span class="n"&gt;own&lt;/span&gt; &lt;span class="n"&gt;green&lt;/span&gt; &lt;span class="n"&gt;thread&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
-        &lt;span class="n"&gt;Returns&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;class:&lt;/span&gt;&lt;span class="sb"&gt;`GreenThread &amp;lt;eventlet.greenthread.GreenThread&amp;gt;`&lt;/span&gt;
-        &lt;span class="n"&gt;object&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;is&lt;/span&gt; &lt;span class="n"&gt;running&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;function&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;which&lt;/span&gt; &lt;span class="n"&gt;can&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt; &lt;span class="n"&gt;used&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;retrieve&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt;
-        &lt;span class="n"&gt;results&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
-    &lt;span class="err"&gt;……&lt;/span&gt;
-&lt;span class="err"&gt;“”“&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;Run the *function* with its arguments in its own green thread.&lt;/span&gt;
+&lt;span class="s"&gt;        Returns the :class:`GreenThread &amp;lt;eventlet.greenthread.GreenThread&amp;gt;`&lt;/span&gt;
+&lt;span class="s"&gt;        object that is running the function, which can be used to retrieve the&lt;/span&gt;
+&lt;span class="s"&gt;        results.&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -223,10 +220,10 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;以上代码上的with语句是python中的一个非常方便的关键字。使用with关键字可以让代码更严谨且简洁。其封装了__enter__()函数和__exit__()函数，用于执行信息和退出处理。其等价于以下代码：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="err"&gt;try:&lt;/span&gt;  
-        &lt;span class="err"&gt;__enter__()&lt;/span&gt;  
-&lt;span class="err"&gt;finally:&lt;/span&gt;  
-       &lt;span class="err"&gt;__exit__()&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="err"&gt;try:&lt;/span&gt;
+    &lt;span class="err"&gt;__enter__()&lt;/span&gt;
+&lt;span class="err"&gt;finally:&lt;/span&gt;
+    &lt;span class="err"&gt;__exit__()&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 

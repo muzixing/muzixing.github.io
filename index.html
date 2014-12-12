@@ -121,12 +121,10 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 </pre></div>
 
 
-<p>这个main()函数的内容主要是完成了configure和初始化。configure使用了oslo，这个在后续的博文中应该会提到。初始化的构成主要包括将app_list里面的内容加入App_Manager的链表中，然后开启协程去协调这些APP完成工作。hub是from ryu.lib import hub的。继续查看ryu/lib/hub.py。最终找到许多关于eventlet的内容。在hub.py中定义了Event,StreamServer和WSGIServer等类，还有一些重要的重要函数如spawn()等。看到这里，我想认真学习一边coroutine和eventlet是非常有必要的了。</p>
-<h2>Coroutine</h2>
-<p><a href="http://en.wikipedia.org/wiki/Coroutine#Implementations_for_Python">Coroutines</a> are computer program components that generalize subroutines for nonpreemptive multitasking, by allowing multiple entry points for suspending and resuming execution at certain locations. Coroutines are well-suited for implementing more familiar program components such as cooperative tasks, exceptions, event loop, iterators, infinite lists and pipes.</p>
-<p>协程是一个程序组件。相比subroutine, coroutine更一般。coroutine相对与thread而言，又不一样。thread是资源抢占式的存在，而coroutine是通过yield来转移执行权，协程之间是平等的，没有等级关系。multi-thread一旦开始运行，就无法确定某一时刻到底是哪一个thread在占用cpu，临界资源也要加互斥锁。而coroutine则是需要程序员自己决定程序如何运行，同时也需要自己负责程序的风险。协程和线程一样，只共享堆，不共享栈。</p>
-<h2>Eventlet</h2>
-<p><a href="http://eventlet.net/">Eventlet</a> is a concurrent networking library for Python that allows you to change how you run your code, not how you write it.</p>
+<p>这个main()函数的内容主要是完成了RYU的初始化配置和启动。Configure使用了oslo，这个在后续的博文中应该会提到。初始化的构成主要包括将app_list里面的内容加入App_Manager的列表中，然后开启协程去协调这些APP完成工作。hub是from ryu.lib import hub的。继续查看ryu/lib/hub.py。最终找到许多关于eventlet的内容。在hub.py中定义了Event,StreamServer和WSGIServer等类，还有一些重要的重要函数如spawn()等。为了更好地学习RYU，学习coroutine和eventlet就非常有必要了。</p>
+<h2><a href="http://en.wikipedia.org/wiki/Coroutine#Implementations_for_Python">Coroutine</a></h2>
+<p>协程[coroutine]是一个程序组件。相比subroutine, coroutine更一般。coroutine相对与thread而言，又不一样。thread是资源抢占式的存在，而coroutine是通过yield来转移执行权，协程之间是平等的，没有等级关系。multi-thread一旦开始运行，就无法确定某一时刻到底是哪一个thread在占用cpu，临界资源也要加互斥锁。而coroutine则是需要程序员自己决定程序如何运行，同时也需要自己负责程序的风险。协程和线程一样，只共享堆，不共享栈。</p>
+<h2><a href="http://eventlet.net/">Eventlet</a></h2>
 <p>eventlet是一个可以提供高性能并发处理能力的python库。我们可以在/usr/lib/python2.7/dist-packages/eventlet中找到对应的文件。</p>
 <h3>Installation</h3>
 <div class="highlight"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">eventlet</span>
@@ -254,12 +252,11 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>从上图可以看到爬虫抓取了<a href="http://www.muzixing.com">www.muzixing.com</a>的网页中存在的url如<a href="http://ikimi.net">http://ikimi.net</a>，然后我们可以看到爬虫又跳到了<a href="http://ikimi.net">http://ikimi.net</a>上爬取页面的其他url,如<a href="http://www.ikimi.net/wp-includes">http://www.ikimi.net/wp-includes</a>。如果将起始页面换成<a href="bbs.byr.cn">bbs.byr.cn</a>会发现爬虫会以更快的速度在整个互联网蔓延开来！</p>
 <p>上述例子中可以学习到GreenPool类的使用。GreenPool可以类比于线程池，这有利于理解。在GreenPool中的元素都是GreenThread。其中最重要的函数是spawn/spawn_n函数。</p>
 <div class="highlight"><pre><span class="n">def</span> <span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="s">&quot;&quot;</span><span class="err">&quot;</span><span class="n">Run</span> <span class="n">the</span> <span class="o">*</span><span class="n">function</span><span class="o">*</span> <span class="n">with</span> <span class="n">its</span> <span class="n">arguments</span> <span class="n">in</span> <span class="n">its</span> <span class="n">own</span> <span class="n">green</span> <span class="n">thread</span><span class="o">.</span>
-        <span class="n">Returns</span> <span class="n">the</span> <span class="p">:</span><span class="n">class:</span><span class="sb">`GreenThread &lt;eventlet.greenthread.GreenThread&gt;`</span>
-        <span class="n">object</span> <span class="n">that</span> <span class="n">is</span> <span class="n">running</span> <span class="n">the</span> <span class="n">function</span><span class="p">,</span> <span class="n">which</span> <span class="n">can</span> <span class="n">be</span> <span class="n">used</span> <span class="n">to</span> <span class="n">retrieve</span> <span class="n">the</span>
-        <span class="n">results</span><span class="o">.</span>
-    <span class="err">……</span>
-<span class="err">“”“</span>
+<span class="s">&quot;&quot;&quot;Run the *function* with its arguments in its own green thread.</span>
+<span class="s">        Returns the :class:`GreenThread &lt;eventlet.greenthread.GreenThread&gt;`</span>
+<span class="s">        object that is running the function, which can be used to retrieve the</span>
+<span class="s">        results.</span>
+<span class="s">&quot;&quot;&quot;</span>
 </pre></div>
 
 
@@ -296,10 +293,10 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 </li>
 </ul>
 <p>以上代码上的with语句是python中的一个非常方便的关键字。使用with关键字可以让代码更严谨且简洁。其封装了__enter__()函数和__exit__()函数，用于执行信息和退出处理。其等价于以下代码：</p>
-<div class="highlight"><pre><span class="err">try:</span>  
-        <span class="err">__enter__()</span>  
-<span class="err">finally:</span>  
-       <span class="err">__exit__()</span>
+<div class="highlight"><pre><span class="err">try:</span>
+    <span class="err">__enter__()</span>
+<span class="err">finally:</span>
+    <span class="err">__exit__()</span>
 </pre></div>
 
 
