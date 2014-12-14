@@ -1012,8 +1012,7 @@
 &lt;p&gt;最近接触了许多网络方面的知识，深深觉得自己努力不够，接下来的日子需要好好静下心来读书学习了。希望我也能写出不错的论文。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 07 Nov 2014 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2014-11-07:pages/2014/11/07/load-balancemultipath-application-on-ryu.html</guid><category>multipath</category><category>qos</category><category>queue</category><category>SDN</category><category>RYU</category><category>load balance</category></item><item><title>OpenvSwitch2.3.0 and Mininet install</title><link>http://www.muzixing.com/pages/2014/11/02/openvswitch230-and-mininet-install.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
 &lt;p&gt;折腾了我两个周的事情是一定要写出来的，后来人就不用继续掉坑里了。在此感谢@南京-小L的帮助。&lt;/p&gt;
 &lt;h3&gt;安装OpenvSwitch2.3.0&lt;/h3&gt;
-&lt;p&gt;不需要安装。&lt;/p&gt;
-&lt;p&gt;但是提供一键安装脚本：&lt;/p&gt;
+&lt;p&gt;不需要安装。但是友情提供一键安装脚本：&lt;/p&gt;
 &lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
  2
  3
@@ -1067,7 +1066,11 @@
 51
 52
 53
-54&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
+54
+55
+56
+57
+58&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
 
 &lt;span class="c"&gt;# Make sure only root can run our script&lt;/span&gt;
 &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;$(id -u)&amp;quot;&lt;/span&gt; !&lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;0&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;]&lt;/span&gt;; &lt;span class="k"&gt;then&lt;/span&gt;
@@ -1110,15 +1113,19 @@ make modules_install
 mkdir -p /usr/local/etc/openvswitch
 ovsdb-tool create /usr/local/etc/openvswitch/conf.db vswitchd/vswitch.ovsschema  2&amp;gt;/dev/null
 
-ovsdb-server -v --remote&lt;span class="o"&gt;=&lt;/span&gt;punix:/usr/local/var/run/openvswitch/db.sock &lt;span class="se"&gt;\&lt;/span&gt;
-             --remote&lt;span class="o"&gt;=&lt;/span&gt;db:Open_vSwitch,Open_vSwitch,manager_options &lt;span class="se"&gt;\&lt;/span&gt;
-             --private-key&lt;span class="o"&gt;=&lt;/span&gt;db:Open_vSwitch,SSL,private_key &lt;span class="se"&gt;\&lt;/span&gt;
-             --certificate&lt;span class="o"&gt;=&lt;/span&gt;db:Open_vSwitch,SSL,certificate &lt;span class="se"&gt;\&lt;/span&gt;
-             --bootstrap-ca-cert&lt;span class="o"&gt;=&lt;/span&gt;db:Open_vSwitch,SSL,ca_cert &lt;span class="se"&gt;\&lt;/span&gt;
-             --pidfile --detach
+&lt;span class="c"&gt;# start ovs server&lt;/span&gt;
+sh /usr/local/share/openvswitch/scripts/ovs-ctl restart
 
-ovs-vsctl --no-wait init
-ovs-vswitchd --pidfile --detach
+&lt;span class="c"&gt;# Also, you can start ovs server by below commands.&lt;/span&gt;
+&lt;span class="c"&gt;#ovsdb-server -v --remote=punix:/usr/local/var/run/openvswitch/db.sock \&lt;/span&gt;
+&lt;span class="c"&gt;#             --remote=db:Open_vSwitch,Open_vSwitch,manager_options \&lt;/span&gt;
+&lt;span class="c"&gt;#             --private-key=db:Open_vSwitch,SSL,private_key \&lt;/span&gt;
+&lt;span class="c"&gt;#             --certificate=db:Open_vSwitch,SSL,certificate \&lt;/span&gt;
+&lt;span class="c"&gt;#             --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert \&lt;/span&gt;
+&lt;span class="c"&gt;#             --pidfile --detach&lt;/span&gt;
+
+&lt;span class="c"&gt;#ovs-vsctl --no-wait init&lt;/span&gt;
+&lt;span class="c"&gt;#ovs-vswitchd --pidfile --detach&lt;/span&gt;
 ovs-vsctl show
 depmod -A openvswitch
 &lt;/pre&gt;&lt;/div&gt;
