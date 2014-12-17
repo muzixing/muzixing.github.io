@@ -58,6 +58,7 @@ h3 { margin-top: 2.5em; }
 
 
 /* Styling for Sidebar */
+.social a[href*='weibo.com']:before {content: url('./images/icons/weibo.png'); margin-right: 2px; vertical-align: -3px;}
 .social a[href*='qzone.qq.com']:before {content: url('./images/icons/qzone.png'); margin-right: 2px; vertical-align: -3px;}
 .social a[href*='activestate.com']:before {content: url('./images/icons/activestate.png'); margin-right: 2px; vertical-align: -3px;}
 .social a[href*='atom.xml']:before {content: url('./images/icons/rss.png'); margin-right: 2px; vertical-align: -3px;}
