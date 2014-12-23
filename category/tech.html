@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/12/10/ryuxue-xi-eventlet.html"><h1>RYU学习:eventlet</h1></a>
-2014-12-10
+            <a href="../pages/2014/12/19/ryuxue-xi-oslo.html"><h1>RYU学习:Oslo</h1></a>
+2014-12-19
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,232 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h2>前言</h2>
+        <div><p>前段时间开始认真看了一下RYU的源码，发现OSLO是一个非常方便的命令行解析库，可以用于CLI和CONF的解析。大型项目OpenStack中也使用了这个库。</p>
+<h3>Oslo</h3>
+<p>在RYU的目录下可以找到cfg.py文件，这个文件中import了oslo的相关模块，以便调用时减少引用数目。从文件中可以发现oslo.config.cfg文件是关键文件，其在系统中的文件位置在：/usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py。想查看源码的读者可以自行查看。在该cfg.py文件中 定义了ConfigOpts类，包含了_opts, _groups等成员变量。该类完成了命令行和配置参数的解析。</p>
+<p>如果要快速学习某一个知识，最好的办法就是把它用起来。所以首先我会介绍一个入门的教程。如果你没有看懂，可以去看原始的<a href="http://www.giantflyingsaucer.com/blog/?p=4822">教程</a>。</p>
+<p>首先安装<a href="https://virtualenv.pypa.io/en/latest/virtualenv.html">python-virtualenv</a>，此python库可以用于创建一个虚拟的，与外界隔离的运行环境，听起来和docker好像有点像。</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">virtualenv</span>
+<span class="n">virtualenv</span> <span class="n">example</span><span class="o">-</span><span class="n">app</span>
+<span class="n">cd</span> <span class="n">example</span><span class="o">-</span><span class="n">app</span>
+<span class="n">source</span> <span class="n">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">oslo</span><span class="o">.</span><span class="n">config</span>
+<span class="n">touch</span> <span class="n">app</span><span class="o">.</span><span class="n">py</span>
+<span class="n">touch</span> <span class="n">app</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+
+
+<p>然后修改app.conf。添加了两个group:simple和morestuff。simple组中有一个BoolOpt:enable。morestuff组有StrOpt, ListOpt, DictOpt, IntOpt,和FloatOpt。</p>
+<div class="highlight"><pre><span class="k">[simple]</span>
+
+<span class="na">enable</span> <span class="o">=</span> <span class="s">True</span>
+
+<span class="k">[morestuff]</span>
+
+<span class="c"># StrOpt</span>
+<span class="na">message</span> <span class="o">=</span> <span class="s">Hello World</span>
+
+<span class="c"># ListOpt</span>
+<span class="na">usernames</span> <span class="o">=</span> <span class="s">[&#39;Licheng&#39;, &#39;Muzixing&#39;, &#39;Distance&#39;]</span>
+
+<span class="c"># DictOpt</span>
+<span class="na">jobtitles</span> <span class="o">=</span> <span class="s">{&#39;Licheng&#39;: &#39;Manager&#39;, &#39;Muzixing&#39;: &#39;CEO&#39;, &#39;Distance&#39;: &#39;Security Guard&#39;}</span>
+
+<span class="c"># IntOpt</span>
+<span class="na">payday</span> <span class="o">=</span> <span class="s">20</span>
+
+<span class="c"># FloatOpt</span>
+<span class="na">pi</span> <span class="o">=</span> <span class="s">3.14</span>
+</pre></div>
+
+
+<p>修改app.py文件。首先定义两个group，再对两个group的option进行定义。最后使用register_group和register_opts函数来完成group和option的注册。</p>
+<div class="highlight"><pre><span class="n">from</span> <span class="n">__future__</span> <span class="nb">import</span> <span class="n">print_function</span>
+<span class="n">from</span> <span class="n">oslo</span><span class="o">.</span><span class="n">config</span> <span class="nb">import</span> <span class="n">cfg</span>
+
+
+<span class="n">opt_simple_group</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">OptGroup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;simple&#39;</span><span class="p">,</span>
+                         <span class="n">title</span><span class="o">=</span><span class="s">&#39;A Simple Example&#39;</span><span class="p">)</span>
+
+<span class="n">opt_morestuff_group</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">OptGroup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;morestuff&#39;</span><span class="p">,</span>
+                         <span class="n">title</span><span class="o">=</span><span class="s">&#39;A More Complex Example&#39;</span><span class="p">)</span>
+
+<span class="n">simple_opts</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">BoolOpt</span><span class="p">(</span><span class="s">&#39;enable&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">False</span><span class="p">,</span>
+                <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;True enables, False disables&#39;</span><span class="p">))</span>
+<span class="p">]</span>
+
+<span class="n">morestuff_opts</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">StrOpt</span><span class="p">(</span><span class="s">&#39;message&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;No data&#39;</span><span class="p">,</span>
+               <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;A message&#39;</span><span class="p">)),</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">ListOpt</span><span class="p">(</span><span class="s">&#39;usernames&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">None</span><span class="p">,</span>
+                <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;A list of usernames&#39;</span><span class="p">)),</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">DictOpt</span><span class="p">(</span><span class="s">&#39;jobtitles&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">None</span><span class="p">,</span>
+                <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;A dictionary of usernames and job titles&#39;</span><span class="p">)),</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">IntOpt</span><span class="p">(</span><span class="s">&#39;payday&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+                <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;Default payday monthly date&#39;</span><span class="p">)),</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">FloatOpt</span><span class="p">(</span><span class="s">&#39;pi&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;The value of Pi&#39;</span><span class="p">))</span>
+<span class="p">]</span>
+
+<span class="n">CONF</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span>
+
+<span class="n">CONF</span><span class="o">.</span><span class="n">register_group</span><span class="p">(</span><span class="n">opt_simple_group</span><span class="p">)</span>
+<span class="n">CONF</span><span class="o">.</span><span class="n">register_opts</span><span class="p">(</span><span class="n">simple_opts</span><span class="p">,</span> <span class="n">opt_simple_group</span><span class="p">)</span>
+
+<span class="n">CONF</span><span class="o">.</span><span class="n">register_group</span><span class="p">(</span><span class="n">opt_morestuff_group</span><span class="p">)</span>
+<span class="n">CONF</span><span class="o">.</span><span class="n">register_opts</span><span class="p">(</span><span class="n">morestuff_opts</span><span class="p">,</span> <span class="n">opt_morestuff_group</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">CONF</span><span class="p">(</span><span class="n">default_config_files</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;app.conf&#39;</span><span class="p">])</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;(simple) enable: {}&#39;</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">CONF</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">enable</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;(morestuff) message :{}&#39;</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">CONF</span><span class="o">.</span><span class="n">morestuff</span><span class="o">.</span><span class="n">message</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;(morestuff) usernames: {}&#39;</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">CONF</span><span class="o">.</span><span class="n">morestuff</span><span class="o">.</span><span class="n">usernames</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;(morestuff) jobtitles: {}&#39;</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">CONF</span><span class="o">.</span><span class="n">morestuff</span><span class="o">.</span><span class="n">jobtitles</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;(morestuff) payday: {}&#39;</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">CONF</span><span class="o">.</span><span class="n">morestuff</span><span class="o">.</span><span class="n">payday</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;(morestuff) pi: {}&#39;</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">CONF</span><span class="o">.</span><span class="n">morestuff</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+</pre></div>
+
+
+<p>完成之后，运行app.py文件。可以查看到相关输出。</p>
+<p>回到RYU中，之前一篇<a href="http://www.muzixing.com/pages/2014/12/10/ryuxue-xi-eventlet.html">博客</a>介绍了RYU的main函数。在ryu/ryu/cmd/manager.py文件中我们可以看到如下的代码：</p>
+<div class="highlight"><pre><span class="n">CONF</span><span class="o">.</span><span class="n">register_cli_opts</span><span class="p">([</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">ListOpt</span><span class="p">(</span><span class="s">&#39;app-lists&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=[]</span><span class="p">,</span>
+                <span class="n">help</span><span class="o">=</span><span class="s">&#39;application module name to run&#39;</span><span class="p">),</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">MultiStrOpt</span><span class="p">(</span><span class="s">&#39;app&#39;</span><span class="p">,</span> <span class="n">positional</span><span class="o">=</span><span class="n">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=[]</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;application module name to run&#39;</span><span class="p">),</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">StrOpt</span><span class="p">(</span><span class="s">&#39;pid-file&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;pid file name&#39;</span><span class="p">),</span>
+<span class="p">])</span>
+</pre></div>
+
+
+<p>以上的注册了三个Option，其中的app-lists和app参数是运行ryu-manager时的参数，即APP的名称。在以下的main函数中，我们可以看到首先获取了输入的参数，若参数为空，则默认开启ofp_handler应用。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
+    <span class="n">try:</span>
+        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
+             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">,</span>
+             <span class="n">default_config_files</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/usr/local/etc/ryu/ryu.conf&#39;</span><span class="p">])</span>
+    <span class="n">except</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ConfigFilesNotFoundError:</span>
+        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
+             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">)</span>
+
+    <span class="nb">log</span><span class="o">.</span><span class="n">init_log</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">CONF</span><span class="o">.</span><span class="n">pid_file:</span>
+        <span class="nb">import</span> <span class="n">os</span>
+        <span class="n">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">CONF</span><span class="o">.</span><span class="n">pid_file</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="n">as</span> <span class="n">pid_file:</span>
+            <span class="n">pid_file</span><span class="o">.</span><span class="nb">write</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()))</span>
+
+    <span class="n">app_lists</span> <span class="o">=</span> <span class="n">CONF</span><span class="o">.</span><span class="n">app_lists</span> <span class="o">+</span> <span class="n">CONF</span><span class="o">.</span><span class="n">app</span>
+    <span class="c1"># keep old behaivor, run ofp if no application is specified.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">app_lists:</span>
+        <span class="n">app_lists</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">]</span>
+</pre></div>
+
+
+<p>oslo模块使用能够使得整个工程的不同模块可以使用同一个配置文件，从而减少了命令冲突的可能，此外，oslo提供的模板，可以让命令解析更方便。oslo模块以此优势被广泛应用与大型项目中，如openstack。</p>
+<h3>Argparse</h3>
+<p>oslo模块中使用了<a href="https://docs.python.org/2/howto/argparse.html">argparse</a>。argparse是python标准库中的模块。以下以一个简单例子介绍此模块，更详细的中文教程，可以查看<a href="http://lingxiankong.github.io/blog/2014/01/14/command-line-parser/">《Python中的命令行解析工具介绍》</a>。</p>
+<p>在argparse模块中定义了ArgumentParser类。我们可以调用该类的add_argument函数添加参数。其函数说明如下：</p>
+<div class="highlight"><pre><span class="n">ArgumentParser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="n">name</span> <span class="ow">or</span> <span class="n">flags</span><span class="o">...</span><span class="p">[,</span> <span class="n">action</span><span class="p">][,</span> <span class="n">nargs</span><span class="p">][,</span> <span class="n">const</span><span class="p">][,</span> <span class="n">default</span><span class="p">][,</span> <span class="n">type</span><span class="p">][,</span> <span class="n">choices</span><span class="p">][,</span> <span class="n">required</span><span class="p">][,</span> <span class="n">help</span><span class="p">][,</span> <span class="n">metavar</span><span class="p">][,</span> <span class="n">dest</span><span class="p">])</span>
+</pre></div>
+
+
+<p>从以上说明可以看出，add_argument函数可以添加action, type, choices，help等重要的属性。具体参数解释，引用自<a href="http://lingxiankong.github.io/blog/2014/01/14/command-line-parser/">《Python中的命令行解析工具介绍》</a>如下：</p>
+<ul>
+<li>
+<p>name or flags - 参数的名字.</p>
+</li>
+<li>
+<p>action - 遇到参数时的动作，默认值是store。store_const，表示赋值为const；append，将遇到的值存储成列表，也就是如果参数重复则会保存多个值; append_const，将参数规范中定义的一个值保存到一个列表；</p>
+</li>
+<li>
+<p>count，存储遇到的次数；此外，也可以继承argparse.Action自定义参数解析；</p>
+</li>
+<li>
+<p>nargs - 参数的个数，可以是具体的数字，或者是?号，当不指定值时对于Positional argument使用default，对于Optional argument使用const；或者是*号，表示0或多个参数；或者是+号表示1或多个参数.</p>
+</li>
+<li>
+<p>const - action和nargs所需要的常量值.</p>
+</li>
+<li>
+<p>default - 不指定参数时的默认值.</p>
+</li>
+<li>
+<p>type - 参数的类型.</p>
+</li>
+<li>
+<p>choices - 参数允许的值.</p>
+</li>
+<li>
+<p>required - 可选参数是否可以省略(仅针对optionals). </p>
+</li>
+<li>
+<p>help - 参数的帮助信息，当指定为argparse.SUPPRESS时表示不显示该参数的帮助信息.</p>
+</li>
+<li>
+<p>metavar - 在usage说明中的参数名称，对于必选参数默认就是参数名称，对于可选参数默认是全大写的参数名称. </p>
+</li>
+<li>
+<p>dest - 解析后的参数名称，默认情况下，对于可选参数选取最长的名称，中划线转换为下划线.</p>
+</li>
+</ul>
+<p>使用案例举例如下：</p>
+<div class="highlight"><pre><span class="c1">#filename:prog.py</span>
+<span class="nb">import</span> <span class="n">argparse</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+
+<span class="c1"># parser.add_argument(&quot;echo&quot;, help=&quot;Print the arguments.&quot;)</span>
+
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;-v&quot;</span><span class="p">,</span> <span class="s">&quot;--verbosity&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">action</span><span class="o">=</span><span class="s">&quot;count&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&quot;increase output verbosity.&quot;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="n">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&quot;the base&quot;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;y&quot;</span><span class="p">,</span> <span class="n">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&quot;the exponent&quot;</span><span class="p">)</span>
+
+<span class="c1">#parser.add_argument(&quot;square&quot;, help=&quot;Return square of given number.&quot;, type=int)</span>
+
+<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+<span class="n">answer</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">x</span><span class="o">**</span><span class="n">args</span><span class="o">.</span><span class="n">y</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;{} to the power {} equals {}&quot;</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">answer</span><span class="p">)</span>
+<span class="n">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;{}^{} =={}&quot;</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">answer</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">answer</span>
+</pre></div>
+
+
+<p>可以通过一下命令运行prog.py去查看到相关信息：</p>
+<div class="highlight"><pre><span class="n">python</span> <span class="n">prog</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">h</span>
+<span class="n">python</span> <span class="n">prog</span><span class="o">.</span><span class="n">py</span>
+<span class="n">python</span> <span class="n">prog</span><span class="o">.</span><span class="n">py</span>  <span class="mi">2</span> <span class="mi">5</span> <span class="o">-</span><span class="n">v</span>
+<span class="n">python</span> <span class="n">prog</span><span class="o">.</span><span class="n">py</span>  <span class="mi">2</span> <span class="mi">5</span> <span class="o">-</span><span class="n">vv</span>
+</pre></div>
+
+
+<h3>总结</h3>
+<p>每一个项目都会有自己的CLI或者配置文件，而使用oslo可以简化命令解析的问题。比自己使用sys.argv手动写解析要更高效且优雅。所以推荐大家在工程中使用oslo。后续会继续推出RYU学习系列文章，希望能在记录自己学习过程的同时，给其他人提供更多的帮助。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/12/10/ryuxue-xi-eventlet.html"><h2>RYU学习:eventlet</h2></a>
+        <div class= "well small"> 2014-12-10
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
 <p>从OpenDaylight转到RYU以来一直都没有机会好好学习RYU的源码,只学会了编写简单的Application。但是如果要熟悉一个控制器，就要熟悉它的运行原理，熟悉它数据结构，熟悉它的设计模式等等。最近终于有时间好好看RYU的代码，但在看代码的过程中却发现RYU并不简单，其编码风格也非常优雅，非常值得学习。本篇博文主要讲述RYU中使用到的eventlet。</p>
 <h2>从RYU开始</h2>
 <p>运行ryu的时候，命令是：ryu-manager app.py。第一个要找到就是ryu-manager到底会触发什么程序。在/cmd中没有找到之后，在/bin中找到了两个可执行文件：ryu和ryu-manager。打开ryu-manager，显示如下：</p>
@@ -84,378 +309,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>找到/ryu/cmd/manager.py，发现这个文件中的main()函数是整个ryu的入口函数。</p>
 <div class="highlight"><pre><span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
     <span class="n">try:</span>
-        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
-             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">,</span>
-             <span class="n">default_config_files</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/usr/local/etc/ryu/ryu.conf&#39;</span><span class="p">])</span>
-    <span class="n">except</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ConfigFilesNotFoundError:</span>
-        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
-             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">)</span>
-
-    <span class="nb">log</span><span class="o">.</span><span class="n">init_log</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">CONF</span><span class="o">.</span><span class="n">pid_file:</span>
-        <span class="nb">import</span> <span class="n">os</span>
-        <span class="n">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">CONF</span><span class="o">.</span><span class="n">pid_file</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="n">as</span> <span class="n">pid_file:</span>
-            <span class="n">pid_file</span><span class="o">.</span><span class="nb">write</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()))</span>
-
-    <span class="n">app_lists</span> <span class="o">=</span> <span class="n">CONF</span><span class="o">.</span><span class="n">app_lists</span> <span class="o">+</span> <span class="n">CONF</span><span class="o">.</span><span class="n">app</span>
-    <span class="c1"># keep old behaivor, run ofp if no application is specified.</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">app_lists:</span>
-        <span class="n">app_lists</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">]</span>
-
-    <span class="n">app_mgr</span> <span class="o">=</span> <span class="n">AppManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span>
-    <span class="n">app_mgr</span><span class="o">.</span><span class="n">load_apps</span><span class="p">(</span><span class="n">app_lists</span><span class="p">)</span>
-    <span class="n">contexts</span> <span class="o">=</span> <span class="n">app_mgr</span><span class="o">.</span><span class="n">create_contexts</span><span class="p">()</span>
-    <span class="n">services</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">services</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">app_mgr</span><span class="o">.</span><span class="n">instantiate_apps</span><span class="p">(</span><span class="o">**</span><span class="n">contexts</span><span class="p">))</span>
-
-    <span class="n">webapp</span> <span class="o">=</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">start_service</span><span class="p">(</span><span class="n">app_mgr</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">webapp:</span>
-        <span class="n">thr</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">webapp</span><span class="p">)</span>
-        <span class="n">services</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thr</span><span class="p">)</span>
-
-    <span class="n">try:</span>
-        <span class="n">hub</span><span class="o">.</span><span class="n">joinall</span><span class="p">(</span><span class="n">services</span><span class="p">)</span>
-    <span class="n">finally:</span>
-        <span class="n">app_mgr</span><span class="o">.</span><span class="nb">close</span><span class="p">()</span>
-</pre></div>
-
-
-<p>这个main()函数的内容主要是完成了RYU的初始化配置和启动。Configure使用了oslo，这个在后续的博文中应该会提到。初始化的构成主要包括将app_list里面的内容加入App_Manager的列表中，然后开启协程去协调这些APP完成工作。hub是from ryu.lib import hub的。继续查看ryu/lib/hub.py。最终找到许多关于eventlet的内容。在hub.py中定义了Event,StreamServer和WSGIServer等类，还有一些重要的重要函数如spawn()等。为了更好地学习RYU，学习coroutine和eventlet就非常有必要了。</p>
-<h2><a href="http://en.wikipedia.org/wiki/Coroutine#Implementations_for_Python">Coroutine</a></h2>
-<p>协程[coroutine]是一个程序组件。相比subroutine, coroutine更一般。coroutine相对与thread而言，又不一样。thread是资源抢占式的存在，而coroutine是通过yield来转移执行权，协程之间是平等的，没有等级关系。multi-thread一旦开始运行，就无法确定某一时刻到底是哪一个thread在占用cpu，临界资源也要加互斥锁。而coroutine则是需要程序员自己决定程序如何运行，同时也需要自己负责程序的风险。协程和线程一样，只共享堆，不共享栈。</p>
-<h2><a href="http://eventlet.net/">Eventlet</a></h2>
-<p>eventlet是一个可以提供高性能并发处理能力的python库。我们可以在/usr/lib/python2.7/dist-packages/eventlet中找到对应的文件。</p>
-<h3>Installation</h3>
-<div class="highlight"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">eventlet</span>
-</pre></div>
-
-
-<h3>Examples</h3>
-<p>为了更好的理解eventlet的内容，我花了半天认真地抄了一遍<a href="http://eventlet.net/doc/examples.html">官网</a>的例子。具体实例举例如下。</p>
-<p><strong>GreenPile</strong></p>
-<div class="highlight"><pre><span class="s">&quot;&quot;&quot;Spawn multiple workers and collect their results.</span>
-
-<span class="s">Demonstrates how to use the eventlet.green.socket module.</span>
-<span class="s">&quot;&quot;&quot;</span>
-
-<span class="nb">import</span> <span class="n">eventlet</span>
-<span class="n">from</span> <span class="n">eventlet</span><span class="o">.</span><span class="n">green</span> <span class="nb">import</span> <span class="nb">socket</span>
-
-
-<span class="n">def</span> <span class="n">geturl</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
-    <span class="n">con</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">socket</span><span class="p">()</span>
-    <span class="n">ip</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">gethostbyname</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="n">con</span><span class="o">.</span><span class="nb">connect</span><span class="p">((</span><span class="n">ip</span><span class="p">,</span> <span class="mi">80</span><span class="p">))</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&#39;%s connected&#39;</span> <span class="nv">%</span> <span class="nv">url</span><span class="p">)</span>
-    <span class="n">con</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="s">&#39;GET /\r\n\r\n&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">con</span><span class="o">.</span><span class="nb">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
-
-
-<span class="n">urls</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;www.muzixing.com&#39;</span><span class="p">,</span> <span class="s">&#39;www.baidu.com&#39;</span><span class="p">,</span> <span class="s">&#39;www.python.org&#39;</span><span class="p">]</span>
-<span class="n">pile</span> <span class="o">=</span> <span class="n">eventlet</span><span class="o">.</span><span class="n">GreenPile</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">urls:</span>
-    <span class="n">pile</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">geturl</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">url</span><span class="p">,</span> <span class="n">result</span> <span class="n">in</span> <span class="n">zip</span><span class="p">(</span><span class="n">urls</span><span class="p">,</span> <span class="n">pile</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&#39;%s: %s&#39;</span> <span class="nv">%</span> <span class="err">(</span><span class="nv">url</span><span class="p">,</span> <span class="n">repr</span><span class="p">(</span><span class="n">result</span><span class="p">)[:</span><span class="mi">100</span><span class="p">]))</span>
-</pre></div>
-
-
-<p>以上的代码对指定url发送了GET请求。重点在与eventlet.GreenPile()的使用。GreenPile类源码如下所示：</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">GreenPile</span><span class="p">(</span><span class="n">object</span><span class="p">):</span>
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">size_or_pool</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">size_or_pool</span><span class="p">,</span> <span class="n">GreenPool</span><span class="p">):</span>
-            <span class="n">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">size_or_pool</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">GreenPool</span><span class="p">(</span><span class="n">size_or_pool</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">waiters</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">LightQueue</span><span class="p">()</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">used</span> <span class="o">=</span> <span class="n">False</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="n">def</span> <span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-        <span class="s">&quot;&quot;&quot;Runs *func* in its own green thread, with the result available by</span>
-<span class="s">        iterating over the GreenPile object.&quot;&quot;&quot;</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">used</span> <span class="o">=</span>  <span class="n">True</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">try:</span>
-            <span class="ow">gt</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
-            <span class="n">self</span><span class="o">.</span><span class="n">waiters</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="ow">gt</span><span class="p">)</span>
-        <span class="n">except:</span>
-            <span class="n">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="n">raise</span>
-
-    <span class="n">def</span> <span class="n">__iter__</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">self</span>
-
-    <span class="n">def</span> <span class="k">next</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
-        <span class="s">&quot;&quot;&quot;Wait for the next result, suspending the current greenthread until it</span>
-<span class="s">        is available.  Raises StopIteration when there are no more results.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">self</span><span class="o">.</span><span class="n">used:</span>
-            <span class="n">raise</span> <span class="n">StopIteration</span><span class="p">()</span>
-        <span class="n">try:</span>
-            <span class="k">return</span> <span class="n">self</span><span class="o">.</span><span class="n">waiters</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="nb">wait</span><span class="p">()</span>
-        <span class="n">finally:</span>
-            <span class="n">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">-=</span> <span class="mi">1</span>
-</pre></div>
-
-
-<p>从__init__函数可以看出，GreenPile内部有一个GreenPool对象和一个Queue对象：waiters。GreenPool的作用相当与线程池的作用，这点后续会继续介绍。上述例子用到的spawn函数完成了协程（被称之为green thread）的启动。可以看出spawn函数的参数是（函数，参数），在上述例子中为： pile.spawn(geturl, x)。从spawn函数中，也可以看出spawn()方法的返回值被保存在waiters队列中。next()方法的实现使其具有迭代性质。</p>
-<p><strong>GreenPool</strong></p>
-<p>下面的例子使用到了GreenPool类，完成了一个非常暴力的迭代爬虫，理论上，如果你让他去爬取某一个网站，然后不去管它，它会从这个网站出发，找到所有的链接，然后跳到各自的链接，然后继续迭代，直到最后把整个互联网的网站都爬一遍。而且，它不尊重你网站的robot.txt，这意味这它什么都会爬取。</p>
-<div class="highlight"><pre><span class="n">from</span> <span class="n">__future__</span> <span class="nb">import</span> <span class="n">with_statement</span>
-<span class="n">from</span> <span class="n">eventlet</span><span class="o">.</span><span class="n">green</span> <span class="nb">import</span> <span class="n">urllib2</span>
-<span class="nb">import</span> <span class="n">eventlet</span>
-<span class="nb">import</span> <span class="n">re</span>
-
-
-<span class="c1"># http://daringfireball.net/2009/11/liberal_regex_for_matching_urls</span>
-<span class="n">url_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">r</span><span class="s">&#39;\b(([\w-]+://?|www[.])[^\s()&lt;&gt;]+(?:\([\w\d]+\)|([^[:punct:]\s]|/)))&#39;</span><span class="p">)</span>
-
-
-<span class="n">def</span> <span class="n">fetch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">seen</span><span class="p">,</span> <span class="n">pool</span><span class="p">):</span>
-    <span class="s">&#39;&#39;&#39;Fetch A url, stick any found urls into the seen set,</span>
-<span class="s">    and dispatch any new  ones to te pool.&#39;&#39;&#39;</span>
-    <span class="k">print</span> <span class="s">&quot;fetching&quot;</span><span class="p">,</span> <span class="n">url</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
-    <span class="n">with</span> <span class="n">eventlet</span><span class="o">.</span><span class="n">Timeout</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">False</span><span class="p">):</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="nb">read</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">url_match</span> <span class="n">in</span> <span class="n">url_regex</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="n">new_url</span> <span class="o">=</span> <span class="n">url_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="c1"># You can only send requests to muzixing.com so as not to destroy internet</span>
-        <span class="k">if</span> <span class="n">new_url</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">seen:</span>  <span class="c1"># and ’muzixing.com&#39; in new_url:</span>
-            <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_url</span><span class="p">)</span>
-            <span class="c1"># While this seems stack-recursive, it is actually not.</span>
-            <span class="c1"># Spawned greenthreads start their own stacks</span>
-            <span class="n">pool</span><span class="o">.</span><span class="n">spawn_n</span><span class="p">(</span><span class="n">fetch</span><span class="p">,</span> <span class="n">new_url</span><span class="p">,</span> <span class="n">seen</span><span class="p">,</span> <span class="n">pool</span><span class="p">)</span>
-
-
-<span class="n">def</span> <span class="n">crawl</span><span class="p">(</span><span class="n">start_url</span><span class="p">):</span>
-    <span class="s">&#39;&#39;&#39;Recrusively crawl starting from *start_url*.Return a set of</span>
-<span class="s">    urls that were found.</span>
-<span class="s">    &#39;&#39;&#39;</span>
-    <span class="n">pool</span> <span class="o">=</span> <span class="n">eventlet</span><span class="o">.</span><span class="n">GreenPool</span><span class="p">()</span>
-    <span class="n">seen</span> <span class="o">=</span> <span class="n">set</span><span class="p">()</span>
-    <span class="n">fetch</span><span class="p">(</span><span class="n">start_url</span><span class="p">,</span> <span class="n">seen</span><span class="p">,</span> <span class="n">pool</span><span class="p">)</span>
-    <span class="n">pool</span><span class="o">.</span><span class="n">waitall</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">seen</span>
-
-<span class="n">seen</span> <span class="o">=</span> <span class="n">crawl</span><span class="p">(</span><span class="s">&quot;http://www.muzixing.com&quot;</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&quot;I saw there urls:&quot;</span><span class="p">,</span> <span class="n">seen</span>
-<span class="c1"># print &#39;\n&#39;.join(seen)</span>
-</pre></div>
-
-
-<p>首先爬虫从<a href="http://www.muzixing.com">http://www.muzixing.com</a>网站开始搜索url。然后继续迭代寻找url，不断扩大查找范围。实验结果如下所示：</p>
-<p><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1en5uqubim7j20m10n1dn9.jpg" /></p>
-<p>图1：迭代爬虫显示信息</p>
-<p>从上图可以看到爬虫抓取了<a href="http://www.muzixing.com">www.muzixing.com</a>的网页中存在的url如<a href="http://ikimi.net">http://ikimi.net</a>，然后我们可以看到爬虫又跳到了<a href="http://ikimi.net">http://ikimi.net</a>上爬取页面的其他url,如<a href="http://www.ikimi.net/wp-includes">http://www.ikimi.net/wp-includes</a>。如果将起始页面换成<a href="bbs.byr.cn">bbs.byr.cn</a>会发现爬虫会以更快的速度在整个互联网蔓延开来！</p>
-<p>上述例子中可以学习到GreenPool类的使用。GreenPool可以类比于线程池，这有利于理解。在GreenPool中的元素都是GreenThread。其中最重要的函数是spawn/spawn_n函数。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="s">&quot;&quot;&quot;Run the *function* with its arguments in its own green thread.</span>
-<span class="s">        Returns the :class:`GreenThread &lt;eventlet.greenthread.GreenThread&gt;`</span>
-<span class="s">        object that is running the function, which can be used to retrieve the</span>
-<span class="s">        results.</span>
-<span class="s">&quot;&quot;&quot;</span>
-</pre></div>
-
-
-<p>该函数启动了一个GreenThread，参数是需要执行的function和function对应的参数。返回值是执行该函数的GreenThread类。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">spawn_n</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="s">&quot;&quot;&quot;Create a greenthread to run the *function*, the same as</span>
-<span class="s">        :meth:`spawn`.  The difference is that :meth:`spawn_n` returns</span>
-<span class="s">        None; the results of *function* are not retrievable.</span>
-<span class="s">        &quot;&quot;&quot;</span>
-</pre></div>
-
-
-<p>spawn_n函数功能上差不多，只是返回的是None。其他的函数举例简单说明如下：</p>
-<ul>
-<li>
-<p>waitall():等待所有greenthread执行完毕。</p>
-</li>
-<li>
-<p>running(): 返回目前正在执行的greenthread。</p>
-</li>
-<li>
-<p>imap():从迭代器中取出数据項作为func的参数去执行，并返回结果。</p>
-</li>
-<li>
-<p>starmap(): 和imap类似，但是取参数的方式有所差异。从<a href="http://blog.csdn.net/hackerain/article/details/7836993">openstack nova 基础知识——eventlet</a>中摘取举例如下：</p>
-<div class="highlight"><pre><span class="n">imap</span><span class="p">(</span><span class="n">pow</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span> <span class="o">--&gt;</span> <span class="mi">32</span> <span class="mi">9</span> <span class="mi">1000</span>
-<span class="n">starmap</span><span class="p">(</span><span class="n">pow</span><span class="p">,</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">)])</span> <span class="o">--&gt;</span> <span class="mi">32</span> <span class="mi">9</span> <span class="mi">1000</span>
-</pre></div>
-
-
-</li>
-<li>
-<p>free(): 返回当前可获取的greenthread的数目。</p>
-</li>
-</ul>
-<p>以上代码上的with语句是python中的一个非常方便的关键字。使用with关键字可以让代码更严谨且简洁。其封装了__enter__()函数和__exit__()函数，用于执行信息和退出处理。其等价于以下代码：</p>
-<div class="highlight"><pre><span class="err">try:</span>
-    <span class="err">__enter__()</span>
-<span class="err">finally:</span>
-    <span class="err">__exit__()</span>
-</pre></div>
-
-
-<p>上述是关于GreenPool类的使用案例，使用该类可以高效完成并发操作。</p>
-<p><strong>Convenience</strong></p>
-<p>接下来再介绍一个更好玩的程序，多人群聊程序，可以让我们在学习eventlet的时候充满成就感。代码如下：</p>
-<div class="highlight"><pre><span class="nb">import</span> <span class="n">eventlet</span>
-<span class="n">from</span> <span class="n">eventlet</span><span class="o">.</span><span class="n">green</span> <span class="nb">import</span> <span class="nb">socket</span>
-
-<span class="n">PORT</span> <span class="o">=</span> <span class="mi">3001</span>
-<span class="n">participants</span> <span class="o">=</span> <span class="n">set</span><span class="p">()</span>
-
-
-<span class="n">def</span> <span class="n">read_chat_forever</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">reader</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
-    <span class="n">line</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="nb">readline</span><span class="p">()</span>
-    <span class="k">while</span> <span class="n">line:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&#39;Chat:&#39;</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-        <span class="k">for</span> <span class="n">p</span> <span class="n">in</span> <span class="n">participants:</span>
-            <span class="n">try:</span>
-                <span class="k">if</span> <span class="n">p</span> <span class="n">is</span> <span class="ow">not</span> <span class="n">writer:</span>  <span class="c1"># Don&#39;t echo</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="n">address</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;:&#39;</span>
-                    <span class="n">msg</span> <span class="o">+=</span> <span class="n">line</span>
-                    <span class="n">p</span><span class="o">.</span><span class="nb">write</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-                    <span class="n">p</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-            <span class="n">except</span> <span class="nb">socket</span><span class="o">.</span><span class="n">error</span> <span class="n">as</span> <span class="n">e:</span>
-                <span class="c1"># ignore broken pipes, they just mean the participant</span>
-                <span class="c1"># closed its connection already</span>
-                <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">32</span><span class="p">:</span>
-                    <span class="n">raise</span>
-        <span class="n">line</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="nb">readline</span><span class="p">()</span>
-    <span class="n">participants</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">writer</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;participant left chat&quot;</span><span class="p">)</span>
-
-
-<span class="n">try:</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;ChatServer starting up on port %s&quot;</span> <span class="nv">%</span> <span class="nv">PORT</span><span class="p">)</span>
-    <span class="n">server</span> <span class="o">=</span> <span class="n">eventlet</span><span class="o">.</span><span class="nb">listen</span><span class="p">((</span><span class="s">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="n">PORT</span><span class="p">))</span>
-    <span class="k">while</span> <span class="n">True:</span>
-        <span class="n">new_connection</span><span class="p">,</span> <span class="n">address</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="nb">accept</span><span class="p">()</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Participant joined chat.&quot;</span><span class="p">)</span>
-        <span class="n">new_writer</span> <span class="o">=</span> <span class="n">new_connection</span><span class="o">.</span><span class="n">makefile</span><span class="p">(</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
-        <span class="n">participants</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_writer</span><span class="p">)</span>
-        <span class="n">eventlet</span><span class="o">.</span><span class="n">spawn_n</span><span class="p">(</span>
-            <span class="n">read_chat_forever</span><span class="p">,</span>
-            <span class="n">new_writer</span><span class="p">,</span>
-            <span class="n">new_connection</span><span class="o">.</span><span class="n">makefile</span><span class="p">(</span><span class="s">&#39;r&#39;</span><span class="p">),</span>
-            <span class="n">address</span><span class="p">)</span>
-<span class="n">except</span> <span class="p">(</span><span class="n">KeyboardInterrupt</span><span class="p">,</span> <span class="n">SystemExit</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;ChatServer exiting&quot;</span><span class="p">)</span>
-</pre></div>
-
-
-<p>try语句块中完成了服务端socket的建立和监听。然后在while循环中完成了消息的处理。</p>
-<p>首先关注第一个函数：eventlet.listen((addr,port))。在eventlet文件夹中，打开__init__文件可以查看到一些为了方便而初始化的定义，举例如下：</p>
-<div class="highlight"><pre><span class="n">version_info</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
-<span class="n">__version__</span> <span class="o">=</span> <span class="s">&quot;.&quot;</span><span class="o">.</span><span class="nb">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">version_info</span><span class="p">))</span>
-
-<span class="n">try:</span>
-    <span class="n">from</span> <span class="n">eventlet</span> <span class="nb">import</span> <span class="n">greenthread</span>
-    <span class="n">from</span> <span class="n">eventlet</span> <span class="nb">import</span> <span class="n">greenpool</span>
-    <span class="n">from</span> <span class="n">eventlet</span> <span class="nb">import</span> <span class="n">queue</span>
-    <span class="n">from</span> <span class="n">eventlet</span> <span class="nb">import</span> <span class="n">timeout</span>
-    <span class="n">from</span> <span class="n">eventlet</span> <span class="nb">import</span> <span class="n">patcher</span>
-    <span class="n">from</span> <span class="n">eventlet</span> <span class="nb">import</span> <span class="n">convenience</span>
-    <span class="nb">import</span> <span class="n">greenlet</span>
-
-
-
-    <span class="n">GreenPool</span> <span class="o">=</span> <span class="n">greenpool</span><span class="o">.</span><span class="n">GreenPool</span>
-    <span class="n">GreenPile</span> <span class="o">=</span> <span class="n">greenpool</span><span class="o">.</span><span class="n">GreenPile</span>
-
-    <span class="n">Queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span>
-
-    <span class="n">import_patched</span> <span class="o">=</span> <span class="n">patcher</span><span class="o">.</span><span class="n">import_patched</span>
-    <span class="n">monkey_patch</span> <span class="o">=</span> <span class="n">patcher</span><span class="o">.</span><span class="n">monkey_patch</span>
-
-    <span class="nb">connect</span> <span class="o">=</span> <span class="n">convenience</span><span class="o">.</span><span class="nb">connect</span>
-    <span class="nb">listen</span> <span class="o">=</span> <span class="n">convenience</span><span class="o">.</span><span class="nb">listen</span>
-    <span class="n">serve</span> <span class="o">=</span> <span class="n">convenience</span><span class="o">.</span><span class="n">serve</span>
-    <span class="n">StopServe</span> <span class="o">=</span> <span class="n">convenience</span><span class="o">.</span><span class="n">StopServe</span>
-    <span class="n">wrap_ssl</span> <span class="o">=</span> <span class="n">convenience</span><span class="o">.</span><span class="n">wrap_ssl</span>
-</pre></div>
-
-
-<p>所以我们直接可以使用eventlet.listen调用convenience.listen函数。listen函数完成了一个server socket的绑定和监听。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="nb">listen</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="nb">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">backlog</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
-    <span class="n">sock</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">socket</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="nb">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&quot;win&quot;</span><span class="p">:</span>
-        <span class="n">sock</span><span class="o">.</span><span class="nb">setsockopt</span><span class="p">(</span><span class="nb">socket</span><span class="o">.</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="nb">socket</span><span class="o">.</span><span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">sock</span><span class="o">.</span><span class="nb">bind</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
-    <span class="n">sock</span><span class="o">.</span><span class="nb">listen</span><span class="p">(</span><span class="n">backlog</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">sock</span>
-</pre></div>
-
-
-<p>socket.accept()函数将返回一个（connection，address）元组。socket.makefile([mode[, bufsize]])返回一个文件对象用于读写缓存。</p>
-<p>eventlet.spawn_n函数将read_chat_forever函数及其三个参数作为参数，创建GreenThread去执行任务。eventlet主要完成的工作就是帮助你如何去协调你的任务，而不是去实现你的任务，这一点在这里得到体现。其实对比于线程池就容易理解读多了。</p>
-<p>试验结果截图如下：</p>
-<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1en5tcjidm2j20gt0crabx.jpg" /></p>
-<p>图2：多人群聊server运行界面</p>
-<p><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1en5tcj7dvej20ln0crwh8.jpg" /></p>
-<p>图3：多人群聊client运行界面</p>
-<p>从client运行界面可以看出不同的用户发送的信息会以IP：message的形式展示出来，代码很简单，但是非常有趣。</p>
-<p>以上例子均可以在官网找到，读者可以到官网去查看更多案例。</p>
-<p><strong>Patcher</strong></p>
-<p>Patch是eventlet中的一个重要模块。用于替换系统自带的模块。其中有import_patched和monkey_patch两个函数，后者可以提供运行时替换。具体例子可以查看<a href="http://blog.csdn.net/hackerain/article/details/7836993">openstack nova 基础知识——eventlet</a></p>
-<h2>回到RYU</h2>
-<p>前两行代码调用了hub.patch()函数，查看hub.py中发现patch = eventlet.monkey_patch，实现了运行时替换模块。</p>
-<div class="highlight"><pre><span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">lib</span> <span class="nb">import</span> <span class="n">hub</span>
-<span class="n">hub</span><span class="o">.</span><span class="n">patch</span><span class="p">()</span>
-</pre></div>
-
-
-<p>接下来的CONF文件由于oslo的内容比较多，所以会在后续博文中详细介绍。首先关注main()函数的主要内容。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
-    <span class="n">try:</span>
-        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
-             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">,</span>
-             <span class="n">default_config_files</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/usr/local/etc/ryu/ryu.conf&#39;</span><span class="p">])</span>
-    <span class="n">except</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ConfigFilesNotFoundError:</span>
-        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
-             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">)</span>
-
-    <span class="nb">log</span><span class="o">.</span><span class="n">init_log</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">CONF</span><span class="o">.</span><span class="n">pid_file:</span>
-        <span class="nb">import</span> <span class="n">os</span>
-        <span class="n">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">CONF</span><span class="o">.</span><span class="n">pid_file</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="n">as</span> <span class="n">pid_file:</span>
-            <span class="n">pid_file</span><span class="o">.</span><span class="nb">write</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()))</span>
-
-    <span class="n">app_lists</span> <span class="o">=</span> <span class="n">CONF</span><span class="o">.</span><span class="n">app_lists</span> <span class="o">+</span> <span class="n">CONF</span><span class="o">.</span><span class="n">app</span>
-    <span class="c1"># keep old behaivor, run ofp if no application is specified.</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">app_lists:</span>
-        <span class="n">app_lists</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">]</span>
-
-    <span class="n">app_mgr</span> <span class="o">=</span> <span class="n">AppManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span>
-    <span class="n">app_mgr</span><span class="o">.</span><span class="n">load_apps</span><span class="p">(</span><span class="n">app_lists</span><span class="p">)</span>
-    <span class="n">contexts</span> <span class="o">=</span> <span class="n">app_mgr</span><span class="o">.</span><span class="n">create_contexts</span><span class="p">()</span>
-    <span class="n">services</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">services</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">app_mgr</span><span class="o">.</span><span class="n">instantiate_apps</span><span class="p">(</span><span class="o">**</span><span class="n">contexts</span><span class="p">))</span>
-
-    <span class="n">webapp</span> <span class="o">=</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">start_service</span><span class="p">(</span><span class="n">app_mgr</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">webapp:</span>
-        <span class="n">thr</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">webapp</span><span class="p">)</span>
-        <span class="n">services</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thr</span><span class="p">)</span>
-
-    <span class="n">try:</span>
-        <span class="n">hub</span><span class="o">.</span><span class="n">joinall</span><span class="p">(</span><span class="n">services</span><span class="p">)</span>
-    <span class="n">finally:</span>
-        <span class="n">app_mgr</span><span class="o">.</span><span class="nb">close</span><span class="p">()</span>
-</pre></div>
-
-
-<p>从CONF文件中取出app信息，存在app_lists内，若没有启动其他app,则默认启动ofp_handler应用，用于处理基础的事件，如协议协商等。然后声明一个AppManager的类，用于初始化和管理APP。load_apps函数完成了APP的加载。最后try语句块中的joinall()使得进程需要等待所有的services完成之后才能退出。至此RYU初始运行学习完成，后续的博文将分别介绍：oslo, 事件处理机制，RYUAPP类以及RYU数据结构和API使用等内容。</p>
-<h2>后语</h2>
-<p>Evenlet是个不错的python库，简单却很高效。相比于thread,coroutine的行为是可控的，切换成本也要更小。在单核情况下，coroutine要比thread开销小，但是multithread可以在多CPU的情况下发挥更大的能力。RYU是使用Python编写的控制器，比同样使用Python编写的POX，无论从代码的规范，优雅度，还是从性能上，都有很大的优势，此外，这个纯SDN控制器对OpenFlow协议的支持可以说是最稳定，最全面的。虽然我还会继续研究ONOS，学习大型分布式框架。但是RYU会成为我开发Application的利器。相比之下，Java编写的ODL，过于复杂和不稳定。新生儿ONOS相比之下用户体验更好，且没有使用YANG，大大降低了学习难度。周一的时候，还在Docker中安装了ONOS，并使用Cbench测试对比了ONOS和RYU的吞吐量。同样环境下，单节点的ONOS性能几乎是RYU的两倍，这让我有些忧伤。也许匕首只适合敏捷作战，而大刀才是开疆扩土的利器吧。</p></div>
-        <hr />
-    </div>
-		
+        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/10/ryuxue-xi-eventlet.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -532,42 +388,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>实验步骤</h3>
 <p>本实验步骤将介绍如何在一台机器上完成sflow流量监控实验。实验需要运行一个控制器，可以使用mininet自带的控制器，也可以使用RYU等控制器。然后运行mininet，设置OVS的sFlow功能，从而从8008端口上查看到相应的数据。</p>
 <h3>启动mininet ...</h3> <a class="btn btn-info xsmall" href="../pages/2014/11/21/sflowru-men-chu-she.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html"><h2>Load balance(Multipath) Application on RYU</h2></a>
-        <div class= "well small"> 2014-11-07
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>本篇博文介绍的是如何在RYU上通过使用select group 来实现multipath，从而实现流量的调度，完成简单的负载均衡Demo。OpenFlow13中有group table,可用于实现组播和冗余容灾等功能。实验中还是用了queue,完成了链路带宽的保障。</p>
-<h2>相关工作</h2>
-<p>要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。</p>
-<h3>网络拓扑</h3>
-<div class="highlight"><pre><span class="s">&quot;&quot;&quot;Custom loop topo example</span>
-
-<span class="s">   There are two paths between host1 and host2.</span>
-
-
-<span class="s">                |--------switch2 --------|</span>
-<span class="s">                |                        |</span>
-<span class="s">   host1 --- switch1                   switch4 -----host2</span>
-<span class="s">                |                        |   |------host3</span>
-<span class="s">                -------- switch3 ---------</span>
-<span class="s">                            |</span>
-<span class="s">                          host4</span>
-
-<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

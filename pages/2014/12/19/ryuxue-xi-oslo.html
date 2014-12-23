@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="../pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2014/12/19/ryuxue-xi-oslo.html"><h1>RYU学习:Oslo</h1></a>
+            <h1>RYU学习:Oslo</h1>
 2014-12-19
 
-by <a class="url fn" href="../author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><p>前段时间开始认真看了一下RYU的源码，发现OSLO是一个非常方便的命令行解析库，可以用于CLI和CONF的解析。大型项目OpenStack中也使用了这个库。</p>
 <h3>Oslo</h3>
 <p>在RYU的目录下可以找到cfg.py文件，这个文件中import了oslo的相关模块，以便调用时减少引用数目。从文件中可以发现oslo.config.cfg文件是关键文件，其在系统中的文件位置在：/usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py。想查看源码的读者可以自行查看。在该cfg.py文件中 定义了ConfigOpts类，包含了_opts, _groups等成员变量。该类完成了命令行和配置参数的解析。</p>
@@ -279,137 +273,23 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 
 <h3>总结</h3>
 <p>每一个项目都会有自己的CLI或者配置文件，而使用oslo可以简化命令解析的问题。比自己使用sys.argv手动写解析要更高效且优雅。所以推荐大家在工程中使用oslo。后续会继续推出RYU学习系列文章，希望能在记录自己学习过程的同时，给其他人提供更多的帮助。</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = 'RYU学习:Oslo';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/12/10/ryuxue-xi-eventlet.html"><h2>RYU学习:eventlet</h2></a>
-        <div class= "well small"> 2014-12-10
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>从OpenDaylight转到RYU以来一直都没有机会好好学习RYU的源码,只学会了编写简单的Application。但是如果要熟悉一个控制器，就要熟悉它的运行原理，熟悉它数据结构，熟悉它的设计模式等等。最近终于有时间好好看RYU的代码，但在看代码的过程中却发现RYU并不简单，其编码风格也非常优雅，非常值得学习。本篇博文主要讲述RYU中使用到的eventlet。</p>
-<h2>从RYU开始</h2>
-<p>运行ryu的时候，命令是：ryu-manager app.py。第一个要找到就是ryu-manager到底会触发什么程序。在/cmd中没有找到之后，在/bin中找到了两个可执行文件：ryu和ryu-manager。打开ryu-manager，显示如下：</p>
-<div class="highlight"><pre><span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">cmd</span><span class="o">.</span><span class="n">manager</span> <span class="nb">import</span> <span class="n">main</span>
-<span class="n">main</span><span class="p">()</span>
-</pre></div>
-
-
-<p>找到/ryu/cmd/manager.py，发现这个文件中的main()函数是整个ryu的入口函数。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
-    <span class="n">try:</span>
-        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/10/ryuxue-xi-eventlet.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/12/03/dockerbu-shu-sdnhuan-jing.html"><h2>Docker部署SDN环境</h2></a>
-        <div class= "well small"> 2014-12-03
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>5月份的时候，当我还是一个大学生的时候，有个网友问我，你有研究Docker吗？当时我连Docker是什么都不知道。谷歌之后，对Docker产生兴趣，但是一直没有时间去学习。这个周终于将这个学习计划列入了Todolist。所以我花了3天时间，认真地把这<a href="http://dockerpool.com/static/books/docker_practice/index.html">《Docker 从入门到实践》</a>看完并实践了一遍，收获颇丰。虽然我的导师以及我自己还是觉得我在瞎转，而且我觉得没有方向的日子很痛苦。所以只好自己做计划，学习点新知识，打打基础了。本篇内容主要介绍什么是Docker、Docker简单入门以及如何使用Docker部署SDN环境，以及docker的网络配置等内容。What is Docker和Why Docker部分摘自《Docker从入门到实践》。</p>
-<h3><a href="https://www.docker.com/whatisdocker/">What is Docker</a></h3>
-<p>Docker 是一个开源项目，诞生于 2013 年初，最初是 dotCloud 公司内部的一个业余项目。它基于 Google 公司推出的 Go 语言实现。 项目后来加入了 Linux 基金会，遵从了 Apache ...</p> <a class="btn btn-info xsmall" href="../pages/2014/12/03/dockerbu-shu-sdnhuan-jing.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/11/26/onoslun-wen-jie-xi.html"><h2>ONOS论文解析</h2></a>
-        <div class= "well small"> 2014-11-26
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>不久之前，onlab的那群人，发布了ONOS。同时也在SIGCOMM上发表了一篇论文<a href="http://onos.wpengine.com/wp-content/uploads/2014/11/HotSDN-paper-2014-ONOS-Towards-an-Open-Distributed-SDN-OS.pdf">ONOS: Towards an Open, Distributed SDN OS</a>,这引起了很多人的关注。博主刚好得知这个消息，阅读了一遍ONOS的论文，总（翻）结（译）了一下论文的内容，作为自己的论文笔记（好长的笔记）。但是越来越感觉读论文，然后写一些读书或者读论文笔记没有意思。因为写着写着，写成了翻译，完全没有自己的观点。还不如去做些实验，写点教程来得实在。读研究生的生活也感觉有些无所事事了，我想我应该做点有意义的事情，比如学一下Docker, OpenStack之类的。搞学术，学术不让啊！</p>
-<h2>ABSTRACT</h2>
-<p>ONOS(Open Networking Operating System)是一个分布式的SDN控制平台。ONOS满足了大规模网络操作系统对性能，拓展性等需求。在论文中，他们提出了来那个个ONOS的模型。第一个模型实现了核心的特性，完成了一个分布式的网络操作系统模型，但是性能不够好。第二个模型则在第一个模型的基础之上 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/11/26/onoslun-wen-jie-xi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/11/21/sflowru-men-chu-she.html"><h2>sFlow入门初涉</h2></a>
-        <div class= "well small"> 2014-11-21
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p><a href="http://www.sflow.org/sFlowOverview.pdf">sFlow</a>是一个应用在高速交换网络中的监控软件。sFlow需要交换机支持才能使用，万幸OpenvSwitch支持这个功能。netflow同样也是类似功能的软件，可惜没有接触过，也只是听过名字而已。第一次接触到sFlow之后，就觉得很感兴趣，跟着<a href="http://www.sdnlab.com/3760">SDNLAB</a>的教程做了一遍之后，记录下自己的学习过程。</p>
-<h3>安装sFlow</h3>
-<p>下载sFlow代码：</p>
-<div class="highlight"><pre><span class="n">http:</span><span class="sr">//</span><span class="n">pan</span><span class="o">.</span><span class="n">baidu</span><span class="o">.</span><span class="n">com</span><span class="sr">/s/</span><span class="mi">1</span><span class="n">mgmOVck</span>
-</pre></div>
-
-
-<p>解压缩，安装：</p>
-<div class="highlight"><pre><span class="n">tar</span> <span class="o">-</span><span class="n">zxvf</span> <span class="n">sflow</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
-<span class="n">cd</span> <span class="n">sflow</span><span class="o">/</span><span class="n">sflow</span><span class="o">-</span><span class="n">rt</span>
-<span class="o">./</span><span class="n">start</span><span class="o">.</span><span class="n">sh</span>
-</pre></div>
-
-
-<p>此时通过浏览器127:0.0.1:8008可以查看到生成的页面。</p>
-<h3>实验步骤</h3>
-<p>本实验步骤将介绍如何在一台机器上完成sflow流量监控实验。实验需要运行一个控制器，可以使用mininet自带的控制器，也可以使用RYU等控制器。然后运行mininet，设置OVS的sFlow功能，从而从8008端口上查看到相应的数据。</p>
-<h3>启动mininet ...</h3> <a class="btn btn-info xsmall" href="../pages/2014/11/21/sflowru-men-chu-she.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../author/muzi.html">1</a></li>
-    <li class=""><a href="../author/muzi2.html">2</a></li>
-    <li class=""><a href="../author/muzi3.html">3</a></li>
-    <li class=""><a href="../author/muzi4.html">4</a></li>
-    <li class=""><a href="../author/muzi5.html">5</a></li>
-    <li class=""><a href="../author/muzi6.html">6</a></li>
-    <li class=""><a href="../author/muzi7.html">7</a></li>
-    <li class=""><a href="../author/muzi8.html">8</a></li>
-    <li class=""><a href="../author/muzi9.html">9</a></li>
-
-    <li class="next"><a href="../author/muzi2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -420,8 +300,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a></li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
             </ul>
@@ -434,8 +314,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -473,7 +353,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
