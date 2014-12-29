@@ -62,6 +62,42 @@
  
 
     <div class='article'>
+        <a href="../pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html"><h2>基于tornado的简单socket通信建立</h2></a>
+        <div class= "well small"> 2013-11-29
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>配图版请查看：http://user.qzone.qq.com/350959853/blog/1375093527</p>
+<h3>安装tornado</h3>
+<p>这里有比较全的介绍，写得非常好。http://sebug.net/paper/books/tornado/</p>
+<h3>hello world</h3>
+<p>首先，下载安装好tornado之后，我们就可以去使用tornado里面的库了。
+照着官网的简单的例子抄了一遍，写了一个hello world!</p>
+<p><img alt="hello" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=1382f91cba99a9013f355b332dae7b46/e824b899a9014c0862b40dad087b02087bf4f42e.jpg?referer=77791a7ef01fbe094549f72434e4&amp;x=.jpg" /></p>
+<p>显示效果如下：</p>
+<p><img alt="res" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=0683c331b1de9c82a265f98a5cbaf137/d009b3de9c82d15858647eb9820a19d8bd3e42d7.jpg?referer=68d8807dd488d43fa9bea5c2aecd&amp;x=.jpg" /></p>
+<h3>基于tornado的简单的socket连接通信实现</h3>
+<p>代码如下：</p>
+<div class="highlight"><pre><span class="nb">import</span> <span class="n">errno</span>
+<span class="nb">import</span> <span class="n">functools</span>
+<span class="n">from</span> <span class="n">tornado</span><span class="o">.</span><span class="n">ioloop</span> <span class="nb">import</span> <span class="n">IOLoop</span>
+<span class="nb">import</span> <span class="nb">socket</span>
+<span class="nb">import</span> <span class="nb">time</span>
+<span class="nb">import</span> <span class="n">Queue</span>
+
+<span class="n">sock</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">socket</span>    <span class="p">(</span><span class="nb">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span><span class="nb">socket ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2013/11/29/nge-zheng-shu-qiu-qi-zhong-ren-yi-n-1ge-shu-de-cheng-ji-zhong-de-zui-da-de-ge-jin-yong-chu-fa.html"><h2>N个整数，求其中任意N-1个数的乘积中的最大的一个(禁用除法)</h2></a>
         <div class= "well small"> 2013-11-29
 
