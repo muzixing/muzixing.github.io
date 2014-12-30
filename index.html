@@ -133,9 +133,10 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 
 
 <h3>Decorator</h3>
-<p>如果你已经了解Decorator，可以直接跳过本部分。装饰器是什么？<a href="https://wiki.python.org/moin/PythonDecorators">Python Decorator</a>
-coolshell上的介绍<a href="http://coolshell.cn/articles/11265.html">Python修饰器的函数式编程</a>
-Python Decorator可以看作是一种声明，一种修饰。以下举例参考自Coolshell。举例如下：</p>
+<p>如果你已经了解Decorator，可以直接跳过本部分。</p>
+<p>装饰器是什么？<a href="https://wiki.python.org/moin/PythonDecorators">Python Decorator</a></p>
+<p>coolshell上的介绍<a href="http://coolshell.cn/articles/11265.html">Python修饰器的函数式编程</a></p>
+<p>Python Decorator可以看作是一种声明，一种修饰。以下举例参考自Coolshell。举例如下：</p>
 <div class="highlight"><pre><span class="nv">@decorator</span>
 <span class="n">def</span> <span class="n">foo</span><span class="p">():</span>
     <span class="n">pass</span>
@@ -152,7 +153,7 @@ Python Decorator可以看作是一种声明，一种修饰。以下举例参考�
 </pre></div>
 
 
-<p>运行之后，就会输出。。。</p>
+<p>运行之后，就会输出:you love me。</p>
 <p>多个decorator:</p>
 <div class="highlight"><pre><span class="nv">@decorator_a</span>
 <span class="nv">@decorator_b</span>
@@ -286,7 +287,7 @@ Python Decorator可以看作是一种声明，一种修饰。以下举例参考�
 </pre></div>
 
 
-<p>由上可知，self.ofp_brick实际上是由service_brick（中文可以成为：服务链表？）中的“ofp_event”服务赋值的。在每一个app中，使用@set_ev_cls(ev_cls,dispatchers)时，就会将实例化ofp_event模块，执行文件中最后一句：</p>
+<p>由上可知，self.ofp_brick实际上是由service_brick（中文可以称为：服务链表？）中的“ofp_event”服务赋值的。在每一个app中，使用@set_ev_cls(ev_cls,dispatchers)时，就会将实例化ofp_event模块，执行文件中最后一句：</p>
 <div class="highlight"><pre><span class="n">handler</span><span class="o">.</span><span class="n">register_service</span><span class="p">(</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">)</span>
 </pre></div>
 
@@ -326,7 +327,7 @@ Python Decorator可以看作是一种声明，一种修饰。以下举例参考�
 
 
 <p>所以当运行ofp_handler应用时，就会注册ofp_event service，为后续的应用提供服务。分发事件之后，还要处理自身订阅的事件，所以首先找到符合当前state的caller,然后调用handler。_caller类可以在handler.py文件中找到，包含dispatchers和ev_source两个成员变量。前者用于描述caller需要的state,后者是event产生者的模块名称。</p>
-<p>对应的发送循环由_send_loop完成。self.send_p是一个深度为16的发送queue。</p>
+<p>对应的发送循环由_send_loop完成。self.send_q是一个深度为16的发送queue。</p>
 <div class="highlight"><pre> <span class="nv">@_deactivate</span>
     <span class="n">def</span> <span class="n">_send_loop</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
         <span class="n">try:</span>
@@ -347,7 +348,7 @@ Python Decorator可以看作是一种声明，一种修饰。以下举例参考�
 </pre></div>
 
 
-<p>serve函数完成了发送循环的启动和接受循环的启动。启动一个coroutine去执行self._send_loop()， 然后马上主动发送hello报文到datapath(可以理解为交换网桥：Bridge)，最后执行self._recv_loop()。</p>
+<p>serve函数完成了发送循环的启动和接收循环的启动。启动一个coroutine去执行self._send_loop()， 然后马上主动发送hello报文到datapath(可以理解为交换网桥：Bridge)，最后执行self._recv_loop()。</p>
 <div class="highlight"><pre><span class="n">def</span> <span class="n">serve</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
         <span class="n">send_thr</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_send_loop</span><span class="p">)</span>
 
@@ -615,7 +616,7 @@ Python Decorator可以看作是一种声明，一种修饰。以下举例参考�
 
 
 <h3>_update_bricks</h3>
-<p>此函数完成了更新service_bricks的功能。首先从获取到service实例，然后再获取到service中的方法，若方法有callers属性，即使用了@set_ev_cls的装饰符，拥有了calls属性。（caller类中的ev_source和dispatcher成员变量描述了产生该event的source module， dispatcher描述了event需要在什么状态下才可以被分发。如：HANDSHAKE_DISPATCHER，CONFIG_DISPATCHER等。）最后调用register_observer函数注册了observer。</p>
+<p>此函数完成了更新service_bricks的功能。首先从获取到service实例，然后再获取到service中的方法，若方法有callers属性，即使用了@set_ev_cls的装饰符，拥有了calls属性。（caller类中的ev_source描述了产生该event的source module， dispatcher描述了event需要在什么状态下才可以被分发。如：HANDSHAKE_DISPATCHER，CONFIG_DISPATCHER等。）最后调用register_observer函数注册了observer。</p>
 <div class="highlight"><pre><span class="n">def</span> <span class="n">_update_bricks</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">SERVICE_BRICKS</span><span class="o">.</span><span class="nb">values</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">_k</span><span class="p">,</span> <span class="n">m</span> <span class="n">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">):</span>
@@ -650,7 +651,7 @@ Python Decorator可以看作是一种声明，一种修饰。以下举例参考�
 
 
 <h2>Conclusion</h2>
-<p>总体而言，RYU使用了协程，在很大程度上提高了单核性能。同时也使用了许多高效的语句和库，使得代码量非常精简易读。优势方面，RYU开发门槛低，性能好，稳定读强，并迎合OpenStack编写，适合用于数据中心等云场景。劣势方面，RYU还没有实现分布式版本，在大规模网络中只能使用多个单节点分担负载。实现细节上还存在细微的问题，如虽然提供了存储依赖关系的数据结构和获取依赖关系的函数，但是并没有指定一个默认的依赖关系。不过这一点其实並不算大问题，甚至不是问题，因为开发者可以手动去指定。</p>
+<p>总体而言，RYU使用了协程，在很大程度上提高了单核性能。同时也使用了许多高效的语句和库，使得代码量非常精简易读。优势方面，RYU开发门槛低，性能好，稳定度强，而且代码迎合OpenStack编写，适合用于数据中心等云场景。劣势方面，RYU还没有实现分布式版本，在大规模网络中只能使用多个单节点分担负载。实现细节上还存在细微的问题，如虽然提供了存储依赖关系的数据结构和获取依赖关系的函数，但是并没有指定一个默认的依赖关系。不过这一点其实並不算大问题，甚至不是问题，因为开发者可以手动去指定。</p>
 <p>认真读完RYU底层的实现代码，觉得学习一门语言需要学习的内容太多，而只有真正去使用时，才会真正的学会和理解。严谨的逻辑，优雅的编码风格，清晰的模块划分能让程序的可读性更高，代码可复用性更强。如果从一个产品的角度讲，RYU算是一个不错的产品，小而美。没有ONOS,OpenDaylight那样庞大，但是作为一个纯SDN控制器而言，用户体验算是非常好的一个了。</p>
 <p>写完这篇之后，估计这个学期就不会再写了，非科研狗非产品狗非bababala狗的渣硕要开始预习期末考试了。希望未来的我会更好。</p>
 <h2>References</h2>
