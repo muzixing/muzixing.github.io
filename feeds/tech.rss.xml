@@ -1178,7 +1178,7 @@
 &lt;p&gt;5月份的时候，当我还是一个大学生的时候，有个网友问我，你有研究Docker吗？当时我连Docker是什么都不知道。谷歌之后，对Docker产生兴趣，但是一直没有时间去学习。这个周终于将这个学习计划列入了Todolist。所以我花了3天时间，认真地把这&lt;a href="http://dockerpool.com/static/books/docker_practice/index.html"&gt;《Docker 从入门到实践》&lt;/a&gt;看完并实践了一遍，收获颇丰。虽然我的导师以及我自己还是觉得我在瞎转，而且我觉得没有方向的日子很痛苦。所以只好自己做计划，学习点新知识，打打基础了。本篇内容主要介绍什么是Docker、Docker简单入门以及如何使用Docker部署SDN环境，以及docker的网络配置等内容。What is Docker和Why Docker部分摘自《Docker从入门到实践》。&lt;/p&gt;
 &lt;h3&gt;&lt;a href="https://www.docker.com/whatisdocker/"&gt;What is Docker&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;Docker 是一个开源项目，诞生于 2013 年初，最初是 dotCloud 公司内部的一个业余项目。它基于 Google 公司推出的 Go 语言实现。 项目后来加入了 Linux 基金会，遵从了 Apache 2.0 协议，项目代码在 GitHub 上进行维护。Redhat 已经在其 RHEL6.5 中集中支持 Docker；Google 也在其 PaaS 产品中广泛应用。&lt;/p&gt;
-&lt;p&gt;Docker 项目的目标是实现轻量级的操作系统虚拟化解决方案。 Docker 的基础是 Linux 容器（LXC）等技术。&lt;/p&gt;
+&lt;p&gt;Docker 项目的目标是实现轻量级的操作系统虚拟化解决方案。Docker 的基础是 Linux 容器（LXC）等技术。(新版本已修改，并不使用LXC技术)&lt;/p&gt;
 &lt;p&gt;下面的图片比较了 Docker 和传统虚拟化方式的不同之处，可见容器是在操作系统层面上实现虚拟化，直接复用本地主机的操作系统，而传统方式则是在硬件层面实现。&lt;/p&gt;
 &lt;p&gt;&lt;img alt="" src="http://dockerpool.com/static/books/docker_practice/_images/virtualization.png" /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;img alt="" src="http://dockerpool.com/static/books/docker_practice/_images/docker.png" /&gt;&lt;/p&gt;
