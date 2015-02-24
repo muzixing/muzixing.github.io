@@ -57,7 +57,7 @@
         <div class="span9">
     <div class='article'>
         <div class="content-title">
-            <h1>fattree topo and iperfmulti function in mininet</h1>
+            <h1>Fattree topo and iperfmulti function in mininet</h1>
 2015-02-22
 
 by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
@@ -72,10 +72,10 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 <p>SDN兴起于校园网，盛开于数据中心，这是一种比较准确的描述。目前SDN的研究领域内，数据中心占据了一席之地。所以很多的研究者都试图编写算法，模拟网络来做实验。</p>
 <p>博主最近也做了一个类似的实验，碰到了许多问题，特此记录下来，分享出去，一是自己的笔记，备忘，二是给其他同样研究这方面的同学一些帮助。我掉过的坑，我不愿意别人继续掉。</p>
 <p>科学的发展是需要许多人奠定基础，才能逐步发展。而只有分享经验，传递知识，才能让后人能站在前人的基础之上继续前进。重复劳动力在一些基础的无关紧要的环节，是整个社会资源的浪费。特此感谢乐于分享的各种网络中的老师，特别是为人十分和蔼，温和，良师益友@地球-某某老师。</p>
-<h2>fattree topo</h2>
+<h2>Fattree topo</h2>
 <p>这个python文件最初的原型是参考了roan's Blog的博文<a href="http://roan.logdown.com/posts/191753-sdn-lab-2-use-mininet-create-fat-tree-topology">SDN Lab 2$ Use Mininet create Fat Tree Topology</a>中给出的代码。并在次基础上做了一些修改。在此感谢台湾的小伙伴的分享。</p>
 <p>在此基础上我进行了修改，可点击<a href="https://github.com/muzixing/fattree/blob/master/fattree_8_4.py">fattree源码</a>获取代码。</p>
-<h3>fattree特征</h3>
+<h3>Fattree特征</h3>
 <p>Fattree中，K是一个很重要的参数。如K=8，则core节点个数为(K/2)^2,pod个数为K,每一个POD有K个交换机，每一个交换机有K个inter link（内部链路）。aggregation层有K^2/2=64/2=32个交换机，同理 edge也是K^2/2=32个交换机。host可以是K/2个host，也可以任意指定。在我写的脚本中，K和host density都是可以设置的参数。</p>
 <p>部分源码：</p>
 <div class="highlight"><pre><span class="n">class</span> <span class="n">Fattree</span><span class="p">(</span><span class="n">Topo</span><span class="p">):</span>
@@ -195,7 +195,7 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 </pre></div>
 
 
-<h2>iperfmulti function</h2>
+<h2>Iperfmulti function</h2>
 <p>可参考<a href="http://richardzhao.me/">@赵伟辰</a>的博客。</p>
 <p>在mininet中增加新功能其实不难。主要分为3步：</p>
 <ul>
@@ -300,7 +300,7 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 <div id="disqus_thread"></div>
 <script type="text/javascript">
     var disqus_shortname = 'muzixinggithubio'; 
-    var disqus_title = 'fattree topo and iperfmulti function in mininet';
+    var disqus_title = 'Fattree topo and iperfmulti function in mininet';
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
