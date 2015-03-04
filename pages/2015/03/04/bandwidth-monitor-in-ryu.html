@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="./theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="./theme/bootstrap.min.css" rel="stylesheet">
-    <link href="./theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="./theme/local.css" rel="stylesheet">
-    <link href="./theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href=".">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="./pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,7 +55,48 @@
     <div class="row">
 
         <div class="span9">
-    <h1>Authors on Milestone</h1>        <li><a href="./author/muzi.html">muzi</a> (45)</li>
+    <div class='article'>
+        <div class="content-title">
+            <h1>bandwidth monitor in RYU</h1>
+2015-03-04
+
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
+ 
+
+
+        </div>
+	
+        <div><p>In many scenes, we need to get the real time link bandwidth so that controller can make some decisions in time. For example, load balance, network alert and so on. This article will demostrate how to get the bandwidth of a flow or a port(flow speed or port speed)。</p>
+<p>Actually, I write my app base on the simple_monitor at <a href="http://osrg.github.io/ryu-book/en/html/traffic_monitor.html">Ryu_book Traffic Monitor</a></p>
+<p>You can get my source code at:
+https://github.com/muzixing/ryu/blob/master/ryu/app/simple_monitor.py</p>
+<p>In my application, I defined some new data structures, and init them in function __int__().  The usage of them show below.</p>
+<div class="highlight"><pre><span class="n">self</span><span class="o">.</span><span class="n">port_speed</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1"># record the port speed </span>
+<span class="n">self</span><span class="o">.</span><span class="n">flow_speed</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1"># record the flow speed</span>
+<span class="n">self</span><span class="o">.</span><span class="nb">sleep</span> <span class="o">=</span> <span class="mi">2</span>          <span class="c1"># the interval of getting statistic</span>
+<span class="n">self</span><span class="o">.</span><span class="n">state_len</span> <span class="o">=</span> <span class="mi">3</span>      <span class="c1"># the length of speed list of per port and flow.</span>
+</pre></div>
+
+
+<p><strong>Note that</strong>: I just calculate the speed of port and flow, if you need to get the free bandwidth, you still need to subtract the speed form link bandwidth.</p>
+<p>I hope my work can help you.</p></div>
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = 'bandwidth monitor in RYU';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
         </div>
         
         <div class="span3">
@@ -66,8 +107,8 @@
                 Site
                 </li>
             
-                <li><a href="./archives.html">Archives</a>
-                <li><a href="./tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
 		</li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
@@ -81,8 +122,8 @@
                 Categories
                 </li>
                 
-                <li><a href="./category/life.html">life</a></li>
-                <li><a href="./category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -121,7 +162,7 @@
     </div>     </div> 
 <footer>
 <br />
-<p><a href=".">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
