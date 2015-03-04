@@ -62,7 +62,7 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2015/03/04/bandwidth-monitor-in-ryu.html"><h1>bandwidth monitor in RYU</h1></a>
+            <a href="./pages/2015/03/04/traffic-monitor-in-ryu.html"><h1>Traffic monitor in RYU</h1></a>
 2015-03-04
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
@@ -73,10 +73,10 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         </div>
         
         <div><p>In many scenes, we need to get the real time link bandwidth so that controller can make some decisions in time. For example, load balance, network alert and so on. This article will demostrate how to get the bandwidth of a flow or a port(flow speed or port speed)。</p>
-<p>Actually, I write my app base on the simple_monitor at <a href="http://osrg.github.io/ryu-book/en/html/traffic_monitor.html">Ryu_book Traffic Monitor</a></p>
+<p>Actually, I wrote my app base on the simple_monitor at <a href="http://osrg.github.io/ryu-book/en/html/traffic_monitor.html">Ryu_book Traffic Monitor</a></p>
 <p>You can get my source code at:
 https://github.com/muzixing/ryu/blob/master/ryu/app/simple_monitor.py</p>
-<p>In my application, I defined some new data structures, and init them in function __int__().  The usage of them show below.</p>
+<p>In my application, I define some new data structures, and init them in function __int__().  The usage of them show below.</p>
 <div class="highlight"><pre><span class="n">self</span><span class="o">.</span><span class="n">port_speed</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1"># record the port speed </span>
 <span class="n">self</span><span class="o">.</span><span class="n">flow_speed</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1"># record the flow speed</span>
 <span class="n">self</span><span class="o">.</span><span class="nb">sleep</span> <span class="o">=</span> <span class="mi">2</span>          <span class="c1"># the interval of getting statistic</span>
