@@ -62,6 +62,42 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html"><h2>QEMU+virt-manager+phoronix-test-suite服务器测试</h2></a>
+        <div class= "well small"> 2014-09-17
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>这是研究生开学的第一个任务，学习测试服务器性能。首先我们需要在一台新服务器上面安装ubuntu12.04，这个步骤很简单。安装完之后，可以使用top命令查看系统的cpu,mem等性能指标。然后我们就需要安装phoronix-test-suite，用于测试服务器的某些性能。接下来，使用qemu安装虚拟机，在虚拟机有负载的情况下，继续测量服务器的性能。</p>
+<h3>PHORONIX-TEST-SUITE</h3>
+<p>这是一个相当牛逼的服务器测试工具：[phoronix-test-suite]:http://www.phoronix-test-suite.com/</p>
+<p>下载安装：http://get.ubuntusoft.com/app/phoronix-test-suite</p>
+<p>先将安装包下载到本地，然后解压。进入phoronix-test-suite目录，运行install_sh进行安装。</p>
+<p>安装之后可以通过</p>
+<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">suite</span>  <span class="n">list</span><span class="o">-</span><span class="n">available</span>
+</pre></div>
+
+
+<p>查看可使用的测试列表。</p>
+<p>选择某一个测试项进行测试</p>
+<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">suite</span>  <span class="n">benchmark</span> <span class="o">&lt;</span><span class="n">test</span> <span class="n">name</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p>如：</p>
+<div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html"><h2>OpenDayLight中MD-SAL学习笔记</h2></a>
         <div class= "well small"> 2014-08-13
 
@@ -179,38 +215,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>更多安装信息请查看:https://wiki.opendaylight.org/view ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/02/opendaylightru-men-jiao-cheng.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html"><h2>【python爬虫】抓取淘宝模特图片——20分钟爬虫之旅</h2></a>
-        <div class= "well small"> 2014-07-24
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h1>前言</h1>
-<p>很多人说学Python最终需要写一个爬虫才能算是学成出山了，而我就是那个留级生，一直没有写过。炎热的夏日，以及看java的抑郁，让我无聊之中萌生了这个想法。于是在百度的帮助下，写完了这个教程。视频教程可以去百度学堂看，我就是在那里看的。</p>
-<h1>spider</h1>
-<p>代码详解就不多加介绍，注释相信已经很明确了，请看代码。</p>
-<div class="highlight"><pre><span class="nb">import</span> <span class="n">urllib2</span>
-<span class="nb">import</span> <span class="n">urllib</span>
-<span class="nb">import</span> <span class="n">sys</span>
-
-<span class="n">class</span> <span class="n">get_mm_pic</span><span class="p">(</span><span class="n">object</span><span class="p">):</span>
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="n">page_num</span><span class="p">):</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">page_num</span> <span class="o">=</span> <span class="n">page_num</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">mmurl</span><span class="o">=</span> <span class="s">&quot;http://mm.taobao.com/json/request_top_list.htm?type=0&amp;page=&quot;</span><span class="c1">#抓取的链接</span>
-    <span class="n">def</span> <span class="n">get_pic</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">page_num ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/07/24/pythonpa-chong-zhua-qu-tao-bao-mo-te-tu-pian-20fen-zhong-pa-chong-zhi-lu.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../author/muzi3.html">&larr; Previous</a></li>
@@ -224,6 +228,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../author/muzi7.html">7</a></li>
     <li class=""><a href="../author/muzi8.html">8</a></li>
     <li class=""><a href="../author/muzi9.html">9</a></li>
+    <li class=""><a href="../author/muzi10.html">10</a></li>
 
     <li class="next"><a href="../author/muzi5.html">Next &rarr;</a></li>
 
