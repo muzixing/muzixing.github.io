@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/03/04/traffic-monitor-in-ryu.html"><h1>Traffic monitor in RYU</h1></a>
-2015-03-04
+            <a href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html"><h1>RYU3.16 GUI安装与Topology模块分析</h1></a>
+2015-04-21
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,87 +72,119 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>In many scenes, we need to get the real time link bandwidth so that controller can make some decisions in time. For example, load balance, network alert and so on. This article will demostrate how to get the bandwidth of a flow or a port(flow speed or port speed)。</p>
-<p>Actually, I wrote my app base on the simple_monitor at <a href="http://osrg.github.io/ryu-book/en/html/traffic_monitor.html">Ryu_book Traffic Monitor</a></p>
-<p>You can get my source code at:<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/simple_monitor.py">simple_monitor</a></p>
-<p>In my application, I define some new data structures, and init them in function __int__().  The usage of them show below.</p>
-<div class="highlight"><pre><span class="n">self</span><span class="o">.</span><span class="n">port_speed</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1"># record the port speed </span>
-<span class="n">self</span><span class="o">.</span><span class="n">flow_speed</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1"># record the flow speed</span>
-<span class="n">self</span><span class="o">.</span><span class="nb">sleep</span> <span class="o">=</span> <span class="mi">2</span>          <span class="c1"># the interval of getting statistic</span>
-<span class="n">self</span><span class="o">.</span><span class="n">state_len</span> <span class="o">=</span> <span class="mi">3</span>      <span class="c1"># the length of speed list of per port and flow.</span>
+        <div><p>最近很多SDN研究人员问起如何安装RYU的GUI，网上也有一些教程。但是由于RYU版本问题，导致安装没有成功。本片博文将介绍RYU3.16版本下如何安装GUI，以及对RYU拓扑模块进行简单分析。</p>
+<h3>安装GUI</h3>
+<p><a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/">Linton的博客</a>已经有详细介绍，我在这里将一些可能出现问题的地方再提醒一次。</p>
+<h4>第一步：依赖安装及修改代码</h4>
+<p>建议查看<a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/">Linton的博客</a>，比较简单，不赘述。</p>
+<h4>第二步：运行相关组建</h4>
+<ul>
+<li>
+<p><strong>运行RYU相关APP</strong></p>
+<div class="highlight"><pre><span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="o">--</span><span class="n">verbose</span> <span class="o">--</span><span class="n">observe</span><span class="o">-</span><span class="n">links</span> <span class="n">app</span><span class="o">/</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">py</span> <span class="n">ryu</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">switches</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_topology</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">ofctl_rest</span>
 </pre></div>
 
 
-<h2>SimpleMonitor</h2>
-<p>The traffic monitor function has been implemented in the SimpleMonitor class which inherited app_manager.RyuApp, therefore, we need to manipulate packet in other application. This design makes SimpleMonitor as a independent application.</p>
-<h3>Stats request</h3>
-<p>First of all, We need to send the OFPPortStatsRequest message and OFPFlowStatsRequest message to request port and flow statistic infomation periodically. </p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">_request_stats</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;send stats request: %016x&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-    <span class="n">req</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowStatsRequest</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span>
-    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
-
-    <span class="n">req</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPortStatsRequest</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_ANY</span><span class="p">)</span>
-    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+</li>
+</ul>
+<p><img alt="运行截图" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi3oujndj20k60co75c.jpg" /></p>
+<p>运行截图如下：</p>
+<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi90ztcij20jx0cqqa0.jpg" /></p>
+<ul>
+<li>
+<p><strong>运行controller.py文件</strong></p>
+<p>进入到gui目录，运行controller.py文件。</p>
+<div class="highlight"><pre><span class="n">python</span> <span class="n">controller</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 
 
-<h3>Stats reply</h3>
-<p>We define the _port_stats_reply_handler to manipulate the port stats reply message, so as the flow stats reply message.In function _port_stats_reply_handler, we use (ev.msg.datapath.id, stat.port_no) as the key of self.port_stats, while the value is (stat.tx_bytes, stat.rx_bytes, stat.rx_errors, stat.duration_sec, stat.duration_nsec).</p>
-<p>We use the self._get_speed to calculate port speed.</p>
-<div class="highlight"><pre><span class="nv">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPortStatsReply</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-<span class="n">def</span> <span class="n">_port_stats_reply_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-    <span class="n">body</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">body</span>
+<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1erdi91ct7ej20mh0im12r.jpg" /></p>
+</li>
+<li>
+<p><strong>访问页面</strong></p>
+</li>
+</ul>
+<p>打开浏览器，访问http://127.0.0.1:8000页面。查看到connected to 127.0.0.1:8080信息则为连接成功。</p>
+<p><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1erdi91p3wbj20md07kab5.jpg" /></p>
+<p>Note that: 如果没有显示connected to 127.0.0.1:8000等信息，而显示Disconnected, 那么需要重新启动RYU的相关APP，再刷新网页，重新链接。运行controller.py的终端不需要动。</p>
+<p>若连接成功，启动mininet与控制器连接，则可发现网页逐步在显示网络拓扑，点击交换机图标可查看详细信息。</p>
+<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi923lypj20mb0hy0wf.jpg" /></p>
+<p>众多网友表示3.19+版本无法成功使用GUI，可参考：<a href="http://ryu.readthedocs.org/en/latest/gui.html">RYU3.20 GUI DOC</a> 进行安装使用。</p>
+<h3>TOPOLOGY源码分析</h3>
+<p>有一个小伙伴已经在我之前发布了详细的代码介绍，我不再赘述，大家有兴趣的可以前往查看：<a href="http://blog.csdn.net/sdnexplorer/article/details/44940907">Ryu拓扑发现原理分析</a></p>
+<p>在topology目录中，switches.py最重要。在switches.py文件中，核心的类是class Switches。</p>
+<p>在Switches类中，我们仅仅需要关注几个重要的函数即可将大体的拓扑发现逻辑理清。</p>
+<ul>
+<li>
+<p>__init__()</p>
+<p>初始化函数初始化了一些重要的内容，如dps,ports,links等。并将lldp_loop和link_loop这两个函数加入线程（协程）。</p>
+</li>
+<li>
+<p>packet_in_handler()</p>
+<p>此函数用于解析LLDP报文，从而提取出对应的信息，得到link信息。</p>
+</li>
+<li>
+<p>lldp_loop()</p>
+<p>调用了send_lldp_packet()函数，循环发送LLDP报文的函数。 </p>
+</li>
+<li>
+<p>link_loop()</p>
+<p>实时检测link事件，及时发现拓扑变化，生产对应的event，并通过send_event_to_observers提供和观察者。</p>
+</li>
+</ul>
+<h4>使用Switches模块</h4>
+<p>在实验过程中，实验人员往往需要得到网络拓扑的信息，不仅仅是dpid,link,port这些零散的元素，而是一张图。这张图往往由邻接矩阵或关联矩阵。所以一下的内容将介绍如何将dpid,link等信息转化成邻接矩阵和关联矩阵，以便后续的算路算法使用。</p>
+<p>在你开发的模块中，将Switches作为context加载，并在__init__函数中将其赋值给某一变量。</p>
+<div class="highlight"><pre><span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;switches&#39;</span><span class="p">:</span> <span class="n">switches</span><span class="o">.</span><span class="n">Switches</span> <span class="p">}</span>
 
-    <span class="k">for</span> <span class="nb">stat</span> <span class="n">in</span> <span class="n">sorted</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="s">&#39;port_no&#39;</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="nb">stat</span><span class="o">.</span><span class="n">port_no</span> <span class="o">!=</span> <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFPP_LOCAL:</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="nb">stat</span><span class="o">.</span><span class="n">port_no</span><span class="p">)</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="nb">stat</span><span class="o">.</span><span class="n">tx_bytes</span><span class="p">,</span> <span class="nb">stat</span><span class="o">.</span><span class="n">rx_bytes</span><span class="p">,</span> <span class="nb">stat</span><span class="o">.</span><span class="n">rx_errors</span><span class="p">,</span>
-                <span class="nb">stat</span><span class="o">.</span><span class="n">duration_sec</span><span class="p">,</span> <span class="nb">stat</span><span class="o">.</span><span class="n">duration_nsec</span><span class="p">)</span>
+<span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">yourapp</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-            <span class="n">self</span><span class="o">.</span><span class="n">_save_stats</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">port_stats</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">state_len</span><span class="p">)</span>
-
-            <span class="c1"># Get port speed.</span>
-            <span class="n">pre</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">period</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="nb">sleep</span>
-            <span class="n">tmp</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">port_stats</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">pre</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">period</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">_get_period</span><span class="p">(</span>
-                    <span class="n">tmp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span> <span class="n">tmp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">4</span><span class="p">],</span>
-                    <span class="n">tmp</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span> <span class="n">tmp</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">4</span><span class="p">])</span>
-
-            <span class="n">speed</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">_get_speed</span><span class="p">(</span>
-                <span class="n">self</span><span class="o">.</span><span class="n">port_stats</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">self</span><span class="o">.</span><span class="n">port_stats</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
-                <span class="n">pre</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
-
-            <span class="n">self</span><span class="o">.</span><span class="n">_save_stats</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">port_speed</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">speed</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">state_len</span><span class="p">)</span>
-            <span class="k">print</span> <span class="s">&#39;\n Speed:\n&#39;</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">port_speed</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;switches&#39;</span><span class="p">]</span>
 </pre></div>
 
 
-<h3>Fixed-Cycle Processing</h3>
-<p>Finally, we need to create a thread to send requests messages and manipulate reply messages, and the function of thread is _monitor.</p>
-<div class="highlight"><pre><span class="n">self</span><span class="o">.</span><span class="n">monitor_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_monitor</span><span class="p">)</span>
-
-<span class="n">def</span> <span class="n">_monitor</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
-    <span class="k">while</span> <span class="n">True:</span>
-        <span class="k">for</span> <span class="n">dp</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">datapaths</span><span class="o">.</span><span class="nb">values</span><span class="p">():</span>
-            <span class="n">self</span><span class="o">.</span><span class="n">_request_stats</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
-        <span class="n">hub</span><span class="o">.</span><span class="nb">sleep</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="nb">sleep</span><span class="p">)</span>
+<p>定义函数get_graph，函数返回值是两张图，其中图graph_cap记录两个交换机之间的链路能力，图graph_port则记录的是从src到dst的源端口，目的端口信息保存在图的对称节点上。其中self.dps和self.link的数据周期从swithes模块获取。详细代码如下：</p>
+<div class="highlight"><pre>    <span class="n">def</span> <span class="n">get_graph</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">graph_cap</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">graph_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">dpid</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">dps</span><span class="o">.</span><span class="nb">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="nb">link</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">links:</span>
+                <span class="k">if</span> <span class="nb">link</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">dpid</span> <span class="o">==</span> <span class="n">dpid:</span>
+                    <span class="n">graph_cap</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+                    <span class="n">graph_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+                    <span class="n">neighbor</span> <span class="o">=</span> <span class="nb">link</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">dpid</span>
+                    <span class="n">capacity</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">links_state</span><span class="p">[</span><span class="nb">link</span><span class="p">]</span><span class="o">.</span><span class="n">capacity</span>
+                    <span class="n">graph_cap</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">neighbor</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="mi">8</span> <span class="o">/</span> <span class="n">capacity</span>
+                    <span class="n">graph_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">neighbor</span><span class="p">]</span> <span class="o">=</span> <span class="nb">link</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">port_no</span>
+        <span class="k">return</span> <span class="n">graph_cap</span><span class="p">,</span> <span class="n">graph_port</span>
 </pre></div>
 
 
-<p>So far, we have finished the simple monitor application in RYU.</p>
-<p><strong>Note that</strong>: I just calculate the speed of port and flow, if you need to get the free bandwidth, you still need to subtract the speed form link bandwidth.</p>
-<p>I hope my work can help you.</p></div>
+<p>至此，网络拓扑图生成完毕。在运行最短路径或者其他的路径计算算法时，可使用get_graph返回的数据。</p>
+<h3>总结</h3>
+<p>一直以来做实验并不需要可视化拓扑界面，直到最近发现许多研究者频繁提问，才想起来尝试这个实验。但事实上，我觉得Switches模块的使用是一个更重要的内容。很多情况下，我们需要的是原始的数据，而不是展示出来的界面。本文内容比较简单，希望能帮助到一些SDN学习者。</p></div>
         <hr />
     </div>
 		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2015/03/04/traffic-monitor-in-ryu.html"><h2>Traffic monitor in RYU</h2></a>
+        <div class= "well small"> 2015-03-04
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>In many scenes, we need to get the real time link bandwidth so that controller can make some decisions in time. For example, load balance, network alert and so on. This article will demostrate how to get the bandwidth of a flow or a port(flow speed or port speed ...</p> <a class="btn btn-info xsmall" href="../pages/2015/03/04/traffic-monitor-in-ryu.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -220,36 +252,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>如果要快速学习某一个知识，最好的办法就是把它用起来。所以首先我会介绍一个入门的教程。如果你没有看懂，可以去看原始的<a href="http://www.giantflyingsaucer.com/blog/?p=4822">教程</a>。</p>
 <p>首先安装<a href="https://virtualenv.pypa.io/en/latest/virtualenv.html">python-virtualenv</a>，此python库可以用于创建一个虚拟的，与外界隔离的运行环境，听起来和docker好像有点像。</p>
 <div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/19/ryuxue-xi-oslo.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/12/10/ryuxue-xi-eventlet.html"><h2>RYU学习:eventlet</h2></a>
-        <div class= "well small"> 2014-12-10
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>从OpenDaylight转到RYU以来一直都没有机会好好学习RYU的源码,只学会了编写简单的Application。但是如果要熟悉一个控制器，就要熟悉它的运行原理，熟悉它数据结构，熟悉它的设计模式等等。最近终于有时间好好看RYU的代码，但在看代码的过程中却发现RYU并不简单，其编码风格也非常优雅，非常值得学习。本篇博文主要讲述RYU中使用到的eventlet。</p>
-<h2>从RYU开始</h2>
-<p>运行ryu的时候，命令是：ryu-manager app.py。第一个要找到就是ryu-manager到底会触发什么程序。在/cmd中没有找到之后，在/bin中找到了两个可执行文件：ryu和ryu-manager。打开ryu-manager，显示如下：</p>
-<div class="highlight"><pre><span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">cmd</span><span class="o">.</span><span class="n">manager</span> <span class="nb">import</span> <span class="n">main</span>
-<span class="n">main</span><span class="p">()</span>
-</pre></div>
-
-
-<p>找到/ryu/cmd/manager.py，发现这个文件中的main()函数是整个ryu的入口函数。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
-    <span class="n">try:</span>
-        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/10/ryuxue-xi-eventlet.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

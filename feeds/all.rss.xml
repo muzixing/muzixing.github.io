@@ -1,5 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Sun, 08 Mar 2015 00:00:00 +0800</lastBuildDate><item><title>站在十字路口的一年</title><link>http://www.muzixing.com/pages/2015/03/08/zhan-zai-shi-zi-lu-kou-de-nian.html</link><description>&lt;p&gt;时光荏苒，岁月如梭，留不住的是青春，触不到的是未来，我只好关注现在。再回首，大学不再是每天一起上课的时光，没有夜里对未来的迷茫，只剩下难以名状的念想，说不出口，暗自埋藏。大学之后，我选择了读研究生，继续当一个穷到养不起自己的学生，假装看不见同龄人已在职场。内心的彷徨与不安，躁动与挣扎是这一年的主旋律。躁动是因为浮夸，不安是因为自己太差。如今又是一年的开始，过去的岁月需要总结，未来的生活需要计划，只有把过去内心的种种写下才能坦然，也只有对未来有所规划，才不会失去方向。&lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 21 Apr 2015 00:00:00 +0800</lastBuildDate><item><title>RYU3.16 GUI安装与Topology模块分析</title><link>http://www.muzixing.com/pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html</link><description>&lt;p&gt;最近很多SDN研究人员问起如何安装RYU的GUI，网上也有一些教程。但是由于RYU版本问题，导致安装没有成功。本片博文将介绍RYU3.16版本下如何安装GUI，以及对RYU拓扑模块进行简单分析。&lt;/p&gt;
+&lt;h3&gt;安装GUI&lt;/h3&gt;
+&lt;p&gt;&lt;a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/"&gt;Linton的博客&lt;/a&gt;已经有详细介绍，我在这里将一些可能出现问题的地方再提醒一次。&lt;/p&gt;
+&lt;h4&gt;第一步：依赖安装及修改代码&lt;/h4&gt;
+&lt;p&gt;建议查看&lt;a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/"&gt;Linton的博客&lt;/a&gt;，比较简单，不赘述。&lt;/p&gt;
+&lt;h4&gt;第二步：运行相关组建&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;运行RYU相关APP&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;manager&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;verbose&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;observe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;links&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;simple_switch_13&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt; &lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;topology&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;switches&lt;/span&gt; &lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rest_topology&lt;/span&gt; &lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ofctl_rest&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img alt="运行截图" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi3oujndj20k60co75c.jpg" /&gt;&lt;/p&gt;
+&lt;p&gt;运行截图如下：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi90ztcij20jx0cqqa0.jpg" /&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;运行controller.py文件&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;进入到gui目录，运行controller.py文件。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;python&lt;/span&gt; &lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1erdi91ct7ej20mh0im12r.jpg" /&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;访问页面&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;打开浏览器，访问http://127.0.0.1:8000页面。查看到connected to 127.0.0.1:8080信息则为连接成功。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1erdi91p3wbj20md07kab5.jpg" /&gt;&lt;/p&gt;
+&lt;p&gt;Note that: 如果没有显示connected to 127.0.0.1:8000等信息，而显示Disconnected, 那么需要重新启动RYU的相关APP，再刷新网页，重新链接。运行controller.py的终端不需要动。&lt;/p&gt;
+&lt;p&gt;若连接成功，启动mininet与控制器连接，则可发现网页逐步在显示网络拓扑，点击交换机图标可查看详细信息。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi923lypj20mb0hy0wf.jpg" /&gt;&lt;/p&gt;
+&lt;p&gt;众多网友表示3.19+版本无法成功使用GUI，可参考：&lt;a href="http://ryu.readthedocs.org/en/latest/gui.html"&gt;RYU3.20 GUI DOC&lt;/a&gt; 进行安装使用。&lt;/p&gt;
+&lt;h3&gt;TOPOLOGY源码分析&lt;/h3&gt;
+&lt;p&gt;有一个小伙伴已经在我之前发布了详细的代码介绍，我不再赘述，大家有兴趣的可以前往查看：&lt;a href="http://blog.csdn.net/sdnexplorer/article/details/44940907"&gt;Ryu拓扑发现原理分析&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;在topology目录中，switches.py最重要。在switches.py文件中，核心的类是class Switches。&lt;/p&gt;
+&lt;p&gt;在Switches类中，我们仅仅需要关注几个重要的函数即可将大体的拓扑发现逻辑理清。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;__init__()&lt;/p&gt;
+&lt;p&gt;初始化函数初始化了一些重要的内容，如dps,ports,links等。并将lldp_loop和link_loop这两个函数加入线程（协程）。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;packet_in_handler()&lt;/p&gt;
+&lt;p&gt;此函数用于解析LLDP报文，从而提取出对应的信息，得到link信息。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;lldp_loop()&lt;/p&gt;
+&lt;p&gt;调用了send_lldp_packet()函数，循环发送LLDP报文的函数。 &lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;link_loop()&lt;/p&gt;
+&lt;p&gt;实时检测link事件，及时发现拓扑变化，生产对应的event，并通过send_event_to_observers提供和观察者。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;使用Switches模块&lt;/h4&gt;
+&lt;p&gt;在实验过程中，实验人员往往需要得到网络拓扑的信息，不仅仅是dpid,link,port这些零散的元素，而是一张图。这张图往往由邻接矩阵或关联矩阵。所以一下的内容将介绍如何将dpid,link等信息转化成邻接矩阵和关联矩阵，以便后续的算路算法使用。&lt;/p&gt;
+&lt;p&gt;在你开发的模块中，将Switches作为context加载，并在__init__函数中将其赋值给某一变量。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;_CONTEXTS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;switches&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;switches&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Switches&lt;/span&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;super&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;yourapp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;switches&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;switches&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;定义函数get_graph，函数返回值是两张图，其中图graph_cap记录两个交换机之间的链路能力，图graph_port则记录的是从src到dst的源端口，目的端口信息保存在图的对称节点上。其中self.dps和self.link的数据周期从swithes模块获取。详细代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;get_graph&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;graph_cap&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+        &lt;span class="n"&gt;graph_port&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;dpid&lt;/span&gt; &lt;span class="n"&gt;in&lt;/span&gt; &lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dps&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nb"&gt;keys&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+            &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nb"&gt;link&lt;/span&gt; &lt;span class="n"&gt;in&lt;/span&gt; &lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;links:&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;link&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;dpid:&lt;/span&gt;
+                    &lt;span class="n"&gt;graph_cap&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setdefault&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{})&lt;/span&gt;
+                    &lt;span class="n"&gt;graph_port&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setdefault&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{})&lt;/span&gt;
+                    &lt;span class="n"&gt;neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;link&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;
+                    &lt;span class="n"&gt;capacity&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;links_state&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;link&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;capacity&lt;/span&gt;
+                    &lt;span class="n"&gt;graph_cap&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="n"&gt;neighbor&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;capacity&lt;/span&gt;
+                    &lt;span class="n"&gt;graph_port&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="n"&gt;neighbor&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;link&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;port_no&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;graph_cap&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;graph_port&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;至此，网络拓扑图生成完毕。在运行最短路径或者其他的路径计算算法时，可使用get_graph返回的数据。&lt;/p&gt;
+&lt;h3&gt;总结&lt;/h3&gt;
+&lt;p&gt;一直以来做实验并不需要可视化拓扑界面，直到最近发现许多研究者频繁提问，才想起来尝试这个实验。但事实上，我觉得Switches模块的使用是一个更重要的内容。很多情况下，我们需要的是原始的数据，而不是展示出来的界面。本文内容比较简单，希望能帮助到一些SDN学习者。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Tue, 21 Apr 2015 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2015-04-21:pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html</guid><category>ryu</category></item><item><title>站在十字路口的一年</title><link>http://www.muzixing.com/pages/2015/03/08/zhan-zai-shi-zi-lu-kou-de-nian.html</link><description>&lt;p&gt;时光荏苒，岁月如梭，留不住的是青春，触不到的是未来，我只好关注现在。再回首，大学不再是每天一起上课的时光，没有夜里对未来的迷茫，只剩下难以名状的念想，说不出口，暗自埋藏。大学之后，我选择了读研究生，继续当一个穷到养不起自己的学生，假装看不见同龄人已在职场。内心的彷徨与不安，躁动与挣扎是这一年的主旋律。躁动是因为浮夸，不安是因为自己太差。如今又是一年的开始，过去的岁月需要总结，未来的生活需要计划，只有把过去内心的种种写下才能坦然，也只有对未来有所规划，才不会失去方向。&lt;/p&gt;
 &lt;h2&gt;步履蹒跚&lt;/h2&gt;
 &lt;p&gt;去年的前半年我还是一个“大四狗”，面对着毕业，也面对着对未来的选择。由于在大四上的时候已经确定自己要读研究生，所以也就没有尝试找工作，现在觉得是失策了，应该趁着nothing to lose的机会好好在就业大潮中体验一下的，万一拿到一个好Offer，不读也罢。&lt;/p&gt;
 &lt;p&gt;去年3月份的时候，我选择去南京未来网研究院实习，最后也在那里完成了自己的毕业设计：一个在工信部实习时就完成的项目。因为运气好，最后还获得了优秀学士毕业论文的奖项，也是毕业时意外的惊喜之一。&lt;/p&gt;
