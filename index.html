@@ -139,10 +139,23 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         <span class="n">super</span><span class="p">(</span><span class="n">yourapp</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="n">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;switches&#39;</span><span class="p">]</span>
+
+        <span class="n">self</span><span class="o">.</span><span class="n">threads</span> <span class="o">=</span> <span class="o">[]</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">threads</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_link_monitor</span><span class="p">),])</span>
 </pre></div>
 
 
-<p>定义函数get_graph，函数返回值是两张图，其中图graph_cap记录两个交换机之间的链路能力，图graph_port则记录的是从src到dst的源端口，目的端口信息保存在图的对称节点上。其中self.dps和self.link的数据周期从swithes模块获取。详细代码如下：</p>
+<p>self.threads用于保存线程。将_link_monitor函数作为执行体，加入线程执行。函数简单定义如下：</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">_link_monitor</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="k">while</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">is_active</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">self</span><span class="o">.</span><span class="n">links</span> <span class="o">!=</span> <span class="n">self</span><span class="o">.</span><span class="n">dp_tracker</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="nb">keys</span><span class="p">():</span>
+                <span class="n">self</span><span class="o">.</span><span class="n">dps</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">dp_tracker</span><span class="o">.</span><span class="n">dps</span>
+                <span class="n">self</span><span class="o">.</span><span class="n">links</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">dp_tracker</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="nb">keys</span><span class="p">()</span>
+            <span class="n">hub</span><span class="o">.</span><span class="nb">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p>从_link_monitor函数中可以获取到dps,links等数据。这些数据需要整理存储，以便使用，get_graph函数就是用于将数据存储在图中的函数：定义函数get_graph，函数返回值是两张图，其中图graph_cap记录两个交换机之间的链路能力，图graph_port则记录的是从src到dst的源端口，目的端口信息保存在图的对称节点上。详细代码如下：</p>
 <div class="highlight"><pre>    <span class="n">def</span> <span class="n">get_graph</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
         <span class="n">graph_cap</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">graph_port</span> <span class="o">=</span> <span class="p">{}</span>
