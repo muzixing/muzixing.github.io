@@ -12,12 +12,10 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;/li&gt;
-&lt;/ul&gt;
 &lt;p&gt;&lt;img alt="运行截图" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi3oujndj20k60co75c.jpg" /&gt;&lt;/p&gt;
-&lt;p&gt;运行截图如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi90ztcij20jx0cqqa0.jpg" /&gt;&lt;/p&gt;
-&lt;ul&gt;
+&lt;p&gt;运行截图如下：
+&lt;img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi90ztcij20jx0cqqa0.jpg" /&gt;&lt;/p&gt;
+&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;运行controller.py文件&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;进入到gui目录，运行controller.py文件。&lt;/p&gt;
@@ -29,14 +27,14 @@
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;访问页面&lt;/strong&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
 &lt;p&gt;打开浏览器，访问http://127.0.0.1:8000页面。查看到connected to 127.0.0.1:8080信息则为连接成功。&lt;/p&gt;
 &lt;p&gt;&lt;img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1erdi91p3wbj20md07kab5.jpg" /&gt;&lt;/p&gt;
 &lt;p&gt;Note that: 如果没有显示connected to 127.0.0.1:8000等信息，而显示Disconnected, 那么需要重新启动RYU的相关APP，再刷新网页，重新链接。运行controller.py的终端不需要动。&lt;/p&gt;
 &lt;p&gt;若连接成功，启动mininet与控制器连接，则可发现网页逐步在显示网络拓扑，点击交换机图标可查看详细信息。&lt;/p&gt;
 &lt;p&gt;&lt;img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi923lypj20mb0hy0wf.jpg" /&gt;&lt;/p&gt;
 &lt;p&gt;众多网友表示3.19+版本无法成功使用GUI，可参考：&lt;a href="http://ryu.readthedocs.org/en/latest/gui.html"&gt;RYU3.20 GUI DOC&lt;/a&gt; 进行安装使用。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h3&gt;TOPOLOGY源码分析&lt;/h3&gt;
 &lt;p&gt;有一个小伙伴已经在我之前发布了详细的代码介绍，我不再赘述，大家有兴趣的可以前往查看：&lt;a href="http://blog.csdn.net/sdnexplorer/article/details/44940907"&gt;Ryu拓扑发现原理分析&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;在topology目录中，switches.py最重要。在switches.py文件中，核心的类是class Switches。&lt;/p&gt;
@@ -81,8 +79,8 @@
                     &lt;span class="n"&gt;graph_cap&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setdefault&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{})&lt;/span&gt;
                     &lt;span class="n"&gt;graph_port&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setdefault&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{})&lt;/span&gt;
                     &lt;span class="n"&gt;neighbor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;link&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;
-                    &lt;span class="n"&gt;capacity&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;links_state&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;link&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;capacity&lt;/span&gt;
-                    &lt;span class="n"&gt;graph_cap&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="n"&gt;neighbor&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;capacity&lt;/span&gt;
+                    &lt;span class="n"&gt;capacity&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;link&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;curr_speed&lt;/span&gt;
+                    &lt;span class="n"&gt;graph_cap&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="n"&gt;neighbor&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;capacity&lt;/span&gt;
                     &lt;span class="n"&gt;graph_port&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;dpid&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="n"&gt;neighbor&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;link&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;port_no&lt;/span&gt;
         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;graph_cap&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;graph_port&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;

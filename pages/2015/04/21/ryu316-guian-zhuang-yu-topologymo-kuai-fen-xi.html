@@ -79,12 +79,10 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 </pre></div>
 
 
-</li>
-</ul>
 <p><img alt="运行截图" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi3oujndj20k60co75c.jpg" /></p>
-<p>运行截图如下：</p>
-<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi90ztcij20jx0cqqa0.jpg" /></p>
-<ul>
+<p>运行截图如下：
+<img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi90ztcij20jx0cqqa0.jpg" /></p>
+</li>
 <li>
 <p><strong>运行controller.py文件</strong></p>
 <p>进入到gui目录，运行controller.py文件。</p>
@@ -96,14 +94,14 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
 </li>
 <li>
 <p><strong>访问页面</strong></p>
-</li>
-</ul>
 <p>打开浏览器，访问http://127.0.0.1:8000页面。查看到connected to 127.0.0.1:8080信息则为连接成功。</p>
 <p><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1erdi91p3wbj20md07kab5.jpg" /></p>
 <p>Note that: 如果没有显示connected to 127.0.0.1:8000等信息，而显示Disconnected, 那么需要重新启动RYU的相关APP，再刷新网页，重新链接。运行controller.py的终端不需要动。</p>
 <p>若连接成功，启动mininet与控制器连接，则可发现网页逐步在显示网络拓扑，点击交换机图标可查看详细信息。</p>
 <p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi923lypj20mb0hy0wf.jpg" /></p>
 <p>众多网友表示3.19+版本无法成功使用GUI，可参考：<a href="http://ryu.readthedocs.org/en/latest/gui.html">RYU3.20 GUI DOC</a> 进行安装使用。</p>
+</li>
+</ul>
 <h3>TOPOLOGY源码分析</h3>
 <p>有一个小伙伴已经在我之前发布了详细的代码介绍，我不再赘述，大家有兴趣的可以前往查看：<a href="http://blog.csdn.net/sdnexplorer/article/details/44940907">Ryu拓扑发现原理分析</a></p>
 <p>在topology目录中，switches.py最重要。在switches.py文件中，核心的类是class Switches。</p>
@@ -148,8 +146,8 @@ by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
                     <span class="n">graph_cap</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
                     <span class="n">graph_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
                     <span class="n">neighbor</span> <span class="o">=</span> <span class="nb">link</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">dpid</span>
-                    <span class="n">capacity</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">links_state</span><span class="p">[</span><span class="nb">link</span><span class="p">]</span><span class="o">.</span><span class="n">capacity</span>
-                    <span class="n">graph_cap</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">neighbor</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="mi">8</span> <span class="o">/</span> <span class="n">capacity</span>
+                    <span class="n">capacity</span> <span class="o">=</span> <span class="nb">link</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">curr_speed</span>
+                    <span class="n">graph_cap</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">neighbor</span><span class="p">]</span> <span class="o">=</span> <span class="n">capacity</span>
                     <span class="n">graph_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">neighbor</span><span class="p">]</span> <span class="o">=</span> <span class="nb">link</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">port_no</span>
         <span class="k">return</span> <span class="n">graph_cap</span><span class="p">,</span> <span class="n">graph_port</span>
 </pre></div>
