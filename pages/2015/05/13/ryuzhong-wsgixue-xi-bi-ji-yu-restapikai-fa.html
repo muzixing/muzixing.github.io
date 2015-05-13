@@ -377,19 +377,25 @@ ofctl_rest.py模块被运行，RestStatsApi被加载之前_CONTEXT的内容被�
 <ul>
 <li>
 <p>获取MAC地址表 API</p>
-<p>获取Switching hub中MAC Table的内容，并以JSON格式返回MAC：PORT内容:
-<code>python
-@route('simpleswitch', url, methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-def list_mac_table(self, req, **kwargs):</code></p>
-</li>
-<li>
-<p>添加MAC地址表项 API</p>
-<p>将指定的MAC：PORT信息加入到MAC Table中，同时根据更新后的MAC Table内容，添加对应的Flow enrties.
-<code>python    
-@route('simpleswitch', url, methods=['PUT'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-def put_mac_table(self, req, **kwargs):</code></p>
+<p>获取Switching hub中MAC Table的内容，并以JSON格式返回MAC：PORT内容:</p>
 </li>
 </ul>
+<div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+<span class="k">def</span> <span class="nf">list_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</pre></div>
+
+
+<ul>
+<li>
+<p>添加MAC地址表项 API</p>
+<p>将指定的MAC：PORT信息加入到MAC Table中，同时根据更新后的MAC Table内容，添加对应的Flow enrties.</p>
+</li>
+</ul>
+<div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+<span class="k">def</span> <span class="nf">put_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</pre></div>
+
+
 <p>对应的执行函数被route装饰器修饰，当route收取到对应的信息，如URL为：host:port/simpleswitch/mactable/{dpid}，动作类型为GET时，就会调用list_mac_table函数，返回mac_table的信息。</p>
 <h4><strong>运行验证</strong></h4>
 <ul>
