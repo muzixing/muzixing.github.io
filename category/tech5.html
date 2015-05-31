@@ -62,6 +62,48 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html"><h2>OpenFlow1.3学习笔记</h2></a>
+        <div class= "well small"> 2014-08-10
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。</p>
+<h2>OpenFlow端口</h2>
+<p>OF端口是OF处理流程和网络其他部分进行转发数据包的网络接口。
+OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必须支持的端口类型为</p>
+<ul>
+<li>物理端口</li>
+<li>逻辑端口</li>
+<li>保留端口</li>
+</ul>
+<p>逻辑端口和物理端口的不同在于，逻辑端口比物理端口更高一级，是对物理端口的虚拟化，提高可复用性，逻辑端口的数据包需要有tunnel_id，而物理端口没有。    </p>
+<p>保留端口中又分为：</p>
+<ul>
+<li>ALL</li>
+<li>CONTROLLER</li>
+<li>TABLE</li>
+<li>IN_PORT</li>
+<li>ANY</li>
+<li>LOCAL</li>
+<li>NORMAL</li>
+<li>FLOOD</li>
+</ul>
+<p>其中所有OF交换机都要支持ALL,CONTROLLER,TABLE,IN_PORT,ANY类型端口，OF_ONLY不要求支持LOCAL,NORMAL,FLOOD端口。</p>
+<h2>OpenFlow Table</h2>
+<p>OpenFlow ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html"><h2>Opendaylight中开发模块Ping</h2></a>
         <div class= "well small"> 2014-08-06
 
@@ -174,39 +216,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/05/04/noxshi-xian-natgong-neng.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html"><h2>[c]线程池的实现</h2></a>
-        <div class= "well small"> 2014-04-28
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>这是C语言培训的最后一题，线程池，今天看了看控制器的代码，看到了线程池的影子，然后发现应该赶紧写完这篇了。哎，文笔不行，写书写成屎了！希望再修改几次能不丢人吧。</p>
-<p>本篇主要介绍如何实现一个线程池模型，task是简单的打印，当然如果你想让线程池完成你的功能线程的管理，只需要将task换成你的线程就可以了。</p>
-<h3>线程池</h3>
-<p>（摘自百度百科）线程池是一种多线程处理形式，处理过程中将任务添加到队列，然后在创建线程后自动启动这些任务。线程池线程都是后台线程。</p>
-<p>组成：</p>
-<ul>
-<li>线程池管理器（ThreadPoolManager）:用于创建并管理线程池</li>
-<li>工作线程（WorkThread）: 线程池中线程</li>
-<li>任务接口（Task）:每个任务必须实现的接口，以供工作线程调度任务的执行。</li>
-<li>任务队列:用于存放没有处理的任务。提供一种缓冲机制。</li>
-</ul>
-<p>更多可访问：http://baike.baidu.com/link?url=caXqYSEEEDLS28VYuSzSxPbTM3dt_5WwXqF2-TUxR8ptJxggJaJHfTZ3_9Hs4urU#2</p>
-<h3>threadpool.h</h3>
-<p>threadpool.h的功能主要是定义工作线程的结构和线程池结构，声明相关的函数，如创建函数。</p>
-<div class="highlight"><pre><span class="c1">#ifndef ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../category/tech4.html">&larr; Previous</a></li>
@@ -220,6 +229,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../category/tech7.html">7</a></li>
     <li class=""><a href="../category/tech8.html">8</a></li>
     <li class=""><a href="../category/tech9.html">9</a></li>
+    <li class=""><a href="../category/tech10.html">10</a></li>
 
     <li class="next"><a href="../category/tech6.html">Next &rarr;</a></li>
 

@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html"><h1>RYU中WSGI学习笔记与RESTAPI开发</h1></a>
-2015-05-13
+            <a href="./pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html"><h1>Graph algorithms: Prim,Kruskal, Dijkstra, Floyd</h1></a>
+2015-05-31
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
  
@@ -72,7 +72,267 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>另一篇博文中已经介绍如何使用RYU的RESTAPI，本篇将继续介绍相关内容，主要分为WSGI学习总结和以ofctl_rest.py为例的RESTAPI的实现与内部机制。由于第一次学习WSGI，还有许多地方不是特别理解，所学知识均来自Google。文中若有错误之处，敬请指出，谢谢。</p>
+        <div><p>最近有了一点点空闲时间，想想以后的项目肯定是需要用到图中的路径算法，于是花了一些时间把4大经典算法实现了一遍。算法实现水平不高，时间复杂度都太高了一点。但是逻辑相对比较清晰，测试结果正确。如果读者发现算法中的问题，敬请指出，万分感谢。</p>
+<h3>Prim</h3>
+<p><a href="http://zh.wikipedia.org/wiki/%E6%99%AE%E6%9E%97%E5%A7%86%E7%AE%97%E6%B3%95">Prim</a>算法是最小生成数算法的一种，其算法逻辑为：</p>
+<p>从单一顶点开始，普里姆算法按照以下步骤逐步扩大树中所含顶点的数目，直到遍及连通图的所有顶点。
+输入：一个加权连通图，其中顶点集合为V，边集合为E；</p>
+<p>初始化：Vnew = {x}，其中x为集合V中的任一节点（起始点），Enew = {}；
+重复下列操作，直到Vnew = V：</p>
+<p>1：在集合E中选取权值最小的边（u,v），其中u为集合Vnew中的元素，而v则是V中没有加入Vnew的顶点（如果存在有多条   满足前述条件即具有相同权值的边，则可任意选取其中之一）；
+2：将v加入集合Vnew中，将（u, v）加入集合Enew中；</p>
+<p>输出：使用集合Vnew和Enew来描述所得到的最小生成树。</p>
+<p>算法实现采用数据结构为邻接矩阵,实现如下：</p>
+<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">prim</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span><span class="o">==</span><span class="nb">dict</span>
+
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+
+        <span class="n">visited</span> <span class="o">=</span> <span class="p">[</span><span class="n">root</span><span class="p">]</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nb">next</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">while</span> <span class="n">nodes</span><span class="p">:</span>
+            <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span> 
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">visited</span> <span class="ow">or</span> <span class="n">s</span> <span class="o">==</span> <span class="n">d</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">distance</span><span class="p">:</span>
+                        <span class="n">distance</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d</span><span class="p">]</span>
+                        <span class="n">pre</span> <span class="o">=</span> <span class="n">s</span>
+                        <span class="nb">next</span> <span class="o">=</span> <span class="n">d</span>
+            <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pre</span><span class="p">,</span> <span class="nb">next</span><span class="p">))</span>
+            <span class="n">visited</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">path</span>
+
+
+    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+        <span class="n">graph_dict</span> <span class="o">=</span> <span class="p">{</span>  <span class="s">&quot;s1&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">},</span>
+                        <span class="s">&quot;s2&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">},</span>
+                        <span class="s">&quot;s10&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">},</span>
+                        <span class="s">&quot;s12&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">},</span>
+                        <span class="s">&quot;s5&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
+        <span class="p">}</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="n">prim</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">,</span> <span class="s">&#39;s12&#39;</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">path</span>
+</pre></div>
+
+
+<h3>Kruskal</h3>
+<p><a href="http://zh.wikipedia.org/wiki/%E5%85%8B%E9%B2%81%E6%96%AF%E5%85%8B%E5%B0%94%E6%BC%94%E7%AE%97%E6%B3%95">Kruskal</a>是另一种最小生成树的算法，相比Prim算法，Kruskal算法采用避圈法进行最小树生长。算法逻辑为：</p>
+<p>1：新建图G，G中拥有原图中相同的节点，但没有边
+2：将原图中所有的边按权值从小到大排序
+3：从权值最小的边开始，如果这条边连接的两个节点于图G中不在同一个连通分量中，则添加这条边到图G中
+4：重复3，直至图G中所有的节点都在同一个连通分量中</p>
+<p>实现代码如下：</p>
+<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">kruskal</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span><span class="o">==</span><span class="nb">dict</span>
+
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>   
+        <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nb">next</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">visited</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">):</span>
+            <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span> 
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">visited</span> <span class="ow">and</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">visited</span> <span class="ow">or</span> <span class="n">s</span> <span class="o">==</span> <span class="n">d</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">distance</span><span class="p">:</span>
+                        <span class="n">distance</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d</span><span class="p">]</span>
+                        <span class="n">pre</span> <span class="o">=</span> <span class="n">s</span>
+                        <span class="nb">next</span> <span class="o">=</span> <span class="n">d</span>
+
+            <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pre</span><span class="p">,</span> <span class="nb">next</span><span class="p">))</span>
+            <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pre</span><span class="p">)</span>
+            <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">path</span>
+
+
+    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+        <span class="n">graph_dict</span> <span class="o">=</span> <span class="p">{</span>  <span class="s">&quot;s1&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">},</span>
+                        <span class="s">&quot;s2&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">},</span>
+                        <span class="s">&quot;s10&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">},</span>
+                        <span class="s">&quot;s12&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">},</span>
+                        <span class="s">&quot;s5&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
+        <span class="p">}</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="n">kruskal</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">path</span>
+</pre></div>
+
+
+<h3>Dijkstra</h3>
+<p><a href="http://zh.wikipedia.org/wiki/%E6%88%B4%E5%85%8B%E6%96%AF%E7%89%B9%E6%8B%89%E7%AE%97%E6%B3%95">Diikstra</a>算法是用于计算某源点到其他节点的最短路径的算法。其算法逻辑为：</p>
+<p>这个算法是通过为每个顶点 v 保留目前为止所找到的从s到v的最短路径来工作的。初始时，原点 s 的路径长度值被赋为 0 （d[s] = 0），若存在能直接到达的边（s,m），则把d[m]设为w（s,m）,同时把所有其他（s不能直接到达的）顶点的路径长度设为无穷大，即表示我们不知道任何通向这些顶点的路径（对于 V 中所有顶点 v 除 s 和上述 m 外 d[v] = ∞）。当算法结束时，d[v] 中存储的便是从 s 到 v 的最短路径，或者如果路径不存在的话是无穷大。 Dijkstra 算法的基础操作是边的拓展：如果存在一条从 u 到 v 的边，那么从 s 到 v 的最短路径可以通过将边（u, v）添加到尾部来拓展一条从 s 到 v 的路径。这条路径的长度是 d[u] + w(u, v)。如果这个值比目前已知的 d[v] 的值要小，我们可以用新值来替代当前 d[v] 中的值。拓展边的操作一直运行到所有的 d[v] 都代表从 s 到 v 最短路径的花费。这个算法经过组织因而当 d[u] 达到它最终的值的时候每条边（u, v）都只被拓展一次。
+算法维护两个顶点集 S 和 Q。集合 S 保留了我们已知的所有 d[v] 的值已经是最短路径的值顶点，而集合 Q 则保留其他所有顶点。集合S初始状态为空，而后每一步都有一个顶点从 Q 移动到 S。这个被选择的顶点是 Q 中拥有最小的 d[u] 值的顶点。当一个顶点 u 从 Q 中转移到了 S 中，算法对每条外接边 (u, v) 进行拓展。</p>
+<p>算法实现如下：</p>
+<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">dijkstra</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="n">src</span><span class="p">):</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">length</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
+            <span class="n">nodes</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+        <span class="n">visited</span> <span class="o">=</span> <span class="p">[</span><span class="n">src</span><span class="p">]</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="p">{</span><span class="n">src</span><span class="p">:{</span><span class="n">src</span><span class="p">:[]}}</span>
+        <span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="n">distance_graph</span> <span class="o">=</span> <span class="p">{</span><span class="n">src</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
+        <span class="n">pre</span> <span class="o">=</span> <span class="nb">next</span> <span class="o">=</span> <span class="n">src</span>
+
+        <span class="k">while</span> <span class="n">nodes</span><span class="p">:</span>
+            <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                 <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+                    <span class="n">new_dist</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">v</span><span class="p">]</span> <span class="o">+</span> <span class="n">graph</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="n">d</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">new_dist</span> <span class="o">&lt;=</span> <span class="n">distance</span><span class="p">:</span>
+                        <span class="n">distance</span> <span class="o">=</span> <span class="n">new_dist</span>
+                        <span class="nb">next</span> <span class="o">=</span> <span class="n">d</span>
+                        <span class="n">pre</span> <span class="o">=</span> <span class="n">v</span>
+                        <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_dist</span>
+
+
+            <span class="n">path</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="nb">next</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">path</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">pre</span><span class="p">]]</span>
+            <span class="n">path</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="nb">next</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
+
+            <span class="n">distance_graph</span><span class="p">[</span><span class="nb">next</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
+
+            <span class="n">visited</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">distance_graph</span><span class="p">,</span> <span class="n">path</span>
+
+
+    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+        <span class="n">graph_list</span> <span class="o">=</span> <span class="p">[</span>   <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+
+        <span class="n">graph_dict</span> <span class="o">=</span> <span class="p">{</span>  <span class="s">&quot;s1&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">},</span>
+                        <span class="s">&quot;s2&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">},</span>
+                        <span class="s">&quot;s10&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">},</span>
+                        <span class="s">&quot;s12&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span>
+                        <span class="s">&quot;s5&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
+        <span class="p">}</span>
+
+        <span class="n">distance</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">dijkstra</span><span class="p">(</span><span class="n">graph_list</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="c">#print distance, &#39;\n&#39;, path</span>
+        <span class="n">distance</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">dijkstra</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">,</span> <span class="s">&#39;s1&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3>Floyd</h3>
+<p><a href="http://zh.wikipedia.org/wiki/Floyd-Warshall%E7%AE%97%E6%B3%95">Floyd</a>是一种计算图中所有点到其他点最短路径的算法。与Dijkstra算法相比，可以允许边值为负数。算法逻辑如下：</p>
+<p>设D_{i,j,k}为从i到j的只以(1..k)集合中的节点为中间节点的最短路径的长度。</p>
+<p>若最短路径经过点k，则D_{i,j,k}=D_{i,k,k-1}+D_{k,j,k-1}；
+若最短路径不经过点k，则D_{i,j,k}=D_{i,j,k-1}。</p>
+<p>因此，D_{i,j,k}=\mbox{min}(D_{i,j,k-1},D_{i,k,k-1}+D_{k,j,k-1})。</p>
+<p>代码实现如下：</p>
+<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">floyd</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+            <span class="n">path</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+                <span class="n">new_node</span> <span class="o">=</span> <span class="bp">None</span>
+
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">new_len</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">graph</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">graph</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">new_len</span><span class="p">:</span>
+                        <span class="n">graph</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_len</span>
+                        <span class="n">new_node</span> <span class="o">=</span> <span class="n">k</span>
+                <span class="k">if</span> <span class="n">new_node</span><span class="p">:</span>
+                    <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">new_node</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">graph</span><span class="p">,</span> <span class="n">path</span>
+
+    <span class="k">def</span> <span class="nf">floyd_dict</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
+            <span class="n">path</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">dst</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">path</span><span class="p">[</span><span class="n">src</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="p">[</span><span class="n">src</span><span class="p">,</span><span class="n">dst</span><span class="p">])</span>
+                <span class="n">new_node</span> <span class="o">=</span> <span class="bp">None</span>
+
+                <span class="k">for</span> <span class="n">mid</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">mid</span> <span class="o">==</span> <span class="n">dst</span><span class="p">:</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">new_len</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">mid</span><span class="p">]</span> <span class="o">+</span> <span class="n">graph</span><span class="p">[</span><span class="n">mid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">new_len</span><span class="p">:</span>
+                        <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_len</span>
+                        <span class="n">new_node</span> <span class="o">=</span> <span class="n">mid</span>
+                <span class="k">if</span> <span class="n">new_node</span><span class="p">:</span>
+                    <span class="n">path</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">new_node</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">graph</span><span class="p">,</span> <span class="n">path</span>
+
+
+    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+        <span class="n">ini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="n">graph_list</span> <span class="o">=</span> <span class="p">[</span>   <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+
+        <span class="n">graph_dict</span> <span class="o">=</span> <span class="p">{</span>  <span class="s">&quot;s1&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span>
+                        <span class="s">&quot;s2&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+                        <span class="s">&quot;s10&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span>
+                        <span class="s">&quot;s12&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
+        <span class="p">}</span>
+
+        <span class="c">#new_graph, path= floyd_dict(graph_dict)    </span>
+        <span class="n">new_graph</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">floyd</span><span class="p">(</span><span class="n">graph_list</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">new_graph</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\n\n\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">path</span>
+</pre></div>
+
+
+<h3>总结</h3>
+<p>这几个算法都是图论中的经典算法，会在网络应用中经常用到。然而我的实现只是最简单逻辑的实现，并没有考虑太多性能上的问题。如果需要追求性能，我想还是需要谷歌一下，或者到Github上随意挑选。获取代码可点击链接：<a href="https://github.com/muzixing/graph_algorithm">graph algorithms</a>。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html"><h2>RYU中WSGI学习笔记与RESTAPI开发</h2></a>
+        <div class= "well small"> 2015-05-13
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>另一篇博文中已经介绍如何使用RYU的RESTAPI，本篇将继续介绍相关内容，主要分为WSGI学习总结和以ofctl_rest.py为例的RESTAPI的实现与内部机制。由于第一次学习WSGI，还有许多地方不是特别理解，所学知识均来自Google。文中若有错误之处，敬请指出，谢谢。</p>
 <h3>WSGI</h3>
 <p><a href="http://zh.wikipedia.org/wiki/Web%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BD%91%E5%85%B3%E6%8E%A5%E5%8F%A3">Web服务器网关接口</a>（Python Web Server Gateway Interface，缩写为WSGI）是为Python语言定义的Web服务器和Web应用程序或框架之间的一种简单而通用的接口。为了理解WSGI，可以尝试一下的小例子。</p>
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">cgi</span> <span class="kn">import</span> <span class="n">parse_qs</span>
@@ -85,342 +345,9 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 
     <span class="k">if</span> <span class="s">&#39;subject&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
         <span class="n">subject</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s">&#39;subject&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">subject</span> <span class="o">=</span> <span class="s">&#39;World.&#39;</span>
-
-    <span class="n">start_response</span><span class="p">(</span><span class="s">&#39;200 OK&#39;</span><span class="p">,</span> <span class="p">[(</span><span class="s">&#39;Context-Type&#39;</span><span class="p">,</span> <span class="s">&#39;text/html&#39;</span><span class="p">)])</span>
-    <span class="k">return</span> <span class="p">[</span><span class="s">&#39;&#39;&#39;Hello </span><span class="si">%(subject)s</span><span class="s"></span>
-<span class="s">    Hello </span><span class="si">%(subject)s</span><span class="s">!&#39;&#39;&#39;</span> <span class="o">%</span><span class="p">{</span><span class="s">&#39;subject&#39;</span><span class="p">:</span> <span class="n">subject</span><span class="p">}]</span>
-
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">wsgiref.simple_server</span> <span class="kn">import</span> <span class="n">make_server</span>
-    <span class="n">IP</span> <span class="o">=</span> <span class="s">&#39;localhost&#39;</span>
-    <span class="n">port</span> <span class="o">=</span> <span class="mi">8080</span>
-    <span class="n">server</span> <span class="o">=</span> <span class="n">make_server</span><span class="p">(</span><span class="n">IP</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">hello_world</span><span class="p">)</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
-    <span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;wsgi&#39;</span><span class="p">)</span>
-    <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;listening on </span><span class="si">%s</span><span class="s">: </span><span class="si">%d</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">IP</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
-    <span class="n">server</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
-</pre></div>
-
-
-<p>运行之后，在浏览器地址栏输入：</p>
-<div class="highlight"><pre><span class="n">http:</span><span class="sr">//</span><span class="n">localhost:8080</span><span class="o">/</span><span class="p">?</span><span class="n">subject</span><span class="o">=</span><span class="n">muzixing</span><span class="o">.</span><span class="n">com</span>
-</pre></div>
-
-
-<p>可以观察到浏览器输出：</p>
-<div class="highlight"><pre><span class="n">Hello</span> <span class="n">muzixing</span><span class="o">.</span><span class="n">com</span>
-<span class="n">Hello</span> <span class="n">muzixing</span><span class="o">.</span><span class="n">com</span><span class="o">!</span>
-</pre></div>
-
-
-<p>在写这个小例子的时候，我遇到一个让我非常疑惑的地方，函数hello_world的参数在哪里赋值？为什么网上的例子参数都是environ和start_response，难道这两个名字是特殊的？在运行时会默认已经被赋值？经过一系列谷歌以及查看源码之后，我终于还是没有搞明白。</p>
-<p>这不科学！！</p>
-<p>于是我尝试修改一下形参的名字，果然，还是可以运行的。这验证了这并不是特殊的名字，那么只有一种可能就是在创建对象的时候，已经给赋值了。那么输出一下这两个变量的内容是不错的尝试。尝试之后发现后者是一个对象，前者是一些列的内容。这验证了谷歌出来的各种说法：environ和start_response，environ是一个字典包含了CGI中的环境变量，start_response也是一个callable，接受两个必须的参数，status（HTTP状态）和response_headers（响应消息的头）。而这个赋值过程并不需要开发者去开发，在初始化时已经完成赋值。</p>
-<p>为了进一步验证想法，找到了ryu使用的eventlet相关的文件：/usr/lib/python2.7/dist-packages/eventlet/wsgi.py。在这个文件中定义了class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler)。在该类中定义了函数： handle_one_request和handle_one_response。在handle_one_request函数中初始化了如下两个重要的内容(line:227)：</p>
-<div class="highlight"><pre>    <span class="bp">self</span><span class="o">.</span><span class="n">environ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_environ</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">application</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">app</span>
-</pre></div>
-
-
-<p>在handle_one_request函数中还调用了handle_one_response。在handle_one_response函数中，定义了函数start_response。查看代码时，终于发现了一句极为重要的语句(line:336)：</p>
-<div class="highlight"><pre>    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">application</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">)</span>
-</pre></div>
-
-
-<p>start_restart函数在这句语句之前有定义(line:316)。至此，终于明白，为什么没有给形参赋值，实际上，这都是背后的故事。</p>
-<p>wsgi.py文件中定义了Server类，用于开启一个服务端socket，处理socket通信。文件中还定义了一个重要的接口函数：server。server函数主要完成了功能是启动一个wsgi server去处理来自客户端的请求。启动之后将永久循环，直到被关闭。</p>
-<div class="highlight"><pre><span class="n">Start</span> <span class="n">up</span> <span class="n">a</span> <span class="n">wsgi</span> <span class="n">server</span> <span class="n">handling</span> <span class="n">requests</span> <span class="n">from</span> <span class="n">the</span> <span class="n">supplied</span> <span class="n">server</span>
-<span class="nb">socket</span><span class="o">.</span>  <span class="n">This</span> <span class="n">function</span> <span class="n">loops</span> <span class="n">forever</span><span class="o">.</span>  <span class="n">The</span> <span class="o">*</span><span class="n">sock</span><span class="o">*</span> <span class="n">object</span> <span class="n">will</span> <span class="n">be</span> <span class="n">closed</span> <span class="n">after</span> <span class="n">server</span> <span class="n">exits</span><span class="p">,</span>
-<span class="n">but</span> <span class="n">the</span> <span class="n">underlying</span> <span class="n">file</span> <span class="n">descriptor</span> <span class="n">will</span> <span class="n">remain</span> <span class="nb">open</span><span class="p">,</span> <span class="n">so</span> <span class="k">if</span> <span class="n">you</span> <span class="n">have</span> <span class="n">a</span> <span class="n">dup</span><span class="p">()</span> <span class="n">of</span> <span class="o">*</span><span class="n">sock</span><span class="o">*</span><span class="p">,</span>
-<span class="n">it</span> <span class="n">will</span> <span class="n">remain</span> <span class="n">usable</span><span class="o">.</span>
-</pre></div>
-
-
-<p>在RYU中，同样也有一个wsgi.py文件。该文件定义了一系列的WSGI的类，用于实现WSGI，为webapp提供支持。此外，hub.py文件中也有对应的内容，这些内容的分析将在下一小节ofctl_rest模块进行分析。</p>
-<h3>Ofctl_rest.py</h3>
-<p>在ofctl_rest.py文件中定义了class RestStatsApi(app_manager.RyuApp)和class StatsController(ControllerBase)。其中class RestStatsApi(app_manager.RyuApp)是一个RYUAPP模块，实现了 statistic相关的相关RESTAPI; class StatsController则是具体的API运行实体。class RestStatsApi(app_manager.RyuApp)部分源码如下：</p>
-<div class="highlight"><pre><span class="k">class</span> <span class="nc">RestStatsApi</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
-    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_0</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">,</span>
-                    <span class="n">ofproto_v1_2</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">,</span>
-                    <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s">&#39;dpset&#39;</span><span class="p">:</span> <span class="n">dpset</span><span class="o">.</span><span class="n">DPSet</span><span class="p">,</span>
-        <span class="s">&#39;wsgi&#39;</span><span class="p">:</span> <span class="n">WSGIApplication</span>
-    <span class="p">}</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">RestStatsApi</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dpset</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpset&#39;</span><span class="p">]</span>
-        <span class="n">wsgi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;wsgi&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">waiters</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;dpset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dpset</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;waiters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">waiters</span>
-        <span class="n">mapper</span> <span class="o">=</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">mapper</span>
-
-        <span class="n">wsgi</span><span class="o">.</span><span class="n">registory</span><span class="p">[</span><span class="s">&#39;StatsController&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="s">&#39;/stats&#39;</span>
-        <span class="n">uri</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s">&#39;/switches&#39;</span>
-</pre></div>
-
-
-<p>OFP_VERSIONS指的是支持的OpenFlow的协议版本。
-_CONTEXTS部分的内容是依赖的模块。dpset模块的DPSet类是一个RYUAPP类，会被当作一个service启动。DPSet类中主要完成了datapath链接的管理，比如dps字典内容的构建，交换机端口的信息收集，以及负责switches_features和port_status等消息的处理。具体细节，读者可自行查看/ryu/controller/dpset.py文件。wsgi模块负责完成了       请求路由的功能，相信内容直接查看wsgi.py介绍部分，此处不赘述。_CONTEXT中的'wsgi'值为WSGIApplication，所以在启动的时候需要将其作为RYU service启动。然而，这只是一个APPLICATION的类，启动WSGIServer另有玄机。很难发现到底在哪里启动了WSGIServer模块，我们只能在wsgi.py中找到一个没有被本文件使用的全局函数：start_service(app_mgr),一切线索似乎都断了。</p>
-<p>山重水复疑无路，柳暗花明又一村。</p>
-<p>这么好玩的源码解析，怎么能就这么结束了呢。从参数中我们发现app_mgr，难道！记忆深处，还记得大明湖畔的那个<a href="http://www.muzixing.com/pages/2014/12/27/ryujie-du-ofphandlercontrollerryuapphe-appmanager.html">启动函数</a>：</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    more code </span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">app_lists</span> <span class="o">=</span> <span class="n">CONF</span><span class="o">.</span><span class="n">app_lists</span> <span class="o">+</span> <span class="n">CONF</span><span class="o">.</span><span class="n">app</span>
-    <span class="c"># keep old behaivor, run ofp if no application is specified.</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">app_lists</span><span class="p">:</span>
-        <span class="n">app_lists</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">]</span>
-
-    <span class="n">app_mgr</span> <span class="o">=</span> <span class="n">AppManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span>
-    <span class="n">app_mgr</span><span class="o">.</span><span class="n">load_apps</span><span class="p">(</span><span class="n">app_lists</span><span class="p">)</span>
-    <span class="n">contexts</span> <span class="o">=</span> <span class="n">app_mgr</span><span class="o">.</span><span class="n">create_contexts</span><span class="p">()</span>
-    <span class="n">services</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">services</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">app_mgr</span><span class="o">.</span><span class="n">instantiate_apps</span><span class="p">(</span><span class="o">**</span><span class="n">contexts</span><span class="p">))</span>
-
-    <span class="n">webapp</span> <span class="o">=</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">start_service</span><span class="p">(</span><span class="n">app_mgr</span><span class="p">)</span>  <span class="o">//</span><span class="n">here</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">point</span><span class="err">!!!</span>
-    <span class="k">if</span> <span class="n">webapp</span><span class="p">:</span>
-        <span class="n">thr</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">webapp</span><span class="p">)</span>
-        <span class="n">services</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thr</span><span class="p">)</span>
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">hub</span><span class="o">.</span><span class="n">joinall</span><span class="p">(</span><span class="n">services</span><span class="p">)</span>
-    <span class="k">finally</span><span class="p">:</span>
-        <span class="n">app_mgr</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</pre></div>
-
-
-<p>从代码中可以看到，启动RYU的时候，肯定会执行wsgi.start_service()函数：</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">start_service</span><span class="p">(</span><span class="n">app_mgr</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">app_mgr</span><span class="o">.</span><span class="n">contexts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">__class__</span> <span class="o">==</span> <span class="n">WSGIApplication</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">WSGIServer</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="bp">None</span>
-</pre></div>
-
-
-<p>返回了WSGIServer(WSGIServer instance)的对象，该对象作为一个模块在RYU中得到启动。class WSGIServer类的基类是hub.WSGIServer类，终于我们找到了在hub.WSGIServer中找到了eventlet.wsgi的实例。</p>
-<div class="highlight"><pre><span class="c">#wsgi.WSGIServer</span>
-<span class="k">class</span> <span class="nc">WSGIServer</span><span class="p">(</span><span class="n">hub</span><span class="o">.</span><span class="n">WSGIServer</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">application</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">WSGIServer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">((</span><span class="n">CONF</span><span class="o">.</span><span class="n">wsapi_host</span><span class="p">,</span> <span class="n">CONF</span><span class="o">.</span><span class="n">wsapi_port</span><span class="p">),</span>
-                                         <span class="n">application</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span class="c">#hub.WSGIServer</span>
-<span class="k">class</span> <span class="nc">WSGIServer</span><span class="p">(</span><span class="n">StreamServer</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">serve_forever</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">LoggingWrapper</span><span class="p">()</span>
-        <span class="n">eventlet</span><span class="o">.</span><span class="n">wsgi</span><span class="o">.</span><span class="n">server</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
-</pre></div>
-
-
-<p>至此函数调用链终于被发现。函数调用举例：
-ofctl_rest.py模块被运行，RestStatsApi被加载之前_CONTEXT的内容被当作service加载。启动RYU时，调用wsgi.start_service函数，因为WSGIApplication放到了app_list内，所以判断WSGIApplication成功，将WSGIServer加载。至此WSGIServer和WSGIApplication以及其他模块加载完成。</p>
-<p>在WSGIApplication类中使用到了routes模块的<a href="http://routes.readthedocs.org/en/latest/introduction.html">Mapper</a>和URLGenerator,前者用于URL的路由，后者用于URL的产生。RYU运行之后，WSGIServer负责完成请求到APPlication的分发。WSGIApplication收到请求之后，通过mapper，将对应的请求分发给制定的处理函数。处理函数解析请求，并回复请求。mapper在初始化的时候，添加的connect规则如下：</p>
-<div class="highlight"><pre><span class="n">path</span><span class="o">=</span><span class="s">&#39;stats&#39;</span>
-<span class="n">uri</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s">&#39;/flow/{dpid}&#39;</span>
-<span class="n">mapper</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;stats&#39;</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span>
-               <span class="n">controller</span><span class="o">=</span><span class="n">StatsController</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&#39;get_flow_stats&#39;</span><span class="p">,</span>
-               <span class="n">conditions</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="s">&#39;POST&#39;</span><span class="p">]))</span>
-</pre></div>
-
-
-<p>映射的分类属于stats分类，或者路径为stats。uri为/stats/flow/{dpid},dpid数值将在请求中被实例化为某一数值。交给的controller是StatsController，action是该类的get_flow_stats函数，请求的类型是GET或者POST，具体种类由请求明确。get_flow_stats函数具体如下：</p>
-<div class="highlight"><pre><span class="k">def</span> <span class="nf">get_flow_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">):</span>
-
-    <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">body</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
-        <span class="n">flow</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">else</span><span class="p">:</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">flow</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
-
-        <span class="k">except</span> <span class="ne">SyntaxError</span><span class="p">:</span>
-            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;invalid syntax </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">dpid</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">dpid</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;invalid dpid </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
-
-    <span class="n">dp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dpset</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">dpid</span><span class="p">))</span>
-
-    <span class="k">if</span> <span class="n">dp</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
-
-    <span class="n">_ofp_version</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span>
-
-    <span class="n">_ofctl</span> <span class="o">=</span> <span class="n">supported_ofctl</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_ofp_version</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">_ofctl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">flows</span> <span class="o">=</span> <span class="n">_ofctl</span><span class="o">.</span><span class="n">get_flow_stats</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">waiters</span><span class="p">,</span> <span class="n">flow</span><span class="p">)</span>
-
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Unsupported OF protocol&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">501</span><span class="p">)</span>
-
-    <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">flows</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
-</pre></div>
-
-
-<p>函数获取了req之后，进行解析。先获取了flow的信息，然后在调用_ofctl.get_flow_stats(dp, self.waiters, flow)函数获取到了flow的统计信息，然后使用json格式编码，最后返回一个Response.Response是webob的模块的一个类，用于返回一个WSGI的回应。详情可以查看<a href="http://webob.readthedocs.org/en/latest/reference.html#id2">webob文档</a>。最后我们就可以在网页上查看到我们获取的信息了。</p>
-<div class="highlight"><pre><span class="n">The</span> <span class="n">webob</span><span class="o">.</span><span class="n">Response</span> <span class="n">object</span> <span class="n">contains</span> <span class="n">everything</span> <span class="n">necessary</span> <span class="n">to</span> <span class="n">make</span> <span class="n">a</span> <span class="n">WSGI</span> <span class="n">response</span><span class="o">.</span> <span class="n">Instances</span> <span class="n">of</span> <span class="n">it</span> <span class="n">are</span> <span class="n">in</span> <span class="n">fact</span> <span class="n">WSGI</span> <span class="n">applications</span><span class="p">,</span> <span class="n">but</span> <span class="n">it</span> <span class="n">can</span> <span class="n">also</span> <span class="n">represent</span> <span class="n">the</span> <span class="n">result</span> <span class="n">of</span> <span class="n">calling</span> <span class="n">a</span> <span class="n">WSGI</span> <span class="n">application</span> <span class="p">(</span><span class="n">as</span>     <span class="n">noted</span> <span class="n">in</span> <span class="n">Calling</span> <span class="n">WSGI</span> <span class="n">Applications</span><span class="p">)</span><span class="o">.</span> <span class="n">It</span> <span class="n">can</span> <span class="n">also</span> <span class="n">be</span> <span class="n">a</span> <span class="n">way</span> <span class="n">of</span> <span class="n">accumulating</span> <span class="n">a</span> <span class="n">response</span> <span class="n">in</span> <span class="n">your</span> <span class="n">WSGI</span> <span class="n">application</span><span class="o">.</span>
-</pre></div>
-
-
-<p>至此RYU中以ofctl_rest.py为例子的REST相关源码分析结束。</p>
-<h3>开发RESTAPI</h3>
-<p>本部分内容将以RYUBOOK上的一个简单案例介绍如何在RYU上开发RESTAPI。更多详细的内容大家可以点击<a href="http://osrg.github.io/ryu-book/en/html/rest_api.html">原链接</a>查看。</p>
-<div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-
-<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="kn">import</span> <span class="n">simple_switch_13</span>
-<span class="kn">from</span> <span class="nn">webob</span> <span class="kn">import</span> <span class="n">Response</span>
-<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
-<span class="kn">from</span> <span class="nn">ryu.app.wsgi</span> <span class="kn">import</span> <span class="n">ControllerBase</span><span class="p">,</span> <span class="n">WSGIApplication</span><span class="p">,</span> <span class="n">route</span>
-<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">dpid</span> <span class="k">as</span> <span class="n">dpid_lib</span>
-
-<span class="n">simple_switch_instance_name</span> <span class="o">=</span> <span class="s">&#39;simple_switch_api_app&#39;</span>
-<span class="n">url</span> <span class="o">=</span> <span class="s">&#39;/simpleswitch/mactable/{dpid}&#39;</span>
-
-<span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
-
-    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;wsgi&#39;</span><span class="p">:</span> <span class="n">WSGIApplication</span> <span class="p">}</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">wsgi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;wsgi&#39;</span><span class="p">]</span>
-        <span class="n">wsgi</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="p">{</span><span class="n">simple_switch_instance_name</span> <span class="p">:</span> <span class="bp">self</span><span class="p">})</span>
-
-    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">switch_features_handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">datapath</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="p">{})</span>
-
-    <span class="k">def</span> <span class="nf">set_mac_to_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
-        <span class="n">mac_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">)</span>
-
-        <span class="n">entry_port</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span>
-        <span class="n">entry_mac</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s">&#39;mac&#39;</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">datapath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-            <span class="k">if</span> <span class="n">entry_port</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mac_table</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-
-                <span class="k">for</span> <span class="n">mac</span><span class="p">,</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">mac_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-
-                    <span class="c"># from known device to new device</span>
-                    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">entry_port</span><span class="p">)]</span>
-                    <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">entry_mac</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
-
-                    <span class="c"># from new device to known device</span>
-                    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">)]</span>
-                    <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">entry_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">mac</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
-
-                <span class="n">mac_table</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">entry_mac</span> <span class="p">:</span> <span class="n">entry_port</span><span class="p">})</span>
-        <span class="k">return</span> <span class="n">mac_table</span>
-
-<span class="k">class</span> <span class="nc">SimpleSwitchController</span><span class="p">(</span><span class="n">ControllerBase</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">simple_switch_instance_name</span><span class="p">]</span>
-
-    <span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
-    <span class="k">def</span> <span class="nf">list_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
-        <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpid&#39;</span><span class="p">])</span>
-
-        <span class="k">if</span> <span class="n">dpid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
-
-        <span class="n">mac_table</span> <span class="o">=</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mac_table</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
-
-    <span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
-    <span class="k">def</span> <span class="nf">put_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-
-        <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
-        <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpid&#39;</span><span class="p">])</span>
-        <span class="n">new_entry</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">dpid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">mac_table</span> <span class="o">=</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">set_mac_to_port</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">new_entry</span><span class="p">)</span>
-            <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mac_table</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-</pre></div>
-
-
-<p>上述应用的代码中主要定义了两个类：SimpleSwitchRest13和SimpleSwitchController。其中SimpleSwitchRest13是SimpleSwitch13的派生类。此外，还需要启动一个WSGIApplication模块和WSGIServer模块提供服务。SimpleSwitchController类是作为WSGIApplication的controller类存在，用于实现对应的RESTAPI的内容。整个应用提供了两个RESTAPI的接口：</p>
-<ul>
-<li>
-<p>获取MAC地址表 API</p>
-<p>获取Switching hub中MAC Table的内容，并以JSON格式返回MAC：PORT内容:</p>
-</li>
-</ul>
-<div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
-<span class="k">def</span> <span class="nf">list_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</pre></div>
-
-
-<ul>
-<li>
-<p>添加MAC地址表项 API</p>
-<p>将指定的MAC：PORT信息加入到MAC Table中，同时根据更新后的MAC Table内容，添加对应的Flow enrties.</p>
-</li>
-</ul>
-<div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
-<span class="k">def</span> <span class="nf">put_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</pre></div>
-
-
-<p>对应的执行函数被route装饰器修饰，当route收取到对应的信息，如URL为：host:port/simpleswitch/mactable/{dpid}，动作类型为GET时，就会调用list_mac_table函数，返回mac_table的信息。</p>
-<h4><strong>运行验证</strong></h4>
-<ul>
-<li>将以上的代码写入yourapp.py</li>
-<li>然后使用ryu-manager运行yourapp.py</li>
-<li>启动mininet连接控制器，并pingall</li>
-<li>使用POSTMAN（或其他）下发RESTAPI请求验证。</li>
-</ul>
-<p>实验截图如下：</p>
-<p>RYU运行截图如下：</p>
-<p><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1es2fi9cv7pj20k80auwih.jpg" /></p>
-<p>POSTMAN获取信息截图如下：</p>
-<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1es2fi9n5kwj20yh0cimyj.jpg" /></p>
-<p>另一个验证不再贴图，以此类推即可。</p>
-<h3>总结</h3>
-<p>在学习RYU的过程中会接触到许多之前没有接触的技术，沉下心来认真读一读代码，越发感觉工程师在设计RYU时的精妙之处。写程序并不是逻辑的堆砌，而是一个half art, half science的存在。不仅需要追求性能上的优越，满足科学的要求，还需要注意到在实现过程中充满艺术感的设计过程。模块的划分，逻辑的抽象，以及系统结构的设计与搭建，都是非常重要的，直接影响到运行的效率。希望RYU源码分析之旅，能让我学会更多SDN的知识。当文章写得越来越偏向程序，代码分析的时候，就显得不够SDN，但是事实上，我们除了Network,以及实现SDN的OpenFlow协议以外，SDN的S也是值得学习的地方之一。希望我的学习记录能够帮助到更多的人。</p></div>
-        <hr />
-    </div>
-		
+    <span class="k">else ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -516,24 +443,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>去年的前半年我还是一个“大四狗”，面对着毕业，也面对着对未来的选择。由于在大四上的时候已经确定自己要读研究生，所以也就没有尝试找工作，现在觉得是失策了，应该趁着nothing to lose的机会好好在就业大潮中体验一下的，万一拿到一个好Offer，不读也罢。</p>
 <p>去年3月份的时候，我选择去南京未来网研究院实习，最后也在那里完成了自己的毕业设计：一个在工信部实习时就完成的项目。因为运气好，最后还获得了优秀学士毕业论文的奖项，也是毕业时意外的惊喜之一。</p>
 <p>在南京的生活和工作没有区别，唯一不同的是薪水是可怜2000。每天和学长们一起坐班车去无线谷上班，下午再一起回来。但是在一个陌生的城市工作的感觉很孤独 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/03/08/zhan-zai-shi-zi-lu-kou-de-nian.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/03/04/traffic-monitor-in-ryu.html"><h2>Traffic monitor in RYU</h2></a>
-        <div class= "well small"> 2015-03-04
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>In many scenes, we need to get the real time link bandwidth so that controller can make some decisions in time. For example, load balance, network alert and so on. This article will demostrate how to get the bandwidth of a flow or a port(flow speed or port speed ...</p> <a class="btn btn-info xsmall" href="./pages/2015/03/04/traffic-monitor-in-ryu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
