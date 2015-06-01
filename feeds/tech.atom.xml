@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/tech.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2015-05-31T00:00:00+08:00</updated><entry><title>Graph algorithms: Prim,Kruskal, Dijkstra, Floyd</title><link href="http://www.muzixing.com/pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html" rel="alternate"></link><updated>2015-05-31T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2015-05-31:pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html</id><summary type="html">&lt;p&gt;最近有了一点点空闲时间，想想以后的项目肯定是需要用到图中的路径算法，于是花了一些时间把4大经典算法实现了一遍。算法实现水平不高，时间复杂度都太高了一点。但是逻辑相对比较清晰，测试结果正确。如果读者发现算法中的问题，敬请指出，万分感谢。&lt;/p&gt;
 &lt;h3&gt;Prim&lt;/h3&gt;
-&lt;p&gt;&lt;a href="http://zh.wikipedia.org/wiki/%E6%99%AE%E6%9E%97%E5%A7%86%E7%AE%97%E6%B3%95"&gt;Prim&lt;/a&gt;算法是最小生成数算法的一种，其算法逻辑为：&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://zh.wikipedia.org/wiki/%E6%99%AE%E6%9E%97%E5%A7%86%E7%AE%97%E6%B3%95"&gt;Prim&lt;/a&gt;算法是最小生成树算法的一种，其算法逻辑为：&lt;/p&gt;
 &lt;p&gt;从单一顶点开始，普里姆算法按照以下步骤逐步扩大树中所含顶点的数目，直到遍及连通图的所有顶点。
 输入：一个加权连通图，其中顶点集合为V，边集合为E；&lt;/p&gt;
 &lt;p&gt;初始化：Vnew = {x}，其中x为集合V中的任一节点（起始点），Enew = {}；
