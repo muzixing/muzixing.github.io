@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html"><h1>Fattree topo and iperfmulti function in mininet</h1></a>
-2015-02-22
+            <a href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html"><h1>初学者的SDN学习之路</h1></a>
+2015-06-22
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,235 +72,81 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>This article will show you 1)how to build a <a href="http://ccr.sigcomm.org/online/files/p63-alfares.pdf">fattree</a> topo and 2)how to extend the iperfmulti function in mininet.</p>
-<p>本篇博文将讲述1）如何搭建fatree网络拓扑和2）如何在mininet中拓展iperfmulti功能。</p>
-<p>众所周知，数据中心是目前网络研究的一个热门领域。随着云计算的兴起与发展，会对数据中心网络提出更多的需求，也为学术研究提供了更多的课题。TE（Traffic Engineering）是网络研究中最基础的研究之一，在TE中Load balance是比较主要的研究内容之一。 然而由于数据中心网络的流量走势与传统网络不同，导致数据中心网络与传统网络的架构有所不同。在传统网络中上下行流量在总流量中占据很大比重，而相比之下，数据中心的流量分类中，横向流量的比重要远远大于传统网络架构的比重。为了更好解决数据中心网络流量问题，数据中心架构的设计就变得非常重要，在众多网络架构中，Fat-tree架构是比较出名和成功的。</p>
-<p>SDN兴起于校园网，盛开于数据中心，这是一种比较准确的描述。目前SDN的研究领域内，数据中心占据了一席之地。所以很多的研究者都试图通过在控制器开发应用以及使用mininet模拟网络来进行网络实验。博主最近也做了一个关于Fat-tree的实验，在实验过程中，碰到了许多问题，深深觉得这一方面的知识在互联网中还比较缺乏。特此记录下来，分享出去，首先是作为自己的笔记，备忘，其次也给其他同样研究这方面的同学一些帮助。我掉过的坑，我不愿意别人继续掉。</p>
-<p>科学的发展是需要许多人奠定基础，才能逐步发展。而只有分享经验，传递知识，才能让后人能站在前人的基础之上继续前进。重复劳动力在一些基础的无关紧要的环节，是整个社会资源的浪费。特此感谢乐于分享的各种网络中的老师，特别是为人十分和蔼，温和，良师益友@地球-某某老师。</p>
-<h2>Fattree topo</h2>
-<p>这个python文件最初的原型是参考了roan's Blog的博文<a href="http://roan.logdown.com/posts/191753-sdn-lab-2-use-mininet-create-fat-tree-topology">SDN Lab 2$ Use Mininet create Fat Tree Topology</a>中给出的代码。并在次基础上做了一些修改。在此感谢台湾的小伙伴的分享。</p>
-<p>在此基础上我进行了修改，可点击<a href="https://github.com/muzixing/fattree/blob/master/fattree_8_4.py">fattree源码</a>获取代码。</p>
-<h3>Fattree特征</h3>
-<p>Fattree中，K是一个很重要的参数。如K=8，则core节点个数为(K/2)^2,pod个数为K,每一个POD有K个交换机，每一个交换机有K个inter link（内部链路）。aggregation层有K^2/2=64/2=32个交换机，同理 edge也是K^2/2=32个交换机。host可以是K/2个host，也可以任意指定。在我写的脚本中，K和host density都是可以设置的参数。</p>
-<p>部分源码：</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Fattree</span><span class="p">(</span><span class="n">Topo</span><span class="p">):</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Class Fattree&quot;</span><span class="p">)</span>
-    <span class="n">CoreSwitchList</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">AggSwitchList</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">EdgeSwitchList</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">HostList</span> <span class="o">=</span> <span class="o">[]</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>  <span class="c1"># K 为fattree pod个数。 density是tor下的主机个数。</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Class Fattree init&quot;</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">pod</span> <span class="o">=</span> <span class="n">k</span> 
-        <span class="n">self</span><span class="o">.</span><span class="n">iCoreLayerSwitch</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">iAggLayerSwitch</span> <span class="o">=</span> <span class="n">k</span><span class="o">*</span><span class="n">k</span><span class="o">/</span><span class="mi">2</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">iEdgeLayerSwitch</span> <span class="o">=</span> <span class="n">k</span><span class="o">*</span><span class="n">k</span><span class="o">/</span><span class="mi">2</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">density</span> <span class="o">=</span> <span class="n">density</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">iHost</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">iEdgeLayerSwitch</span> <span class="o">*</span> <span class="n">density</span>
-
-        <span class="c1">#Init Topo</span>
-        <span class="n">Topo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">createTopo</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">createCoreLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">iCoreLayerSwitch</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">createAggLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">iAggLayerSwitch</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">createEdgeLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">iEdgeLayerSwitch</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">createHost</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">iHost</span><span class="p">)</span>
-
-    <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    Create Switch and Host</span>
-<span class="s">    &quot;&quot;&quot;</span>
-
-    <span class="n">def</span> <span class="n">_addSwitch</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">switch_list</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">number</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">PREFIX</span> <span class="o">=</span> <span class="n">str</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;00&quot;</span>
-            <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-                <span class="n">PREFIX</span> <span class="o">=</span> <span class="n">str</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;0&quot;</span>
-            <span class="n">switch_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s&#39;</span> <span class="o">+</span> <span class="n">PREFIX</span> <span class="o">+</span> <span class="n">str</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-
-    <span class="n">def</span> <span class="n">createCoreLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">NUMBER</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Create Core Layer&quot;</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_addSwitch</span><span class="p">(</span><span class="n">NUMBER</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">CoreSwitchList</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">createAggLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">NUMBER</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Create Agg Layer&quot;</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_addSwitch</span><span class="p">(</span><span class="n">NUMBER</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">AggSwitchList</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">createEdgeLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">NUMBER</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Create Edge Layer&quot;</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_addSwitch</span><span class="p">(</span><span class="n">NUMBER</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">EdgeSwitchList</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">createHost</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">NUMBER</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Create Host&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">NUMBER</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">PREFIX</span> <span class="o">=</span> <span class="s">&quot;h00&quot;</span>
-            <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-                <span class="n">PREFIX</span> <span class="o">=</span> <span class="s">&quot;h0&quot;</span>
-            <span class="n">elif</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
-                <span class="n">PREFIX</span> <span class="o">=</span> <span class="s">&quot;h&quot;</span>
-            <span class="n">self</span><span class="o">.</span><span class="n">HostList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="n">PREFIX</span> <span class="o">+</span> <span class="n">str</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-
-    <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    Add Link   createLink函数用于创建links,修改了原始版本写死的代码。</span>
-<span class="s">    &quot;&quot;&quot;</span>
-
-    <span class="n">def</span> <span class="n">createLink</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">bw_c2a</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">bw_a2e</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">bw_h2a</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Add link Core to Agg.&quot;</span><span class="p">)</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">pod</span><span class="o">/</span><span class="mi">2</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">iAggLayerSwitch</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-                    <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span>
-                        <span class="n">self</span><span class="o">.</span><span class="n">CoreSwitchList</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">end</span><span class="o">+</span><span class="n">j</span><span class="p">],</span>
-                        <span class="n">self</span><span class="o">.</span><span class="n">AggSwitchList</span><span class="p">[</span><span class="n">x</span><span class="o">+</span><span class="n">i</span><span class="p">],</span>
-                        <span class="n">bw</span><span class="o">=</span><span class="n">bw_c2a</span><span class="p">)</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Add link Agg to Edge.&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">iAggLayerSwitch</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-                    <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span>
-                        <span class="n">self</span><span class="o">.</span><span class="n">AggSwitchList</span><span class="p">[</span><span class="n">x</span><span class="o">+</span><span class="n">i</span><span class="p">],</span> <span class="n">self</span><span class="o">.</span><span class="n">EdgeSwitchList</span><span class="p">[</span><span class="n">x</span><span class="o">+</span><span class="n">j</span><span class="p">],</span>
-                        <span class="n">bw</span><span class="o">=</span><span class="n">bw_a2e</span><span class="p">)</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Add link Edge to Host.&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">iEdgeLayerSwitch</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">density</span><span class="p">):</span>
-                <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span>
-                    <span class="n">self</span><span class="o">.</span><span class="n">EdgeSwitchList</span><span class="p">[</span><span class="n">x</span><span class="p">],</span>
-                    <span class="n">self</span><span class="o">.</span><span class="n">HostList</span><span class="p">[</span><span class="n">self</span><span class="o">.</span><span class="n">density</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">i</span><span class="p">],</span>
-                    <span class="n">bw</span><span class="o">=</span><span class="n">bw_h2a</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">set_ovs_protocol_13</span><span class="p">(</span><span class="n">self</span><span class="p">,):</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_set_ovs_protocol_13</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">CoreSwitchList</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_set_ovs_protocol_13</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">AggSwitchList</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_set_ovs_protocol_13</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">EdgeSwitchList</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">_set_ovs_protocol_13</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">sw_list</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">sw</span> <span class="n">in</span> <span class="n">sw_list:</span>
-                <span class="n">cmd</span> <span class="o">=</span> <span class="s">&quot;sudo ovs-vsctl set bridge %s protocols=OpenFlow13&quot;</span> <span class="nv">%</span> <span class="nv">sw</span>
-                <span class="n">os</span><span class="o">.</span><span class="nb">system</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-
-<span class="n">def</span> <span class="n">createTopo</span><span class="p">():</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;LV1 Create Fattree&quot;</span><span class="p">)</span>
-    <span class="n">topo</span> <span class="o">=</span> <span class="n">Fattree</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-    <span class="n">topo</span><span class="o">.</span><span class="n">createTopo</span><span class="p">()</span>
-    <span class="n">topo</span><span class="o">.</span><span class="n">createLink</span><span class="p">(</span><span class="n">bw_c2a</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">bw_a2e</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">bw_h2a</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
-
-    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;LV1 Start Mininet&quot;</span><span class="p">)</span>
-    <span class="n">CONTROLLER_IP</span> <span class="o">=</span> <span class="s">&quot;127.0.0.1&quot;</span>
-    <span class="n">CONTROLLER_PORT</span> <span class="o">=</span> <span class="mi">6633</span>
-    <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">topo</span><span class="o">=</span><span class="n">topo</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">TCLink</span><span class="p">,</span> <span class="n">controller</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">autoSetMacs</span><span class="o">=</span><span class="n">True</span><span class="p">,</span>
-                  <span class="n">autoStaticArp</span><span class="o">=</span><span class="n">True</span><span class="p">)</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span>
-        <span class="s">&#39;controller&#39;</span><span class="p">,</span> <span class="n">controller</span><span class="o">=</span><span class="n">RemoteController</span><span class="p">,</span>
-        <span class="n">ip</span><span class="o">=</span><span class="n">CONTROLLER_IP</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">CONTROLLER_PORT</span><span class="p">)</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</pre></div>
-
-
-<h2>Iperfmulti function</h2>
-<p>在mininet中拓展功能的文章可参考<a href="http://richardzhao.me/">@赵伟辰</a>的博客。</p>
-<p>在mininet中增加新功能其实不难。主要分为3步：</p>
+        <div><p>Software Defined Network顾名思义软件定义网络，可以简单地分为网络和软件两个部分：软件和网络。所以本篇将从软件和网络以及OpenFlow三个方面进行介绍。在研究SDN的研究者之中，有相当大比例的网络工程师，他们了解网络，精通网络，然而却并不了解软件开发。除此之外，还有很大比例的研究者是软件工程师，他们软件开发能力出色，然而并不了解网络运作的机制，在接触SDN之前，他们的范围仅仅只是应用层，底层的东西交给全交给主机的协议栈了。还有一部分同学是像我这样，通信工程出身，学的是物理层的编码解码，误码率，电磁波。不像计算机专业那些学生一样，学习各种语言，操弄各种编译器，混迹于github这种全球最大的男性交友网站。剩下最后一种就是又懂网络，又懂编程，这种人，我一般称之为老师，是用来请教问题的，比如地球-某某老师，一般的他们不屑于看到这种文章，太low。</p>
+<p>本篇主要的目标用户是对网络和软件开发都不太了解，或者网络和编程开发只擅长一种的研究者。由于我也是一个初学者，所以仅当做经验分享吧。如有表达不对的地方，敬请指出，万分感谢。</p>
+<h2>网络</h2>
+<p>软件定义网络，如果不了解网络，那如何去定义一个你不了解的东西？如果不知道网络中存在的问题，如何使用SDN来改善？所以网络知识至关重要。然而作为一个初学者，并不需要网络各个方面都精通，也做不到，仅需学习基础知识，并选择一个研究场景即可。</p>
+<h3>计算机网络</h3>
+<p>学习网络的必修课是计算机网络。计算机网络讲述的是计算机网络的运作机制，都是极其基础重要的知识。谢希仁前辈的《计算机网络》是从底层往上层介绍，从物理层的hub到数据层的网桥和交换机，到网络层的路由器，最后讲到TCP/UDP的传输层，止于应用层，适合有通信背景的学习者。《计算机网络：自顶向下方法》则是从另一个角度出发，从应用层向下介绍，摆脱了物理层的枯燥，这样的思路更适合学习计算机出门的学习者。《CCNA学习指南》也是推荐的书籍之一，前部分内容讲解计算机网络非常简单明了，更贴近于真实网络规划，可以当做计算机网络的进阶书籍阅读。</p>
+<p>学习完计算机网络之后，学习者应该懂得二层交换、三层路由，了解到OSI七层协议栈，也了解了TCP/IP，ARP,ICMP,DNS, DHCP。作为检验标准，读者可以尝试介绍一个客户端主机和跨网段的服务器进行通信的流程。</p>
+<p>关于网络协议，只需了解主要的一两种，其他了解其作用即可，因为协议实在太多了，没有必要学完。RIP、BGP、OSPF和IS-IS需要了解。如果研究的课题与路由协议相关，则可详细学习，初期不建议深入学习。学习成果检验是对比路由协议的差异，如RIP的广播路由信息和OSPF的告知邻居。</p>
+<p>ARP,ICMP，DNS,DHCP这几种功能型报文非常重要，均需了解其工作流程，具体的报文格式，可适当了解关键字段。项目需要时再深入研究。</p>
+<p>TCP/UDP的差别需要牢记，适合的应用场景也许了解。关于TCP的状态机，建议尝试记忆，TCP的三次握手建立连接，四次握手释放连接是面试高频题。</p>
+<p>应用层的仅需了解若干常用协议如SMTP,POP3，HTTP及其对应的传输层的端口号即可。</p>
+<h3>网络场景</h3>
+<p>当学习了基础的网络知识，学习者已经具备了一定知识储备，对网络也有了基础的了解。然而现网之复杂，并不是看了一本《计算机网络》就可以了解的。网路可以按照规模分为局域网，城域网，广域网，也可以按照功能划分成接入网，传输网和核心网。当然按照场景划分就更多了。云计算网络的典型场景数据中心网络是目前研究的热门领域。以校园网为代表的园区网也是较为常见的SDN应用部署场景。跨数据中心的互连互通、WAN的研究则是研究的另一个大方向。</p>
+<p>选择一个自己喜欢的应用场景，进行深入研究，并根据需求学习相关知识，会大大提高学习的效率。比如我选择学习数据中心网络，所以我需要学习一些云计算的知识，需要了解数据中心中的网络架构。我推荐《腾云：云计算和大数据时代的网络技术揭秘》作为云计算网络知识的科普书籍。书中介绍了很多有用的知识，包括云计算的起源，云计算和网络的关系，网络安全，以及数据中心网络中的一些关键网络技术。读完你应该了解到什么是TOR和EOR，知道了刀片服务器，了解到VN-TAG是用来标识虚拟机到TOR的流量的，了解到VXLAN和NVGRE的作用，了解到交换机还可以组装的，除了OVS之外还有NEXUS 1000v等产品。读完这本书，能对现网的一些技术，以及产品有一些科普性质的了解，对后续深入学习研究有很大帮助。</p>
+<p>相信有了前面计算机网络知识作为铺垫，再选定一个特定的研究场景，网络方面的学习已经不成问题。</p>
+<h2>软件开发</h2>
+<p>软件开发是SDN学习中另一个重要方面，这方面我同样不是行家，我也是新手，所以一下言论仅当做自己的经验介绍。</p>
+<h3>选择一门语言，选择一个控制器</h3>
+<p>根据自己的喜好，选择一门语言，然后根据语言，选择一个对应的控制器，这是开发的第一步。如我自己，在折腾了C/C++,Java,Python之后，最终还是皈依到了Python大法的旗下。根据Python语言，我选择了由Python语言写的POX。POX无需安装，直接可以运行。同时，POX代码简单，初学者只需阅读pox/forwarding文件夹下的代码即可。</p>
+<p>根据我们已有的网络知识，我们基本可以看懂pox/forwarding文件夹下的程序逻辑。以l2_learning.py为例，该文件完成了一个简单的二层交换的应用，其逻辑为：记录MAC地址和Port的对应关系，转发时，查询MactoPort表，若查询成功，则转发，若失败则泛洪。后来RYU出现了，封装更好的，性能更好的RYU成为了我的首选。</p>
+<p>在编程的过程中，需要进行程序设计，其中设计的算法以及数据结构的知识在这里不多介绍，有兴趣的读者可以自行学习。</p>
+<h3>以项目为导向，先写起来</h3>
+<p>阅读源码需要有明确的目的性。最开始可以先尝试读一些简单的如Simple switch之类的代码，掌握一些简单的API的使用，理解基础的内容，然后再进行深入的源码阅读。</p>
+<p>在进一步学习SDN开发时，建议以项目为导向，先写起来，在尝试中去解决问题。在写的过程中遇到问题再去查看源码找关键点，如此一来学习非常有效率，且学到的东西很快就可以用上，学习效果好。特别是在OpenFlow协议已经经过多个版本的扩张，目前内容已经非常多的情况下，选择性学习能帮助你降低学习的压力，提高学习的效率。</p>
+<p>时间充裕的情况下，你可以选择好好阅读那些你认为重要的代码。比我在经历了多个APP开发之后，我觉得我需要好好了解一下RYU的内部机制了。所以我花了三天，把从底层socket到协议解析，到事件分发到handler注册的代码认真看了一遍，收益颇多。</p>
+<h3>学会Debug</h3>
+<p>写程序容易，调程序难。掌握正确的调试方法能大大提高开发的效率。</p>
+<p>为提高调试的效率，在程序设计的时候就需要非常注意。写程序时需要注意程序的设计，比如成端的逻辑尽可能写成函数；一个函数不得过长，最好别超过一个屏幕的行数；尽可能模块化地编程，可以提高代码的重用率，将错误域缩小到某模块，某函数，容易定位错误。在调试的过程中，控制变量的思维方式可以大大提升效率。其他编码风格方面的要求，建议按照google的PEP8风格进行代码编写。</p>
+<p>对操作系统的熟悉和理解也将大大提高开发效率。熟悉Linux的基本操作是必须的，如果不清楚，你可能需要自学一下linux和shell。在调试的过程中，错误显示一般是英文，所以能读懂错误信息，并学会谷歌是一项必备的技能。一般的问题谷歌都可以解决。另外，加几个SDN的技术群也是提高DEBUG效率的一个重要手段。</p>
+<p>关于开发的建议还有，构建一套适合自己的、高效的开发环境，以及做好版本控制。比如我自己，我只用sublime编译器，编译运行和调试都直接在终端中进行。版本控制使用git。版本控制的重要性不许赘述，详情谷歌。</p>
+<h3>OpenFlow</h3>
+<p>目前应用最广泛的SDN实现协议:OpenFlow,是学习SDN中必须要学的核心内容。在设计一个SDN的应用时，需要以下的步骤：</p>
 <ul>
-<li>修改net.py增加函数实体；</li>
-<li>修改cli.py，增加对应do_function函数，用于命令解析；</li>
-<li>修改mn函数，用于声明命令。 </li>
+<li>明确网络应用的逻辑</li>
+<li>明确对应的操作所采用的OpenFlow报文</li>
+<li>根据应用逻辑以及OpenFlow协议进行编程开发</li>
 </ul>
-<p>net.py和cli.py均在mininet/mininet目录，mn文件在在mininet/bin目录中。</p>
-<h3>修改net.py</h3>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">iperf_single</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span><span class="n">hosts</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">udpBw</span><span class="o">=</span><span class="s">&#39;10M&#39;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5001</span><span class="p">):</span>
-        <span class="s">&quot;&quot;&quot;Run iperf between two hosts using UDP.</span>
-<span class="s">           hosts: list of hosts; if None, uses opposite hosts</span>
-<span class="s">           returns: results two-element array of server and client speeds&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">hosts:</span>
-            <span class="k">return</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">assert</span> <span class="n">len</span><span class="p">(</span> <span class="n">hosts</span> <span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
-        <span class="n">client</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">hosts</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="s">&#39;.out&#39;</span>
-        <span class="n">output</span><span class="p">(</span> <span class="s">&#39;*** Iperf: testing bandwidth between &#39;</span> <span class="p">)</span>
-        <span class="n">output</span><span class="p">(</span> <span class="s">&quot;%s and %s\n&quot;</span> <span class="nv">%</span> <span class="err">(</span> <span class="nv">client</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">server</span><span class="o">.</span><span class="n">name</span> <span class="p">)</span> <span class="p">)</span>
-        <span class="n">iperfArgs</span> <span class="o">=</span> <span class="s">&#39;iperf -u &#39;</span>
-        <span class="n">bwArgs</span> <span class="o">=</span> <span class="s">&#39;-b &#39;</span> <span class="o">+</span> <span class="n">udpBw</span> <span class="o">+</span> <span class="s">&#39; &#39;</span>
-        <span class="k">print</span> <span class="s">&quot;***start server***&quot;</span>
-        <span class="n">server</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span> <span class="n">iperfArgs</span> <span class="o">+</span> <span class="s">&#39;-s&#39;</span> <span class="o">+</span> <span class="s">&#39; &gt; /home/muzi/log/&#39;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s">&#39;&amp;&#39;</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&quot;***start client***&quot;</span>
-        <span class="n">client</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span>
-            <span class="n">iperfArgs</span> <span class="o">+</span> <span class="s">&#39;-t &#39;</span><span class="o">+</span> <span class="n">str</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; -c &#39;</span> <span class="o">+</span> <span class="n">server</span><span class="o">.</span><span class="n">IP</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">bwArgs</span>
-            <span class="o">+</span><span class="s">&#39; &gt; /home/muzi/log/&#39;</span> <span class="o">+</span> <span class="s">&#39;client&#39;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span><span class="s">&#39;&amp;&#39;</span><span class="p">)</span>
-
-<span class="n">def</span> <span class="n">iperfMulti</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">bw</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-    <span class="n">base_port</span> <span class="o">=</span> <span class="mi">5001</span>
-    <span class="n">server_list</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">client_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">hosts</span><span class="p">]</span>
-    <span class="n">host_list</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">host_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">hosts</span><span class="p">]</span>
-
-    <span class="n">cli_outs</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">ser_outs</span> <span class="o">=</span> <span class="o">[]</span>
-
-    <span class="n">_len</span> <span class="o">=</span> <span class="n">len</span><span class="p">(</span><span class="n">host_list</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">_len</span><span class="p">):</span>
-        <span class="n">client</span> <span class="o">=</span> <span class="n">host_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">server</span> <span class="o">=</span> <span class="n">client</span>
-        <span class="k">while</span><span class="p">(</span> <span class="n">server</span> <span class="o">==</span> <span class="n">client</span> <span class="p">):</span>
-            <span class="n">server</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">host_list</span><span class="p">)</span> 
-        <span class="n">server_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">iperf_single</span><span class="p">(</span><span class="n">hosts</span> <span class="o">=</span> <span class="p">[</span><span class="n">client</span><span class="p">,</span> <span class="n">server</span><span class="p">],</span> <span class="n">udpBw</span><span class="o">=</span><span class="n">bw</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span> <span class="n">period</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">base_port</span><span class="p">)</span>
-        <span class="nb">sleep</span><span class="p">(</span><span class="mf">.05</span><span class="p">)</span>
-        <span class="n">base_port</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">hosts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">&#39;ping -c10&#39;</span><span class="o">+</span> <span class="n">self</span><span class="o">.</span><span class="n">hosts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">IP</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39; &gt; /home/muzi/log/delay.out&#39;</span><span class="p">)</span>
-    <span class="nb">sleep</span><span class="p">(</span><span class="n">period</span><span class="p">)</span>
-</pre></div>
-
-
-<p>以上代码完成iperfmulti函数实现：随机选取SC对，并进行iperf 打流。</p>
-<h3>修改cli.py</h3>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">do_iperfmulti</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">line</span> <span class="p">):</span>
-    <span class="s">&quot;&quot;&quot;Multi iperf UDP test between nodes&quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="nb">split</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">udpBw</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span> <span class="mi">0</span> <span class="p">]</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">mn</span><span class="o">.</span><span class="n">iperfMulti</span><span class="p">(</span><span class="n">udpBw</span><span class="p">)</span>
-    <span class="n">elif</span> <span class="n">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">udpBw</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span> <span class="mi">0</span> <span class="p">]</span>
-        <span class="n">period</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span> <span class="mi">1</span> <span class="p">]</span>
-        <span class="n">err</span> <span class="o">=</span> <span class="n">False</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">mn</span><span class="o">.</span><span class="n">iperfMulti</span><span class="p">(</span><span class="n">udpBw</span><span class="p">,</span> <span class="n">float</span><span class="p">(</span><span class="n">period</span><span class="p">))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">error</span><span class="p">(</span><span class="s">&#39;invalid number of args: iperfmulti udpBw \n&#39;</span> <span class="o">+</span>
-               <span class="s">&#39;udpBw examples: 1M\n&#39;</span><span class="p">)</span>
-</pre></div>
-
-
-<h3>修改mn</h3>
-<p>在mininet/bin目录下修改mn文件，将iperfmulti加入到对应的列表中。</p>
-<div class="highlight"><pre><span class="c1"># optional tests to run</span>
-<span class="n">TESTS</span> <span class="o">=</span> <span class="p">[</span> <span class="s">&#39;cli&#39;</span><span class="p">,</span> <span class="s">&#39;build&#39;</span><span class="p">,</span> <span class="s">&#39;pingall&#39;</span><span class="p">,</span> <span class="s">&#39;pingpair&#39;</span><span class="p">,</span> <span class="s">&#39;iperf&#39;</span><span class="p">,</span> <span class="s">&#39;all&#39;</span><span class="p">,</span> <span class="s">&#39;iperfudp&#39;</span><span class="p">,</span>
-          <span class="s">&#39;none&#39;</span><span class="err">，</span><span class="s">&#39;iperfmulti&#39;</span> <span class="p">]</span>
-
-<span class="n">ALTSPELLING</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;pingall&#39;</span><span class="p">:</span> <span class="s">&#39;pingAll&#39;</span><span class="p">,</span>
-                <span class="s">&#39;pingpair&#39;</span><span class="p">:</span> <span class="s">&#39;pingPair&#39;</span><span class="p">,</span>
-                <span class="s">&#39;iperfudp&#39;</span><span class="p">:</span> <span class="s">&#39;iperfUdp&#39;</span><span class="p">,</span>
-                <span class="s">&#39;iperfUDP&#39;</span><span class="p">:</span> <span class="s">&#39;iperfUdp&#39;</span><span class="p">,</span>
-                <span class="s">&#39;iperfmulti&#39;</span><span class="p">:</span> <span class="s">&#39;iperfmulti&#39;</span><span class="p">}</span>
-</pre></div>
-
-
-<h3>重新安装mininet</h3>
-<p>进入mininet/util目录，输入以下命令重新编译安装mininet core:</p>
-<div class="highlight"><pre><span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">n</span>
-</pre></div>
-
-
-<p>重启mininet，输入iperf，可使用table补全iperfmulti，从而可使用iperfmulti进行测试。</p>
+<p>比如一个简单的二层交换机，首先我们明确了他的运作机理是MAC学习和转发，然后明确转发所需要使用的OpenFlow报文是:packet_out和Flow_mod，最后根据应用逻辑以及OpenFlow协议对应的报文，进行编程开发。</p>
+<p>所以我们可以知道OpenFlow在SDN应用中的重要性。</p>
+<p>OpenFlow经过这几年的发展已经从1.0版本发展到了1.5版本，初学者在学习的时候需要注意顺序。建议先学习OF1.0版本，再学习OF1.3版本，更高版本根据需要进行学习。</p>
+<p>OpenFlow1.0版本是OpenFlow火起来时的第一个版本，其内容并不多，Match域仅有12个字段，动作种类也不多，同时也是单流表。对于初学者而言，学习1.0版本可以大大降低学习压力，掌握OpenFlow核心内容。在正确理解SDN，以及可以使用OpenFlow1.0协议开发SDN应用之后，可尝试学习1.3版本协议。1.3版本较1.0版本内容大幅增加。经过几个版本的迭代，OpenFlow1.3版本协议已经有了三种表：</p>
+<ul>
+<li>flow table</li>
+<li>group table</li>
+<li>meter table</li>
+</ul>
+<p>动作种类也得到了拓展，多流表的概念也变得成熟，Match匹配域已经多达几十个，所以这时OpenFlow已经将Match域分成几类,并以OXM的形式呈现出来。多控制器写作的概念在1.3版本中也已经相当成熟。</p>
+<p>OpenFlow1.3版本为SDN应用开发提供了很多便捷，开发人员可以利用多流表，设计更多复杂的应用逻辑。作为一个比较稳定的版本，1.3版本成为继1.0版本之后控制器支持最多的版本，所以此版本是SDN学习者应该要学习的。</p>
 <h2>总结</h2>
-<p>在做实验的过程中，遇到了很多问题，也学会了很多。学会了谷歌找资料，学会了给论文作者发邮件，也学会了如何协同工作。特别是协同工作这一点，以前写代码，做实验都是自己来，没有明确定义的接口，也更没有分工合作，版本管理也是自己随意定。在这个实验过程中，不仅学到了很多知识，更重要的是学会了和小伙伴北邮-张歌的相处，团队协作是一个非常重要的能力，我将在未来的日子里继续努力学习和提高这方面的能力。希望他的<a href="http://www.zhangge208.com/">博客</a>能慢慢写起来，以后一起做更多好玩有用的实验。</p></div>
+<p>SDN学习与其他研究方向相比，要求较高，需要了解软件开发以及网络，学习起来，并不太容易。同样作为初学者，我从大三开始接触，有幸有学长带着入门，再后来由于网络知识的缺陷，一度陷入不知道做什么的状态。恶补了网络知识之后，才慢慢走上正轨。然后最近我又遇到了编程上的难题，急需恶补，急需努力提升自己的开发能力。本篇学习笔记，是几年来学习的粗略总结，希望对SDN初学者有帮助。</p>
+<p>最后，兴趣是最好的老师，如果你喜欢SDN这个方向，就会学得很快，比如最近一个学弟兼老乡北邮-毛健炜就进步飞快。如果在学习的过程中没有成就感，没有乐趣，也可以试试别的方向，做自己喜欢的事最重要。</p></div>
         <hr />
     </div>
 		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html"><h2>Fattree topo and iperfmulti function in mininet</h2></a>
+        <div class= "well small"> 2015-02-22
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>This article will show you 1)how to build a <a href="http://ccr.sigcomm.org/online/files/p63-alfares.pdf">fattree</a> topo and 2)how to extend the iperfmulti function in mininet.</p>
+<p>本篇博文将讲述1）如何搭建fatree网络拓扑和2）如何在mininet中拓展iperfmulti功能。</p>
+<p>众所周知，数据中心是目前网络研究的一个热门领域。随着云计算的兴起与发展，会对数据中心网络提出更多的需求，也为学术研究提供了更多的课题。TE（Traffic Engineering）是网络研究中最基础的研究之一，在TE中Load balance是比较主要的研究内容之一。 然而由于数据中心网络的流量走势与传统网络不同，导致数据中心网络与传统网络的架构有所不同。在传统网络中上下行流量在总流量中占据很大比重，而相比之下，数据中心的流量分类中，横向流量的比重要远远大于传统网络架构的比重。为了更好解决数据中心网络流量问题，数据中心架构的设计就变得非常重要，在众多网络架构中，Fat-tree架构是比较出名和成功的。</p>
+<p>SDN兴起于校园网，盛开于数据中心，这是一种比较准确的描述。目前SDN的研究领域内 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -381,60 +227,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="s">                          host4</span>
 
 <span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"><h2>基于SDN的RYU应用——ARP_PROXY</h2></a>
-        <div class= "well small"> 2014-10-19
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>在传统网络中，存在着一定的广播流量，占据了一部分的网络带宽。同时，在有环的拓扑中，如果不运行某些协议，广播数据还会引起网络风暴，使网络瘫痪。传统的解决方案是运行STP（生成树协议），来解决环路带来的风暴隐患。但是这样的难题在SDN之后，解决起来似乎变得要简单一些。本文将介绍如何在控制器RYU上开发ARP代理模块，用于代理回复ARP请求，以及解决环状拓扑风暴的问题。</p>
-<h3>算法逻辑</h3>
-<p>具体的算法流程图如下：</p>
-<div class="highlight"><pre>packet_in
-    <span class="o">|</span>
-    <span class="o">|</span>
-  ARP learning
-  MAC_to_Port learning
-    <span class="o">|</span>
-    <span class="o">|</span>
-    <span class="o">|</span>               No  
-Multicast? <span class="o">--------------------------------------------&gt;|</span>
-    <span class="o">|</span>                                                   <span class="o">|</span>
-    <span class="o">|</span> Yes                                               <span class="o">|</span>
-    <span class="o">|</span>                                                   <span class="o">|</span>
-    <span class="o">|</span>                                                   <span class="o">|</span>
-    <span class="o">|</span>      No                                           <span class="o">|</span>
-   loop? <span class="o">-----&gt;</span><span class="p">(</span>dpid<span class="p">,</span>eth_src<span class="p">,</span>dst_ip<span class="p">)</span>learning            <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>               No              <span class="o">|</span>         No
-    <span class="o">|</span>Yes        dst_ip in arp_table? <span class="o">-------&gt;</span>dst in mac_to_port? <span class="o">----&gt;</span>Flood
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>Yes                            <span class="o">|</span>Yes            <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-   drop             ARP_REPLY                       flow_mod            <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-    <span class="o">|&lt;------------------|&lt;------------------------------|&lt;--------------|</span>               
-    <span class="o">|</span>
-    <span class="o">|</span>
-    end
-</pre></div>
-
-
-<h3>解决环路风暴 ...</h3> <a class="btn btn-info xsmall" href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

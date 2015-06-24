@@ -62,6 +62,60 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"><h2>基于SDN的RYU应用——ARP_PROXY</h2></a>
+        <div class= "well small"> 2014-10-19
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>在传统网络中，存在着一定的广播流量，占据了一部分的网络带宽。同时，在有环的拓扑中，如果不运行某些协议，广播数据还会引起网络风暴，使网络瘫痪。传统的解决方案是运行STP（生成树协议），来解决环路带来的风暴隐患。但是这样的难题在SDN之后，解决起来似乎变得要简单一些。本文将介绍如何在控制器RYU上开发ARP代理模块，用于代理回复ARP请求，以及解决环状拓扑风暴的问题。</p>
+<h3>算法逻辑</h3>
+<p>具体的算法流程图如下：</p>
+<div class="highlight"><pre>packet_in
+    <span class="o">|</span>
+    <span class="o">|</span>
+  ARP learning
+  MAC_to_Port learning
+    <span class="o">|</span>
+    <span class="o">|</span>
+    <span class="o">|</span>               No  
+Multicast? <span class="o">--------------------------------------------&gt;|</span>
+    <span class="o">|</span>                                                   <span class="o">|</span>
+    <span class="o">|</span> Yes                                               <span class="o">|</span>
+    <span class="o">|</span>                                                   <span class="o">|</span>
+    <span class="o">|</span>                                                   <span class="o">|</span>
+    <span class="o">|</span>      No                                           <span class="o">|</span>
+   loop? <span class="o">-----&gt;</span><span class="p">(</span>dpid<span class="p">,</span>eth_src<span class="p">,</span>dst_ip<span class="p">)</span>learning            <span class="o">|</span>
+    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>
+    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>
+    <span class="o">|</span>                   <span class="o">|</span>               No              <span class="o">|</span>         No
+    <span class="o">|</span>Yes        dst_ip in arp_table? <span class="o">-------&gt;</span>dst in mac_to_port? <span class="o">----&gt;</span>Flood
+    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
+    <span class="o">|</span>                   <span class="o">|</span>Yes                            <span class="o">|</span>Yes            <span class="o">|</span>
+    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
+   drop             ARP_REPLY                       flow_mod            <span class="o">|</span>
+    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
+    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
+    <span class="o">|&lt;------------------|&lt;------------------------------|&lt;--------------|</span>               
+    <span class="o">|</span>
+    <span class="o">|</span>
+    end
+</pre></div>
+
+
+<h3>解决环路风暴 ...</h3> <a class="btn btn-info xsmall" href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html"><h2>Opendaylight中开发模块Ping</h2></a>
         <div class= "well small"> 2014-08-06
 
@@ -162,25 +216,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <div class="highlight"><pre><span class="o">\</span><span class="c1">#!/usr/bin/python</span>
 <span class="s">&quot;&quot;&quot;</span>
 <span class="s">    This is a topu of our test. It shows that how to add an ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html"><h2>SDN的初步认识</h2></a>
-        <div class= "well small"> 2013-12-24
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>（习惯性乱扯两句，可跳过）一年之前第一次接触SDN的时候，我甚至连pox的发音都发不对。第一次看OF1.0spec的时候，更是不懂secure channel到底是什么概念，Datapath一样是云里雾里。我不知道流是一个什么概念，不知道SDN如何DN，我只是觉得，我可能会比较喜欢IP这一方面的东西，具体哪一方面我也不知道。但是无所谓啊，我还年轻，我有选择的机会。抱着试一试的态度，去学习了SDN的一些知识，慢慢地就喜欢上了。不仅仅是因为知识本身，更是因为当我获得成功时刻的成就感与自豪感，让我觉得我愿意去做这件事情！一年之后，我写过Openflow协议通信流程的教程，画过所有Openflow协议的数据结构，写完自己的一个控制器，还写了一边关于如何编写控制器的教程，懂得怎么使用mininet搭建自定义的拓扑，懂得使用spirent testcenter去打流测试，懂得pox是如何运作的，等等。我甚至可以去教一些新手一些关于SDN的技术，但是，当我想要写点东西的时候，我却突然发现，我不知道什么是SDN！我并不清楚SDN是从何而来，不知道SDN发展历程，不知道SDN目前面临的问题，不明白SDN的现状到底什么状态，不知道SDN的未来有什么前景。我只知道一些具体的技术细节，也许对于一个本科生已经不错了。但是这也正是我们本科生的弱点所在吧。缺少大局观，目光不够长远，对知识的掌握更倾向于操作而非原理 ...</p> <a class="btn btn-info xsmall" href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

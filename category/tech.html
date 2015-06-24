@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html"><h1>Graph algorithms: Prim,Kruskal, Dijkstra, Floyd</h1></a>
-2015-05-31
+            <a href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html"><h1>初学者的SDN学习之路</h1></a>
+2015-06-22
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,76 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>最近有了一点点空闲时间，想想以后的项目肯定是需要用到图中的路径算法，于是花了一些时间把4大经典算法实现了一遍。算法实现水平不高，时间复杂度都太高了一点。但是逻辑相对比较清晰，测试结果正确。如果读者发现算法中的问题，敬请指出，万分感谢。</p>
+        <div><p>Software Defined Network顾名思义软件定义网络，可以简单地分为网络和软件两个部分：软件和网络。所以本篇将从软件和网络以及OpenFlow三个方面进行介绍。在研究SDN的研究者之中，有相当大比例的网络工程师，他们了解网络，精通网络，然而却并不了解软件开发。除此之外，还有很大比例的研究者是软件工程师，他们软件开发能力出色，然而并不了解网络运作的机制，在接触SDN之前，他们的范围仅仅只是应用层，底层的东西交给全交给主机的协议栈了。还有一部分同学是像我这样，通信工程出身，学的是物理层的编码解码，误码率，电磁波。不像计算机专业那些学生一样，学习各种语言，操弄各种编译器，混迹于github这种全球最大的男性交友网站。剩下最后一种就是又懂网络，又懂编程，这种人，我一般称之为老师，是用来请教问题的，比如地球-某某老师，一般的他们不屑于看到这种文章，太low。</p>
+<p>本篇主要的目标用户是对网络和软件开发都不太了解，或者网络和编程开发只擅长一种的研究者。由于我也是一个初学者，所以仅当做经验分享吧。如有表达不对的地方，敬请指出，万分感谢。</p>
+<h2>网络</h2>
+<p>软件定义网络，如果不了解网络，那如何去定义一个你不了解的东西？如果不知道网络中存在的问题，如何使用SDN来改善？所以网络知识至关重要。然而作为一个初学者，并不需要网络各个方面都精通，也做不到，仅需学习基础知识，并选择一个研究场景即可。</p>
+<h3>计算机网络</h3>
+<p>学习网络的必修课是计算机网络。计算机网络讲述的是计算机网络的运作机制，都是极其基础重要的知识。谢希仁前辈的《计算机网络》是从底层往上层介绍，从物理层的hub到数据层的网桥和交换机，到网络层的路由器，最后讲到TCP/UDP的传输层，止于应用层，适合有通信背景的学习者。《计算机网络：自顶向下方法》则是从另一个角度出发，从应用层向下介绍，摆脱了物理层的枯燥，这样的思路更适合学习计算机出门的学习者。《CCNA学习指南》也是推荐的书籍之一，前部分内容讲解计算机网络非常简单明了，更贴近于真实网络规划，可以当做计算机网络的进阶书籍阅读。</p>
+<p>学习完计算机网络之后，学习者应该懂得二层交换、三层路由，了解到OSI七层协议栈，也了解了TCP/IP，ARP,ICMP,DNS, DHCP。作为检验标准，读者可以尝试介绍一个客户端主机和跨网段的服务器进行通信的流程。</p>
+<p>关于网络协议，只需了解主要的一两种，其他了解其作用即可，因为协议实在太多了，没有必要学完。RIP、BGP、OSPF和IS-IS需要了解。如果研究的课题与路由协议相关，则可详细学习，初期不建议深入学习。学习成果检验是对比路由协议的差异，如RIP的广播路由信息和OSPF的告知邻居。</p>
+<p>ARP,ICMP，DNS,DHCP这几种功能型报文非常重要，均需了解其工作流程，具体的报文格式，可适当了解关键字段。项目需要时再深入研究。</p>
+<p>TCP/UDP的差别需要牢记，适合的应用场景也许了解。关于TCP的状态机，建议尝试记忆，TCP的三次握手建立连接，四次握手释放连接是面试高频题。</p>
+<p>应用层的仅需了解若干常用协议如SMTP,POP3，HTTP及其对应的传输层的端口号即可。</p>
+<h3>网络场景</h3>
+<p>当学习了基础的网络知识，学习者已经具备了一定知识储备，对网络也有了基础的了解。然而现网之复杂，并不是看了一本《计算机网络》就可以了解的。网路可以按照规模分为局域网，城域网，广域网，也可以按照功能划分成接入网，传输网和核心网。当然按照场景划分就更多了。云计算网络的典型场景数据中心网络是目前研究的热门领域。以校园网为代表的园区网也是较为常见的SDN应用部署场景。跨数据中心的互连互通、WAN的研究则是研究的另一个大方向。</p>
+<p>选择一个自己喜欢的应用场景，进行深入研究，并根据需求学习相关知识，会大大提高学习的效率。比如我选择学习数据中心网络，所以我需要学习一些云计算的知识，需要了解数据中心中的网络架构。我推荐《腾云：云计算和大数据时代的网络技术揭秘》作为云计算网络知识的科普书籍。书中介绍了很多有用的知识，包括云计算的起源，云计算和网络的关系，网络安全，以及数据中心网络中的一些关键网络技术。读完你应该了解到什么是TOR和EOR，知道了刀片服务器，了解到VN-TAG是用来标识虚拟机到TOR的流量的，了解到VXLAN和NVGRE的作用，了解到交换机还可以组装的，除了OVS之外还有NEXUS 1000v等产品。读完这本书，能对现网的一些技术，以及产品有一些科普性质的了解，对后续深入学习研究有很大帮助。</p>
+<p>相信有了前面计算机网络知识作为铺垫，再选定一个特定的研究场景，网络方面的学习已经不成问题。</p>
+<h2>软件开发</h2>
+<p>软件开发是SDN学习中另一个重要方面，这方面我同样不是行家，我也是新手，所以一下言论仅当做自己的经验介绍。</p>
+<h3>选择一门语言，选择一个控制器</h3>
+<p>根据自己的喜好，选择一门语言，然后根据语言，选择一个对应的控制器，这是开发的第一步。如我自己，在折腾了C/C++,Java,Python之后，最终还是皈依到了Python大法的旗下。根据Python语言，我选择了由Python语言写的POX。POX无需安装，直接可以运行。同时，POX代码简单，初学者只需阅读pox/forwarding文件夹下的代码即可。</p>
+<p>根据我们已有的网络知识，我们基本可以看懂pox/forwarding文件夹下的程序逻辑。以l2_learning.py为例，该文件完成了一个简单的二层交换的应用，其逻辑为：记录MAC地址和Port的对应关系，转发时，查询MactoPort表，若查询成功，则转发，若失败则泛洪。后来RYU出现了，封装更好的，性能更好的RYU成为了我的首选。</p>
+<p>在编程的过程中，需要进行程序设计，其中设计的算法以及数据结构的知识在这里不多介绍，有兴趣的读者可以自行学习。</p>
+<h3>以项目为导向，先写起来</h3>
+<p>阅读源码需要有明确的目的性。最开始可以先尝试读一些简单的如Simple switch之类的代码，掌握一些简单的API的使用，理解基础的内容，然后再进行深入的源码阅读。</p>
+<p>在进一步学习SDN开发时，建议以项目为导向，先写起来，在尝试中去解决问题。在写的过程中遇到问题再去查看源码找关键点，如此一来学习非常有效率，且学到的东西很快就可以用上，学习效果好。特别是在OpenFlow协议已经经过多个版本的扩张，目前内容已经非常多的情况下，选择性学习能帮助你降低学习的压力，提高学习的效率。</p>
+<p>时间充裕的情况下，你可以选择好好阅读那些你认为重要的代码。比我在经历了多个APP开发之后，我觉得我需要好好了解一下RYU的内部机制了。所以我花了三天，把从底层socket到协议解析，到事件分发到handler注册的代码认真看了一遍，收益颇多。</p>
+<h3>学会Debug</h3>
+<p>写程序容易，调程序难。掌握正确的调试方法能大大提高开发的效率。</p>
+<p>为提高调试的效率，在程序设计的时候就需要非常注意。写程序时需要注意程序的设计，比如成端的逻辑尽可能写成函数；一个函数不得过长，最好别超过一个屏幕的行数；尽可能模块化地编程，可以提高代码的重用率，将错误域缩小到某模块，某函数，容易定位错误。在调试的过程中，控制变量的思维方式可以大大提升效率。其他编码风格方面的要求，建议按照google的PEP8风格进行代码编写。</p>
+<p>对操作系统的熟悉和理解也将大大提高开发效率。熟悉Linux的基本操作是必须的，如果不清楚，你可能需要自学一下linux和shell。在调试的过程中，错误显示一般是英文，所以能读懂错误信息，并学会谷歌是一项必备的技能。一般的问题谷歌都可以解决。另外，加几个SDN的技术群也是提高DEBUG效率的一个重要手段。</p>
+<p>关于开发的建议还有，构建一套适合自己的、高效的开发环境，以及做好版本控制。比如我自己，我只用sublime编译器，编译运行和调试都直接在终端中进行。版本控制使用git。版本控制的重要性不许赘述，详情谷歌。</p>
+<h3>OpenFlow</h3>
+<p>目前应用最广泛的SDN实现协议:OpenFlow,是学习SDN中必须要学的核心内容。在设计一个SDN的应用时，需要以下的步骤：</p>
+<ul>
+<li>明确网络应用的逻辑</li>
+<li>明确对应的操作所采用的OpenFlow报文</li>
+<li>根据应用逻辑以及OpenFlow协议进行编程开发</li>
+</ul>
+<p>比如一个简单的二层交换机，首先我们明确了他的运作机理是MAC学习和转发，然后明确转发所需要使用的OpenFlow报文是:packet_out和Flow_mod，最后根据应用逻辑以及OpenFlow协议对应的报文，进行编程开发。</p>
+<p>所以我们可以知道OpenFlow在SDN应用中的重要性。</p>
+<p>OpenFlow经过这几年的发展已经从1.0版本发展到了1.5版本，初学者在学习的时候需要注意顺序。建议先学习OF1.0版本，再学习OF1.3版本，更高版本根据需要进行学习。</p>
+<p>OpenFlow1.0版本是OpenFlow火起来时的第一个版本，其内容并不多，Match域仅有12个字段，动作种类也不多，同时也是单流表。对于初学者而言，学习1.0版本可以大大降低学习压力，掌握OpenFlow核心内容。在正确理解SDN，以及可以使用OpenFlow1.0协议开发SDN应用之后，可尝试学习1.3版本协议。1.3版本较1.0版本内容大幅增加。经过几个版本的迭代，OpenFlow1.3版本协议已经有了三种表：</p>
+<ul>
+<li>flow table</li>
+<li>group table</li>
+<li>meter table</li>
+</ul>
+<p>动作种类也得到了拓展，多流表的概念也变得成熟，Match匹配域已经多达几十个，所以这时OpenFlow已经将Match域分成几类,并以OXM的形式呈现出来。多控制器写作的概念在1.3版本中也已经相当成熟。</p>
+<p>OpenFlow1.3版本为SDN应用开发提供了很多便捷，开发人员可以利用多流表，设计更多复杂的应用逻辑。作为一个比较稳定的版本，1.3版本成为继1.0版本之后控制器支持最多的版本，所以此版本是SDN学习者应该要学习的。</p>
+<h2>总结</h2>
+<p>SDN学习与其他研究方向相比，要求较高，需要了解软件开发以及网络，学习起来，并不太容易。同样作为初学者，我从大三开始接触，有幸有学长带着入门，再后来由于网络知识的缺陷，一度陷入不知道做什么的状态。恶补了网络知识之后，才慢慢走上正轨。然后最近我又遇到了编程上的难题，急需恶补，急需努力提升自己的开发能力。本篇学习笔记，是几年来学习的粗略总结，希望对SDN初学者有帮助。</p>
+<p>最后，兴趣是最好的老师，如果你喜欢SDN这个方向，就会学得很快，比如最近一个学弟兼老乡北邮-毛健炜就进步飞快。如果在学习的过程中没有成就感，没有乐趣，也可以试试别的方向，做自己喜欢的事最重要。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html"><h2>Graph algorithms: Prim,Kruskal, Dijkstra, Floyd</h2></a>
+        <div class= "well small"> 2015-05-31
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>最近有了一点点空闲时间，想想以后的项目肯定是需要用到图中的路径算法，于是花了一些时间把4大经典算法实现了一遍。算法实现水平不高，时间复杂度都太高了一点。但是逻辑相对比较清晰，测试结果正确。如果读者发现算法中的问题，敬请指出，万分感谢。</p>
 <h3>Prim</h3>
 <p><a href="http://zh.wikipedia.org/wiki/%E6%99%AE%E6%9E%97%E5%A7%86%E7%AE%97%E6%B3%95">Prim</a>算法是最小生成树算法的一种，其算法逻辑为：</p>
 <p>从单一顶点开始，普里姆算法按照以下步骤逐步扩大树中所含顶点的数目，直到遍及连通图的所有顶点。
@@ -83,240 +152,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 2：将v加入集合Vnew中，将（u, v）加入集合Enew中；</p>
 <p>输出：使用集合Vnew和Enew来描述所得到的最小生成树。</p>
 <p>算法实现采用数据结构为邻接矩阵,实现如下：</p>
-<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">prim</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span><span class="o">==</span><span class="nb">dict</span>
-
-        <span class="n">nodes</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-        <span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
-
-        <span class="n">visited</span> <span class="o">=</span> <span class="p">[</span><span class="n">root</span><span class="p">]</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nb">next</span> <span class="o">=</span> <span class="bp">None</span>
-
-        <span class="k">while</span> <span class="n">nodes</span><span class="p">:</span>
-            <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span> 
-            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">]:</span>
-                    <span class="k">if</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">visited</span> <span class="ow">or</span> <span class="n">s</span> <span class="o">==</span> <span class="n">d</span><span class="p">:</span>
-                        <span class="k">continue</span>
-                    <span class="k">if</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">distance</span><span class="p">:</span>
-                        <span class="n">distance</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d</span><span class="p">]</span>
-                        <span class="n">pre</span> <span class="o">=</span> <span class="n">s</span>
-                        <span class="nb">next</span> <span class="o">=</span> <span class="n">d</span>
-            <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pre</span><span class="p">,</span> <span class="nb">next</span><span class="p">))</span>
-            <span class="n">visited</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
-            <span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">path</span>
-
-
-    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-        <span class="n">graph_dict</span> <span class="o">=</span> <span class="p">{</span>  <span class="s">&quot;s1&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">},</span>
-                        <span class="s">&quot;s2&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">},</span>
-                        <span class="s">&quot;s10&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">},</span>
-                        <span class="s">&quot;s12&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">},</span>
-                        <span class="s">&quot;s5&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
-        <span class="p">}</span>
-
-        <span class="n">path</span> <span class="o">=</span> <span class="n">prim</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">,</span> <span class="s">&#39;s12&#39;</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">path</span>
-</pre></div>
-
-
-<h3>Kruskal</h3>
-<p><a href="http://zh.wikipedia.org/wiki/%E5%85%8B%E9%B2%81%E6%96%AF%E5%85%8B%E5%B0%94%E6%BC%94%E7%AE%97%E6%B3%95">Kruskal</a>是另一种最小生成树的算法，相比Prim算法，Kruskal算法采用避圈法进行最小树生长。算法逻辑为：</p>
-<p>1：新建图G，G中拥有原图中相同的节点，但没有边
-2：将原图中所有的边按权值从小到大排序
-3：从权值最小的边开始，如果这条边连接的两个节点于图G中不在同一个连通分量中，则添加这条边到图G中
-4：重复3，直至图G中所有的节点都在同一个连通分量中</p>
-<p>实现代码如下：</p>
-<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">kruskal</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span><span class="o">==</span><span class="nb">dict</span>
-
-        <span class="n">nodes</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>   
-        <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nb">next</span> <span class="o">=</span> <span class="bp">None</span>
-
-        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">visited</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">):</span>
-            <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span> 
-            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">visited</span> <span class="ow">and</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">visited</span> <span class="ow">or</span> <span class="n">s</span> <span class="o">==</span> <span class="n">d</span><span class="p">:</span>
-                        <span class="k">continue</span>
-                    <span class="k">if</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">distance</span><span class="p">:</span>
-                        <span class="n">distance</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d</span><span class="p">]</span>
-                        <span class="n">pre</span> <span class="o">=</span> <span class="n">s</span>
-                        <span class="nb">next</span> <span class="o">=</span> <span class="n">d</span>
-
-            <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pre</span><span class="p">,</span> <span class="nb">next</span><span class="p">))</span>
-            <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pre</span><span class="p">)</span>
-            <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">path</span>
-
-
-    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-        <span class="n">graph_dict</span> <span class="o">=</span> <span class="p">{</span>  <span class="s">&quot;s1&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">},</span>
-                        <span class="s">&quot;s2&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">},</span>
-                        <span class="s">&quot;s10&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">},</span>
-                        <span class="s">&quot;s12&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">},</span>
-                        <span class="s">&quot;s5&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
-        <span class="p">}</span>
-
-        <span class="n">path</span> <span class="o">=</span> <span class="n">kruskal</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">path</span>
-</pre></div>
-
-
-<h3>Dijkstra</h3>
-<p><a href="http://zh.wikipedia.org/wiki/%E6%88%B4%E5%85%8B%E6%96%AF%E7%89%B9%E6%8B%89%E7%AE%97%E6%B3%95">Diikstra</a>算法是用于计算某源点到其他节点的最短路径的算法。其算法逻辑为：</p>
-<p>这个算法是通过为每个顶点 v 保留目前为止所找到的从s到v的最短路径来工作的。初始时，原点 s 的路径长度值被赋为 0 （d[s] = 0），若存在能直接到达的边（s,m），则把d[m]设为w（s,m）,同时把所有其他（s不能直接到达的）顶点的路径长度设为无穷大，即表示我们不知道任何通向这些顶点的路径（对于 V 中所有顶点 v 除 s 和上述 m 外 d[v] = ∞）。当算法结束时，d[v] 中存储的便是从 s 到 v 的最短路径，或者如果路径不存在的话是无穷大。 Dijkstra 算法的基础操作是边的拓展：如果存在一条从 u 到 v 的边，那么从 s 到 v 的最短路径可以通过将边（u, v）添加到尾部来拓展一条从 s 到 v 的路径。这条路径的长度是 d[u] + w(u, v)。如果这个值比目前已知的 d[v] 的值要小，我们可以用新值来替代当前 d[v] 中的值。拓展边的操作一直运行到所有的 d[v] 都代表从 s 到 v 最短路径的花费。这个算法经过组织因而当 d[u] 达到它最终的值的时候每条边（u, v）都只被拓展一次。
-算法维护两个顶点集 S 和 Q。集合 S 保留了我们已知的所有 d[v] 的值已经是最短路径的值顶点，而集合 Q 则保留其他所有顶点。集合S初始状态为空，而后每一步都有一个顶点从 Q 移动到 S。这个被选择的顶点是 Q 中拥有最小的 d[u] 值的顶点。当一个顶点 u 从 Q 中转移到了 S 中，算法对每条外接边 (u, v) 进行拓展。</p>
-<p>算法实现如下：</p>
-<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">dijkstra</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="n">src</span><span class="p">):</span>
-        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
-        <span class="n">type_</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
-            <span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">length</span><span class="p">)]</span>
-        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
-            <span class="n">nodes</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-
-        <span class="n">visited</span> <span class="o">=</span> <span class="p">[</span><span class="n">src</span><span class="p">]</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="p">{</span><span class="n">src</span><span class="p">:{</span><span class="n">src</span><span class="p">:[]}}</span>
-        <span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
-        <span class="n">distance_graph</span> <span class="o">=</span> <span class="p">{</span><span class="n">src</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
-        <span class="n">pre</span> <span class="o">=</span> <span class="nb">next</span> <span class="o">=</span> <span class="n">src</span>
-
-        <span class="k">while</span> <span class="n">nodes</span><span class="p">:</span>
-            <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
-                 <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-                    <span class="n">new_dist</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">v</span><span class="p">]</span> <span class="o">+</span> <span class="n">graph</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="n">d</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="n">new_dist</span> <span class="o">&lt;=</span> <span class="n">distance</span><span class="p">:</span>
-                        <span class="n">distance</span> <span class="o">=</span> <span class="n">new_dist</span>
-                        <span class="nb">next</span> <span class="o">=</span> <span class="n">d</span>
-                        <span class="n">pre</span> <span class="o">=</span> <span class="n">v</span>
-                        <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_dist</span>
-
-
-            <span class="n">path</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="nb">next</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">path</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">pre</span><span class="p">]]</span>
-            <span class="n">path</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="nb">next</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
-
-            <span class="n">distance_graph</span><span class="p">[</span><span class="nb">next</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance</span>
-
-            <span class="n">visited</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
-            <span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="nb">next</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">distance_graph</span><span class="p">,</span> <span class="n">path</span>
-
-
-    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-        <span class="n">graph_list</span> <span class="o">=</span> <span class="p">[</span>   <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-                <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
-                <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
-                <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-                <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-                <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
-
-        <span class="n">graph_dict</span> <span class="o">=</span> <span class="p">{</span>  <span class="s">&quot;s1&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">},</span>
-                        <span class="s">&quot;s2&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">},</span>
-                        <span class="s">&quot;s10&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">},</span>
-                        <span class="s">&quot;s12&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span>
-                        <span class="s">&quot;s5&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
-        <span class="p">}</span>
-
-        <span class="n">distance</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">dijkstra</span><span class="p">(</span><span class="n">graph_list</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="c">#print distance, &#39;\n&#39;, path</span>
-        <span class="n">distance</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">dijkstra</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">,</span> <span class="s">&#39;s1&#39;</span><span class="p">)</span>
-</pre></div>
-
-
-<h3>Floyd</h3>
-<p><a href="http://zh.wikipedia.org/wiki/Floyd-Warshall%E7%AE%97%E6%B3%95">Floyd</a>是一种计算图中所有点到其他点最短路径的算法。与Dijkstra算法相比，可以允许边值为负数。算法逻辑如下：</p>
-<p>设D_{i,j,k}为从i到j的只以(1..k)集合中的节点为中间节点的最短路径的长度。</p>
-<p>若最短路径经过点k，则D_{i,j,k}=D_{i,k,k-1}+D_{k,j,k-1}；
-若最短路径不经过点k，则D_{i,j,k}=D_{i,j,k-1}。</p>
-<p>因此，D_{i,j,k}=\mbox{min}(D_{i,j,k-1},D_{i,k,k-1}+D_{k,j,k-1})。</p>
-<p>代码实现如下：</p>
-<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">floyd</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
-        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
-            <span class="n">path</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">{})</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span>
-                    <span class="k">continue</span>
-
-                <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
-                <span class="n">new_node</span> <span class="o">=</span> <span class="bp">None</span>
-
-                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span>
-                        <span class="k">continue</span>
-
-                    <span class="n">new_len</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">graph</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="n">graph</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">new_len</span><span class="p">:</span>
-                        <span class="n">graph</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_len</span>
-                        <span class="n">new_node</span> <span class="o">=</span> <span class="n">k</span>
-                <span class="k">if</span> <span class="n">new_node</span><span class="p">:</span>
-                    <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">new_node</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">graph</span><span class="p">,</span> <span class="n">path</span>
-
-    <span class="k">def</span> <span class="nf">floyd_dict</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
-        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
-            <span class="n">path</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="p">{})</span>
-            <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">dst</span><span class="p">:</span>
-                    <span class="k">continue</span>
-                <span class="n">path</span><span class="p">[</span><span class="n">src</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="p">[</span><span class="n">src</span><span class="p">,</span><span class="n">dst</span><span class="p">])</span>
-                <span class="n">new_node</span> <span class="o">=</span> <span class="bp">None</span>
-
-                <span class="k">for</span> <span class="n">mid</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">mid</span> <span class="o">==</span> <span class="n">dst</span><span class="p">:</span>
-                        <span class="k">continue</span>
-
-                    <span class="n">new_len</span> <span class="o">=</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">mid</span><span class="p">]</span> <span class="o">+</span> <span class="n">graph</span><span class="p">[</span><span class="n">mid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">new_len</span><span class="p">:</span>
-                        <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_len</span>
-                        <span class="n">new_node</span> <span class="o">=</span> <span class="n">mid</span>
-                <span class="k">if</span> <span class="n">new_node</span><span class="p">:</span>
-                    <span class="n">path</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">new_node</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">graph</span><span class="p">,</span> <span class="n">path</span>
-
-
-    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-        <span class="n">ini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
-        <span class="n">graph_list</span> <span class="o">=</span> <span class="p">[</span>   <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-                <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
-                <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
-                <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-                <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-                <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
-
-        <span class="n">graph_dict</span> <span class="o">=</span> <span class="p">{</span>  <span class="s">&quot;s1&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span>
-                        <span class="s">&quot;s2&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
-                        <span class="s">&quot;s10&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span>
-                        <span class="s">&quot;s12&quot;</span><span class="p">:{</span><span class="s">&quot;s1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;s2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;s10&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;s12&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
-        <span class="p">}</span>
-
-        <span class="c">#new_graph, path= floyd_dict(graph_dict)    </span>
-        <span class="n">new_graph</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">floyd</span><span class="p">(</span><span class="n">graph_list</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">new_graph</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\n\n\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">path</span>
-</pre></div>
-
-
-<h3>总结</h3>
-<p>这几个算法都是图论中的经典算法，会在网络应用中经常用到。然而我的实现只是最简单逻辑的实现，并没有考虑太多性能上的问题。如果需要追求性能，我想还是需要谷歌一下，或者到Github上随意挑选。获取代码可点击链接：<a href="https://github.com/muzixing/graph_algorithm">graph algorithms</a>。</p></div>
-        <hr />
-    </div>
-		
+<div class="highlight"><pre>    <span class="k">def ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -421,24 +259,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <li>
 <p><strong>访问页面</strong></p>
 <p>打开浏览器，访问http://127 ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/03/04/traffic-monitor-in-ryu.html"><h2>Traffic monitor in RYU</h2></a>
-        <div class= "well small"> 2015-03-04
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>In many scenes, we need to get the real time link bandwidth so that controller can make some decisions in time. For example, load balance, network alert and so on. This article will demostrate how to get the bandwidth of a flow or a port(flow speed or port speed ...</p> <a class="btn btn-info xsmall" href="../pages/2015/03/04/traffic-monitor-in-ryu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

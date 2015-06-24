@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="../pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html"><h1>初学者的SDN学习之路</h1></a>
+            <h1>初学者的SDN学习之路</h1>
 2015-06-22
 
-by <a class="url fn" href="../author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><p>Software Defined Network顾名思义软件定义网络，可以简单地分为网络和软件两个部分：软件和网络。所以本篇将从软件和网络以及OpenFlow三个方面进行介绍。在研究SDN的研究者之中，有相当大比例的网络工程师，他们了解网络，精通网络，然而却并不了解软件开发。除此之外，还有很大比例的研究者是软件工程师，他们软件开发能力出色，然而并不了解网络运作的机制，在接触SDN之前，他们的范围仅仅只是应用层，底层的东西交给全交给主机的协议栈了。还有一部分同学是像我这样，通信工程出身，学的是物理层的编码解码，误码率，电磁波。不像计算机专业那些学生一样，学习各种语言，操弄各种编译器，混迹于github这种全球最大的男性交友网站。剩下最后一种就是又懂网络，又懂编程，这种人，我一般称之为老师，是用来请教问题的，比如地球-某某老师，一般的他们不屑于看到这种文章，太low。</p>
 <p>本篇主要的目标用户是对网络和软件开发都不太了解，或者网络和编程开发只擅长一种的研究者。由于我也是一个初学者，所以仅当做经验分享吧。如有表达不对的地方，敬请指出，万分感谢。</p>
 <h2>网络</h2>
@@ -123,166 +117,23 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h2>总结</h2>
 <p>SDN学习与其他研究方向相比，要求较高，需要了解软件开发以及网络，学习起来，并不太容易。同样作为初学者，我从大三开始接触，有幸有学长带着入门，再后来由于网络知识的缺陷，一度陷入不知道做什么的状态。恶补了网络知识之后，才慢慢走上正轨。然后最近我又遇到了编程上的难题，急需恶补，急需努力提升自己的开发能力。本篇学习笔记，是几年来学习的粗略总结，希望对SDN初学者有帮助。</p>
 <p>最后，兴趣是最好的老师，如果你喜欢SDN这个方向，就会学得很快，比如最近一个学弟兼老乡北邮-毛健炜就进步飞快。如果在学习的过程中没有成就感，没有乐趣，也可以试试别的方向，做自己喜欢的事最重要。</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = '初学者的SDN学习之路';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html"><h2>Graph algorithms: Prim,Kruskal, Dijkstra, Floyd</h2></a>
-        <div class= "well small"> 2015-05-31
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>最近有了一点点空闲时间，想想以后的项目肯定是需要用到图中的路径算法，于是花了一些时间把4大经典算法实现了一遍。算法实现水平不高，时间复杂度都太高了一点。但是逻辑相对比较清晰，测试结果正确。如果读者发现算法中的问题，敬请指出，万分感谢。</p>
-<h3>Prim</h3>
-<p><a href="http://zh.wikipedia.org/wiki/%E6%99%AE%E6%9E%97%E5%A7%86%E7%AE%97%E6%B3%95">Prim</a>算法是最小生成树算法的一种，其算法逻辑为：</p>
-<p>从单一顶点开始，普里姆算法按照以下步骤逐步扩大树中所含顶点的数目，直到遍及连通图的所有顶点。
-输入：一个加权连通图，其中顶点集合为V，边集合为E；</p>
-<p>初始化：Vnew = {x}，其中x为集合V中的任一节点（起始点），Enew = {}；
-重复下列操作，直到Vnew = V：</p>
-<p>1：在集合E中选取权值最小的边（u,v），其中u为集合Vnew中的元素，而v则是V中没有加入Vnew的顶点（如果存在有多条   满足前述条件即具有相同权值的边，则可任意选取其中之一）；
-2：将v加入集合Vnew中，将（u, v）加入集合Enew中；</p>
-<p>输出：使用集合Vnew和Enew来描述所得到的最小生成树。</p>
-<p>算法实现采用数据结构为邻接矩阵,实现如下：</p>
-<div class="highlight"><pre>    <span class="k">def ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html"><h2>RYU中WSGI学习笔记与RESTAPI开发</h2></a>
-        <div class= "well small"> 2015-05-13
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>另一篇博文中已经介绍如何使用RYU的RESTAPI，本篇将继续介绍相关内容，主要分为WSGI学习总结和以ofctl_rest.py为例的RESTAPI的实现与内部机制。由于第一次学习WSGI，还有许多地方不是特别理解，所学知识均来自Google。文中若有错误之处，敬请指出，谢谢。</p>
-<h3>WSGI</h3>
-<p><a href="http://zh.wikipedia.org/wiki/Web%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BD%91%E5%85%B3%E6%8E%A5%E5%8F%A3">Web服务器网关接口</a>（Python Web Server Gateway Interface，缩写为WSGI）是为Python语言定义的Web服务器和Web应用程序或框架之间的一种简单而通用的接口。为了理解WSGI，可以尝试一下的小例子。</p>
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">cgi</span> <span class="kn">import</span> <span class="n">parse_qs</span>
-<span class="kn">from</span> <span class="nn">cgi</span> <span class="kn">import</span> <span class="n">escape</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-
-
-<span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">):</span>
-    <span class="n">parameters</span> <span class="o">=</span> <span class="n">parse_qs</span><span class="p">(</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;QUERY_STRING&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
-
-    <span class="k">if</span> <span class="s">&#39;subject&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
-        <span class="n">subject</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s">&#39;subject&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">else ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/05/10/getting-started-with-restapi-of-ryu.html"><h2>Getting started with RESTAPI of RYU</h2></a>
-        <div class= "well small"> 2015-05-10
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>在使用RYU的过程中，有时需要使用web拓扑，有时也需要通过API去下发流表等操作。这些操作在RYU中都会使用到RESTAPI。在学习RYU的过程中多次涉及到REST相关的内容，总是不知道如何实现和使用。最近在做实验需要这方面的知识，才有机会去学习REST并总结成博文。希望能给其他学习者提供帮助。本篇博文将简要介绍两部分内容：</p>
-<ul>
-<li>What is REST?</li>
-<li>How to use REST API in RYU?</li>
-</ul>
-<h2>What is REST</h2>
-<p><a href="http://zh.wikipedia.org/zh/REST">REST</a>:表征性状态传输（英文：Representational State Transfer，简称REST）是Roy Fielding博士在2000年他的博士论文中提出来的一种软件架构风格。更多REST的相关介绍可以查看<a href="http://www.restapitutorial.com/lessons/whatisrest.html">视频介绍</a>.</p>
-<p>REST架构风格中，资源是通过URI来描述的。对资源的操作采用了HTTP的GET，POST，PUT和DELETE方法相对应。资源的表现形式可以是json或xml。REST的架构是Client-Server架构，同时链接是无状态的。所以要求在传输的过程中需要包含状态信息。此外，可以使用cache机制增进性能。在上述视频中提到REST的6中限制为：</p>
-<ul>
-<li>Uniform Interface</li>
-<li>Stateless</li>
-<li>Cacheable ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2015/05/10/getting-started-with-restapi-of-ryu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html"><h2>RYU3.16 GUI安装与Topology模块分析</h2></a>
-        <div class= "well small"> 2015-04-21
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>最近很多SDN研究人员问起如何安装RYU的GUI，网上也有一些教程。但是由于RYU版本问题，导致安装没有成功。本片博文将介绍RYU3.16版本下如何安装GUI，以及对RYU拓扑模块进行简单分析。</p>
-<h3>安装GUI</h3>
-<p><a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/">Linton的博客</a>已经有详细介绍，我在这里将一些可能出现问题的地方再提醒一次。</p>
-<h4>第一步：依赖安装及修改代码</h4>
-<p>建议查看<a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/">Linton的博客</a>，比较简单，不赘述。</p>
-<h4>第二步：运行相关组建</h4>
-<ul>
-<li>
-<p><strong>运行RYU相关APP</strong></p>
-<div class="highlight"><pre><span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="o">--</span><span class="n">verbose</span> <span class="o">--</span><span class="n">observe</span><span class="o">-</span><span class="n">links</span> <span class="n">app</span><span class="o">/</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">py</span> <span class="n">ryu</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">switches</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_topology</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">ofctl_rest</span>
-</pre></div>
-
-
-<p><img alt="运行截图" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi3oujndj20k60co75c.jpg" /></p>
-<p>运行截图如下：
-<img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi90ztcij20jx0cqqa0.jpg" /></p>
-</li>
-<li>
-<p><strong>运行controller.py文件</strong></p>
-<p>进入到gui目录，运行controller.py文件。</p>
-<div class="highlight"><pre><span class="n">python</span> <span class="n">controller</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-
-
-<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1erdi91ct7ej20mh0im12r.jpg" /></p>
-</li>
-<li>
-<p><strong>访问页面</strong></p>
-<p>打开浏览器，访问http://127 ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../author/muzi.html">1</a></li>
-    <li class=""><a href="../author/muzi2.html">2</a></li>
-    <li class=""><a href="../author/muzi3.html">3</a></li>
-    <li class=""><a href="../author/muzi4.html">4</a></li>
-    <li class=""><a href="../author/muzi5.html">5</a></li>
-    <li class=""><a href="../author/muzi6.html">6</a></li>
-    <li class=""><a href="../author/muzi7.html">7</a></li>
-    <li class=""><a href="../author/muzi8.html">8</a></li>
-    <li class=""><a href="../author/muzi9.html">9</a></li>
-    <li class=""><a href="../author/muzi10.html">10</a></li>
-    <li class=""><a href="../author/muzi11.html">11</a></li>
-
-    <li class="next"><a href="../author/muzi2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -293,8 +144,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
 		</li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
@@ -308,8 +159,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -349,7 +200,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->

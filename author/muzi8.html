@@ -62,6 +62,39 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html"><h2>mininet与外部host通信</h2></a>
+        <div class= "well small"> 2014-03-25
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>好多同学都在尝试使用mininet搭建拓扑。有的同学在尝试如何让mininet与外网通信，比如虚拟机，比如mininet之外的另一个网络。问题已经存在很久，本文将介绍如何使用mininet的接口实现与外界通信。</p>
+<h3>Intf()接口</h3>
+<p>在mininet的源码中，我们可以找到一个link的文件，也是一个类。这个文件中有一个接口类Intf()</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">Intf</span><span class="p">(</span> <span class="n">object</span> <span class="p">):</span>
+
+    <span class="s">&quot;Basic interface object that can configure itself.&quot;</span>
+
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span> <span class="p">):</span>
+</pre></div>
+
+
+<p>使用这个接口类，可以把安装mininet的机器的网卡接到mininet的ovs之上。</p>
+<p>剩下的就简单了。最重要的接口解决之后一切就都解决了。</p>
+<p>如果需要例子，可以在本站查看：mininet搭建自定义拓扑
+http://www.muzixing.com/pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi ...</p> <a class="btn btn-info xsmall" href="../pages/2014/03/25/mininetyu-wai-bu-hosttong-xin.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/03/21/markdowntian-jia-shi-pin-jiao-cheng-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html"><h2>markdown添加视频教程：Idina Menze和Caleb Hyles激情对唱Let It Go</h2></a>
         <div class= "well small"> 2014-03-21
 
@@ -167,25 +200,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>可是我高估了自己的实力。第一次面试是腾讯后台，竞争对手是谁这些都不重要，重要的是自己真的很嫩，真的懂得太少。那是我的第一个面试官，很和蔼，很耐心。我们聊了半个多小时 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/01/01/shu-yu-wo-de-2013he-2014.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html"><h2>SDN的初步认识</h2></a>
-        <div class= "well small"> 2013-12-24
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>（习惯性乱扯两句，可跳过）一年之前第一次接触SDN的时候，我甚至连pox的发音都发不对。第一次看OF1.0spec的时候，更是不懂secure channel到底是什么概念，Datapath一样是云里雾里。我不知道流是一个什么概念，不知道SDN如何DN，我只是觉得，我可能会比较喜欢IP这一方面的东西，具体哪一方面我也不知道。但是无所谓啊，我还年轻，我有选择的机会。抱着试一试的态度，去学习了SDN的一些知识，慢慢地就喜欢上了。不仅仅是因为知识本身，更是因为当我获得成功时刻的成就感与自豪感，让我觉得我愿意去做这件事情！一年之后，我写过Openflow协议通信流程的教程，画过所有Openflow协议的数据结构，写完自己的一个控制器，还写了一边关于如何编写控制器的教程，懂得怎么使用mininet搭建自定义的拓扑，懂得使用spirent testcenter去打流测试，懂得pox是如何运作的，等等。我甚至可以去教一些新手一些关于SDN的技术，但是，当我想要写点东西的时候，我却突然发现，我不知道什么是SDN！我并不清楚SDN是从何而来，不知道SDN发展历程，不知道SDN目前面临的问题，不明白SDN的现状到底什么状态，不知道SDN的未来有什么前景。我只知道一些具体的技术细节，也许对于一个本科生已经不错了。但是这也正是我们本科生的弱点所在吧。缺少大局观，目光不够长远，对知识的掌握更倾向于操作而非原理 ...</p> <a class="btn btn-info xsmall" href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../author/muzi7.html">&larr; Previous</a></li>
@@ -200,6 +214,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class="active"><a href="../author/muzi8.html">8</a></li>
     <li class=""><a href="../author/muzi9.html">9</a></li>
     <li class=""><a href="../author/muzi10.html">10</a></li>
+    <li class=""><a href="../author/muzi11.html">11</a></li>
 
     <li class="next"><a href="../author/muzi9.html">Next &rarr;</a></li>
 
