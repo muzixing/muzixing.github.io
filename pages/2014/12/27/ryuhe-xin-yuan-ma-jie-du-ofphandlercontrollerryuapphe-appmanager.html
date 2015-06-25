@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>Milestone</title>
+    <meta name="description" content="">
+    <meta name="author" content="muzi">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="../../../../theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="../../../..">Milestone</a>
+
+        <div class="nav-collapse">
+
+        <ul class="nav">
+            
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
+        </ul>
+	<form class="navbar-search pull-right" action="/search.html">
+    	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
+</form>
+
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+    <div class='article'>
+        <div class="content-title">
+            <h1>RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager</h1>
+2014-12-27
+
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
+ 
+
+
+        </div>
+	
+        <div><p>每接触一个控制器我都会习惯性的把控制器的源码读一读，走一走处理流程，RYU也不例外。本篇博文将从main函数入手，讲述RYU的ryuapp基类细节、app_manager类如何load apps，注册并运行application，Event的产生以及分发，还有最重要的应用ofp_handler。文章将以RYU真实运行流程作为主线，详细讲述RYU如何运作。如果文中出现理解错的地方，敬请指出，万分感谢！转载请声明原出处。</p>
+<h2>main()</h2>
+<p>RYU的main函数在ryu/cmd/manager.py文件中。main函数中CONF部分已经在在前一篇<a href="http://www.muzixing.com/pages/2014/12/19/ryuxue-xi-oslo.html">《RYU学习：oslo》</a>已经有所介绍，所以这次关注的重点的是后续部分，如app_manager如何工作。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
+    <span class="n">try:</span>
+        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
+             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">,</span>
+             <span class="n">default_config_files</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/usr/local/etc/ryu/ryu.conf&#39;</span><span class="p">])</span>
+    <span class="n">except</span> <span class="n">cfg</span><span class="o">.</span><span class="n">ConfigFilesNotFoundError:</span>
+        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
+             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">)</span>
+
+    <span class="nb">log</span><span class="o">.</span><span class="n">init_log</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">CONF</span><span class="o">.</span><span class="n">pid_file:</span>
+        <span class="nb">import</span> <span class="n">os</span>
+        <span class="n">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">CONF</span><span class="o">.</span><span class="n">pid_file</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="n">as</span> <span class="n">pid_file:</span>
+            <span class="n">pid_file</span><span class="o">.</span><span class="nb">write</span><span class="p">(</span><span class="n">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()))</span>
+
+    <span class="n">app_lists</span> <span class="o">=</span> <span class="n">CONF</span><span class="o">.</span><span class="n">app_lists</span> <span class="o">+</span> <span class="n">CONF</span><span class="o">.</span><span class="n">app</span>
+    <span class="c1"># keep old behaivor, run ofp if no application is specified.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">app_lists:</span>
+        <span class="n">app_lists</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">]</span>
+
+    <span class="n">app_mgr</span> <span class="o">=</span> <span class="n">AppManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span>
+    <span class="n">app_mgr</span><span class="o">.</span><span class="n">load_apps</span><span class="p">(</span><span class="n">app_lists</span><span class="p">)</span>
+    <span class="n">contexts</span> <span class="o">=</span> <span class="n">app_mgr</span><span class="o">.</span><span class="n">create_contexts</span><span class="p">()</span>
+    <span class="n">services</span> <span class="o">=</span> <span class="o">[]</span>
+    <span class="n">services</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">app_mgr</span><span class="o">.</span><span class="n">instantiate_apps</span><span class="p">(</span><span class="o">**</span><span class="n">contexts</span><span class="p">))</span>
+
+    <span class="n">webapp</span> <span class="o">=</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">start_service</span><span class="p">(</span><span class="n">app_mgr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">webapp:</span>
+        <span class="n">thr</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">webapp</span><span class="p">)</span>
+        <span class="n">services</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thr</span><span class="p">)</span>
+
+    <span class="n">try:</span>
+        <span class="n">hub</span><span class="o">.</span><span class="n">joinall</span><span class="p">(</span><span class="n">services</span><span class="p">)</span>
+    <span class="n">finally:</span>
+        <span class="n">app_mgr</span><span class="o">.</span><span class="nb">close</span><span class="p">()</span>
+</pre></div>
+
+
+<p>首先从CONF文件中读取出app list。如果ryu-manager 命令任何参数，则默认应用为ofp_handler应用。紧接着实例化一个AppManager对象，调用load_apps函数将应用加载。调用create_contexts函数创建对应的contexts, 然后调用instantiate_apps函数将app_list和context中的app均实例化。启动wsgi架构，提供web应用。最后将所有的应用作为任务，作为coroutine的task去执行，joinall使得程序必须等待所有的task都执行完成才可以退出程序。最后调用close函数，关闭程序，释放资源。以下的部分将以主函数中出现的调用顺序为依据，展开讲解。</p>
+<h2>OFPHandler</h2>
+<p>上文说到，如果没有捕获Application输入，那么默认启动的应用是OFPHandler应用。该应用主要用于处理OpenFlow消息。在start函数初始化运行了一个OpenFlowController实例。OpenFlowController类将在后续介绍。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">start</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">OFPHandler</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">OpenFlowController</span><span class="p">())</span>
+</pre></div>
+
+
+<p>OFPHandler应用完成了基本的消息处理，如hello_handler：用于处理hello报文，协议版本的协商。其处理并不复杂，但是值得注意的一点是装饰器：Decorator的使用。</p>
+<div class="highlight"><pre><span class="nv">@set_ev_handler</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPHello</span><span class="p">,</span> <span class="n">HANDSHAKE_DISPATCHER</span><span class="p">)</span>
+   <span class="n">def</span> <span class="n">hello_handler</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+       <span class="n">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;hello ev %s&#39;</span><span class="p">,</span> <span class="n">ev</span><span class="p">)</span>
+       <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+       <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+</pre></div>
+
+
+<h3>Decorator</h3>
+<p>如果你已经了解Decorator，可以直接跳过本部分。</p>
+<p>装饰器是什么？<a href="https://wiki.python.org/moin/PythonDecorators">Python Decorator</a></p>
+<p>coolshell上的介绍<a href="http://coolshell.cn/articles/11265.html">Python修饰器的函数式编程</a></p>
+<p>Python Decorator可以看作是一种声明，一种修饰。以下举例参考自Coolshell。举例如下：</p>
+<div class="highlight"><pre><span class="nv">@decorator</span>
+<span class="n">def</span> <span class="n">foo</span><span class="p">():</span>
+    <span class="n">pass</span>
+</pre></div>
+
+
+<p>实际上等同于foo = decorator(foo), 而且它还被执行了。举个例子：</p>
+<div class="highlight"><pre><span class="s-Atom">def</span> <span class="nf">keyword</span><span class="p">(</span><span class="s-Atom">fn</span><span class="p">)</span><span class="s-Atom">:</span>    
+    <span class="s-Atom">print</span> <span class="s2">&quot;you   %s  me!&quot;</span> <span class="c1">% fn.__name__[::-1].upper()</span>
+
+<span class="s-Atom">@keyword</span>
+<span class="s-Atom">def</span> <span class="nf">evol</span><span class="p">()</span><span class="s-Atom">:</span>
+    <span class="s-Atom">pass</span>
+</pre></div>
+
+
+<p>运行之后，就会输出:you love me。</p>
+<p>多个decorator:</p>
+<div class="highlight"><pre><span class="nv">@decorator_a</span>
+<span class="nv">@decorator_b</span>
+<span class="n">def</span> <span class="n">foo</span><span class="p">():</span>
+    <span class="n">pass</span>
+</pre></div>
+
+
+<p>这相当于：</p>
+<div class="highlight"><pre><span class="n">foo</span> <span class="o">=</span> <span class="n">decorator_a</span><span class="p">(</span><span class="n">decorator_b</span><span class="p">(</span><span class="n">foo</span><span class="p">))</span>
+</pre></div>
+
+
+<p>而带参数的decorator:</p>
+<div class="highlight"><pre><span class="nv">@decorator</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">)</span>
+<span class="n">def</span> <span class="n">foo</span><span class="p">():</span>
+    <span class="n">pass</span>
+</pre></div>
+
+
+<p>相当于</p>
+<div class="highlight"><pre><span class="n">foo</span> <span class="o">=</span> <span class="n">decorator</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span><span class="n">arg2</span><span class="p">)(</span><span class="n">foo</span><span class="p">)</span>
+</pre></div>
+
+
+<p>decorator(arg1,arg2)将生成一个decorator。</p>
+<p><strong>class式的 Decorator</strong></p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">myDecorator</span><span class="p">(</span><span class="n">object</span><span class="p">):</span>
+
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;inside myDecorator.__init__()&quot;</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
+
+    <span class="n">def</span> <span class="n">__call__</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">fn</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s">&quot;inside myDecorator.__call__()&quot;</span>
+
+
+<span class="nv">@myDecorator</span>
+<span class="n">def</span> <span class="n">aFunction</span><span class="p">():</span>
+    <span class="k">print</span> <span class="s">&quot;inside aFunction()&quot;</span>
+
+<span class="k">print</span> <span class="s">&quot;Finished decorating aFunction()&quot;</span>
+
+<span class="n">aFunction</span><span class="p">()</span>
+</pre></div>
+
+
+<p>@decorator使用时，__init__被调用，当function被调用是，执行__call__函数，而不执行function,所以在__call__函数中需要写出self.fn = fn</p>
+<p>更多内容可以直接访问<a href="https://wiki.python.org/moin/PythonDecoratorLibrary">Python Decorator Library</a></p>
+<h2>OpenFlowController</h2>
+<p>前一部分提到OFPHandle的start函数会将OpenFlowController启动。本小节介绍OpenFlowController类。该类的定义在ryu/cmd/controller.py文件中。OpenFlowController.__call__()函数启动了server_loop()函数，该函数实例化了hub.py中的StreamServer类，并将handler函数初始化为datapath_connection_factory函数，并调用serve_forever()，不断进行socket的监听。StreamServer定义如下：</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">StreamServer</span><span class="p">(</span><span class="n">object</span><span class="p">):</span>
+        <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">listen_info</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">backlog</span><span class="o">=</span><span class="n">None</span><span class="p">,</span>
+                     <span class="n">spawn</span><span class="o">=</span><span class="s">&#39;default&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">ssl_args</span><span class="p">):</span>
+            <span class="n">assert</span> <span class="n">backlog</span> <span class="n">is</span> <span class="n">None</span>
+            <span class="n">assert</span> <span class="n">spawn</span> <span class="o">==</span> <span class="s">&#39;default&#39;</span>
+
+            <span class="k">if</span> <span class="s">&#39;:&#39;</span> <span class="n">in</span> <span class="n">listen_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">self</span><span class="o">.</span><span class="n">server</span> <span class="o">=</span> <span class="n">eventlet</span><span class="o">.</span><span class="nb">listen</span><span class="p">(</span><span class="n">listen_info</span><span class="p">,</span>
+                                              <span class="n">family</span><span class="o">=</span><span class="nb">socket</span><span class="o">.</span><span class="n">AF_INET6</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">self</span><span class="o">.</span><span class="n">server</span> <span class="o">=</span> <span class="n">eventlet</span><span class="o">.</span><span class="nb">listen</span><span class="p">(</span><span class="n">listen_info</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ssl_args:</span>
+                <span class="n">def</span> <span class="n">wrap_and_handle</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+                    <span class="n">ssl_args</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;server_side&#39;</span><span class="p">,</span> <span class="n">True</span><span class="p">)</span>
+                    <span class="n">handle</span><span class="p">(</span><span class="n">ssl</span><span class="o">.</span><span class="n">wrap_socket</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="o">**</span><span class="n">ssl_args</span><span class="p">),</span> <span class="n">addr</span><span class="p">)</span>
+
+                <span class="n">self</span><span class="o">.</span><span class="n">handle</span> <span class="o">=</span> <span class="n">wrap_and_handle</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">self</span><span class="o">.</span><span class="n">handle</span> <span class="o">=</span> <span class="n">handle</span>
+
+        <span class="n">def</span> <span class="n">serve_forever</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+            <span class="k">while</span> <span class="n">True:</span>
+                <span class="n">sock</span><span class="p">,</span> <span class="n">addr</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="nb">accept</span><span class="p">()</span>
+                <span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">sock</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+</pre></div>
+
+
+<h3>Datapath</h3>
+<p>Datapath类在RYU中极为重要，每当一个datapath实体与控制器建立连接时，就会实例化一个Datapath的对象。
+该类中不仅定义了许多的成员变量用于描述一个datapath，还管理控制器与该datapath通信的数据收发。其中_recv_loop函数完成数据的接收与解析，事件的产生与分发。</p>
+<div class="highlight"><pre><span class="nv">@_deactivate</span>
+    <span class="n">def</span> <span class="n">_recv_loop</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">bytearray</span><span class="p">()</span>
+        <span class="n">required_len</span> <span class="o">=</span> <span class="n">ofproto_common</span><span class="o">.</span><span class="n">OFP_HEADER_SIZE</span>
+
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">self</span><span class="o">.</span><span class="n">is_active:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="nb">socket</span><span class="o">.</span><span class="nb">recv</span><span class="p">(</span><span class="n">required_len</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">self</span><span class="o">.</span><span class="n">is_active</span> <span class="o">=</span> <span class="n">False</span>
+                <span class="n">break</span>
+            <span class="n">buf</span> <span class="o">+=</span> <span class="n">ret</span>
+            <span class="k">while</span> <span class="n">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">required_len:</span>
+                <span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">)</span> <span class="o">=</span> <span class="n">ofproto_parser</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+                <span class="n">required_len</span> <span class="o">=</span> <span class="n">msg_len</span>
+                <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">required_len:</span>
+                    <span class="n">break</span>
+
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">ofproto_parser</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">self</span><span class="p">,</span>
+                                         <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>  <span class="c1">#  解析报文</span>
+                <span class="c1"># LOG.debug(&#39;queue msg %s cls %s&#39;, msg, msg.__class__)</span>
+                <span class="k">if</span> <span class="n">msg:</span>
+                    <span class="n">ev</span> <span class="o">=</span> <span class="n">ofp_event</span><span class="o">.</span><span class="n">ofp_msg_to_ev</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>  <span class="c1"># 产生事件</span>
+                    <span class="n">self</span><span class="o">.</span><span class="n">ofp_brick</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>  <span class="c1"># 事件分发</span>
+
+                    <span class="n">dispatchers</span> <span class="o">=</span> <span class="n">lambda</span> <span class="n">x:</span> <span class="n">x</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">ev</span><span class="o">.</span><span class="n">__class__</span><span class="p">]</span><span class="o">.</span><span class="n">dispatchers</span>
+                    <span class="n">handlers</span> <span class="o">=</span> <span class="p">[</span><span class="n">handler</span> <span class="k">for</span> <span class="n">handler</span> <span class="n">in</span>
+                                <span class="n">self</span><span class="o">.</span><span class="n">ofp_brick</span><span class="o">.</span><span class="n">get_handlers</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span> <span class="k">if</span>
+                                <span class="n">self</span><span class="o">.</span><span class="n">state</span> <span class="n">in</span> <span class="n">dispatchers</span><span class="p">(</span><span class="n">handler</span><span class="p">)]</span>
+                    <span class="k">for</span> <span class="n">handler</span> <span class="n">in</span> <span class="n">handlers:</span>
+                        <span class="n">handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+
+                <span class="n">buf</span> <span class="o">=</span> <span class="n">buf</span><span class="p">[</span><span class="n">required_len:</span><span class="p">]</span>
+                <span class="n">required_len</span> <span class="o">=</span> <span class="n">ofproto_common</span><span class="o">.</span><span class="n">OFP_HEADER_SIZE</span>
+
+                <span class="c1"># We need to schedule other greenlets. Otherwise, ryu</span>
+                <span class="c1"># can&#39;t accept new switches or handle the existing</span>
+                <span class="c1"># switches. The limit is arbitrary. We need the better</span>
+                <span class="c1"># approach in the future.</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">2048</span><span class="p">:</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">hub</span><span class="o">.</span><span class="nb">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+
+<p>@_deactivate修饰符作用在于在Datapath断开连接之后，将其状态is_active置为False。self.ofp_brick.send_event_to_observers(ev, self.state) 语句完成了事件的分发。self.brick的初始化语句可以在self.__init__函数中找到：</p>
+<div class="highlight"><pre>        <span class="n">self</span><span class="o">.</span><span class="n">ofp_brick</span> <span class="o">=</span> <span class="n">ryu</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">app_manager</span><span class="o">.</span><span class="n">lookup_service_brick</span><span class="p">(</span><span class="s">&#39;ofp_event&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>由上可知，self.ofp_brick实际上是由service_brick（中文可以称为：服务链表？）中的“ofp_event”服务赋值的。在每一个app中，使用@set_ev_cls(ev_cls,dispatchers)时，就会将实例化ofp_event模块，执行文件中最后一句：</p>
+<div class="highlight"><pre><span class="n">handler</span><span class="o">.</span><span class="n">register_service</span><span class="p">(</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>register_service函数实体如下：</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">register_service</span><span class="p">(</span><span class="n">service</span><span class="p">):</span>
+    <span class="s">&quot;&quot;&quot;</span>
+<span class="s">    Register the ryu application specified by &#39;service&#39; as</span>
+<span class="s">    a provider of events defined in the calling module.</span>
+
+<span class="s">    If an application being loaded consumes events (in the sense of</span>
+<span class="s">    set_ev_cls) provided by the &#39;service&#39; application, the latter</span>
+<span class="s">    application will be automatically loaded.</span>
+
+<span class="s">    This mechanism is used to e.g. automatically start ofp_handler if</span>
+<span class="s">    there are applications consuming OFP events.</span>
+<span class="s">    &quot;&quot;&quot;</span>
+
+    <span class="n">frm</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmodule</span><span class="p">(</span><span class="n">frm</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">_SERVICE_NAME</span> <span class="o">=</span> <span class="n">service</span>
+</pre></div>
+
+
+<p>其中inspect.stack()[1]返回了调用此函数的caller, inspect.getmodule(frm[0])返回了该caller的模块，当前例子下，module=ofp_event。</p>
+<p>我们可以通过ryu-manager --verbose来查看到输出信息，从而印证这一点。</p>
+<div class="highlight"><pre><span class="n">muzi</span><span class="nv">@muzi</span><span class="o">-</span><span class="n">OptiPlex</span><span class="o">-</span><span class="mi">390</span><span class="p">:</span><span class="o">~</span><span class="sr">/ryu/</span><span class="n">ryu</span><span class="o">/</span><span class="n">app</span><span class="nv">$</span> <span class="nv">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="o">--</span><span class="n">verbose</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span> <span class="n">of</span> <span class="n">OFPHandler</span>
+<span class="n">BRICK</span> <span class="n">ofp_event</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPErrorMsg</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPEchoRequest</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPPortDescStatsReply</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPHello</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPSwitchFeatures</span>
+</pre></div>
+
+
+<p>所以当运行ofp_handler应用时，就会注册ofp_event service，为后续的应用提供服务。分发事件之后，还要处理自身订阅的事件，所以首先找到符合当前state的caller,然后调用handler。_caller类可以在handler.py文件中找到，包含dispatchers和ev_source两个成员变量。前者用于描述caller需要的state,后者是event产生者的模块名称。</p>
+<p>对应的发送循环由_send_loop完成。self.send_q是一个深度为16的发送queue。</p>
+<div class="highlight"><pre> <span class="nv">@_deactivate</span>
+    <span class="n">def</span> <span class="n">_send_loop</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">try:</span>
+            <span class="k">while</span> <span class="n">self</span><span class="o">.</span><span class="n">is_active:</span>
+                <span class="n">buf</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">send_q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="n">self</span><span class="o">.</span><span class="nb">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+        <span class="n">finally:</span>
+            <span class="sx">q = </span><span class="n">self</span><span class="o">.</span><span class="n">send_q</span>
+            <span class="c1"># first, clear self.send_q to prevent new references.</span>
+            <span class="n">self</span><span class="o">.</span><span class="n">send_q</span> <span class="o">=</span> <span class="n">None</span>
+            <span class="c1"># there might be threads currently blocking in send_q.put().</span>
+            <span class="c1"># unblock them by draining the queue.</span>
+            <span class="n">try:</span>
+                <span class="k">while</span> <span class="sx">q.get(block=False):</span>
+<span class="sx">                    pass</span>
+<span class="sx">            except hub.</span><span class="n">QueueEmpty:</span>
+                <span class="n">pass</span>
+</pre></div>
+
+
+<p>serve函数完成了发送循环的启动和接收循环的启动。启动一个coroutine去执行self._send_loop()， 然后马上主动发送hello报文到datapath(可以理解为交换网桥：Bridge)，最后执行self._recv_loop()。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">serve</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">send_thr</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_send_loop</span><span class="p">)</span>
+
+        <span class="c1"># send hello message immediately</span>
+        <span class="n">hello</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPHello</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">hello</span><span class="p">)</span>
+
+        <span class="n">try:</span>
+            <span class="n">self</span><span class="o">.</span><span class="n">_recv_loop</span><span class="p">()</span>
+        <span class="n">finally:</span>
+            <span class="n">hub</span><span class="o">.</span><span class="nb">kill</span><span class="p">(</span><span class="n">send_thr</span><span class="p">)</span>
+            <span class="n">hub</span><span class="o">.</span><span class="n">joinall</span><span class="p">([</span><span class="n">send_thr</span><span class="p">])</span>
+</pre></div>
+
+
+<p>而serve函数又在datapath_connection_factory函数中被调用。当然向外提供完整功能的API就是这个。所以在OpenFlowController类中可以看到在初始化server实例的时候，handler赋值为datapath_connection_factory。其中使用到的contextlib module具体内容不作介绍，读者可<a href="https://docs.python.org/2/library/contextlib.html">自行学习</a></p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">datapath_connection_factory</span><span class="p">(</span><span class="nb">socket</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+    <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;connected socket:%s address:%s&#39;</span><span class="p">,</span> <span class="nb">socket</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+    <span class="n">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">closing</span><span class="p">(</span><span class="n">Datapath</span><span class="p">(</span><span class="nb">socket</span><span class="p">,</span> <span class="n">address</span><span class="p">))</span> <span class="n">as</span> <span class="n">datapath:</span>
+        <span class="n">try:</span>
+            <span class="n">datapath</span><span class="o">.</span><span class="n">serve</span><span class="p">()</span>
+        <span class="n">except:</span>
+            <span class="c1"># Something went wrong.</span>
+            <span class="c1"># Especially malicious switch can send malformed packet,</span>
+            <span class="c1"># the parser raise exception.</span>
+            <span class="c1"># Can we do anything more graceful?</span>
+            <span class="k">if</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span> <span class="n">is</span> <span class="n">None:</span>
+                <span class="n">dpid_str</span> <span class="o">=</span> <span class="s">&quot;%s&quot;</span> <span class="nv">%</span> <span class="nv">datapath</span><span class="o">.</span><span class="n">id</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dpid_str</span> <span class="o">=</span> <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Error in the datapath %s from %s&quot;</span><span class="p">,</span> <span class="n">dpid_str</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+            <span class="n">raise</span>
+</pre></div>
+
+
+<p>到此为止，OFPHandler应用的功能实现介绍完毕。RYU启动时，需要启动OFPHandler，才能完成数据的收发和解析。更多的上层应用逻辑都是在此基础之上进行的。若要开发APP则需要继承RyuApp类，并完成observer监听事件，以及注册handler去完成事件处理。</p>
+<h2>RyuApp</h2>
+<p>RyuApp类是RYU封装好的APP基类，用户只需要继承该类，就可以方便地开发应用。而注册对应的observer和handler都使用@derocator的形式，使得开发非常的简单高效，这也是Python的优点之一吧。RyuApp类的定义在ryu/base/app_manager.py文件中。该文件实现了两个类RyuApp和AppManager。前者用于定义APP基类，为应用开发提供基本的模板，后者用于Application的管理，加载应用，运行应用，消息路由等功能。</p>
+<p>app_manager.py文件中import了<a href="https://docs.python.org/2/library/inspect.html">instpect</a>和<a href="https://docs.python.org/2/library/itertools.html">itertools</a> module，从而使得开发更方便简洁。inspect模块提供了一些有用的方法，用于类型检测，获取内容，检测是否可迭代等功能。itertools则是一个关于迭代器的模块，可以提供丰富的迭代器类型，在数据处理上尤其有用。</p>
+<h3>_CONTEXT</h3>
+<p>这是一个极其难理解的概念。博主的理解是，_CONTEXT内存储着name:class的key value pairs。为什么需要存储这个内容？实际上这个_CONTEXT携带的信息是所有本APP需要依赖的APP。需要在启动本应用之前去启动，以满足依赖的，比如一个simple_switch.py的应用，如果没有OFPHandler应用作为数据收发和解析的基础的话，是无法运行的。具体文档如下：</p>
+<div class="highlight"><pre><span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="s">&quot;&quot;&quot;</span>
+<span class="s">    A dictionary to specify contexts which this Ryu application wants to use.</span>
+<span class="s">    Its key is a name of context and its value is an ordinary class</span>
+<span class="s">    which implements the context.  The class is instantiated by app_manager</span>
+<span class="s">    and the instance is shared among RyuApp subclasses which has _CONTEXTS</span>
+<span class="s">    member with the same key.  A RyuApp subclass can obtain a reference to</span>
+<span class="s">    the instance via its __init__&#39;s kwargs as the following.</span>
+
+<span class="s">    Example::</span>
+
+<span class="s">        _CONTEXTS = {</span>
+<span class="s">            &#39;network&#39;: network.Network</span>
+<span class="s">        }</span>
+
+<span class="s">        def __init__(self, *args, *kwargs):</span>
+<span class="s">            self.network = kwargs[&#39;network&#39;]</span>
+<span class="s">    &quot;&quot;&quot;</span>
+</pre></div>
+
+
+<h3>_EVENTS</h3>
+<p>用于记录本应用会产生的event。但是当且仅当定义该event的语句在其他模块时才会被使用到。但是目前我还没有遇见过在哪里使用，如果你知道其正确的用法，恳请告知，相互学习。</p>
+<h3>self.__init__</h3>
+<p>__init__函数中初始化了许多重要的成员变量，如self.event_handler用于记录向外提供的事件处理句柄，而self.observer则刚好相反，用于通知app_manager本应用监听何种类型的事件。self.event是事件队列。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_args</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">RyuApp</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">event_handlers</span> <span class="o">=</span> <span class="p">{}</span>        <span class="c1"># ev_cls -&gt; handlers:list</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">observers</span> <span class="o">=</span> <span class="p">{}</span>     <span class="c1"># ev_cls -&gt; observer-name -&gt; states:set</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">threads</span> <span class="o">=</span> <span class="o">[]</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">Queue</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hasattr</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="s">&#39;LOGGER_NAME&#39;</span><span class="p">):</span>
+            <span class="n">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">LOGGER_NAME</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">CONF</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span>
+
+        <span class="c1"># prevent accidental creation of instances of this class outside RyuApp</span>
+        <span class="n">class</span> <span class="n">_EventThreadStop</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+            <span class="n">pass</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">_event_stop</span> <span class="o">=</span> <span class="n">_EventThreadStop</span><span class="p">()</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">is_active</span> <span class="o">=</span> <span class="n">True</span>
+</pre></div>
+
+
+<h3>self.start</h3>
+<p>start函数将启动coroutine去处理_event_loop，并将其加入threads字典中，为什么名字叫threads呢？我也不知道。也许我理解错了？</p>
+<h3>self._event_loop</h3>
+<p>_event_loop函数用于启动事件处理循环，通过调用self.get_handlers(ev, state)函数来找到事件对应的handler，然后处理事件。</p>
+<div class="highlight"><pre>    <span class="n">def</span> <span class="n">get_handlers</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
+        <span class="s">&quot;&quot;&quot;Returns a list of handlers for the specific event.</span>
+
+<span class="s">        :param ev: The event to handle.</span>
+<span class="s">        :param state: The current state. (&quot;</span><span class="n">dispatcher</span><span class="s">&quot;)</span>
+<span class="s">                      If None is given, returns all handlers for the event.</span>
+<span class="s">                      Otherwise, returns only handlers that are interested</span>
+<span class="s">                      in the specified state.</span>
+<span class="s">                      The default is None.</span>
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="n">ev_cls</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">__class__</span>
+        <span class="n">handlers</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">event_handlers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ev_cls</span><span class="p">,</span> <span class="o">[]</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="n">is</span> <span class="n">None:</span>
+            <span class="k">return</span> <span class="n">handlers</span>
+
+    <span class="n">def</span> <span class="n">_event_loop</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">self</span><span class="o">.</span><span class="n">is_active</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+            <span class="n">ev</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">ev</span> <span class="o">==</span> <span class="n">self</span><span class="o">.</span><span class="n">_event_stop:</span>
+                <span class="k">continue</span>
+            <span class="n">handlers</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">get_handlers</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">handler</span> <span class="n">in</span> <span class="n">handlers:</span>
+                <span class="n">handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+</pre></div>
+
+
+<h3>event dispatch</h3>
+<p>应用中可以通过@set_ev_cls修饰符去监听某些事件。当产生event时，通过event去get observer，得到对应的观察者，然后再使用self.send_event函数去发送事件。在这里，实际上就是直接往self.event队列中put event。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">_send_event</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">ev</span><span class="p">,</span> <span class="n">state</span><span class="p">))</span>
+
+<span class="n">def</span> <span class="n">send_event</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
+    <span class="s">&quot;&quot;&quot;</span>
+<span class="s">    Send the specified event to the RyuApp instance specified by name.</span>
+<span class="s">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">name</span> <span class="n">in</span> <span class="n">SERVICE_BRICKS:</span>
+        <span class="k">if</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">EventRequestBase</span><span class="p">):</span>
+            <span class="n">ev</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;EVENT %s-&gt;%s %s&quot;</span> <span class="nv">%</span>
+                  <span class="err">(</span><span class="nv">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+        <span class="n">SERVICE_BRICKS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">_send_event</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;EVENT LOST %s-&gt;%s %s&quot;</span> <span class="nv">%</span>
+                  <span class="err">(</span><span class="nv">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+
+<span class="n">def</span> <span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
+    <span class="s">&quot;&quot;&quot;</span>
+<span class="s">    Send the specified event to all observers of this RyuApp.</span>
+<span class="s">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">observer</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">get_observers</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">send_event</span><span class="p">(</span><span class="n">observer</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+</pre></div>
+
+
+<p>其他函数如注册handler函数：register_handler，注册监听函数：register_observer等都是非常简单直白的代码，不再赘述。</p>
+<h2>AppManager</h2>
+<p>AppManager类是RYU应用的调度中心。用于管理应用的添加删除，消息路由等等功能。</p>
+<p>首先从启动函数开始介绍，我们可以看到run_apps函数中的代码和前文提到的main函数语句基本一样。首先获取一个对象，然后加载对应的apps，然后获取contexts，context中其实包含的是本应用所需要的依赖应用。所以在调用instantiate_apps函数时，将app_lists内的application和contexts中的services都实例化，然后启动协程去运行这些服务。</p>
+<div class="highlight"><pre><span class="nv">@staticmethod</span>
+<span class="n">def</span> <span class="n">run_apps</span><span class="p">(</span><span class="n">app_lists</span><span class="p">):</span>
+    <span class="s">&quot;&quot;&quot;Run a set of Ryu applications</span>
+
+<span class="s">    A convenient method to load and instantiate apps.</span>
+<span class="s">    This blocks until all relevant apps stop.</span>
+<span class="s">    &quot;&quot;&quot;</span>
+    <span class="n">app_mgr</span> <span class="o">=</span> <span class="n">AppManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span>
+    <span class="n">app_mgr</span><span class="o">.</span><span class="n">load_apps</span><span class="p">(</span><span class="n">app_lists</span><span class="p">)</span>
+    <span class="n">contexts</span> <span class="o">=</span> <span class="n">app_mgr</span><span class="o">.</span><span class="n">create_contexts</span><span class="p">()</span>
+    <span class="n">services</span> <span class="o">=</span> <span class="n">app_mgr</span><span class="o">.</span><span class="n">instantiate_apps</span><span class="p">(</span><span class="o">**</span><span class="n">contexts</span><span class="p">)</span>
+    <span class="n">webapp</span> <span class="o">=</span> <span class="n">wsgi</span><span class="o">.</span><span class="n">start_service</span><span class="p">(</span><span class="n">app_mgr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">webapp:</span>
+        <span class="n">services</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">webapp</span><span class="p">))</span>
+    <span class="n">try:</span>
+        <span class="n">hub</span><span class="o">.</span><span class="n">joinall</span><span class="p">(</span><span class="n">services</span><span class="p">)</span>
+    <span class="n">finally:</span>
+        <span class="n">app_mgr</span><span class="o">.</span><span class="nb">close</span><span class="p">()</span>
+</pre></div>
+
+
+<h3>load_apps</h3>
+<p>首先从创建一个apps_lists的生成器（个人理解应该是生成器而非迭代器）。在while循环中，每次pop一个应用进行处理，然后将其本身和其context中的内容添加到services中，再去调用get_dependent_services函数获取其依赖应用，最后将所有的依赖services添加到app_lists中，循环至最终app_lists内元素全都pop出去，完成application的加载。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">load_apps</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">app_lists</span><span class="p">):</span>
+        <span class="n">app_lists</span> <span class="o">=</span> <span class="p">[</span><span class="n">app</span> <span class="k">for</span> <span class="n">app</span>
+                     <span class="n">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="nb">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+                                                      <span class="k">for</span> <span class="n">app</span> <span class="n">in</span> <span class="n">app_lists</span><span class="p">)]</span>
+        <span class="k">while</span> <span class="n">len</span><span class="p">(</span><span class="n">app_lists</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">app_cls_name</span> <span class="o">=</span> <span class="n">app_lists</span><span class="o">.</span><span class="nb">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">context_modules</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">lambda</span> <span class="n">x:</span> <span class="n">x</span><span class="o">.</span><span class="n">__module__</span><span class="p">,</span>
+                                  <span class="n">self</span><span class="o">.</span><span class="n">contexts_cls</span><span class="o">.</span><span class="nb">values</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">app_cls_name</span> <span class="n">in</span> <span class="n">context_modules:</span>
+                <span class="k">continue</span>
+
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;loading app %s&#39;</span><span class="p">,</span> <span class="n">app_cls_name</span><span class="p">)</span>
+
+            <span class="n">cls</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">load_app</span><span class="p">(</span><span class="n">app_cls_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cls</span> <span class="n">is</span> <span class="n">None:</span>
+                <span class="k">continue</span>
+
+            <span class="n">self</span><span class="o">.</span><span class="n">applications_cls</span><span class="p">[</span><span class="n">app_cls_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls</span>
+
+            <span class="n">services</span> <span class="o">=</span> <span class="o">[]</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">context_cls</span> <span class="n">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">context_iteritems</span><span class="p">():</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">contexts_cls</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">context_cls</span><span class="p">)</span>
+                <span class="n">assert</span> <span class="n">v</span> <span class="o">==</span> <span class="n">context_cls</span>
+                <span class="n">context_modules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">context_cls</span><span class="o">.</span><span class="n">__module__</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">issubclass</span><span class="p">(</span><span class="n">context_cls</span><span class="p">,</span> <span class="n">RyuApp</span><span class="p">):</span>
+                    <span class="n">services</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_dependent_services</span><span class="p">(</span><span class="n">context_cls</span><span class="p">))</span>
+
+            <span class="c1"># we can&#39;t load an app that will be initiataed for</span>
+            <span class="c1"># contexts.</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">get_dependent_services</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">context_modules:</span>
+                    <span class="n">services</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">services:</span>
+                <span class="n">app_lists</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="n">in</span> <span class="n">set</span><span class="p">(</span><span class="n">services</span><span class="p">)</span>
+                                  <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">app_lists</span><span class="p">])</span>
+</pre></div>
+
+
+<h3>create_contexts</h3>
+<p>context实例化函数将context中name:service class键值对的内容实例化成对应的对象，以便加入到services 列表中，从而得到加载。首先从列表中取出对应数据，然后判断是否时RyuApp的子类，是则实例化，否则直接赋值service class。load_app函数在读取的时候还会再次判断是否是RyuApp子类。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">create_contexts</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">cls</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">contexts_cls</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">issubclass</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">RyuApp</span><span class="p">):</span>
+            <span class="c1"># hack for dpset</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">_instantiate</span><span class="p">(</span><span class="n">None</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">cls</span><span class="p">()</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;creating context %s&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="n">assert</span> <span class="n">key</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">contexts</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">contexts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">context</span>
+    <span class="k">return</span> <span class="n">self</span><span class="o">.</span><span class="n">contexts</span>
+</pre></div>
+
+
+<h3>instantiate_apps</h3>
+<p>此函数调用了self._instantiate函数，在_instantiate函数中又调用了register_app()函数，此函数将app添加到SERVICE_BRICKS字典之中，然后继续调用了ryu.controller.handler 中的 register_instance函数，最终完成了应用的注册。此后继续调用self._update_bricks函数完成了服务链表的更新，最后启动了所有的应用。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">instantiate_apps</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">app_name</span><span class="p">,</span> <span class="n">cls</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">applications_cls</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">_instantiate</span><span class="p">(</span><span class="n">app_name</span><span class="p">,</span> <span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">self</span><span class="o">.</span><span class="n">_update_bricks</span><span class="p">()</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">report_bricks</span><span class="p">()</span>
+
+    <span class="n">threads</span> <span class="o">=</span> <span class="o">[]</span>
+    <span class="k">for</span> <span class="n">app</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">applications</span><span class="o">.</span><span class="nb">values</span><span class="p">():</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="n">is</span> <span class="ow">not</span> <span class="n">None:</span>
+            <span class="n">threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">threads</span>
+
+
+<span class="n">def</span> <span class="n">_instantiate</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">app_name</span><span class="p">,</span> <span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="c1"># for now, only single instance of a given module</span>
+    <span class="c1"># Do we need to support multiple instances?</span>
+    <span class="c1"># Yes, maybe for slicing.</span>
+    <span class="c1">#LOG.info(&#39;instantiating app %s of %s&#39;, app_name, cls.__name__)</span>
+
+    <span class="k">if</span> <span class="n">hasattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;OFP_VERSIONS&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cls</span><span class="o">.</span><span class="n">OFP_VERSIONS</span> <span class="n">is</span> <span class="ow">not</span> <span class="n">None:</span>
+        <span class="n">ofproto_protocol</span><span class="o">.</span><span class="n">set_app_supported_versions</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">OFP_VERSIONS</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">app_name</span> <span class="n">is</span> <span class="ow">not</span> <span class="n">None:</span>
+        <span class="n">assert</span> <span class="n">app_name</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">applications</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">register_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    <span class="n">assert</span> <span class="n">app</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">applications</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">applications</span><span class="p">[</span><span class="n">app</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">app</span>
+    <span class="k">return</span> <span class="n">app</span>
+</pre></div>
+
+
+<h3>_update_bricks</h3>
+<p>此函数完成了更新service_bricks的功能。首先从获取到service实例，然后再获取到service中的方法，若方法有callers属性，即使用了@set_ev_cls的装饰符，拥有了calls属性。（caller类中的ev_source描述了产生该event的source module， dispatcher描述了event需要在什么状态下才可以被分发。如：HANDSHAKE_DISPATCHER，CONFIG_DISPATCHER等。）最后调用register_observer函数注册了observer。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">_update_bricks</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">SERVICE_BRICKS</span><span class="o">.</span><span class="nb">values</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">_k</span><span class="p">,</span> <span class="n">m</span> <span class="n">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">hasattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s">&#39;callers&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">ev_cls</span><span class="p">,</span> <span class="n">c</span> <span class="n">in</span> <span class="n">m</span><span class="o">.</span><span class="n">callers</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">ev_source:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">brick</span> <span class="o">=</span> <span class="n">_lookup_service_brick_by_mod_name</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">ev_source</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">brick:</span>
+                    <span class="n">brick</span><span class="o">.</span><span class="n">register_observer</span><span class="p">(</span><span class="n">ev_cls</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                            <span class="n">c</span><span class="o">.</span><span class="n">dispatchers</span><span class="p">)</span>
+
+                <span class="c1"># allow RyuApp and Event class are in different module</span>
+                <span class="k">for</span> <span class="n">brick</span> <span class="n">in</span> <span class="n">SERVICE_BRICKS</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">ev_cls</span> <span class="n">in</span> <span class="n">brick</span><span class="o">.</span><span class="n">_EVENTS:</span>
+                        <span class="n">brick</span><span class="o">.</span><span class="n">register_observer</span><span class="p">(</span><span class="n">ev_cls</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                <span class="n">c</span><span class="o">.</span><span class="n">dispatchers</span><span class="p">)</span>
+</pre></div>
+
+
+<h3>ryu.controller.handler.register_instance</h3>
+<p>以上的部分介绍了App的注册，observer的注册，handler的查找和使用，但是，始终没有提到handler在何处注册。实际上，handler的注册在register_instance部分完成了。为什么他的位置在handler文件，而不在app_manager文件呢？个人认为可能是为了给其他非Ryu APP的模块使用吧。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">register_instance</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_k</span><span class="p">,</span> <span class="n">m</span> <span class="n">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">):</span>
+        <span class="c1"># LOG.debug(&#39;instance %s k %s m %s&#39;, i, _k, m)</span>
+        <span class="k">if</span> <span class="n">_has_caller</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">ev_cls</span><span class="p">,</span> <span class="n">c</span> <span class="n">in</span> <span class="n">m</span><span class="o">.</span><span class="n">callers</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="n">i</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="n">ev_cls</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+</pre></div>
+
+
+<h2>Conclusion</h2>
+<p>总体而言，RYU使用了协程，在很大程度上提高了单核性能。同时也使用了许多高效的语句和库，使得代码量非常精简易读。优势方面，RYU开发门槛低，性能好，稳定度强，而且代码迎合OpenStack编写，适合用于数据中心等云场景。劣势方面，RYU还没有实现分布式版本，在大规模网络中只能使用多个单节点分担负载。实现细节上还存在细微的问题，如虽然提供了存储依赖关系的数据结构和获取依赖关系的函数，但是并没有指定一个默认的依赖关系。不过这一点其实並不算大问题，甚至不是问题，因为开发者可以手动去指定。</p>
+<p>认真读完RYU底层的实现代码，觉得学习一门语言需要学习的内容太多，而只有真正去使用时，才会真正的学会和理解。严谨的逻辑，优雅的编码风格，清晰的模块划分能让程序的可读性更高，代码可复用性更强。如果从一个产品的角度讲，RYU算是一个不错的产品，小而美。没有ONOS,OpenDaylight那样庞大，但是作为一个纯SDN控制器而言，用户体验算是非常好的一个了。</p>
+<p>写完这篇之后，估计这个学期就不会再写了，非科研狗非产品狗非bababala狗的渣硕要开始预习期末考试了。希望未来的我会更好。</p>
+<h2>References</h2>
+<p><strong>itertools</strong>：python关于<a href="https://docs.python.org/2/library/itertools.html">迭代器</a>的库。</p>
+<p><strong>contextlib</strong>：<a href="https://docs.python.org/2/library/contextlib.html">contextlib</a></p>
+<p><strong>yield</strong>：类似与return,但是返回的是一个生成器。<a href="http://pyzh.readthedocs.org/en/latest/the-python-yield-keyword-explained.html">中文翻译教程</a></p>
+<p><strong>decorator</strong>：<a href="https://wiki.python.org/moin/PythonDecorators">Python Decorator</a></p>
+<p>coolshell上的介绍<a href="http://coolshell.cn/articles/11265.html">Python修饰器的函数式编程</a></p>
+<p><strong>迭代器</strong>：就是一个可以迭代的数据结构，可以使用for x in 语法去读取，每次返回一个列表。</p>
+<p><strong>生成器</strong>：具有可迭代性，但是每一次只能读取一个元素。</p></div>
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = 'RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
+                <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
+		</li>
+                <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="../../../../category/life.html">life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
+                   
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Links
+                </li>
+            
+                <li><a href="http://www.sdnlab.com/">SDNLAB</a></li>
+                <li><a href="http://www.sdnap.com/">SDNAP</a></li>
+                <li><a href="http://www.richardzhao.me/">Richardzhao</a></li>
+                <li><a href="http://ikimi.net/">Kimi Yang</a></li>
+                <li><a href="http://bbs.iplaypython.com/">玩蛇网论坛</a></li>
+            </ul>
+            </div>
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="https://github.com/muzixing">Github</a></li>
+                <li><a href="http://weibo.com/u/2136552257">Weibo</a></li>
+                <li><a href="http://linkedin.com/profile/view?id=334725834">Linkedin</a></li>
+                <li><a href="http://350959853.qzone.qq.com">Qzone</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+<script>var _gaq=[['_setAccount','UA-45955656-1'],['_trackPageview']];(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s)}(document,'script'))</script>
+ 
+</body>
+</html>
