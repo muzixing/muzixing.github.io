@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html"><h1>初学者的SDN学习之路</h1></a>
-2015-06-22
+            <a href="../pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html"><h1>SDN网络感知服务与最短路径应用</h1></a>
+2015-07-08
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,61 +72,135 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>Software Defined Network顾名思义软件定义网络，可以简单地分为网络和软件两个部分：软件和网络。此外，通过使用OpenFlow协议来实现SDN是一种较为普遍的方式，
-所以本篇将从软件和网络以及OpenFlow三个方面进行介绍。在研究SDN的研究者之中，有相当大比例的网络工程师，他们了解网络，精通网络，然而却并不了解软件开发。除此之外，还有很大比例的研究者是软件工程师，他们软件开发能力出色，然而并不了解网络运作的机制，在接触SDN之前，他们的范围仅仅只是应用层，底层的东西交给全交给主机的协议栈了。还有一部分同学是像我这样，通信工程出身，学的是物理层的编码解码，误码率，电磁波。不像计算机专业那些学生一样，学习各种语言，操弄各种编译器，混迹于github这种全球最大的男性交友网站。剩下最后一种就是又懂网络，又懂编程。这种人，我一般称之为老师，是用来请教问题的，比如地球-某某老师。一般的,他们不屑于看到这种文章，太low。</p>
-<p>本篇主要的目标用户是对网络和软件开发都不太了解，或者网络和编程开发只擅长一种的研究者。由于我也是一个初学者，所以仅当做经验分享吧。如有表达不对的地方，敬请指出，万分感谢。</p>
-<h2>网络</h2>
-<p>软件定义网络，如果不了解网络，那如何去定义一个你不了解的东西？如果不知道网络中存在的问题，如何使用SDN来改善？所以网络知识至关重要。然而作为一个初学者，并不需要网络各个方面都精通，也做不到，仅需学习基础知识，并选择一个研究场景即可。</p>
-<h3>计算机网络</h3>
-<p>学习网络的必修课是计算机网络。计算机网络讲述的是计算机网络的运作机制，都是极其基础重要的知识。谢希仁前辈的《计算机网络》是从底层往上层介绍，从物理层的hub到数据层的网桥和交换机，到网络层的路由器，最后讲到TCP/UDP的传输层，止于应用层，适合有通信背景的学习者。《计算机网络：自顶向下方法》则是从另一个角度出发，从应用层向下介绍，摆脱了物理层的枯燥，这样的思路更适合学习计算机出门的学习者。《CCNA学习指南》也是推荐的书籍之一，前部分内容讲解计算机网络非常简单明了，更贴近于真实网络规划，可以当做计算机网络的进阶书籍阅读。</p>
-<p>学习完计算机网络之后，学习者应该懂得二层交换、三层路由，了解到OSI七层协议栈，也了解了TCP/IP，ARP,ICMP,DNS, DHCP。作为检验标准，读者可以尝试介绍一个客户端主机和跨网段的服务器进行通信的流程。</p>
-<p>关于网络协议，只需了解主要的一两种，其他了解其作用即可，因为协议实在太多了，没有必要学完。RIP、BGP、OSPF和IS-IS需要了解。如果研究的课题与路由协议相关，则可详细学习，初期不建议深入学习。学习成果检验是对比路由协议的差异，如RIP的广播路由信息和OSPF的告知邻居。</p>
-<p>ARP,ICMP，DNS,DHCP这几种功能型报文非常重要，均需了解其工作流程，具体的报文格式，可适当了解关键字段。项目需要时再深入研究。</p>
-<p>TCP/UDP的差别需要牢记，适合的应用场景也许了解。关于TCP的状态机，建议尝试记忆，TCP的三次握手建立连接，四次握手释放连接是面试高频题。</p>
-<p>应用层的仅需了解若干常用协议如SMTP,POP3，HTTP及其对应的传输层的端口号即可。</p>
-<h3>网络场景</h3>
-<p>当学习了基础的网络知识，学习者已经具备了一定知识储备，对网络也有了基础的了解。然而现网之复杂，并不是看了一本《计算机网络》就可以了解的。网路可以按照规模分为局域网，城域网，广域网，也可以按照功能划分成接入网，传输网和核心网。当然按照场景划分就更多了。云计算网络的典型场景数据中心网络是目前研究的热门领域。以校园网为代表的园区网也是较为常见的SDN应用部署场景。跨数据中心的互连互通、WAN的研究则是研究的另一个大方向。</p>
-<p>选择一个自己喜欢的应用场景，进行深入研究，并根据需求学习相关知识，会大大提高学习的效率。比如我选择学习数据中心网络，所以我需要学习一些云计算的知识，需要了解数据中心中的网络架构。我推荐《腾云：云计算和大数据时代的网络技术揭秘》作为云计算网络知识的科普书籍。书中介绍了很多有用的知识，包括云计算的起源，云计算和网络的关系，网络安全，以及数据中心网络中的一些关键网络技术。读完你应该了解到什么是TOR和EOR，知道了刀片服务器，了解到VN-TAG是用来标识虚拟机到TOR的流量的，了解到VXLAN和NVGRE的作用，了解到交换机还可以组装的，除了OVS之外还有NEXUS 1000v等产品。读完这本书，能对现网的一些技术，以及产品有一些科普性质的了解，对后续深入学习研究有很大帮助。</p>
-<p>相信有了前面计算机网络知识作为铺垫，再选定一个特定的研究场景，网络方面的学习已经不成问题。</p>
-<h2>软件开发</h2>
-<p>软件开发是SDN学习中另一个重要方面，这方面我同样不是行家，我也是新手，所以一下言论仅当做自己的经验介绍。</p>
-<h3>选择一门语言，选择一个控制器</h3>
-<p>根据自己的喜好，选择一门语言，然后根据语言，选择一个对应的控制器，这是开发的第一步。如我自己，在折腾了C/C++,Java,Python之后，最终还是皈依到了Python大法的旗下。根据Python语言，我选择了由Python语言写的POX。POX无需安装，直接可以运行。同时，POX代码简单，初学者只需阅读pox/forwarding文件夹下的代码即可。</p>
-<p>根据我们已有的网络知识，我们基本可以看懂pox/forwarding文件夹下的程序逻辑。以l2_learning.py为例，该文件完成了一个简单的二层交换的应用，其逻辑为：记录MAC地址和Port的对应关系，转发时，查询MactoPort表，若查询成功，则转发，若失败则泛洪。后来RYU出现了，封装更好的，性能更好的RYU成为了我的首选。</p>
-<p>在编程的过程中，需要进行程序设计，其中设计的算法以及数据结构的知识在这里不多介绍，有兴趣的读者可以自行学习。</p>
-<h3>以项目为导向，先写起来</h3>
-<p>阅读源码需要有明确的目的性。最开始可以先尝试读一些简单的如Simple switch之类的代码，掌握一些简单的API的使用，理解基础的内容，然后再进行深入的源码阅读。</p>
-<p>在进一步学习SDN开发时，建议以项目为导向，先写起来，在尝试中去解决问题。在写的过程中遇到问题再去查看源码找关键点，如此一来学习非常有效率，且学到的东西很快就可以用上，学习效果好。特别是在OpenFlow协议已经经过多个版本的扩张，目前内容已经非常多的情况下，选择性学习能帮助你降低学习的压力，提高学习的效率。</p>
-<p>时间充裕的情况下，你可以选择好好阅读那些你认为重要的代码。比我在经历了多个APP开发之后，我觉得我需要好好了解一下RYU的内部机制了。所以我花了三天，把从底层socket到协议解析，到事件分发到handler注册的代码认真看了一遍，收益颇多。</p>
-<h3>学会Debug</h3>
-<p>写程序容易，调程序难。掌握正确的调试方法能大大提高开发的效率。</p>
-<p>为提高调试的效率，在程序设计的时候就需要非常注意。写程序时需要注意程序的设计，比如成端的逻辑尽可能写成函数；一个函数不得过长，最好别超过一个屏幕的行数；尽可能模块化地编程，可以提高代码的重用率，将错误域缩小到某模块，某函数，容易定位错误。在调试的过程中，控制变量的思维方式可以大大提升效率。其他编码风格方面的要求，建议按照google的PEP8风格进行代码编写。</p>
-<p>对操作系统的熟悉和理解也将大大提高开发效率。熟悉Linux的基本操作是必须的，如果不清楚，你可能需要自学一下linux和shell。在调试的过程中，错误显示一般是英文，所以能读懂错误信息，并学会谷歌是一项必备的技能。一般的问题谷歌都可以解决。另外，加几个SDN的技术群也是提高DEBUG效率的一个重要手段。</p>
-<p>关于开发的建议还有，构建一套适合自己的、高效的开发环境，以及做好版本控制。比如我自己，我只用sublime编译器，编译运行和调试都直接在终端中进行。版本控制使用git。版本控制的重要性不许赘述，详情谷歌。</p>
-<h2>OpenFlow</h2>
-<p>目前应用最广泛的SDN实现协议:OpenFlow,是学习SDN中必须要学的核心内容。在设计一个SDN的应用时，需要以下的步骤：</p>
+        <div><p>本文将介绍RYU中的网络感知服务，与基于网络服务的最短路径应用，主要内容包括网络资源感知模块，网络监控模块和基于网络信息的最短路由模块介绍。在一个真实的网络环境下，需掌握网络的实时动态，包括网络的资源以及网络流量状况，其中网络的信息包括交换机，端口，主机的信息，以及基于流的流量统计信息和基于端口的流量统计信息。在掌握这些关键的网络信息后，控制器就可以根据这些信息作出当下最正确的路由决策，完成网络的通信。</p>
+<h3>网络资源感知</h3>
+<p>网络资源感知模块用于感知网络资源的实时变化，包括拓扑信息以及主机信息的变化。任何网络应用，可达性都是最基本的要求。SDN网络的集中控制，使得控制器可以根据全局的信息作出最佳决策而无需在交换节点上采用分布式的路由算法。所以感知网络资源是SDN应用最基础的一项服务。网络资源感知模块源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">network_aware</a>.</p>
+<p>实现该模块的类为Network_Aware类，该类描述如下：</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">Network_Aware</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;network_aware&#39;</span>
+
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">Network_Aware</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Network_Aware&quot;</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">topology_api_app</span> <span class="o">=</span> <span class="n">self</span>
+
+        <span class="c1"># links   :(src_dpid,dst_dpid)-&gt;(src_port,dst_port)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># {(sw,port) :[host1_ip,host2_ip,host3_ip,host4_ip]}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">access_table</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># ports</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">switch_port_table</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># dpid-&gt;port_num</span>
+
+        <span class="c1"># dpid-&gt;port_num (outer ports)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">access_ports</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># dpid-&gt;port_num(interior ports)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">interior_ports</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">self</span><span class="o">.</span><span class="n">pre_link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">pre_graph</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">pre_access_table</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">self</span><span class="o">.</span><span class="n">discover_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_discover</span><span class="p">)</span>
+</pre></div>
+
+
+<p>其中数据结构与其作用关系如下：</p>
 <ul>
-<li>明确网络应用的逻辑</li>
-<li>明确对应的操作所采用的OpenFlow报文</li>
-<li>根据应用逻辑以及OpenFlow协议进行编程开发</li>
+<li>link_to_port字典存储交换机之间链路与端口的映射关系；</li>
+<li>access_table字典存储主机的接入信息；</li>
+<li>switch_port_table存储交换机端口列表；</li>
+<li>access_ports存储外向端口（与终端连接的接口）；</li>
+<li>interior_ports存储内部端口;</li>
+<li>grap存储网络拓扑图；</li>
+<li>pre_link_to_port等带有pre前缀的数据结构用于保存上一次获取的信息，用于和当前获取信息做比较。</li>
+<li>_discover函数是主循环函数</li>
 </ul>
-<p>比如一个简单的二层交换机，首先我们明确了他的运作机理是MAC学习和转发，然后明确转发所需要使用的OpenFlow报文是:packet_out和Flow_mod，最后根据应用逻辑以及OpenFlow协议对应的报文，进行编程开发。</p>
-<p>所以我们可以知道OpenFlow在SDN应用中的重要性。</p>
-<p>OpenFlow经过这几年的发展已经从1.0版本发展到了1.5版本，初学者在学习的时候需要注意顺序。建议先学习OF1.0版本，再学习OF1.3版本，更高版本根据需要进行学习。</p>
-<p>OpenFlow1.0版本是OpenFlow火起来时的第一个版本，其内容并不多，Match域仅有12个字段，动作种类也不多，同时也是单流表。对于初学者而言，学习1.0版本可以大大降低学习压力，掌握OpenFlow核心内容。在正确理解SDN，以及可以使用OpenFlow1.0协议开发SDN应用之后，可尝试学习1.3版本协议。1.3版本较1.0版本内容大幅增加。经过几个版本的迭代，OpenFlow1.3版本协议已经有了三种表：</p>
+<p>在_discover函数中，周期执行get_topology和是show_topology函数。在get_topology函数中，控制器可以获取到网络中的交换机和端口信息、链路信息、主机接入信息等。此外，控制器通过实时检测网络变化的异步事件来更新网络资源信息。show_topology函数则是将网络信息格式化地展示在终端中。由于前端开发能力有限，目前仅仅简单将后台数据展现在终端。</p>
+<p>Note that:可以通过置位IS_UPDATE来控制是否输出信息。此外，若拓扑信息不发生变化，将不打印，即仅打印拓扑一次，直至拓扑更新。可以将判断中的and 修改为or,即可每次都打印。</p>
+<p><center><img alt="network info" src="http://ww2.sinaimg.cn/mw690/7f593341jw1etvgswsahwj20k30ddtcl.jpg" /></center>
+<center>图1.网络资源信息</center></p>
+<h3>网络流量监控</h3>
+<p>网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">Network_Monitor</a></p>
+<p>实现网络流量监控的类为：Network_Monitor,具体描述如下：</p>
+<div class="highlight"><pre><span class="n">class</span> <span class="n">Network_Monitor</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;Network_Monitor&#39;</span>
+
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">Network_Monitor</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">self</span><span class="o">.</span><span class="n">datapaths</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">port_stats</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">port_speed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">flow_stats</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">flow_speed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># {&quot;port&quot;:{dpid:{port:body,..},..},&quot;flow&quot;:{dpid:body,..}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">port_link</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># {dpid:{port_no:(config,state,cur),..},..}</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">monitor_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_monitor</span><span class="p">)</span>
+</pre></div>
+
+
+<p>其中数据结构的作用如下：</p>
 <ul>
-<li>flow table</li>
-<li>group table</li>
-<li>meter table</li>
+<li>datapaths记录与控制器连接的datapath;</li>
+<li>port_stats保存端口的统计信息；</li>
+<li>port_speed保存端口的速率信息；</li>
+<li>flow_stats保存流的统计信息；</li>
+<li>flow_speed保存流的速率信息；</li>
+<li>stats保存所有的统计信息；</li>
+<li>port_link保存link的特性信息；</li>
+<li>_monitor函数为主循环函数；</li>
 </ul>
-<p>动作种类也得到了拓展，多流表的概念也变得成熟，Match匹配域已经多达几十个，所以这时OpenFlow已经将Match域分成几类,并以OXM的形式呈现出来。多控制器写作的概念在1.3版本中也已经相当成熟。</p>
-<p>OpenFlow1.3版本为SDN应用开发提供了很多便捷，开发人员可以利用多流表，设计更多复杂的应用逻辑。作为一个比较稳定的版本，1.3版本成为继1.0版本之后控制器支持最多的版本，所以此版本是SDN学习者应该要学习的。</p>
-<h2>总结</h2>
-<p>SDN学习与其他研究方向相比，要求较高，需要了解软件开发以及网络，学习起来，并不太容易。同样作为初学者，我从大三开始接触，有幸有学长带着入门，再后来由于网络知识的缺陷，一度陷入不知道做什么的状态。恶补了网络知识之后，才慢慢走上正轨。然后最近我又遇到了编程上的难题，急需恶补，急需努力提升自己的开发能力。本篇学习笔记，是几年来学习的粗略总结，希望对SDN初学者有帮助。</p>
-<p>最后，兴趣是最好的老师，如果你喜欢SDN这个方向，就会学得很快，比如最近一个学弟兼老乡北邮-毛健炜就进步飞快。如果在学习的过程中没有成就感，没有乐趣，也可以试试别的方向，做自己喜欢的事最重要。</p></div>
+<p>在主循环函数中，周期调用了self._request_stats和self.show_stat函数，前者用于下发统计信息请求报文，后者用于展现统计信息。统计信息回复报文处理函数为：_flow_stats_reply_handler和_port_stats_reply_handler，两者分别使用的@set_ev_cls装饰符，注册监听了对应的事件。至此流量统计模块已经完成了闭环，可以作为底层的服务为上层的应用提供实时的流量统计信息。</p>
+<p><center><img alt="port stats" src="http://ww1.sinaimg.cn/mw690/7f593341jw1etvgsxtlpfj21040f5thy.jpg" /></center>
+<center>图2. 端口流量统计信息</center></p>
+<p><center><img alt="flow stats" src="http://ww2.sinaimg.cn/mw690/7f593341jw1etvgsx513ij20mt0ctgs9.jpg" /></center>
+<center>图3. 流表项流量统计信息</center></p>
+<h3>基于网络资源的最短路径</h3>
+<p>基于以上的网络资源感知模块与网络流量监控模块提供的数据，我们可以做很多事情，比如负载均衡等流量调度应用，有比如安全接入等安全应用。本小节介绍基于网络资源的最短路径应用。衡量最短路径的参考系是跳数，稍加修改可以变为剩余带宽，延时或者多参考系加权的方案。源代码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/shortest_route.py">shortest_route</a></p>
+<p>最短路径应用流程图如下：
+<center><img alt="shortest path" src="http://ww3.sinaimg.cn/mw690/7f593341jw1etvhwx97yjj20870dxq31.jpg" /></center>
+<center>图4, 最短路由流程图</center></p>
+<p>首先，查询主机表，若查找成功，则查询主机位置表，之后直接由控制器将ARP数据包发送给对应的端口，此时控制器并不做ARP的代理。当目标主机回复ARP时，将数据包直接发送到源主机的接入端口。从而完成了ARP的学习过程。由于此时已经掌握了主机的接入信息以及网络信息，当ICMP或其他数据包出发packet_in事件时，则可根据源目两个IP查询到接入交换机，再依据拓扑信息，计算最短路径，从而完成最短路由。若希望使用其他的参考标准来计算最短路径，只需修改计算最短路径的算法即可。</p>
+<p>在网络初始化时，控制器并没有办法发现沉默的主机，原因在于我们没有进行DHCP分配，导致控制器没有掌握主机的IP/MAC信息。所以第一步我们需要处理的数据包是ARP。处理流程具体如下所示：</p>
+<p><center><img alt="arp_handler" src="http://ww4.sinaimg.cn/mw690/7f593341jw1etvhwx229pj209y0aujri.jpg" /></center>
+<center>图5. ARP处理流程图</center></p>
+<p><strong>Note that</strong>:本应用假设主机发起通信时需先发起ARP，不可通过其他途径获取到ARP的信息，否则控制器无法获得目的端主机接入信息，则无法完成路由。对于域外的主机，只需在找不到目的端时，将其送给出口网关即可。此时需使用到子网掩码，网段，路由等概念。本应用仅针对简单局域网计算路径。</p>
+<p><center><img alt="shortest path" src="http://ww3.sinaimg.cn/mw690/7f593341jw1etvgsxenqtj20gy0cradi.jpg" /></center>
+<center>图6. 流表项流量统计信息</center></p>
+<h3>总结</h3>
+<p>网络感知服务对于SDN网络而言非常重要，是一切网络应用的基础。充分利用网络资源的信息，可以对网络进行优化，提高网络的安全性。以上的Network_aware和monitor模块均可以直接做为APP的service app（在RYU中需在_CONTEXTS添加）提供数据服务，希望可以给有需要的读者提供一些帮助。</p></div>
         <hr />
     </div>
 		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html"><h2>初学者的SDN学习之路</h2></a>
+        <div class= "well small"> 2015-06-22
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>Software Defined Network顾名思义软件定义网络，可以简单地分为网络和软件两个部分：软件和网络。此外，通过使用OpenFlow协议来实现SDN是一种较为普遍的方式，
+所以本篇将从软件和网络以及OpenFlow三个方面进行介绍。在研究SDN的研究者之中，有相当大比例的网络工程师，他们了解网络，精通网络，然而却并不了解软件开发。除此之外，还有很大比例的研究者是软件工程师，他们软件开发能力出色，然而并不了解网络运作的机制，在接触SDN之前，他们的范围仅仅只是应用层，底层的东西交给全交给主机的协议栈了。还有一部分同学是像我这样，通信工程出身，学的是物理层的编码解码，误码率，电磁波。不像计算机专业那些学生一样，学习各种语言，操弄各种编译器，混迹于github这种全球最大的男性交友网站。剩下最后一种就是又懂网络，又懂编程。这种人，我一般称之为老师，是用来请教问题的，比如地球-某某老师。一般的,他们不屑于看到这种文章，太low。</p>
+<p>本篇主要的目标用户是对网络和软件开发都不太了解，或者网络和编程开发只擅长一种的研究者。由于我也是一个初学者，所以仅当做经验分享吧。如有表达不对的地方，敬请指出，万分感谢。</p>
+<h2>网络</h2>
+<p>软件定义网络，如果不了解网络，那如何去定义一个你不了解的东西？如果不知道网络中存在的问题 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -192,42 +266,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>5月份的时候，当我还是一个大学生的时候，有个网友问我，你有研究Docker吗？当时我连Docker是什么都不知道。谷歌之后，对Docker产生兴趣，但是一直没有时间去学习。这个周终于将这个学习计划列入了Todolist。所以我花了3天时间，认真地把这<a href="http://dockerpool.com/static/books/docker_practice/index.html">《Docker 从入门到实践》</a>看完并实践了一遍，收获颇丰。虽然我的导师以及我自己还是觉得我在瞎转，而且我觉得没有方向的日子很痛苦。所以只好自己做计划，学习点新知识，打打基础了。本篇内容主要介绍什么是Docker、Docker简单入门以及如何使用Docker部署SDN环境，以及docker的网络配置等内容。What is Docker和Why Docker部分摘自《Docker从入门到实践》。</p>
 <h3><a href="https://www.docker.com/whatisdocker/">What is Docker</a></h3>
 <p>Docker 是一个开源项目，诞生于 2013 年初，最初是 dotCloud 公司内部的一个业余项目。它基于 Google 公司推出的 Go 语言实现。 项目后来加入了 Linux 基金会，遵从了 Apache ...</p> <a class="btn btn-info xsmall" href="../pages/2014/12/03/dockerbu-shu-sdnhuan-jing.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html"><h2>Load balance(Multipath) Application on RYU</h2></a>
-        <div class= "well small"> 2014-11-07
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>本篇博文介绍的是如何在RYU上通过使用select group 来实现multipath，从而实现流量的调度，完成简单的负载均衡Demo。OpenFlow13中有group table,可用于实现组播和冗余容灾等功能。实验中还是用了queue,完成了链路带宽的保障。</p>
-<h2>相关工作</h2>
-<p>要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。</p>
-<h3>网络拓扑</h3>
-<div class="highlight"><pre><span class="s">&quot;&quot;&quot;Custom loop topo example</span>
-
-<span class="s">   There are two paths between host1 and host2.</span>
-
-
-<span class="s">                |--------switch2 --------|</span>
-<span class="s">                |                        |</span>
-<span class="s">   host1 --- switch1                   switch4 -----host2</span>
-<span class="s">                |                        |   |------host3</span>
-<span class="s">                -------- switch3 ---------</span>
-<span class="s">                            |</span>
-<span class="s">                          host4</span>
-
-<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

@@ -62,6 +62,29 @@
  
 
     <div class='article'>
+        <a href="./pages/2014/12/19/ryuxue-xi-oslo.html"><h2>RYU学习:Oslo</h2></a>
+        <div class= "well small"> 2014-12-19
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>前段时间开始认真看了一下RYU的源码，发现OSLO是一个非常方便的命令行解析库，可以用于CLI和CONF的解析。oslo是<a href="https://wiki.openstack.org/wiki/Oslo">OpenStack</a>发起的项目，全称为OpenStack Common Libraries,是OpenStack Projects共享的基础库。</p>
+<h3>Oslo</h3>
+<p>在RYU的目录下可以找到cfg.py文件，这个文件中import了oslo的相关模块，以便调用时减少引用数目。从文件中可以发现oslo.config.cfg文件是关键文件，其在系统中的文件位置在：/usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py。想查看源码的读者可以自行查看。在该cfg.py文件中 定义了ConfigOpts类，包含了_opts, _groups等成员变量。该类完成了命令行和配置参数的解析。</p>
+<p>如果要快速学习某一个知识，最好的办法就是把它用起来。所以首先我会介绍一个入门的教程。如果你没有看懂，可以去看原始的<a href="http://www.giantflyingsaucer.com/blog/?p=4822">教程</a>。</p>
+<p>首先安装<a href="https://virtualenv.pypa.io/en/latest/virtualenv.html">python-virtualenv</a>，此python库可以用于创建一个虚拟的，与外界隔离的运行环境，听起来和docker好像有点像。</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/12/19/ryuxue-xi-oslo.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2014/12/10/ryuxue-xi-eventlet.html"><h2>RYU学习:eventlet</h2></a>
         <div class= "well small"> 2014-12-10
 
@@ -161,42 +184,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <h3>实验步骤</h3>
 <p>本实验步骤将介绍如何在一台机器上完成sflow流量监控实验。实验需要运行一个控制器，可以使用mininet自带的控制器，也可以使用RYU等控制器。然后运行mininet，设置OVS的sFlow功能，从而从8008端口上查看到相应的数据。</p>
 <h3>启动mininet ...</h3> <a class="btn btn-info xsmall" href="./pages/2014/11/21/sflowru-men-chu-she.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/11/07/load-balancemultipath-application-on-ryu.html"><h2>Load balance(Multipath) Application on RYU</h2></a>
-        <div class= "well small"> 2014-11-07
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>本篇博文介绍的是如何在RYU上通过使用select group 来实现multipath，从而实现流量的调度，完成简单的负载均衡Demo。OpenFlow13中有group table,可用于实现组播和冗余容灾等功能。实验中还是用了queue,完成了链路带宽的保障。</p>
-<h2>相关工作</h2>
-<p>要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。</p>
-<h3>网络拓扑</h3>
-<div class="highlight"><pre><span class="s">&quot;&quot;&quot;Custom loop topo example</span>
-
-<span class="s">   There are two paths between host1 and host2.</span>
-
-
-<span class="s">                |--------switch2 --------|</span>
-<span class="s">                |                        |</span>
-<span class="s">   host1 --- switch1                   switch4 -----host2</span>
-<span class="s">                |                        |   |------host3</span>
-<span class="s">                -------- switch3 ---------</span>
-<span class="s">                            |</span>
-<span class="s">                          host4</span>
-
-<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/11/07/load-balancemultipath-application-on-ryu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
