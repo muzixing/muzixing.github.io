@@ -62,31 +62,6 @@
  
 
     <div class='article'>
-        <a href="../pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html"><h2>RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager</h2></a>
-        <div class= "well small"> 2014-12-27
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>每接触一个控制器我都会习惯性的把控制器的源码读一读，走一走处理流程，RYU也不例外。本篇博文将从main函数入手，讲述RYU的ryuapp基类细节、app_manager类如何load apps，注册并运行application，Event的产生以及分发，还有最重要的应用ofp_handler。文章将以RYU真实运行流程作为主线，详细讲述RYU如何运作。如果文中出现理解错的地方，敬请指出，万分感谢！转载请声明原出处。</p>
-<h2>main()</h2>
-<p>RYU的main函数在ryu/cmd/manager.py文件中。main函数中CONF部分已经在在前一篇<a href="http://www.muzixing.com/pages/2014/12/19/ryuxue-xi-oslo.html">《RYU学习：oslo》</a>已经有所介绍，所以这次关注的重点的是后续部分，如app_manager如何工作。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
-    <span class="n">try:</span>
-        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
-             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">,</span>
-             <span class="n">default_config_files</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/usr/local/etc/ryu ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
         <a href="../pages/2014/12/19/ryuxue-xi-oslo.html"><h2>RYU学习:Oslo</h2></a>
         <div class= "well small"> 2014-12-19
 
@@ -173,6 +148,42 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>不久之前，onlab的那群人，发布了ONOS。同时也在SIGCOMM上发表了一篇论文<a href="http://onos.wpengine.com/wp-content/uploads/2014/11/HotSDN-paper-2014-ONOS-Towards-an-Open-Distributed-SDN-OS.pdf">ONOS: Towards an Open, Distributed SDN OS</a>,这引起了很多人的关注。博主刚好得知这个消息，阅读了一遍ONOS的论文，总（翻）结（译）了一下论文的内容，作为自己的论文笔记（好长的笔记）。但是越来越感觉读论文，然后写一些读书或者读论文笔记没有意思。因为写着写着，写成了翻译，完全没有自己的观点。还不如去做些实验，写点教程来得实在。读研究生的生活也感觉有些无所事事了，我想我应该做点有意义的事情，比如学一下Docker, OpenStack之类的。搞学术，学术不让啊！</p>
 <h2>ABSTRACT</h2>
 <p>ONOS(Open Networking Operating System)是一个分布式的SDN控制平台。ONOS满足了大规模网络操作系统对性能，拓展性等需求。在论文中，他们提出了来那个个ONOS的模型。第一个模型实现了核心的特性，完成了一个分布式的网络操作系统模型，但是性能不够好。第二个模型则在第一个模型的基础之上 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/11/26/onoslun-wen-jie-xi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/11/21/sflowru-men-chu-she.html"><h2>sFlow入门初涉</h2></a>
+        <div class= "well small"> 2014-11-21
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p><a href="http://www.sflow.org/sFlowOverview.pdf">sFlow</a>是一个应用在高速交换网络中的监控软件。sFlow需要交换机支持才能使用，万幸OpenvSwitch支持这个功能。netflow同样也是类似功能的软件，可惜没有接触过，也只是听过名字而已。第一次接触到sFlow之后，就觉得很感兴趣，跟着<a href="http://www.sdnlab.com/3760">SDNLAB</a>的教程做了一遍之后，记录下自己的学习过程。</p>
+<h3>安装sFlow</h3>
+<p>下载sFlow代码：</p>
+<div class="highlight"><pre><span class="n">http:</span><span class="sr">//</span><span class="n">pan</span><span class="o">.</span><span class="n">baidu</span><span class="o">.</span><span class="n">com</span><span class="sr">/s/</span><span class="mi">1</span><span class="n">mgmOVck</span>
+</pre></div>
+
+
+<p>解压缩，安装：</p>
+<div class="highlight"><pre><span class="n">tar</span> <span class="o">-</span><span class="n">zxvf</span> <span class="n">sflow</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">cd</span> <span class="n">sflow</span><span class="o">/</span><span class="n">sflow</span><span class="o">-</span><span class="n">rt</span>
+<span class="o">./</span><span class="n">start</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+
+
+<p>此时通过浏览器127:0.0.1:8008可以查看到生成的页面。</p>
+<h3>实验步骤</h3>
+<p>本实验步骤将介绍如何在一台机器上完成sflow流量监控实验。实验需要运行一个控制器，可以使用mininet自带的控制器，也可以使用RYU等控制器。然后运行mininet，设置OVS的sFlow功能，从而从8008端口上查看到相应的数据。</p>
+<h3>启动mininet ...</h3> <a class="btn btn-info xsmall" href="../pages/2014/11/21/sflowru-men-chu-she.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

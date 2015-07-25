@@ -62,43 +62,6 @@
  
 
     <div class='article'>
-        <a href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html"><h2>【原创】OpenFlow通信流程解读</h2></a>
-        <div class= "well small"> 2013-12-12
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>接触了这么久的SDN，OpenFlow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对OpenFlow协议通信流程的一些理解。</p>
-<h2>SDN中Switch和controller</h2>
-<p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
-<h3>switch组成与传统交换机的差异</h3>
-<h4>switch组成</h4>
-<p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
-<ul>
-<li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
-<li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
-</ul>
-<h4>of中sw与传统交换机的差异</h4>
-<ul>
-<li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
-<li>运行of协议，实现许多路由器的功能，比如组播。</li>
-<li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
-</ul>
-<h4>OpenFlow的switch可以从以下方式获得</h4>
-<ul>
-<li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
         <a href="./pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html"><h2>【原创】SDN下的分布式广播风暴解决方案</h2></a>
         <div class= "well small"> 2013-12-07
 
@@ -225,6 +188,50 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <span class="sr">//</span><span class="err">——————————————————————————————————————————————</span>
 <span class="nb">int</span> <span class="n">min1</span> <span class="o">=</span> <span class="o">-</span><span class="mi">65534</span><span class="p">,</span><span class="n">min2</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">No</span><span class="p">,</span><span class="n">No_1</span><span class="p">,</span><span class="n">No_2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span><span class="n">total</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">z_num</span><span class="o">=-</span><span class="mi">1</span><span class="p">;</span><span class="sr">//</span><span class="err">初始化参数；</span>
 <span class="k">for</span><span class="p">(</span><span class="nb">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;(</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">)</span><span class="o">||</span><span class="p">(</span><span class="n">j</span><span class="o">&lt;</span><span class="mi">1 ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/11/29/nge-zheng-shu-qiu-qi-zhong-ren-yi-n-1ge-shu-de-cheng-ji-zhong-de-zui-da-de-ge-jin-yong-chu-fa.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html"><h2>【原创】scapy简单教程</h2></a>
+        <div class= "well small"> 2013-11-29
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>如果你是网络研究的爱好者，有一个工具是对你很有用的，那就是scapy!</p>
+<p>scapy能够封装出目前网络上绝大多数（不确定是不是全部）的数据包，如IP，ARP,ICMP。有了这些数据包，你再也不需要为如何产生某些数据包而烦恼了。</p>
+<h3>首先我们需要先安装scapy</h3>
+<p>具体可以自行google,baidu,或者查看：http://www.secdev.org/projects/scapy/doc/installation.html</p>
+<h3>构建一个简单的IP包</h3>
+<div class="highlight"><pre><span class="n">ip_paket</span> <span class="o">=</span> <span class="n">IP</span><span class="p">(</span><span class="n">dst</span> <span class="o">=</span> <span class="s">&#39;10.0.0.1&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>这样你就可以构造出一个IP包了。括弧里面填写的内容就是相关字段的内容。</p>
+<h3>查看字段</h3>
+<p>如果你想知道有那些字段，那么你就需要用到ls()命令。如：</p>
+<div class="highlight"><pre><span class="n">ls</span><span class="err">（</span><span class="n">IP</span><span class="err">）</span>
+</pre></div>
+
+
+<p>运行结果：</p>
+<p><img alt="ls" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=a1592a2c0cf41bd5de53e8f161e1f0f6/d31b0ef41bd5ad6e0183a9ed83cb39dbb6fd3cbb.jpg?referer=d6124b2ee9c4b7456d8382267c5a&amp;x=.jpg" /></p>
+<p>ls在scapy中可以直接对任何结构体进行解析。可以把数据包的内容展现在你面前。</p>
+<h5>我们还可以直接查看某一个字段</h5>
+<p><img alt="view" src="http://c.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=2b5a4b2cb251f819f525034fea8f3bd0/b21bb051f81986182432228348ed2e738bd4e644.jpg?referer=1ab2a90a249759ee134755fb425a&amp;x=.jpg" /></p>
+<p>Payload为数据包的净荷，可以由以下的代码可以查看payload。</p>
+<p><img alt="PAYLOAD" src="http://a.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=ee699c54f4246b607f0eb271dbc36b71/6a63f6246b600c33d7241ccf184c510fd9f9a15c.jpg?referer=fd54aeb5b0b7d0a222de31ad0f32&amp;x=.jpg" /></p>
+<p>我们继续感受一下scapy的便捷。</p>
+<h5>我们也可以看看scapy的封装解封装能力！</h5>
+<p><img alt="packet" src="http://h.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=fc0780c7f536afc30a0c3f6083229af9/79f0f736afc37931f51d4b2ee9c4b74543a91144.jpg?referer=5649b43f6c061d95245102085f5b&amp;x=.jpg" /></p>
+<h5>数据包的发送与接收 ...</h5> <a class="btn btn-info xsmall" href="./pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

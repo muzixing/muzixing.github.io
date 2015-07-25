@@ -62,35 +62,6 @@
  
 
     <div class='article'>
-        <a href="../pages/2015/05/10/getting-started-with-restapi-of-ryu.html"><h2>Getting started with RESTAPI of RYU</h2></a>
-        <div class= "well small"> 2015-05-10
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>在使用RYU的过程中，有时需要使用web拓扑，有时也需要通过API去下发流表等操作。这些操作在RYU中都会使用到RESTAPI。在学习RYU的过程中多次涉及到REST相关的内容，总是不知道如何实现和使用。最近在做实验需要这方面的知识，才有机会去学习REST并总结成博文。希望能给其他学习者提供帮助。本篇博文将简要介绍两部分内容：</p>
-<ul>
-<li>What is REST?</li>
-<li>How to use REST API in RYU?</li>
-</ul>
-<h2>What is REST</h2>
-<p><a href="http://zh.wikipedia.org/zh/REST">REST</a>:表征性状态传输（英文：Representational State Transfer，简称REST）是Roy Fielding博士在2000年他的博士论文中提出来的一种软件架构风格。更多REST的相关介绍可以查看<a href="http://www.restapitutorial.com/lessons/whatisrest.html">视频介绍</a>.</p>
-<p>REST架构风格中，资源是通过URI来描述的。对资源的操作采用了HTTP的GET，POST，PUT和DELETE方法相对应。资源的表现形式可以是json或xml。REST的架构是Client-Server架构，同时链接是无状态的。所以要求在传输的过程中需要包含状态信息。此外，可以使用cache机制增进性能。在上述视频中提到REST的6中限制为：</p>
-<ul>
-<li>Uniform Interface</li>
-<li>Stateless</li>
-<li>Cacheable ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2015/05/10/getting-started-with-restapi-of-ryu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
         <a href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html"><h2>RYU3.16 GUI安装与Topology模块分析</h2></a>
         <div class= "well small"> 2015-04-21
 
@@ -192,6 +163,29 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
              <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">,</span>
              <span class="n">default_config_files</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/usr/local/etc/ryu ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/12/19/ryuxue-xi-oslo.html"><h2>RYU学习:Oslo</h2></a>
+        <div class= "well small"> 2014-12-19
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>前段时间开始认真看了一下RYU的源码，发现OSLO是一个非常方便的命令行解析库，可以用于CLI和CONF的解析。oslo是<a href="https://wiki.openstack.org/wiki/Oslo">OpenStack</a>发起的项目，全称为OpenStack Common Libraries,是OpenStack Projects共享的基础库。</p>
+<h3>Oslo</h3>
+<p>在RYU的目录下可以找到cfg.py文件，这个文件中import了oslo的相关模块，以便调用时减少引用数目。从文件中可以发现oslo.config.cfg文件是关键文件，其在系统中的文件位置在：/usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py。想查看源码的读者可以自行查看。在该cfg.py文件中 定义了ConfigOpts类，包含了_opts, _groups等成员变量。该类完成了命令行和配置参数的解析。</p>
+<p>如果要快速学习某一个知识，最好的办法就是把它用起来。所以首先我会介绍一个入门的教程。如果你没有看懂，可以去看原始的<a href="http://www.giantflyingsaucer.com/blog/?p=4822">教程</a>。</p>
+<p>首先安装<a href="https://virtualenv.pypa.io/en/latest/virtualenv.html">python-virtualenv</a>，此python库可以用于创建一个虚拟的，与外界隔离的运行环境，听起来和docker好像有点像。</p>
+<div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/19/ryuxue-xi-oslo.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

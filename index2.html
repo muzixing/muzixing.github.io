@@ -62,35 +62,6 @@
  
 
     <div class='article'>
-        <a href="./pages/2015/05/10/getting-started-with-restapi-of-ryu.html"><h2>Getting started with RESTAPI of RYU</h2></a>
-        <div class= "well small"> 2015-05-10
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>在使用RYU的过程中，有时需要使用web拓扑，有时也需要通过API去下发流表等操作。这些操作在RYU中都会使用到RESTAPI。在学习RYU的过程中多次涉及到REST相关的内容，总是不知道如何实现和使用。最近在做实验需要这方面的知识，才有机会去学习REST并总结成博文。希望能给其他学习者提供帮助。本篇博文将简要介绍两部分内容：</p>
-<ul>
-<li>What is REST?</li>
-<li>How to use REST API in RYU?</li>
-</ul>
-<h2>What is REST</h2>
-<p><a href="http://zh.wikipedia.org/zh/REST">REST</a>:表征性状态传输（英文：Representational State Transfer，简称REST）是Roy Fielding博士在2000年他的博士论文中提出来的一种软件架构风格。更多REST的相关介绍可以查看<a href="http://www.restapitutorial.com/lessons/whatisrest.html">视频介绍</a>.</p>
-<p>REST架构风格中，资源是通过URI来描述的。对资源的操作采用了HTTP的GET，POST，PUT和DELETE方法相对应。资源的表现形式可以是json或xml。REST的架构是Client-Server架构，同时链接是无状态的。所以要求在传输的过程中需要包含状态信息。此外，可以使用cache机制增进性能。在上述视频中提到REST的6中限制为：</p>
-<ul>
-<li>Uniform Interface</li>
-<li>Stateless</li>
-<li>Cacheable ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2015/05/10/getting-started-with-restapi-of-ryu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
         <a href="./pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html"><h2>RYU3.16 GUI安装与Topology模块分析</h2></a>
         <div class= "well small"> 2015-04-21
 
@@ -189,6 +160,31 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>本篇博文将讲述1）如何搭建fatree网络拓扑和2）如何在mininet中拓展iperfmulti功能。</p>
 <p>众所周知，数据中心是目前网络研究的一个热门领域。随着云计算的兴起与发展，会对数据中心网络提出更多的需求，也为学术研究提供了更多的课题。TE（Traffic Engineering）是网络研究中最基础的研究之一，在TE中Load balance是比较主要的研究内容之一。 然而由于数据中心网络的流量走势与传统网络不同，导致数据中心网络与传统网络的架构有所不同。在传统网络中上下行流量在总流量中占据很大比重，而相比之下，数据中心的流量分类中，横向流量的比重要远远大于传统网络架构的比重。为了更好解决数据中心网络流量问题，数据中心架构的设计就变得非常重要，在众多网络架构中，Fat-tree架构是比较出名和成功的。</p>
 <p>SDN兴起于校园网，盛开于数据中心，这是一种比较准确的描述。目前SDN的研究领域内 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html"><h2>RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager</h2></a>
+        <div class= "well small"> 2014-12-27
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>每接触一个控制器我都会习惯性的把控制器的源码读一读，走一走处理流程，RYU也不例外。本篇博文将从main函数入手，讲述RYU的ryuapp基类细节、app_manager类如何load apps，注册并运行application，Event的产生以及分发，还有最重要的应用ofp_handler。文章将以RYU真实运行流程作为主线，详细讲述RYU如何运作。如果文中出现理解错的地方，敬请指出，万分感谢！转载请声明原出处。</p>
+<h2>main()</h2>
+<p>RYU的main函数在ryu/cmd/manager.py文件中。main函数中CONF部分已经在在前一篇<a href="http://www.muzixing.com/pages/2014/12/19/ryuxue-xi-oslo.html">《RYU学习：oslo》</a>已经有所介绍，所以这次关注的重点的是后续部分，如app_manager如何工作。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
+    <span class="n">try:</span>
+        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
+             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">,</span>
+             <span class="n">default_config_files</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/usr/local/etc/ryu ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
