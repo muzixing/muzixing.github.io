@@ -62,6 +62,32 @@
  
 
     <div class='article'>
+        <a href="./pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html"><h2>Opendaylight中开发模块Ping</h2></a>
+        <div class= "well small"> 2014-08-06
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>在安装和运行opendaylight之后，我们需要了解opendaylight各个目录的作用，运行机制。在此基础之上，我们需要动手进行第一个ODL模块的开发，在开发中找到ODL的重要所在。接下来的教程是在完成官网的一篇教程的基础上的总结和介绍，希望读者能有所收获。</p>
+<h3>摘要</h3>
+<p>本篇教程主要介绍如何在ODL上使用MD-SAL开发一个简单的TCP ping插件。这个插件实现了向指定地址发送ICMP，探测IP地址可达性的功能。首先我们需要使用YANG定义一个ping model,然后我们需要实现一个ping plugin,实现ping功能，再然后创建ping service 用于提供ping服务，最后我们通过REST API来实现北向接口使用ping service。</p>
+<p>其中每一个功能，我们将其创建为maven工程，并作为osgi的bundle。所以我们总共需要创建4个OSGI 的bundle：</p>
+<ul>
+<li>
+<p>Northbound API / Implementation [ping-northbound]</p>
+<p>The northbound API defines the interface for interacting with the given service. For example, a REST ...</p></li></ul> <a class="btn btn-info xsmall" href="./pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2014/08/02/opendaylightru-men-jiao-cheng.html"><h2>OpenDaylight入门教程</h2></a>
         <div class= "well small"> 2014-08-02
 
@@ -167,39 +193,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <span class="p">{</span>
     <span class="n">auto</span> <span class="n">fm</span> <span class="o">=</span> <span class="nn">v1::</span><span class="n">ofp_flow_mod</span><span class="p">()</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">())</span>
                <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/05/04/noxshi-xian-natgong-neng.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html"><h2>[c]线程池的实现</h2></a>
-        <div class= "well small"> 2014-04-28
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>这是C语言培训的最后一题，线程池，今天看了看控制器的代码，看到了线程池的影子，然后发现应该赶紧写完这篇了。哎，文笔不行，写书写成屎了！希望再修改几次能不丢人吧。</p>
-<p>本篇主要介绍如何实现一个线程池模型，task是简单的打印，当然如果你想让线程池完成你的功能线程的管理，只需要将task换成你的线程就可以了。</p>
-<h3>线程池</h3>
-<p>（摘自百度百科）线程池是一种多线程处理形式，处理过程中将任务添加到队列，然后在创建线程后自动启动这些任务。线程池线程都是后台线程。</p>
-<p>组成：</p>
-<ul>
-<li>线程池管理器（ThreadPoolManager）:用于创建并管理线程池</li>
-<li>工作线程（WorkThread）: 线程池中线程</li>
-<li>任务接口（Task）:每个任务必须实现的接口，以供工作线程调度任务的执行。</li>
-<li>任务队列:用于存放没有处理的任务。提供一种缓冲机制。</li>
-</ul>
-<p>更多可访问：http://baike.baidu.com/link?url=caXqYSEEEDLS28VYuSzSxPbTM3dt_5WwXqF2-TUxR8ptJxggJaJHfTZ3_9Hs4urU#2</p>
-<h3>threadpool.h</h3>
-<p>threadpool.h的功能主要是定义工作线程的结构和线程池结构，声明相关的函数，如创建函数。</p>
-<div class="highlight"><pre><span class="c1">#ifndef ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

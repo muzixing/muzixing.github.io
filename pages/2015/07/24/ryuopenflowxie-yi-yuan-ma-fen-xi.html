@@ -379,6 +379,11 @@ StringifyMixin类的定义在lib.stringify文件，有兴趣的读者可自行�
 </pre></div>
 
 
+<p>文件中最后一句代码很重要，最后一句完成了服务的注册，告知app_manager,本模块需要以来于服务：ofp_handler,即需要启动ofp_handler才能完成本模块的工作。</p>
+<div class="highlight"><pre><span class="n">handler</span><span class="o">.</span><span class="n">register_service</span><span class="p">(</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">)</span>
+</pre></div>
+
+
 <h3><strong>Struct lib</strong></h3>
 <p>Python的<a href="https://docs.python.org/2/library/struct.html">struct</a>库是一个简单的，高效的数据封装\解封装的库。该库主要包含5个函数，介绍如下：</p>
 <ul>

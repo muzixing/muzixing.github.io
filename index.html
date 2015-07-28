@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html"><h1>SDN网络感知服务与最短路径应用</h1></a>
-2015-07-08
+            <a href="./pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html"><h1>Ryu:OpenFlow协议源码分析</h1></a>
+2015-07-24
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
  
@@ -72,7 +72,366 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>本文将介绍RYU中的网络感知服务，与基于网络服务的最短路径应用，主要内容包括网络资源感知模块，网络监控模块和基于网络信息的最短路由模块介绍。在一个真实的网络环境下，需掌握网络的实时动态，包括网络的资源以及网络流量状况，其中网络的信息包括交换机，端口，主机的信息，以及基于流的流量统计信息和基于端口的流量统计信息。在掌握这些关键的网络信息后，控制器就可以根据这些信息作出当下最正确的路由决策，完成网络的通信。</p>
+        <div><p>Ryu支持OpenFlow所有的版本，是所有SDN控制器中对OpenFlow支持最好的控制器之一。这得益于Ryu的代码设计，Ryu中关于OpenFlow协议的代码量不多。阅读Ryu源码，不仅让我了解到了Ryu的运行细节，也学会了许多的编码知识。这为我当前开发的协议提供了很大的帮助。</p>
+<p>本篇将从交换机与控制器建立连接开始，介绍OpenFlow报文的解析的相关代码实现。关于如何注册handler和发送报文，可查看之前的<a href="http://www.muzixing.com/pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html">RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager</a>。该篇侧重点为Ryu整体架构的运作，重点在RyuApp和AppManager;本篇重点在与详细介绍OpenFlow的解析和封装实现。希望对读者提供帮助。</p>
+<h3><strong>Ofp_handler</strong></h3>
+<p>负责底层数据通信的模块是ofp_handler模块。ofp_handler启动之后，start函数实例化了一个controller.OpenFlowController实例。OpenFlowController实例化之后，立即调用_<em>call_</em>()函数，call函数启动了server_loop去创建server socket，其handler为domain_connection_factory函数。每当收到一个switch连接，domain_connection_factory就会实例化一个datapath对象。这个对象用于描述交换机的所有行为。其中定义了接收循环和发送循环。</p>
+<h3><strong>Datapath</strong></h3>
+<p>datapath.serve函数是socket通信收发逻辑的入口。该函数启动了一个绿色线程去处理发送循环，然后本线程负责接收循环的处理。self._send_loop是发送主循环。其主要逻辑为：不断获取发送队列是否有数据，若有，则发送；底层调用的是socket.send_all（）函数, 逻辑比较简单，不加赘述。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">serve</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+    <span class="n">send_thr</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_send_loop</span><span class="p">)</span>
+
+    <span class="c1"># send hello message immediately</span>
+    <span class="n">hello</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPHello</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">hello</span><span class="p">)</span>
+
+    <span class="n">try:</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">_recv_loop</span><span class="p">()</span>
+    <span class="n">finally:</span>
+        <span class="n">hub</span><span class="o">.</span><span class="nb">kill</span><span class="p">(</span><span class="n">send_thr</span><span class="p">)</span>
+        <span class="n">hub</span><span class="o">.</span><span class="n">joinall</span><span class="p">([</span><span class="n">send_thr</span><span class="p">])</span>
+</pre></div>
+
+
+<p>接收函数_reck_loop中实现了数据的接收和解析。 重点较多，解释作为代码注释，注释如下：</p>
+<div class="highlight"><pre>    <span class="nv">@_deactivate</span>
+    <span class="n">def</span> <span class="n">_recv_loop</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">bytearray</span><span class="p">()</span>   <span class="c1">#初始化一个字节数组</span>
+        <span class="n">required_len</span> <span class="o">=</span> <span class="n">ofproto_common</span><span class="o">.</span><span class="n">OFP_HEADER_SIZE</span>   <span class="c1"># ofproto_common模块定义了OpenFlow常用的公共属性         </span>
+                                                        <span class="c1"># 如报头长度=8</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">self</span><span class="o">.</span><span class="n">is_active:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="nb">socket</span><span class="o">.</span><span class="nb">recv</span><span class="p">(</span><span class="n">required_len</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">self</span><span class="o">.</span><span class="n">is_active</span> <span class="o">=</span> <span class="n">False</span>
+                <span class="n">break</span>
+            <span class="n">buf</span> <span class="o">+=</span> <span class="n">ret</span>
+            <span class="k">while</span> <span class="n">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">required_len:</span>
+                <span class="c1"># ofproto_parser是在Datapath实例的父类ProtocolDesc的属性。</span>
+                <span class="c1"># 用于寻找对应协议版本的解析文件,如ofproto_v1_0_parser.py</span>
+                <span class="c1"># header函数是解析报头的函数。定义在ofproto_parser.py。</span>
+                <span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">)</span> <span class="o">=</span> <span class="n">ofproto_parser</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+                <span class="n">required_len</span> <span class="o">=</span> <span class="n">msg_len</span>
+                <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">required_len:</span>
+                    <span class="n">break</span>
+                <span class="c1"># ofproto_parser.msg的定义并没有在对应的ofproto_parser中</span>
+                <span class="c1"># msg函数的位置和header函数位置一样，都在ofproto_parser.py中。</span>
+                <span class="c1"># msg返回的是解析完成的消息。</span>
+                <span class="c1"># msg函数返回了msg_parser函数的返回值</span>
+                <span class="c1"># ofproto_parser.py中的_MSG_PARSERS记录了不同版本对应的msg_parser。其注册手法是通过@ofproto_parser.register_msg_parser(ofproto.OFP_VERSION)装饰器。</span>
+                <span class="c1"># 在对应版本的ofproto_parser,如ofproto_v1_0_parser.py中，都有定义一个同名的_MSG_PARSERS字典，这个字典用于记录报文类型和解析函数的关系。此处命名不恰当，引入混淆。</span>
+                <span class="c1"># parser函数通过@register_parser来将函数注册/记录到_MSG_PARSERS字典中。</span>
+
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">ofproto_parser</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">self</span><span class="p">,</span>
+                                         <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+                <span class="c1"># LOG.debug(&#39;queue msg %s cls %s&#39;, msg, msg.__class__)</span>
+                <span class="k">if</span> <span class="n">msg:</span>
+                    <span class="c1"># Ryu定义的Event system很简单，在报文名前加上前缀“Event”,即是事件的名称。</span>
+                    <span class="c1"># 同时此类系带msg信息。</span>
+                    <span class="c1"># 使用send_event_to_obserevrs()函数将事件分发给监听事件的handler，完成事件的分发。</span>
+                    <span class="n">ev</span> <span class="o">=</span> <span class="n">ofp_event</span><span class="o">.</span><span class="n">ofp_msg_to_ev</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="n">self</span><span class="o">.</span><span class="n">ofp_brick</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+
+                    <span class="n">dispatchers</span> <span class="o">=</span> <span class="n">lambda</span> <span class="n">x:</span> <span class="n">x</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">ev</span><span class="o">.</span><span class="n">__class__</span><span class="p">]</span><span class="o">.</span><span class="n">dispatchers</span>
+                    <span class="c1"># handler的注册是通过使用controller.handler.py文件下定义的set_ev_handler作为装饰器去注册。                </span>
+                    <span class="c1"># self.ofp_brick在初始化时，由注册在服务列表中查找名为&quot;ofp_event&quot;的模块赋值。</span>
+                    <span class="c1"># ofp_handler模块的名字为&quot;ofp_event&quot;，所以对应的模块是ofp_handler</span>
+                    <span class="n">handlers</span> <span class="o">=</span> <span class="p">[</span><span class="n">handler</span> <span class="k">for</span> <span class="n">handler</span> <span class="n">in</span>
+                                <span class="n">self</span><span class="o">.</span><span class="n">ofp_brick</span><span class="o">.</span><span class="n">get_handlers</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span> <span class="k">if</span>
+                                <span class="n">self</span><span class="o">.</span><span class="n">state</span> <span class="n">in</span> <span class="n">dispatchers</span><span class="p">(</span><span class="n">handler</span><span class="p">)]</span>
+                    <span class="k">for</span> <span class="n">handler</span> <span class="n">in</span> <span class="n">handlers:</span>
+                        <span class="n">handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+
+                <span class="n">buf</span> <span class="o">=</span> <span class="n">buf</span><span class="p">[</span><span class="n">required_len:</span><span class="p">]</span>
+                <span class="n">required_len</span> <span class="o">=</span> <span class="n">ofproto_common</span><span class="o">.</span><span class="n">OFP_HEADER_SIZE</span>
+
+                <span class="c1"># We need to schedule other greenlets. Otherwise, ryu</span>
+                <span class="c1"># can&#39;t accept new switches or handle the existing</span>
+                <span class="c1"># switches. The limit is arbitrary. We need the better</span>
+                <span class="c1"># approach in the future.</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">2048</span><span class="p">:</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">hub</span><span class="o">.</span><span class="nb">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+
+<h3><strong>OpenFlow协议实现</strong></h3>
+<p>OpenFlow协议解析部分代码大部分在ofproto目录下，少部分在controller目录下。以下内容将首先介绍ofproto目录下的源码内容，再介绍controller目录下的ofp_event文件。</p>
+<h4><strong><strong>init</strong></strong></h4>
+<p>首先，__init__.py并不为空。该文件定义了两个功能类似的函数get_ofp_module()和get_ofp_modules()，前者用于取得协议版本对应的协议定义文件和协议解析模块，后者则取出整个字典。对应的字典在ofproto_protocol模块中定义。</p>
+<h4><strong>ofproto_protocol</strong></h4>
+<p>在ofproto_protocol定义了_versions字典，具体如下：</p>
+<div class="highlight"><pre><span class="n">_versions</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">ofproto_v1_0</span><span class="o">.</span><span class="n">OFP_VERSION:</span> <span class="p">(</span><span class="n">ofproto_v1_0</span><span class="p">,</span> <span class="n">ofproto_v1_0_parser</span><span class="p">),</span>
+    <span class="n">ofproto_v1_2</span><span class="o">.</span><span class="n">OFP_VERSION:</span> <span class="p">(</span><span class="n">ofproto_v1_2</span><span class="p">,</span> <span class="n">ofproto_v1_2_parser</span><span class="p">),</span>
+    <span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION:</span> <span class="p">(</span><span class="n">ofproto_v1_3</span><span class="p">,</span> <span class="n">ofproto_v1_3_parser</span><span class="p">),</span>
+    <span class="n">ofproto_v1_4</span><span class="o">.</span><span class="n">OFP_VERSION:</span> <span class="p">(</span><span class="n">ofproto_v1_4</span><span class="p">,</span> <span class="n">ofproto_v1_4_parser</span><span class="p">),</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>除此之外，该文件还定义了Datapath的父类ProtocolDesc，此类基本上只完成了与协议版本相关的内容。该类最重要的两个成员是self.ofproto和self.ofproto_parser，其值指明所本次通信所使用的OpenFlow协议的版本以及对应的解析模块。</p>
+<h4><strong>ofproto_common</strong></h4>
+<p>ofproto_common文件比较简单，主要定义了OpenFlow需要使用的公共属性，如监听端口，报头长度，报头封装格式等内容。</p>
+<h4><strong>ofproto_parser</strong></h4>
+<p>ofproto_parser文件定义了所有版本都需要的解析相关的公共属性。如定义了最重要的基类MsgBase(StringifyMixin)。
+StringifyMixin类的定义在lib.stringify文件，有兴趣的读者可自行查看。MsgBase基类定义了最基础的属性信息，具体如下所示：</p>
+<div class="highlight"><pre><span class="nv">@create_list_of_base_attributes</span>
+<span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+    <span class="n">super</span><span class="p">(</span><span class="n">MsgBase</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">datapath</span> <span class="o">=</span> <span class="n">datapath</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">None</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">msg_type</span> <span class="o">=</span> <span class="n">None</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">msg_len</span> <span class="o">=</span> <span class="n">None</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">xid</span> <span class="o">=</span> <span class="n">None</span>
+    <span class="n">self</span><span class="o">.</span><span class="n">buf</span> <span class="o">=</span> <span class="n">None</span>
+</pre></div>
+
+
+<p>此外，该类还定义了基础的parser函数和serialize函数。基础的parser函数基本什么都没有做，仅返回一个赋值后的消息体。</p>
+<div class="highlight"><pre><span class="nv">@classmethod</span>
+<span class="n">def</span> <span class="n">parser</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
+    <span class="n">msg_</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span>
+    <span class="n">msg_</span><span class="o">.</span><span class="n">set_headers</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">)</span>
+    <span class="n">msg_</span><span class="o">.</span><span class="n">set_buf</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">msg_</span>
+</pre></div>
+
+
+<p>serialize函数分为3部分，self._serialize_pre(), self._serialize_body()和self._serialize_header()。本质上完成了header的序列化。关于body的序列化，将在对应的派生类中得到重写。</p>
+<h4><strong>ofproto_v1_0</strong></h4>
+<p>以1.0版本为例介绍ofproto_v1_x.py文件的作用。由于Ryu支持多版本的OpenFlow，所以在ofproto目录下，定义了从1.0到1.5版本的所有代码实现。所以其文件命名为ofproto_v1_x.py，x从[1,2,3,4,5]中获得，分别对应相应的协议版本。</p>
+<p>此类文件最重要的一个目的是定义了所有需要的静态内容，包括某字段的所有选项以及消息封装的格式以及长度。与OpenFlow消息内容相关的有协议的类型，动作的类型，port的类型等。此外对应每一个报文，都需要定义其封装的格式，以及封装的长度。Ryu采用了Python的Struct库去完成数据的解封装工作，关于Struct的介绍将在后续内容介绍。具体定义内容举例如下：</p>
+<div class="highlight"><pre><span class="c1"># enum ofp_port</span>
+<span class="n">OFPP_MAX</span> <span class="o">=</span> <span class="mh">0xff00</span>
+<span class="n">OFPP_IN_PORT</span> <span class="o">=</span> <span class="mh">0xfff8</span>   <span class="c1"># Send the packet out the input port. This</span>
+                        <span class="c1"># virtual port must be explicitly used</span>
+                        <span class="c1"># in order to send back out of the input</span>
+                        <span class="c1"># port.</span>
+<span class="n">OFPP_TABLE</span> <span class="o">=</span> <span class="mh">0xfff9</span>     <span class="c1"># Perform actions in flow table.</span>
+                        <span class="c1"># NB: This can only be the destination</span>
+                        <span class="c1"># port for packet-out messages.</span>
+<span class="n">OFPP_NORMAL</span> <span class="o">=</span> <span class="mh">0xfffa</span>    <span class="c1"># Process with normal L2/L3 switching.</span>
+<span class="n">OFPP_FLOOD</span> <span class="o">=</span> <span class="mh">0xfffb</span>     <span class="c1"># All physical ports except input port and</span>
+                        <span class="c1"># those disabled by STP.</span>
+<span class="n">OFPP_ALL</span> <span class="o">=</span> <span class="mh">0xfffc</span>       <span class="c1"># All physical ports except input port.</span>
+<span class="n">OFPP_CONTROLLER</span> <span class="o">=</span> <span class="mh">0xfffd</span>        <span class="c1"># Send to controller.</span>
+<span class="n">OFPP_LOCAL</span> <span class="o">=</span> <span class="mh">0xfffe</span>     <span class="c1"># Local openflow &quot;port&quot;.</span>
+<span class="n">OFPP_NONE</span> <span class="o">=</span> <span class="mh">0xffff</span>      <span class="c1"># Not associated with a physical port.</span>
+
+
+<span class="c1"># enum ofp_type</span>
+<span class="n">OFPT_HELLO</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Symmetric message</span>
+<span class="n">OFPT_ERROR</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Symmetric message</span>
+<span class="n">OFPT_ECHO_REQUEST</span> <span class="o">=</span> <span class="mi">2</span>   <span class="c1"># Symmetric message</span>
+<span class="n">OFPT_ECHO_REPLY</span> <span class="o">=</span> <span class="mi">3</span>     <span class="c1"># Symmetric message</span>
+<span class="n">OFPT_VENDOR</span> <span class="o">=</span> <span class="mi">4</span>         <span class="c1"># Symmetric message</span>
+<span class="n">OFPT_FEATURES_REQUEST</span> <span class="o">=</span> <span class="mi">5</span>       <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_FEATURES_REPLY</span> <span class="o">=</span> <span class="mi">6</span>         <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_GET_CONFIG_REQUEST</span> <span class="o">=</span> <span class="mi">7</span>     <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_GET_CONFIG_REPLY</span> <span class="o">=</span> <span class="mi">8</span>       <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_SET_CONFIG</span> <span class="o">=</span> <span class="mi">9</span>      <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_PACKET_IN</span> <span class="o">=</span> <span class="mi">10</span>      <span class="c1"># Async message</span>
+<span class="n">OFPT_FLOW_REMOVED</span> <span class="o">=</span> <span class="mi">11</span>   <span class="c1"># Async message</span>
+<span class="n">OFPT_PORT_STATUS</span> <span class="o">=</span> <span class="mi">12</span>    <span class="c1"># Async message</span>
+<span class="n">OFPT_PACKET_OUT</span> <span class="o">=</span> <span class="mi">13</span>     <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_FLOW_MOD</span> <span class="o">=</span> <span class="mi">14</span>       <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_PORT_MOD</span> <span class="o">=</span> <span class="mi">15</span>       <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_STATS_REQUEST</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_STATS_REPLY</span> <span class="o">=</span> <span class="mi">17</span>    <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_BARRIER_REQUEST</span> <span class="o">=</span> <span class="mi">18</span>       <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_BARRIER_REPLY</span> <span class="o">=</span> <span class="mi">19</span>  <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_QUEUE_GET_CONFIG_REQUEST</span> <span class="o">=</span> <span class="mi">20</span>      <span class="c1"># Controller/switch message</span>
+<span class="n">OFPT_QUEUE_GET_CONFIG_REPLY</span> <span class="o">=</span> <span class="mi">21</span>        <span class="c1"># Controller/switch message</span>
+
+<span class="n">OFP_HEADER_PACK_STR</span> <span class="o">=</span> <span class="s">&#39;!BBHI&#39;</span>
+<span class="n">OFP_HEADER_SIZE</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">OFP_MSG_SIZE_MAX</span> <span class="o">=</span> <span class="mi">65535</span>
+<span class="n">assert</span> <span class="n">calcsize</span><span class="p">(</span><span class="n">OFP_HEADER_PACK_STR</span><span class="p">)</span> <span class="o">==</span> <span class="n">OFP_HEADER_SIZE</span>
+</pre></div>
+
+
+<p>OFP_HEADER_PACK_STR = '!BBHI'的意思是将header按照8|8|16|32的长度封装成对应的数值。在Python中分别对应的是1个字节的integer|一个字节的integer|2个字节的integer|4个字节的integer。</p>
+<p>calcsize函数用于计算对应的format的长度。</p>
+<p>其他内容均为静态的定义，无需赘述。</p>
+<h4><strong>ofproto_v1_0_parser</strong></h4>
+<p>本模块用于定义报文的解析等动态内容。模块中定义了与OpenFlow协议对应的Common_struct及message type对应的类。每一个message对应的类都是有MsgBase派生的，其继承了父类的parser函数和serialize函数。若报文无消息体，如Hello报文，则无需重写parser和serialize函数。</p>
+<p>本模块定义了几个重要的全局函数：_set_msg_type，_register_parser，msg_parser和_set_msg_reply。其作用介绍如下：</p>
+<ul>
+<li>_set_msg_type: 完成类与ofproto模块中定义的报文名字的映射，原因在于ofproto模块定义的名字并不是类名，而解析时需要使用ofproto中的名字。</li>
+<li>_register_parser：完成对应的类与类中的parser函数的映射，当解析函数从ofproto模块的名字映射到类之后，若需要解析，则需从类对应到对应的解析函数。parser函数是一个类函数，所以在使用时必须传入对应的类的对象作为参数。</li>
+<li>msg_parser：从_MSG_PARSERS中获取对msg_type的parser，并返回解析之后的内容。</li>
+<li>_set_msg_reply：完成该类与对应的回应报文的映射。</li>
+</ul>
+<p>源码如下：</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">_set_msg_type</span><span class="p">(</span><span class="n">msg_type</span><span class="p">):</span>
+    <span class="s">&#39;&#39;&#39;Annotate corresponding OFP message type&#39;&#39;&#39;</span>
+    <span class="n">def</span> <span class="n">_set_cls_msg_type</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">cls_msg_type</span> <span class="o">=</span> <span class="n">msg_type</span>
+        <span class="k">return</span> <span class="n">cls</span>
+    <span class="k">return</span> <span class="n">_set_cls_msg_type</span>
+
+
+<span class="n">def</span> <span class="n">_register_parser</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+    <span class="s">&#39;&#39;&#39;class decorator to register msg parser&#39;&#39;&#39;</span>
+    <span class="n">assert</span> <span class="n">cls</span><span class="o">.</span><span class="n">cls_msg_type</span> <span class="n">is</span> <span class="ow">not</span> <span class="n">None</span>
+    <span class="n">assert</span> <span class="n">cls</span><span class="o">.</span><span class="n">cls_msg_type</span> <span class="ow">not</span> <span class="n">in</span> <span class="n">_MSG_PARSERS</span>
+    <span class="n">_MSG_PARSERS</span><span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">cls_msg_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">parser</span>
+    <span class="k">return</span> <span class="n">cls</span>
+
+
+<span class="nv">@ofproto_parser</span><span class="o">.</span><span class="n">register_msg_parser</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">)</span>
+<span class="n">def</span> <span class="n">msg_parser</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">_MSG_PARSERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">msg_type</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+
+
+<span class="n">def</span> <span class="n">_set_msg_reply</span><span class="p">(</span><span class="n">msg_reply</span><span class="p">):</span>
+    <span class="s">&#39;&#39;&#39;Annotate OFP reply message class&#39;&#39;&#39;</span>
+    <span class="n">def</span> <span class="n">_set_cls_msg_reply</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">cls_msg_reply</span> <span class="o">=</span> <span class="n">msg_reply</span>
+        <span class="k">return</span> <span class="n">cls</span>
+    <span class="k">return</span> <span class="n">_set_cls_msg_reply</span>
+</pre></div>
+
+
+<p>报文如果有消息体，则需要重写parser函数或者serialize函数，具体根据报文内容而不一样。此处，分别以Packet_in和Flow_mod作为parser的案例和serialize的案例，示例如下：</p>
+<div class="highlight"><pre><span class="nv">@_register_parser</span>
+<span class="nv">@_set_msg_type</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPT_PACKET_IN</span><span class="p">)</span>
+<span class="n">class</span> <span class="n">OFPPacketIn</span><span class="p">(</span><span class="n">MsgBase</span><span class="p">):</span>
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">total_len</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">in_port</span><span class="o">=</span><span class="n">None</span><span class="p">,</span>
+                 <span class="n">reason</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">OFPPacketIn</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">=</span> <span class="n">buffer_id</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">total_len</span> <span class="o">=</span> <span class="n">total_len</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">in_port</span> <span class="o">=</span> <span class="n">in_port</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">reason</span> <span class="o">=</span> <span class="n">reason</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="nv">@classmethod</span>
+    <span class="n">def</span> <span class="n">parser</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
+        <span class="c1"># 解析头部，获取msg</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">super</span><span class="p">(</span><span class="n">OFPPacketIn</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span>
+                                             <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+        <span class="c1"># 解析body,获取packet_in相关字段。</span>
+        <span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
+         <span class="n">msg</span><span class="o">.</span><span class="n">total_len</span><span class="p">,</span>
+         <span class="n">msg</span><span class="o">.</span><span class="n">in_port</span><span class="p">,</span>
+         <span class="n">msg</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span>
+            <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_PACKET_IN_PACK_STR</span><span class="p">,</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">buf</span><span class="p">,</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_HEADER_SIZE</span><span class="p">)</span>
+        <span class="c1"># 将ofproto.OFP_PACKET_IN_SIZE长度之外的buf内容，赋值给data</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">buf</span><span class="p">[</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_PACKET_IN_SIZE:</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">total_len</span> <span class="o">&lt;</span> <span class="n">len</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="c1"># discard padding for 8-byte alignment of OFP packet</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="n">msg</span><span class="o">.</span><span class="n">total_len</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+
+<span class="nv">@_set_msg_type</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPT_FLOW_MOD</span><span class="p">)</span>
+<span class="n">class</span> <span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">MsgBase</span><span class="p">):</span>
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">cookie</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span>
+                 <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hard_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">priority</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_DEFAULT_PRIORITY</span><span class="p">,</span>
+                 <span class="n">buffer_id</span><span class="o">=</span><span class="mh">0xffffffff</span><span class="p">,</span> <span class="n">out_port</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_NONE</span><span class="p">,</span>
+                 <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">actions</span> <span class="n">is</span> <span class="n">None:</span>
+            <span class="n">actions</span> <span class="o">=</span> <span class="o">[]</span>
+        <span class="n">super</span><span class="p">(</span><span class="n">OFPFlowMod</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">match</span> <span class="o">=</span> <span class="n">match</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">cookie</span> <span class="o">=</span> <span class="n">cookie</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">command</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">idle_timeout</span> <span class="o">=</span> <span class="n">idle_timeout</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">hard_timeout</span> <span class="o">=</span> <span class="n">hard_timeout</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">priority</span> <span class="o">=</span> <span class="n">priority</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">=</span> <span class="n">buffer_id</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">out_port</span> <span class="o">=</span> <span class="n">out_port</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">flags</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="n">actions</span>
+
+    <span class="n">def</span> <span class="n">_serialize_body</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_HEADER_SIZE</span>
+        <span class="n">self</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">buf</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+        <span class="c1"># 封装的起点是offset</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_MATCH_SIZE</span>
+        <span class="c1"># 按照ofproto.OFP_FLOW_MOD_PACK_STR0的格式，将对应的字段封装到self.buf中</span>
+        <span class="n">msg_pack_into</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_FLOW_MOD_PACK_STR0</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">buf</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span>
+                      <span class="n">self</span><span class="o">.</span><span class="n">cookie</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span>
+                      <span class="n">self</span><span class="o">.</span><span class="n">idle_timeout</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">hard_timeout</span><span class="p">,</span>
+                      <span class="n">self</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">out_port</span><span class="p">,</span>
+                      <span class="n">self</span><span class="o">.</span><span class="n">flags</span><span class="p">)</span>
+
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_FLOW_MOD_SIZE</span>
+        <span class="k">if</span> <span class="n">self</span><span class="o">.</span><span class="n">actions</span> <span class="n">is</span> <span class="ow">not</span> <span class="n">None:</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">actions:</span>
+                <span class="c1"># 序列化action</span>
+                <span class="n">a</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">buf</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+                <span class="n">offset</span> <span class="o">+=</span> <span class="n">a</span><span class="o">.</span><span class="n">len</span>
+</pre></div>
+
+
+<p>此模块代码量大，包括OpenFlow协议对应版本内容的完全描述。分类上可分为解析和序列化封装两个重点内容。读者在阅读源码时可根据需求阅读片段即可。</p>
+<h4><strong>Inet &amp; ether</strong></h4>
+<p>这两个模块非常简单，ether定义了常用的以太网的协议类型及其对应的代码；inet定义了IP协议族中不同协议的端口号，如TCP=6。</p>
+<h4><strong>oxm_field</strong></h4>
+<p>在1.3等高版本OpenFlow中，使用到了oxm_field的概念。oxm全称为OpenFlow Extensible Match。当OpenFlow逐渐发展成熟，flow的match域越来越多。然而很多通信场景下使用到的匹配字段很少，甚至只有一个。OXM是一种TLV格式，使用OXM可以在下发流表时仅携带使用到的match域内容，而放弃剩余的大量的match域。当使用的match域较少时，统计概率上会减少报文传输的字节数。</p>
+<h4><strong>nx_match</strong></h4>
+<p>该文件定义了nicira extensible match的相关内容。</p>
+<h3><strong>ofp_event</strong></h3>
+<p>这个模块的位置并不再ofproto，而位于controller目录下。controller模块下的event定义了基础的事件基类。ofp_event模块完成了OpenFlow报文到event的生成过程。模块中定义了EventOFPMsgBase(event.EventBase)类和_ofp_msg_name_to_ev_name(msg_name)等函数的定义。相关函数都非常的简单，可从函数名了解到其功能，不再赘述。示例代码如下：</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">_ofp_msg_name_to_ev_name</span><span class="p">(</span><span class="n">msg_name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s">&#39;Event&#39;</span> <span class="o">+</span> <span class="n">msg_name</span>
+</pre></div>
+
+
+<p>文件中最后一句代码很重要，最后一句完成了服务的注册，告知app_manager,本模块需要以来于服务：ofp_handler,即需要启动ofp_handler才能完成本模块的工作。</p>
+<div class="highlight"><pre><span class="n">handler</span><span class="o">.</span><span class="n">register_service</span><span class="p">(</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3><strong>Struct lib</strong></h3>
+<p>Python的<a href="https://docs.python.org/2/library/struct.html">struct</a>库是一个简单的，高效的数据封装\解封装的库。该库主要包含5个函数，介绍如下：</p>
+<ul>
+<li>struct.pack(fmt, v1, v2, ...)： 将V1,V2等值按照对应的fmt(format)进行封装。</li>
+<li>struct.pack_into(fmt, buffer, offset, v1, v2, ...)：将V1,V2等值按照对应的fmt(format)封装到buffer中，从初始位置offset开始。</li>
+<li>struct.unpack(fmt, string): 将string按照fmt的格式解封</li>
+<li>struct.unpack_from(fmt, buffer[offset=0，])： 按照fmt的格式，从offset开始将buffer解封。</li>
+<li>struct.calcsize(fmt)： 计算对应的fmt的长度。</li>
+</ul>
+<p>更家详细的封装语法，请查看struct对应的链接。此处仅对常用语法进行介绍：</p>
+<ul>
+<li>！：大端存储</li>
+<li>c: char</li>
+<li>B： 一个字节长度，unsigned char.</li>
+<li>H：两个字节，16位</li>
+<li>I： 4个字节，int型</li>
+<li>Q: 64bits</li>
+<li>x: padding</li>
+<li>3x：3个字节的padding</li>
+<li>5s: 5字节的字符串</li>
+</ul>
+<h3><strong>总结</strong></h3>
+<p>Ryu对OpenFlow协议的支持非常好，入门也比较容易，网上的资源也比较多，是一个非常值得推荐的SDN控制器。本篇对Ryu中从底层的数据收发到OpenFlow报文的解析的代码进行简要的分析，希望对读者有一定的帮助。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html"><h2>SDN网络感知服务与最短路径应用</h2></a>
+        <div class= "well small"> 2015-07-08
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>本文将介绍RYU中的网络感知服务，与基于网络服务的最短路径应用，主要内容包括网络资源感知模块，网络监控模块和基于网络信息的最短路由模块介绍。在一个真实的网络环境下，需掌握网络的实时动态，包括网络的资源以及网络流量状况，其中网络的信息包括交换机，端口，主机的信息，以及基于流的流量统计信息和基于端口的流量统计信息。在掌握这些关键的网络信息后，控制器就可以根据这些信息作出当下最正确的路由决策，完成网络的通信。</p>
 <h3>网络资源感知</h3>
 <p>网络资源感知模块用于感知网络资源的实时变化，包括拓扑信息以及主机信息的变化。任何网络应用，可达性都是最基本的要求。SDN网络的集中控制，使得控制器可以根据全局的信息作出最佳决策而无需在交换节点上采用分布式的路由算法。所以感知网络资源是SDN应用最基础的一项服务。网络资源感知模块源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">network_aware</a>.</p>
 <p>实现该模块的类为Network_Aware类，该类描述如下：</p>
@@ -83,102 +442,9 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">super</span><span class="p">(</span><span class="n">Network_Aware</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Network_Aware&quot;</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">topology_api_app</span> <span class="o">=</span> <span class="n">self</span>
-
-        <span class="c1"># links   :(src_dpid,dst_dpid)-&gt;(src_port,dst_port)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="c1"># {(sw,port) :[host1_ip,host2_ip,host3_ip,host4_ip]}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">access_table</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="c1"># ports</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">switch_port_table</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># dpid-&gt;port_num</span>
-
-        <span class="c1"># dpid-&gt;port_num (outer ports)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">access_ports</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="c1"># dpid-&gt;port_num(interior ports)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">interior_ports</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="n">self</span><span class="o">.</span><span class="n">pre_link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">pre_graph</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">pre_access_table</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="n">self</span><span class="o">.</span><span class="n">discover_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_discover</span><span class="p">)</span>
-</pre></div>
-
-
-<p>其中数据结构与其作用关系如下：</p>
-<ul>
-<li>link_to_port字典存储交换机之间链路与端口的映射关系；</li>
-<li>access_table字典存储主机的接入信息；</li>
-<li>switch_port_table存储交换机端口列表；</li>
-<li>access_ports存储外向端口（与终端连接的接口）；</li>
-<li>interior_ports存储内部端口;</li>
-<li>grap存储网络拓扑图；</li>
-<li>pre_link_to_port等带有pre前缀的数据结构用于保存上一次获取的信息，用于和当前获取信息做比较。</li>
-<li>_discover函数是主循环函数</li>
-</ul>
-<p>在_discover函数中，周期执行get_topology和是show_topology函数。在get_topology函数中，控制器可以获取到网络中的交换机和端口信息、链路信息、主机接入信息等。此外，控制器通过实时检测网络变化的异步事件来更新网络资源信息。show_topology函数则是将网络信息格式化地展示在终端中。由于前端开发能力有限，目前仅仅简单将后台数据展现在终端。</p>
-<p>Note that:可以通过置位IS_UPDATE来控制是否输出信息。此外，若拓扑信息不发生变化，将不打印，即仅打印拓扑一次，直至拓扑更新。可以将判断中的and 修改为or,即可每次都打印。</p>
-<p><center><img alt="network info" src="http://ww2.sinaimg.cn/mw690/7f593341jw1etvgswsahwj20k30ddtcl.jpg" /></center>
-<center>图1.网络资源信息</center></p>
-<h3>网络流量监控</h3>
-<p>网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">Network_Monitor</a></p>
-<p>实现网络流量监控的类为：Network_Monitor,具体描述如下：</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Network_Monitor</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
-    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-    <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;Network_Monitor&#39;</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">super</span><span class="p">(</span><span class="n">Network_Monitor</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-        <span class="n">self</span><span class="o">.</span><span class="n">datapaths</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">port_stats</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">port_speed</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">flow_stats</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">flow_speed</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># {&quot;port&quot;:{dpid:{port:body,..},..},&quot;flow&quot;:{dpid:body,..}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">port_link</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># {dpid:{port_no:(config,state,cur),..},..}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">monitor_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_monitor</span><span class="p">)</span>
-</pre></div>
-
-
-<p>其中数据结构的作用如下：</p>
-<ul>
-<li>datapaths记录与控制器连接的datapath;</li>
-<li>port_stats保存端口的统计信息；</li>
-<li>port_speed保存端口的速率信息；</li>
-<li>flow_stats保存流的统计信息；</li>
-<li>flow_speed保存流的速率信息；</li>
-<li>stats保存所有的统计信息；</li>
-<li>port_link保存link的特性信息；</li>
-<li>_monitor函数为主循环函数；</li>
-</ul>
-<p>在主循环函数中，周期调用了self._request_stats和self.show_stat函数，前者用于下发统计信息请求报文，后者用于展现统计信息。统计信息回复报文处理函数为：_flow_stats_reply_handler和_port_stats_reply_handler，两者分别使用的@set_ev_cls装饰符，注册监听了对应的事件。至此流量统计模块已经完成了闭环，可以作为底层的服务为上层的应用提供实时的流量统计信息。</p>
-<p><center><img alt="port stats" src="http://ww1.sinaimg.cn/mw690/7f593341jw1etvgsxtlpfj21040f5thy.jpg" /></center>
-<center>图2. 端口流量统计信息</center></p>
-<p><center><img alt="flow stats" src="http://ww2.sinaimg.cn/mw690/7f593341jw1etvgsx513ij20mt0ctgs9.jpg" /></center>
-<center>图3. 流表项流量统计信息</center></p>
-<h3>基于网络资源的最短路径</h3>
-<p>基于以上的网络资源感知模块与网络流量监控模块提供的数据，我们可以做很多事情，比如负载均衡等流量调度应用，有比如安全接入等安全应用。本小节介绍基于网络资源的最短路径应用。衡量最短路径的参考系是跳数，稍加修改可以变为剩余带宽，延时或者多参考系加权的方案。源代码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/shortest_route.py">shortest_route</a></p>
-<p>最短路径应用流程图如下：
-<center><img alt="shortest path" src="http://ww3.sinaimg.cn/mw690/7f593341jw1etvhwx97yjj20870dxq31.jpg" /></center>
-<center>图4, 最短路由流程图</center></p>
-<p>首先，查询主机表，若查找成功，则查询主机位置表，之后直接由控制器将ARP数据包发送给对应的端口，此时控制器并不做ARP的代理。当目标主机回复ARP时，将数据包直接发送到源主机的接入端口。从而完成了ARP的学习过程。由于此时已经掌握了主机的接入信息以及网络信息，当ICMP或其他数据包出发packet_in事件时，则可根据源目两个IP查询到接入交换机，再依据拓扑信息，计算最短路径，从而完成最短路由。若希望使用其他的参考标准来计算最短路径，只需修改计算最短路径的算法即可。</p>
-<p>在网络初始化时，控制器并没有办法发现沉默的主机，原因在于我们没有进行DHCP分配，导致控制器没有掌握主机的IP/MAC信息。所以第一步我们需要处理的数据包是ARP。处理流程具体如下所示：</p>
-<p><center><img alt="arp_handler" src="http://ww4.sinaimg.cn/mw690/7f593341jw1etvhwx229pj209y0aujri.jpg" /></center>
-<center>图5. ARP处理流程图</center></p>
-<p><strong>Note that</strong>:本应用假设主机发起通信时需先发起ARP，不可通过其他途径获取到ARP的信息，否则控制器无法获得目的端主机接入信息，则无法完成路由。对于域外的主机，只需在找不到目的端时，将其送给出口网关即可。此时需使用到子网掩码，网段，路由等概念。本应用仅针对简单局域网计算路径。</p>
-<p><center><img alt="shortest path" src="http://ww3.sinaimg.cn/mw690/7f593341jw1etvgsxenqtj20gy0cradi.jpg" /></center>
-<center>图6. 流表项流量统计信息</center></p>
-<h3>总结</h3>
-<p>网络感知服务对于SDN网络而言非常重要，是一切网络应用的基础。充分利用网络资源的信息，可以对网络进行优化，提高网络的安全性。以上的Network_aware和monitor模块均可以直接做为APP的service app（在RYU中需在_CONTEXTS添加）提供数据服务，希望可以给有需要的读者提供一些帮助。</p></div>
-        <hr />
-    </div>
-		
+        <span class="n">self ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -259,35 +525,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     <span class="k">if</span> <span class="s">&#39;subject&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
         <span class="n">subject</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s">&#39;subject&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">else ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/05/10/getting-started-with-restapi-of-ryu.html"><h2>Getting started with RESTAPI of RYU</h2></a>
-        <div class= "well small"> 2015-05-10
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>在使用RYU的过程中，有时需要使用web拓扑，有时也需要通过API去下发流表等操作。这些操作在RYU中都会使用到RESTAPI。在学习RYU的过程中多次涉及到REST相关的内容，总是不知道如何实现和使用。最近在做实验需要这方面的知识，才有机会去学习REST并总结成博文。希望能给其他学习者提供帮助。本篇博文将简要介绍两部分内容：</p>
-<ul>
-<li>What is REST?</li>
-<li>How to use REST API in RYU?</li>
-</ul>
-<h2>What is REST</h2>
-<p><a href="http://zh.wikipedia.org/zh/REST">REST</a>:表征性状态传输（英文：Representational State Transfer，简称REST）是Roy Fielding博士在2000年他的博士论文中提出来的一种软件架构风格。更多REST的相关介绍可以查看<a href="http://www.restapitutorial.com/lessons/whatisrest.html">视频介绍</a>.</p>
-<p>REST架构风格中，资源是通过URI来描述的。对资源的操作采用了HTTP的GET，POST，PUT和DELETE方法相对应。资源的表现形式可以是json或xml。REST的架构是Client-Server架构，同时链接是无状态的。所以要求在传输的过程中需要包含状态信息。此外，可以使用cache机制增进性能。在上述视频中提到REST的6中限制为：</p>
-<ul>
-<li>Uniform Interface</li>
-<li>Stateless</li>
-<li>Cacheable ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2015/05/10/getting-started-with-restapi-of-ryu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
