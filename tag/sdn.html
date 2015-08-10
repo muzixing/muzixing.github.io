@@ -76,36 +76,36 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>网络资源感知</h3>
 <p>网络资源感知模块用于感知网络资源的实时变化，包括拓扑信息以及主机信息的变化。任何网络应用，可达性都是最基本的要求。SDN网络的集中控制，使得控制器可以根据全局的信息作出最佳决策而无需在交换节点上采用分布式的路由算法。所以感知网络资源是SDN应用最基础的一项服务。网络资源感知模块源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">network_aware</a>.</p>
 <p>实现该模块的类为Network_Aware类，该类描述如下：</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Network_Aware</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
-    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-    <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;network_aware&#39;</span>
+<div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Network_Aware</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+        <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+        <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;network_aware&#39;</span>
 
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">super</span><span class="p">(</span><span class="n">Network_Aware</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Network_Aware&quot;</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">topology_api_app</span> <span class="o">=</span> <span class="n">self</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Network_Aware</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Network_Aware&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">topology_api_app</span> <span class="o">=</span> <span class="bp">self</span>
 
-        <span class="c1"># links   :(src_dpid,dst_dpid)-&gt;(src_port,dst_port)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c"># links   :(src_dpid,dst_dpid)-&gt;(src_port,dst_port)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="c1"># {(sw,port) :[host1_ip,host2_ip,host3_ip,host4_ip]}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">access_table</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c"># {(sw,port) :[host1_ip,host2_ip,host3_ip,host4_ip]}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">access_table</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="c1"># ports</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">switch_port_table</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># dpid-&gt;port_num</span>
+            <span class="c"># ports</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">switch_port_table</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c"># dpid-&gt;port_num</span>
 
-        <span class="c1"># dpid-&gt;port_num (outer ports)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">access_ports</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c"># dpid-&gt;port_num (outer ports)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">access_ports</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="c1"># dpid-&gt;port_num(interior ports)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">interior_ports</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c"># dpid-&gt;port_num(interior ports)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interior_ports</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="n">self</span><span class="o">.</span><span class="n">pre_link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">pre_graph</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">pre_access_table</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pre_link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pre_graph</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pre_access_table</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="n">self</span><span class="o">.</span><span class="n">discover_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_discover</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">discover_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_discover</span><span class="p">)</span>
 </pre></div>
 
 
@@ -127,22 +127,22 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>网络流量监控</h3>
 <p>网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">Network_Monitor</a></p>
 <p>实现网络流量监控的类为：Network_Monitor,具体描述如下：</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Network_Monitor</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
-    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-    <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;Network_Monitor&#39;</span>
+<div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Network_Monitor</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+        <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+        <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;Network_Monitor&#39;</span>
 
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">super</span><span class="p">(</span><span class="n">Network_Monitor</span><span class="p">,</span> <span class="n">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Network_Monitor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="n">self</span><span class="o">.</span><span class="n">datapaths</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">port_stats</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">port_speed</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">flow_stats</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">flow_speed</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># {&quot;port&quot;:{dpid:{port:body,..},..},&quot;flow&quot;:{dpid:body,..}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">port_link</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># {dpid:{port_no:(config,state,cur),..},..}</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">monitor_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">_monitor</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">port_stats</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">port_speed</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flow_stats</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flow_speed</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c"># {&quot;port&quot;:{dpid:{port:body,..},..},&quot;flow&quot;:{dpid:body,..}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">port_link</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c"># {dpid:{port_no:(config,state,cur),..},..}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">monitor_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span><span class="p">)</span>
 </pre></div>
 
 

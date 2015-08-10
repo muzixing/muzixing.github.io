@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html"><h1>Fattree topo and iperfmulti function in mininet</h1></a>
-2015-02-22
+            <a href="../pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html"><h1>Mininet搭建多控制器拓扑</h1></a>
+2015-08-05
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,235 +72,210 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>This article will show you 1)how to build a <a href="http://ccr.sigcomm.org/online/files/p63-alfares.pdf">fattree</a> topo and 2)how to extend the iperfmulti function in mininet.</p>
-<p>本篇博文将讲述1）如何搭建fatree网络拓扑和2）如何在mininet中拓展iperfmulti功能。</p>
-<p>众所周知，数据中心是目前网络研究的一个热门领域。随着云计算的兴起与发展，会对数据中心网络提出更多的需求，也为学术研究提供了更多的课题。TE（Traffic Engineering）是网络研究中最基础的研究之一，在TE中Load balance是比较主要的研究内容之一。 然而由于数据中心网络的流量走势与传统网络不同，导致数据中心网络与传统网络的架构有所不同。在传统网络中上下行流量在总流量中占据很大比重，而相比之下，数据中心的流量分类中，横向流量的比重要远远大于传统网络架构的比重。为了更好解决数据中心网络流量问题，数据中心架构的设计就变得非常重要，在众多网络架构中，Fat-tree架构是比较出名和成功的。</p>
-<p>SDN兴起于校园网，盛开于数据中心，这是一种比较准确的描述。目前SDN的研究领域内，数据中心占据了一席之地。所以很多的研究者都试图通过在控制器开发应用以及使用mininet模拟网络来进行网络实验。博主最近也做了一个关于Fat-tree的实验，在实验过程中，碰到了许多问题，深深觉得这一方面的知识在互联网中还比较缺乏。特此记录下来，分享出去，首先是作为自己的笔记，备忘，其次也给其他同样研究这方面的同学一些帮助。我掉过的坑，我不愿意别人继续掉。</p>
-<p>科学的发展是需要许多人奠定基础，才能逐步发展。而只有分享经验，传递知识，才能让后人能站在前人的基础之上继续前进。重复劳动力在一些基础的无关紧要的环节，是整个社会资源的浪费。特此感谢乐于分享的各种网络中的老师，特别是为人十分和蔼，温和，良师益友@地球-某某老师。</p>
-<h2>Fattree topo</h2>
-<p>这个python文件最初的原型是参考了roan's Blog的博文<a href="http://roan.logdown.com/posts/191753-sdn-lab-2-use-mininet-create-fat-tree-topology">SDN Lab 2$ Use Mininet create Fat Tree Topology</a>中给出的代码。并在次基础上做了一些修改。在此感谢台湾的小伙伴的分享。</p>
-<p>在此基础上我进行了修改，可点击<a href="https://github.com/muzixing/fattree/blob/master/fattree_8_4.py">fattree源码</a>获取代码。</p>
-<h3>Fattree特征</h3>
-<p>Fattree中，K是一个很重要的参数。如K=8，则core节点个数为(K/2)^2,pod个数为K,每一个POD有K个交换机，每一个交换机有K个inter link（内部链路）。aggregation层有K^2/2=64/2=32个交换机，同理 edge也是K^2/2=32个交换机。host可以是K/2个host，也可以任意指定。在我写的脚本中，K和host density都是可以设置的参数。</p>
-<p>部分源码：</p>
-<div class="highlight"><pre><span class="n">class</span> <span class="n">Fattree</span><span class="p">(</span><span class="n">Topo</span><span class="p">):</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Class Fattree&quot;</span><span class="p">)</span>
-    <span class="n">CoreSwitchList</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">AggSwitchList</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">EdgeSwitchList</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">HostList</span> <span class="o">=</span> <span class="o">[]</span>
-
-    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>  <span class="c1"># K 为fattree pod个数。 density是tor下的主机个数。</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Class Fattree init&quot;</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">pod</span> <span class="o">=</span> <span class="n">k</span> 
-        <span class="n">self</span><span class="o">.</span><span class="n">iCoreLayerSwitch</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">iAggLayerSwitch</span> <span class="o">=</span> <span class="n">k</span><span class="o">*</span><span class="n">k</span><span class="o">/</span><span class="mi">2</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">iEdgeLayerSwitch</span> <span class="o">=</span> <span class="n">k</span><span class="o">*</span><span class="n">k</span><span class="o">/</span><span class="mi">2</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">density</span> <span class="o">=</span> <span class="n">density</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">iHost</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">iEdgeLayerSwitch</span> <span class="o">*</span> <span class="n">density</span>
-
-        <span class="c1">#Init Topo</span>
-        <span class="n">Topo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">createTopo</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">createCoreLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">iCoreLayerSwitch</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">createAggLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">iAggLayerSwitch</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">createEdgeLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">iEdgeLayerSwitch</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">createHost</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">iHost</span><span class="p">)</span>
-
-    <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    Create Switch and Host</span>
-<span class="s">    &quot;&quot;&quot;</span>
-
-    <span class="n">def</span> <span class="n">_addSwitch</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">switch_list</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">number</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">PREFIX</span> <span class="o">=</span> <span class="n">str</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;00&quot;</span>
-            <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-                <span class="n">PREFIX</span> <span class="o">=</span> <span class="n">str</span><span class="p">(</span><span class="n">level</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;0&quot;</span>
-            <span class="n">switch_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s&#39;</span> <span class="o">+</span> <span class="n">PREFIX</span> <span class="o">+</span> <span class="n">str</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-
-    <span class="n">def</span> <span class="n">createCoreLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">NUMBER</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Create Core Layer&quot;</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_addSwitch</span><span class="p">(</span><span class="n">NUMBER</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">CoreSwitchList</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">createAggLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">NUMBER</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Create Agg Layer&quot;</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_addSwitch</span><span class="p">(</span><span class="n">NUMBER</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">AggSwitchList</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">createEdgeLayerSwitch</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">NUMBER</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Create Edge Layer&quot;</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_addSwitch</span><span class="p">(</span><span class="n">NUMBER</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">EdgeSwitchList</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">createHost</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">NUMBER</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Create Host&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">NUMBER</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">PREFIX</span> <span class="o">=</span> <span class="s">&quot;h00&quot;</span>
-            <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-                <span class="n">PREFIX</span> <span class="o">=</span> <span class="s">&quot;h0&quot;</span>
-            <span class="n">elif</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
-                <span class="n">PREFIX</span> <span class="o">=</span> <span class="s">&quot;h&quot;</span>
-            <span class="n">self</span><span class="o">.</span><span class="n">HostList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="n">PREFIX</span> <span class="o">+</span> <span class="n">str</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-
-    <span class="s">&quot;&quot;&quot;</span>
-<span class="s">    Add Link   createLink函数用于创建links,修改了原始版本写死的代码。</span>
-<span class="s">    &quot;&quot;&quot;</span>
-
-    <span class="n">def</span> <span class="n">createLink</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">bw_c2a</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">bw_a2e</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">bw_h2a</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Add link Core to Agg.&quot;</span><span class="p">)</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">self</span><span class="o">.</span><span class="n">pod</span><span class="o">/</span><span class="mi">2</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">iAggLayerSwitch</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-                    <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span>
-                        <span class="n">self</span><span class="o">.</span><span class="n">CoreSwitchList</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">end</span><span class="o">+</span><span class="n">j</span><span class="p">],</span>
-                        <span class="n">self</span><span class="o">.</span><span class="n">AggSwitchList</span><span class="p">[</span><span class="n">x</span><span class="o">+</span><span class="n">i</span><span class="p">],</span>
-                        <span class="n">bw</span><span class="o">=</span><span class="n">bw_c2a</span><span class="p">)</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Add link Agg to Edge.&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">iAggLayerSwitch</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
-                    <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span>
-                        <span class="n">self</span><span class="o">.</span><span class="n">AggSwitchList</span><span class="p">[</span><span class="n">x</span><span class="o">+</span><span class="n">i</span><span class="p">],</span> <span class="n">self</span><span class="o">.</span><span class="n">EdgeSwitchList</span><span class="p">[</span><span class="n">x</span><span class="o">+</span><span class="n">j</span><span class="p">],</span>
-                        <span class="n">bw</span><span class="o">=</span><span class="n">bw_a2e</span><span class="p">)</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Add link Edge to Host.&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">iEdgeLayerSwitch</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">self</span><span class="o">.</span><span class="n">density</span><span class="p">):</span>
-                <span class="n">self</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span>
-                    <span class="n">self</span><span class="o">.</span><span class="n">EdgeSwitchList</span><span class="p">[</span><span class="n">x</span><span class="p">],</span>
-                    <span class="n">self</span><span class="o">.</span><span class="n">HostList</span><span class="p">[</span><span class="n">self</span><span class="o">.</span><span class="n">density</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">i</span><span class="p">],</span>
-                    <span class="n">bw</span><span class="o">=</span><span class="n">bw_h2a</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">set_ovs_protocol_13</span><span class="p">(</span><span class="n">self</span><span class="p">,):</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_set_ovs_protocol_13</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">CoreSwitchList</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_set_ovs_protocol_13</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">AggSwitchList</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">_set_ovs_protocol_13</span><span class="p">(</span><span class="n">self</span><span class="o">.</span><span class="n">EdgeSwitchList</span><span class="p">)</span>
-
-    <span class="n">def</span> <span class="n">_set_ovs_protocol_13</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">sw_list</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">sw</span> <span class="n">in</span> <span class="n">sw_list:</span>
-                <span class="n">cmd</span> <span class="o">=</span> <span class="s">&quot;sudo ovs-vsctl set bridge %s protocols=OpenFlow13&quot;</span> <span class="nv">%</span> <span class="nv">sw</span>
-                <span class="n">os</span><span class="o">.</span><span class="nb">system</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-
-<span class="n">def</span> <span class="n">createTopo</span><span class="p">():</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;LV1 Create Fattree&quot;</span><span class="p">)</span>
-    <span class="n">topo</span> <span class="o">=</span> <span class="n">Fattree</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-    <span class="n">topo</span><span class="o">.</span><span class="n">createTopo</span><span class="p">()</span>
-    <span class="n">topo</span><span class="o">.</span><span class="n">createLink</span><span class="p">(</span><span class="n">bw_c2a</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">bw_a2e</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">bw_h2a</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
-
-    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;LV1 Start Mininet&quot;</span><span class="p">)</span>
-    <span class="n">CONTROLLER_IP</span> <span class="o">=</span> <span class="s">&quot;127.0.0.1&quot;</span>
-    <span class="n">CONTROLLER_PORT</span> <span class="o">=</span> <span class="mi">6633</span>
-    <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">topo</span><span class="o">=</span><span class="n">topo</span><span class="p">,</span> <span class="nb">link</span><span class="o">=</span><span class="n">TCLink</span><span class="p">,</span> <span class="n">controller</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">autoSetMacs</span><span class="o">=</span><span class="n">True</span><span class="p">,</span>
-                  <span class="n">autoStaticArp</span><span class="o">=</span><span class="n">True</span><span class="p">)</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span>
-        <span class="s">&#39;controller&#39;</span><span class="p">,</span> <span class="n">controller</span><span class="o">=</span><span class="n">RemoteController</span><span class="p">,</span>
-        <span class="n">ip</span><span class="o">=</span><span class="n">CONTROLLER_IP</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">CONTROLLER_PORT</span><span class="p">)</span>
-    <span class="n">net</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <div><p>Mininet是一款非常轻巧但是功能很强大的网络模拟器。网络研究者可以使用Mininet创建支持OpenFlow的SDN拓扑。随着SDN研究的发展，多控制器协作成为未来的研究方向，所以使用Mininet构建多控制器网络拓扑也成为一种需求。本篇将讲述如何使用Mininet搭建多控制器网络拓扑。</p>
+<h3>Multi-Controller</h3>
+<p>多控制器有两种理解，一种理解是面向交换机的多控制器。即一个交换机会连接多个控制器，控制器之间的关系可以是equal，也可以是master/slave模式。关于多控制器的介绍，有兴趣的读者可以参考OpenFlow1.3协议的multi-controller部分内容。另一种理解是面向控制器的多控制器。即，多个控制器分别管理各自的数据平面网络，且数据平面之间有链路互联。这种模式下，控制器之间没有关系，控制器所控制的数据平面也没有关系。关于多控制器方面的研究，笔者会在后续的博客中大篇幅介绍。</p>
+<p>本篇将针对这两种理解，介绍如何搭建多控制器的Mininet拓扑。</p>
+<h3>面向交换机的多控制器网络拓扑</h3>
+<p>对于一个交换机而言，可以连接多个控制器，其实现方式非常简单， 在Mininet的源码中已经实现。从Mininet的<a href="https://github.com/mininet/mininet/blob/master/mininet/node.py">node.py</a>文件中，我们可以找到有用的代码：</p>
+<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">controllers</span> <span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Start OpenFlow reference user datapath.</span>
+<span class="sd">               Log to /tmp/sN-{ofd,ofp}.log.</span>
+<span class="sd">               controllers: list of controller objects&quot;&quot;&quot;</span>
+            <span class="c"># Add controllers</span>
+            <span class="n">clist</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="p">[</span> <span class="s">&#39;tcp:</span><span class="si">%s</span><span class="s">:</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span> <span class="n">c</span><span class="o">.</span><span class="n">IP</span><span class="p">(),</span> <span class="n">c</span><span class="o">.</span><span class="n">port</span> <span class="p">)</span>
+                                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">controllers</span> <span class="p">]</span> <span class="p">)</span>
+            <span class="n">ofdlog</span> <span class="o">=</span> <span class="s">&#39;/tmp/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;-ofd.log&#39;</span>
+            <span class="n">ofplog</span> <span class="o">=</span> <span class="s">&#39;/tmp/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;-ofp.log&#39;</span>
+            <span class="n">intfs</span> <span class="o">=</span> <span class="p">[</span> <span class="nb">str</span><span class="p">(</span> <span class="n">i</span> <span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">intfList</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span><span class="o">.</span><span class="n">IP</span><span class="p">()</span> <span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span> <span class="s">&#39;ofdatapath -i &#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">intfs</span> <span class="p">)</span> <span class="o">+</span>
+                      <span class="s">&#39; punix:/tmp/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39; -d </span><span class="si">%s</span><span class="s"> &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">dpid</span> <span class="o">+</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">dpopts</span> <span class="o">+</span>
+                      <span class="s">&#39; 1&gt; &#39;</span> <span class="o">+</span> <span class="n">ofdlog</span> <span class="o">+</span> <span class="s">&#39; 2&gt; &#39;</span> <span class="o">+</span> <span class="n">ofdlog</span> <span class="o">+</span> <span class="s">&#39; &amp;&#39;</span> <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span> <span class="s">&#39;ofprotocol unix:/tmp/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span>
+                      <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">clist</span> <span class="o">+</span>
+                      <span class="s">&#39; --fail=closed &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">opts</span> <span class="o">+</span>
+                      <span class="s">&#39; 1&gt; &#39;</span> <span class="o">+</span> <span class="n">ofplog</span> <span class="o">+</span> <span class="s">&#39; 2&gt;&#39;</span> <span class="o">+</span> <span class="n">ofplog</span> <span class="o">+</span> <span class="s">&#39; &amp;&#39;</span> <span class="p">)</span>
+            <span class="k">if</span> <span class="s">&quot;no-slicing&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dpopts</span><span class="p">:</span>
+                <span class="c"># Only TCReapply if slicing is enable</span>
+                <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c"># Allow ofdatapath to start before re-arranging qdisc&#39;s</span>
+                <span class="k">for</span> <span class="n">intf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">intfList</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">intf</span><span class="o">.</span><span class="n">IP</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">TCReapply</span><span class="p">(</span> <span class="n">intf</span> <span class="p">)</span>
 </pre></div>
 
 
-<h2>Iperfmulti function</h2>
-<p>在mininet中拓展功能的文章可参考<a href="http://richardzhao.me/">@赵伟辰</a>的博客。</p>
-<p>在mininet中增加新功能其实不难。主要分为3步：</p>
-<ul>
-<li>修改net.py增加函数实体；</li>
-<li>修改cli.py，增加对应do_function函数，用于命令解析；</li>
-<li>修改mn函数，用于声明命令。 </li>
-</ul>
-<p>net.py和cli.py均在mininet/mininet目录，mn文件在在mininet/bin目录中。</p>
-<h3>修改net.py</h3>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">iperf_single</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span><span class="n">hosts</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">udpBw</span><span class="o">=</span><span class="s">&#39;10M&#39;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5001</span><span class="p">):</span>
-        <span class="s">&quot;&quot;&quot;Run iperf between two hosts using UDP.</span>
-<span class="s">           hosts: list of hosts; if None, uses opposite hosts</span>
-<span class="s">           returns: results two-element array of server and client speeds&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">hosts:</span>
-            <span class="k">return</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">assert</span> <span class="n">len</span><span class="p">(</span> <span class="n">hosts</span> <span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
-        <span class="n">client</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">hosts</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="s">&#39;.out&#39;</span>
-        <span class="n">output</span><span class="p">(</span> <span class="s">&#39;*** Iperf: testing bandwidth between &#39;</span> <span class="p">)</span>
-        <span class="n">output</span><span class="p">(</span> <span class="s">&quot;%s and %s\n&quot;</span> <span class="nv">%</span> <span class="err">(</span> <span class="nv">client</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">server</span><span class="o">.</span><span class="n">name</span> <span class="p">)</span> <span class="p">)</span>
-        <span class="n">iperfArgs</span> <span class="o">=</span> <span class="s">&#39;iperf -u &#39;</span>
-        <span class="n">bwArgs</span> <span class="o">=</span> <span class="s">&#39;-b &#39;</span> <span class="o">+</span> <span class="n">udpBw</span> <span class="o">+</span> <span class="s">&#39; &#39;</span>
-        <span class="k">print</span> <span class="s">&quot;***start server***&quot;</span>
-        <span class="n">server</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span> <span class="n">iperfArgs</span> <span class="o">+</span> <span class="s">&#39;-s&#39;</span> <span class="o">+</span> <span class="s">&#39; &gt; /home/muzi/log/&#39;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s">&#39;&amp;&#39;</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&quot;***start client***&quot;</span>
-        <span class="n">client</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span>
-            <span class="n">iperfArgs</span> <span class="o">+</span> <span class="s">&#39;-t &#39;</span><span class="o">+</span> <span class="n">str</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; -c &#39;</span> <span class="o">+</span> <span class="n">server</span><span class="o">.</span><span class="n">IP</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">bwArgs</span>
-            <span class="o">+</span><span class="s">&#39; &gt; /home/muzi/log/&#39;</span> <span class="o">+</span> <span class="s">&#39;client&#39;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span><span class="s">&#39;&amp;&#39;</span><span class="p">)</span>
+<p>start函数发起了交换机到控制器的网络连接。传入的参数controllers是一个可迭代的数组，clist是整合之后的控制器信息，包括控制器的IP和控制器的端口。之后调用self.cmd函数启动连接，连接到控制器。</p>
+<p>start函数在UserSwitch和OVSSwitch等交换机类中均有对应实现。所以，只需在启动交换机时，传入对应的控制器列表即可。</p>
+<p>关键代码举例如下：</p>
+<div class="highlight"><pre>    <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">switch</span><span class="o">=</span><span class="n">OVSSwitch</span><span class="p">,</span> <span class="n">link</span><span class="o">=</span><span class="n">TCLink</span><span class="p">)</span>
+    <span class="n">s1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s1&#39;</span><span class="p">)</span>
+    <span class="n">controller_list</span> <span class="o">=</span> <span class="p">[]</span>
 
-<span class="n">def</span> <span class="n">iperfMulti</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">bw</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-    <span class="n">base_port</span> <span class="o">=</span> <span class="mi">5001</span>
-    <span class="n">server_list</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">client_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">hosts</span><span class="p">]</span>
-    <span class="n">host_list</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">host_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="n">in</span> <span class="n">self</span><span class="o">.</span><span class="n">hosts</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;controller[</span><span class="si">%s</span><span class="s">]&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">controller</span><span class="o">=</span><span class="n">RemoteController</span><span class="p">,</span>
+                          <span class="n">port</span><span class="o">=</span><span class="mi">6661</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">controller_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
 
-    <span class="n">cli_outs</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">ser_outs</span> <span class="o">=</span> <span class="o">[]</span>
-
-    <span class="n">_len</span> <span class="o">=</span> <span class="n">len</span><span class="p">(</span><span class="n">host_list</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">_len</span><span class="p">):</span>
-        <span class="n">client</span> <span class="o">=</span> <span class="n">host_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">server</span> <span class="o">=</span> <span class="n">client</span>
-        <span class="k">while</span><span class="p">(</span> <span class="n">server</span> <span class="o">==</span> <span class="n">client</span> <span class="p">):</span>
-            <span class="n">server</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">host_list</span><span class="p">)</span> 
-        <span class="n">server_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">iperf_single</span><span class="p">(</span><span class="n">hosts</span> <span class="o">=</span> <span class="p">[</span><span class="n">client</span><span class="p">,</span> <span class="n">server</span><span class="p">],</span> <span class="n">udpBw</span><span class="o">=</span><span class="n">bw</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span> <span class="n">period</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">base_port</span><span class="p">)</span>
-        <span class="nb">sleep</span><span class="p">(</span><span class="mf">.05</span><span class="p">)</span>
-        <span class="n">base_port</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="n">self</span><span class="o">.</span><span class="n">hosts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cmd</span><span class="p">(</span><span class="s">&#39;ping -c10&#39;</span><span class="o">+</span> <span class="n">self</span><span class="o">.</span><span class="n">hosts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">IP</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39; &gt; /home/muzi/log/delay.out&#39;</span><span class="p">)</span>
-    <span class="nb">sleep</span><span class="p">(</span><span class="n">period</span><span class="p">)</span>
+    <span class="n">s1</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">controller_list</span><span class="p">)</span>
 </pre></div>
 
 
-<p>以上代码完成iperfmulti函数实现：随机选取SC对，并进行iperf 打流。</p>
-<h3>修改cli.py</h3>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">do_iperfmulti</span><span class="p">(</span> <span class="n">self</span><span class="p">,</span> <span class="n">line</span> <span class="p">):</span>
-    <span class="s">&quot;&quot;&quot;Multi iperf UDP test between nodes&quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="nb">split</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">udpBw</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span> <span class="mi">0</span> <span class="p">]</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">mn</span><span class="o">.</span><span class="n">iperfMulti</span><span class="p">(</span><span class="n">udpBw</span><span class="p">)</span>
-    <span class="n">elif</span> <span class="n">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">udpBw</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span> <span class="mi">0</span> <span class="p">]</span>
-        <span class="n">period</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span> <span class="mi">1</span> <span class="p">]</span>
-        <span class="n">err</span> <span class="o">=</span> <span class="n">False</span>
-        <span class="n">self</span><span class="o">.</span><span class="n">mn</span><span class="o">.</span><span class="n">iperfMulti</span><span class="p">(</span><span class="n">udpBw</span><span class="p">,</span> <span class="n">float</span><span class="p">(</span><span class="n">period</span><span class="p">))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">error</span><span class="p">(</span><span class="s">&#39;invalid number of args: iperfmulti udpBw \n&#39;</span> <span class="o">+</span>
-               <span class="s">&#39;udpBw examples: 1M\n&#39;</span><span class="p">)</span>
+<p>其余代码如头文件引入，主函数等请参考后续示例代码。</p>
+<h3>面向控制器的多控制器网络拓扑</h3>
+<p>面向控制器的多控制器网络拓扑定义了多个交换机，并使其分别连接到不同的控制器，从而完成拓扑搭建。在下列示例代码中，我们定义了7个网络分别连接到7个控制器，每一个网络中有5个全连接的交换机，不同网络之间还有链路，使得7个网络彼此联通。代码比较简单，不再赘述，读者可自行阅读。</p>
+<div class="highlight"><pre>    <span class="c">#!/usr/bin/python</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This example create 7 sub-networks to connect 7  domain controllers.</span>
+<span class="sd">        Each domain network contains at least 5 switches.</span>
+<span class="sd">        For an easy test, we add 2 hosts for one switch.</span>
+<span class="sd">        So, in our topology, we have at least 35 switches and 70 hosts.</span>
+<span class="sd">        Hope it will work perfectly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">mininet.net</span> <span class="kn">import</span> <span class="n">Mininet</span>
+    <span class="kn">from</span> <span class="nn">mininet.node</span> <span class="kn">import</span> <span class="n">Controller</span><span class="p">,</span> <span class="n">RemoteController</span><span class="p">,</span> <span class="n">OVSSwitch</span>
+    <span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="kn">import</span> <span class="n">CLI</span>
+    <span class="kn">from</span> <span class="nn">mininet.log</span> <span class="kn">import</span> <span class="n">setLogLevel</span><span class="p">,</span> <span class="n">info</span>
+    <span class="kn">from</span> <span class="nn">mininet.link</span> <span class="kn">import</span> <span class="n">Link</span><span class="p">,</span> <span class="n">Intf</span><span class="p">,</span> <span class="n">TCLink</span>
+    <span class="kn">from</span> <span class="nn">mininet.topo</span> <span class="kn">import</span> <span class="n">Topo</span>
+    <span class="kn">import</span> <span class="nn">logging</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+
+
+    <span class="k">def</span> <span class="nf">multiControllerNet</span><span class="p">(</span><span class="n">con_num</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">sw_num</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span> <span class="n">host_num</span><span class="o">=</span><span class="mi">70</span><span class="p">):</span>
+        <span class="s">&quot;Create a network from semi-scratch with multiple controllers.&quot;</span>
+        <span class="n">controller_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">switch_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">host_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">switch</span><span class="o">=</span><span class="n">OVSSwitch</span><span class="p">,</span> <span class="n">link</span><span class="o">=</span><span class="n">TCLink</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">con_num</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;controller[</span><span class="si">%s</span><span class="s">]&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">controller</span><span class="o">=</span><span class="n">RemoteController</span><span class="p">,</span>
+                                  <span class="n">port</span><span class="o">=</span><span class="mi">6661</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">controller_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;*** Creating </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">name</span>
+
+        <span class="k">print</span> <span class="s">&quot;*** Creating switches&quot;</span>
+        <span class="n">switch_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">sw_num</span><span class="p">)]</span>
+
+        <span class="k">print</span> <span class="s">&quot;*** Creating hosts&quot;</span>
+        <span class="n">host_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">host_num</span><span class="p">)]</span>
+
+        <span class="k">print</span> <span class="s">&quot;*** Creating links of host2switch.&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">sw_num</span><span class="p">):</span>
+            <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">host_list</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">host_list</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">print</span> <span class="s">&quot;*** Creating interior links of switch2switch.&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">sw_num</span><span class="p">,</span> <span class="n">sw_num</span><span class="o">/</span><span class="n">con_num</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">sw_num</span><span class="o">/</span><span class="n">con_num</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">sw_num</span><span class="o">/</span><span class="n">con_num</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">j</span> <span class="o">!=</span> <span class="n">k</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">k</span><span class="p">:</span>
+                        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">k</span><span class="p">])</span>
+
+        <span class="k">print</span> <span class="s">&quot;*** Creating intra links of switch2switch.&quot;</span>
+
+        <span class="c"># 0-4  5-9 10-14 15-19 20-24 25-29 30-34</span>
+        <span class="c"># domain1 -&gt; others</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">15</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">20</span><span class="p">])</span>
+
+        <span class="c"># domain2 -&gt; others</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">12</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">18</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">25</span><span class="p">])</span>
+
+        <span class="c"># domain3 -&gt; others</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">16</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">12</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">16</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">21</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">12</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">27</span><span class="p">])</span>
+
+        <span class="c"># domain4 -&gt; others</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">16</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">21</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">18</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">27</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">18</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">31</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">19</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">34</span><span class="p">])</span>
+
+        <span class="c"># domain5 -&gt; others</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">21</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">27</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">23</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">31</span><span class="p">])</span>
+
+        <span class="c"># domain6 -&gt; others</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">25</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">31</span><span class="p">])</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">switch_list</span><span class="p">[</span><span class="mi">27</span><span class="p">],</span> <span class="n">switch_list</span><span class="p">[</span><span class="mi">32</span><span class="p">])</span>
+
+        <span class="c">#domain7 has not need to add links.</span>
+
+        <span class="k">print</span> <span class="s">&quot;*** Starting network&quot;</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">controller_list</span><span class="p">:</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="n">_No</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">sw_num</span><span class="p">,</span> <span class="n">sw_num</span><span class="o">/</span><span class="n">con_num</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">sw_num</span><span class="o">/</span><span class="n">con_num</span><span class="p">):</span>
+                <span class="n">switch_list</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">([</span><span class="n">controller_list</span><span class="p">[</span><span class="n">_No</span><span class="p">]])</span>
+            <span class="n">_No</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c">#print &quot;*** Testing network&quot;</span>
+        <span class="c">#net.pingAll()</span>
+
+        <span class="k">print</span> <span class="s">&quot;*** Running CLI&quot;</span>
+        <span class="n">CLI</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+
+        <span class="k">print</span> <span class="s">&quot;*** Stopping network&quot;</span>
+        <span class="n">net</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+        <span class="n">setLogLevel</span><span class="p">(</span><span class="s">&#39;info&#39;</span><span class="p">)</span>  <span class="c"># for CLI output</span>
+        <span class="n">multiControllerNet</span><span class="p">(</span><span class="n">con_num</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">sw_num</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span> <span class="n">host_num</span><span class="o">=</span><span class="mi">70</span><span class="p">)</span>
 </pre></div>
 
 
-<h3>修改mn</h3>
-<p>在mininet/bin目录下修改mn文件，将iperfmulti加入到对应的列表中。</p>
-<div class="highlight"><pre><span class="c1"># optional tests to run</span>
-<span class="n">TESTS</span> <span class="o">=</span> <span class="p">[</span> <span class="s">&#39;cli&#39;</span><span class="p">,</span> <span class="s">&#39;build&#39;</span><span class="p">,</span> <span class="s">&#39;pingall&#39;</span><span class="p">,</span> <span class="s">&#39;pingpair&#39;</span><span class="p">,</span> <span class="s">&#39;iperf&#39;</span><span class="p">,</span> <span class="s">&#39;all&#39;</span><span class="p">,</span> <span class="s">&#39;iperfudp&#39;</span><span class="p">,</span>
-          <span class="s">&#39;none&#39;</span><span class="err">，</span><span class="s">&#39;iperfmulti&#39;</span> <span class="p">]</span>
-
-<span class="n">ALTSPELLING</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;pingall&#39;</span><span class="p">:</span> <span class="s">&#39;pingAll&#39;</span><span class="p">,</span>
-                <span class="s">&#39;pingpair&#39;</span><span class="p">:</span> <span class="s">&#39;pingPair&#39;</span><span class="p">,</span>
-                <span class="s">&#39;iperfudp&#39;</span><span class="p">:</span> <span class="s">&#39;iperfUdp&#39;</span><span class="p">,</span>
-                <span class="s">&#39;iperfUDP&#39;</span><span class="p">:</span> <span class="s">&#39;iperfUdp&#39;</span><span class="p">,</span>
-                <span class="s">&#39;iperfmulti&#39;</span><span class="p">:</span> <span class="s">&#39;iperfmulti&#39;</span><span class="p">}</span>
+<h3>总结</h3>
+<p>Mininet功能很强大，基本可以满足日常的科研需求。更多的参考案例，可查看mininet的examples目录。最后，简单的启动脚本可以供参考。该脚本可以启动7个窗口，分别在不同的端口上启动7个ryu控制器，从而使得7个网络的交换机可以连接到对应的网络。</p>
+<div class="highlight"><pre>    <span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="nv">$</span><span class="err">(</span><span class="nv">seq</span> <span class="mi">1</span> <span class="mi">7</span><span class="p">);</span>
+        <span class="k">do</span>
+        <span class="n">let</span> <span class="n">port</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">6660</span>
+        <span class="n">xterm</span> <span class="o">-</span><span class="n">title</span> <span class="s">&quot;app$i&quot;</span> <span class="o">-</span><span class="n">hold</span> <span class="o">-</span><span class="n">e</span> <span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="n">ryu</span><span class="sr">/app/sim</span><span class="n">ple_switch_13</span> <span class="o">--</span><span class="n">ofp</span><span class="o">-</span><span class="n">tcp</span><span class="o">-</span><span class="nb">listen</span><span class="o">-</span><span class="n">port</span><span class="o">=</span><span class="nv">$port</span> <span class="o">&amp;</span>
+        <span class="n">done</span>
 </pre></div>
 
 
-<h3>重新安装mininet</h3>
-<p>进入mininet/util目录，输入以下命令重新编译安装mininet core:</p>
-<div class="highlight"><pre><span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">n</span>
-</pre></div>
-
-
-<p>重启mininet，输入iperf，可使用table补全iperfmulti，从而可使用iperfmulti进行测试。</p>
-<h2>总结</h2>
-<p>在做实验的过程中，遇到了很多问题，也学会了很多。学会了谷歌找资料，学会了给论文作者发邮件，也学会了如何协同工作。特别是协同工作这一点，以前写代码，做实验都是自己来，没有明确定义的接口，也更没有分工合作，版本管理也是自己随意定。在这个实验过程中，不仅学到了很多知识，更重要的是学会了和小伙伴北邮-张歌的相处，团队协作是一个非常重要的能力，我将在未来的日子里继续努力学习和提高这方面的能力。希望他的<a href="http://www.zhangge208.com/">博客</a>能慢慢写起来，以后一起做更多好玩有用的实验。</p></div>
+<p>希望自己的研究能够顺利进行，最终面世。</p></div>
         <hr />
     </div>
 		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html"><h2>Fattree topo and iperfmulti function in mininet</h2></a>
+        <div class= "well small"> 2015-02-22
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>This article will show you 1)how to build a <a href="http://ccr.sigcomm.org/online/files/p63-alfares.pdf">fattree</a> topo and 2)how to extend the iperfmulti function in mininet.</p>
+<p>本篇博文将讲述1）如何搭建fatree网络拓扑和2）如何在mininet中拓展iperfmulti功能。</p>
+<p>众所周知，数据中心是目前网络研究的一个热门领域。随着云计算的兴起与发展，会对数据中心网络提出更多的需求，也为学术研究提供了更多的课题。TE（Traffic Engineering）是网络研究中最基础的研究之一，在TE中Load balance是比较主要的研究内容之一。 然而由于数据中心网络的流量走势与传统网络不同，导致数据中心网络与传统网络的架构有所不同。在传统网络中上下行流量在总流量中占据很大比重，而相比之下，数据中心的流量分类中，横向流量的比重要远远大于传统网络架构的比重。为了更好解决数据中心网络流量问题，数据中心架构的设计就变得非常重要，在众多网络架构中，Fat-tree架构是比较出名和成功的。</p>
+<p>SDN兴起于校园网，盛开于数据中心，这是一种比较准确的描述。目前SDN的研究领域内 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -428,45 +403,14 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="s">    This is a topu of our test. It shows that how to add an ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html"><h2>【原创】mininet搭建自定义网络拓扑 by muzi</h2></a>
-        <div class= "well small"> 2013-12-06
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>你知道的mininet</h3>
-<p>相信很多研究SDN的朋友都知道mininet，也是用过mininet。但是恐怕大多数人都只是局限于workthough的水平.链接：http://mininet.org/walkthrough/</p>
-<p>搭建更多的，灵活的拓扑还是有一定的难度。</p>
-<p>上一次实验的时候，看了一下spirent testceter的一套测试拓扑，从中受益，学了一点。现在写出来分享一下。</p>
-<p>如果你想快速建立拓扑，请直接拉到最后一个标题</p>
-<h3>教你搭建你自己的任意拓扑</h3>
-<p>首先把需要用到的相关模块import进来。</p>
-<div class="highlight"><pre><span class="sr">/#!/</span><span class="n">usr</span><span class="sr">/bin/</span><span class="n">python</span>
-
-<span class="nb">import</span> <span class="n">re</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">cli</span> <span class="nb">import</span> <span class="n">CLI</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">log</span> <span class="nb">import</span> <span class="n">setLogLevel</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span><span class="n">error</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">net</span> <span class="nb">import</span> <span class="n">Mininet</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">link</span> <span class="nb">import</span> <span class="n">Intf</span>
-<span class="n">from</span> <span class="n">mininet ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
     <li class="active"><a href="../tag/mininet.html">1</a></li>
+    <li class=""><a href="../tag/mininet2.html">2</a></li>
 
-    <li class="next disabled"><a href="#">&rarr; Next</a></li>
+    <li class="next"><a href="../tag/mininet2.html">Next &rarr;</a></li>
 
 </ul>
 </div>

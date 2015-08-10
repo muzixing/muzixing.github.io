@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2015-07-28T23:57:18-00:00</lastmod>
+<lastmod>2015-08-10T09:38:35-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2015-07-28T23:57:18-00:00</lastmod>
+<lastmod>2015-08-10T09:38:35-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2015-07-28T23:57:18-00:00</lastmod>
+<lastmod>2015-08-10T09:38:35-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2015-07-28T23:57:18-00:00</lastmod>
+<lastmod>2015-08-10T09:38:35-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2013-12-27T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html</loc>
+<lastmod>2015-08-05T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -418,7 +425,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/category/tech.html</loc>
-<lastmod>2015-07-24T00:00:00-00:00</lastmod>
+<lastmod>2015-08-05T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -495,7 +502,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/tag/mininet.html</loc>
-<lastmod>2015-02-22T00:00:00-00:00</lastmod>
+<lastmod>2015-08-05T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -538,6 +545,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>http://www.muzixing.com/tag/ping.html</loc>
 <lastmod>2014-08-06T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/tag/multi-controller.html</loc>
+<lastmod>2015-08-05T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -733,7 +747,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/author/muzi.html</loc>
-<lastmod>2015-07-24T00:00:00-00:00</lastmod>
+<lastmod>2015-08-05T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
