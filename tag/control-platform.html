@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="./theme/html5.js"></script>
+    <script src="../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="./theme/bootstrap.min.css" rel="stylesheet">
-    <link href="./theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="./theme/local.css" rel="stylesheet">
-    <link href="./theme/pygments.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../theme/local.css" rel="stylesheet">
+    <link href="../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href=".">Milestone</a>
+        <a class="brand" href="..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="./pages/about-me.html">About me</a></li>
+            <li><a href="../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -62,10 +62,10 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2015/08/30/sdnkong-zhi-ping-mian-fa-zhan-li-shi-ji-qu-shi.html"><h1>SDN控制平面发展历史及趋势</h1></a>
+            <a href="../pages/2015/08/30/sdnkong-zhi-ping-mian-fa-zhan-li-shi-ji-qu-shi.html"><h1>SDN控制平面发展历史及趋势</h1></a>
 2015-08-30
 
-by <a class="url fn" href="./author/muzi.html">muzi</a>
+by <a class="url fn" href="../author/muzi.html">muzi</a>
  
 
 
@@ -146,123 +146,13 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         <hr />
     </div>
 		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html"><h2>Mininet搭建多控制器拓扑</h2></a>
-        <div class= "well small"> 2015-08-05
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Mininet是一款非常轻巧但是功能很强大的网络模拟器。网络研究者可以使用Mininet创建支持OpenFlow的SDN拓扑。随着SDN研究的发展，多控制器协作成为未来的研究方向，所以使用Mininet构建多控制器网络拓扑也成为一种需求。本篇将讲述如何使用Mininet搭建多控制器网络拓扑。</p>
-<h3>Multi-Controller</h3>
-<p>多控制器有两种理解，一种理解是面向交换机的多控制器。即一个交换机会连接多个控制器，控制器之间的关系可以是equal，也可以是master/slave模式。关于多控制器的介绍，有兴趣的读者可以参考OpenFlow1.3协议的multi-controller部分内容。另一种理解是面向控制器的多控制器。即，多个控制器分别管理各自的数据平面网络，且数据平面之间有链路互联。这种模式下，控制器之间没有关系，控制器所控制的数据平面也没有关系。关于多控制器方面的研究，笔者会在后续的博客中大篇幅介绍。</p>
-<p>本篇将针对这两种理解，介绍如何搭建多控制器的Mininet拓扑。</p>
-<h3>面向交换机的多控制器网络拓扑</h3>
-<p>对于一个交换机而言，可以连接多个控制器，其实现方式非常简单， 在Mininet的源码中已经实现。从Mininet的<a href="https://github.com/mininet/mininet/blob/master/mininet/node.py">node.py</a>文件中，我们可以找到有用的代码：</p>
-<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">controllers</span> <span class="p">):</span>
-            <span class="sd">&quot;&quot;&quot;Start OpenFlow reference user datapath.</span>
-<span class="sd">               Log to /tmp/sN- ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html"><h2>Ryu:OpenFlow协议源码分析</h2></a>
-        <div class= "well small"> 2015-07-24
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Ryu支持OpenFlow所有的版本，是所有SDN控制器中对OpenFlow支持最好的控制器之一。这得益于Ryu的代码设计，Ryu中关于OpenFlow协议的代码量不多。阅读Ryu源码，不仅让我了解到了Ryu的运行细节，也学会了许多的编码知识。这为我当前开发的协议提供了很大的帮助。</p>
-<p>本篇将从交换机与控制器建立连接开始，介绍OpenFlow报文的解析的相关代码实现。关于如何注册handler和发送报文，可查看之前的<a href="http://www.muzixing.com/pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html">RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager</a>。该篇侧重点为Ryu整体架构的运作，重点在RyuApp和AppManager;本篇重点在与详细介绍OpenFlow的解析和封装实现。希望对读者提供帮助。</p>
-<h3><strong>Ofp_handler</strong></h3>
-<p>负责底层数据通信的模块是ofp_handler模块。ofp_handler启动之后，start函数实例化了一个controller.OpenFlowController实例。OpenFlowController实例化之后，立即调用_<em>call_</em>()函数，call函数启动了server_loop去创建server socket，其handler为domain_connection_factory函数。每当收到一个switch连接，domain_connection_factory就会实例化一个datapath对象。这个对象用于描述交换机的所有行为。其中定义了接收循环和发送循环。</p>
-<h3><strong>Datapath</strong></h3>
-<p>datapath.serve函数是socket通信收发逻辑的入口。该函数启动了一个绿色线程去处理发送循环，然后本线程负责接收循环的处理。self._send_loop是发送主循环。其主要逻辑为：不断获取发送队列是否有数据，若有，则发送；底层调用的是socket.send_all（）函数 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html"><h2>SDN网络感知服务与最短路径应用</h2></a>
-        <div class= "well small"> 2015-07-08
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>本文将介绍RYU中的网络感知服务，与基于网络服务的最短路径应用，主要内容包括网络资源感知模块，网络监控模块和基于网络信息的最短路由模块介绍。在一个真实的网络环境下，需掌握网络的实时动态，包括网络的资源以及网络流量状况，其中网络的信息包括交换机，端口，主机的信息，以及基于流的流量统计信息和基于端口的流量统计信息。在掌握这些关键的网络信息后，控制器就可以根据这些信息作出当下最正确的路由决策，完成网络的通信。</p>
-<h3>网络资源感知</h3>
-<p>网络资源感知模块用于感知网络资源的实时变化，包括拓扑信息以及主机信息的变化。任何网络应用，可达性都是最基本的要求。SDN网络的集中控制，使得控制器可以根据全局的信息作出最佳决策而无需在交换节点上采用分布式的路由算法。所以感知网络资源是SDN应用最基础的一项服务。网络资源感知模块源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">network_aware</a>.</p>
-<p>实现该模块的类为Network_Aware类，该类描述如下：</p>
-<div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Network_Aware</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
-        <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-        <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;network_aware&#39;</span>
-
-        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">Network_Aware</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Network_Aware&quot;</span>
-            <span class="bp">self ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html"><h2>初学者的SDN学习之路</h2></a>
-        <div class= "well small"> 2015-06-22
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Software Defined Network顾名思义软件定义网络，可以简单地分为网络和软件两个部分：软件和网络。此外，通过使用OpenFlow协议来实现SDN是一种较为普遍的方式，
-所以本篇将从软件和网络以及OpenFlow三个方面进行介绍。在研究SDN的研究者之中，有相当大比例的网络工程师，他们了解网络，精通网络，然而却并不了解软件开发。除此之外，还有很大比例的研究者是软件工程师，他们软件开发能力出色，然而并不了解网络运作的机制，在接触SDN之前，他们的范围仅仅只是应用层，底层的东西交给全交给主机的协议栈了。还有一部分同学是像我这样，通信工程出身，学的是物理层的编码解码，误码率，电磁波。不像计算机专业那些学生一样，学习各种语言，操弄各种编译器，混迹于github这种全球最大的男性交友网站。剩下最后一种就是又懂网络，又懂编程。这种人，我一般称之为老师，是用来请教问题的，比如地球-某某老师。一般的,他们不屑于看到这种文章，太low。</p>
-<p>本篇主要的目标用户是对网络和软件开发都不太了解，或者网络和编程开发只擅长一种的研究者。由于我也是一个初学者，所以仅当做经验分享吧。如有表达不对的地方，敬请指出，万分感谢。</p>
-<h2>网络</h2>
-<p>软件定义网络，如果不了解网络，那如何去定义一个你不了解的东西？如果不知道网络中存在的问题 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
-    <li class="active"><a href="./index.html">1</a></li>
-    <li class=""><a href="./index2.html">2</a></li>
-    <li class=""><a href="./index3.html">3</a></li>
-    <li class=""><a href="./index4.html">4</a></li>
-    <li class=""><a href="./index5.html">5</a></li>
-    <li class=""><a href="./index6.html">6</a></li>
-    <li class=""><a href="./index7.html">7</a></li>
-    <li class=""><a href="./index8.html">8</a></li>
-    <li class=""><a href="./index9.html">9</a></li>
-    <li class=""><a href="./index10.html">10</a></li>
-    <li class=""><a href="./index11.html">11</a></li>
+    <li class="active"><a href="../tag/control-platform.html">1</a></li>
 
-    <li class="next"><a href="./index2.html">Next &rarr;</a></li>
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
 
 </ul>
 </div>
@@ -278,8 +168,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="./archives.html">Archives</a>
-                <li><a href="./tags.html">Tags</a>
+                <li><a href="../archives.html">Archives</a>
+                <li><a href="../tags.html">Tags</a>
                 <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
 		</li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
@@ -293,8 +183,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="./category/life.html">life</a></li>
-                <li><a href="./category/tech.html">Tech</a></li>
+                <li><a href="../category/life.html">life</a></li>
+                <li><a href="../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -334,7 +224,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href=".">Milestone</a> &copy; muzi 2012</p>
+<p><a href="..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
