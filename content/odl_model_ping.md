@@ -1,0 +1,956 @@
+title:Opendaylight中开发模块Ping
+tags:opendaylight,SDN,Ping
+category:Tech
+date:2014/8/6
+
+###前言
+
+在安装和运行opendaylight之后，我们需要了解opendaylight各个目录的作用，运行机制。在此基础之上，我们需要动手进行第一个ODL模块的开发，在开发中找到ODL的重要所在。接下来的教程是在完成官网的一篇教程的基础上的总结和介绍，希望读者能有所收获。
+
+###摘要
+
+本篇教程主要介绍如何在ODL上使用MD-SAL开发一个简单的TCP ping插件。这个插件实现了向指定地址发送ICMP，探测IP地址可达性的功能。首先我们需要使用YANG定义一个ping model,然后我们需要实现一个ping plugin,实现ping功能，再然后创建ping service 用于提供ping服务，最后我们通过REST API来实现北向接口使用ping service。
+
+其中每一个功能，我们将其创建为maven工程，并作为osgi的bundle。所以我们总共需要创建4个OSGI 的bundle：
+
+*  Northbound API / Implementation [ping-northbound]
+
+	The northbound API defines the interface for interacting with the given service. For example, a REST, or JSON interface for invoking the ping service.
+
+* Service Bundle [ping-service]
+
+	The service bundle links the northbound implementation with the south bound (MD-SAL) definitions.
+
+* South Bound API (MD-SAL definition) [model-ping]
+
+	This bundle defines a simple yang file which results in auto-generated data-models ( i.e. auto generated java interfaces)
+
+* Specific Implementation of South Bound Interface
+
+	Defines the specific of the south bound interface, generally protocol specific etc.
+
+###第一步：下载控制器源码，编译
+
+* 使用一下的命令下载controller的最新代码，注意，若使用以前旧版本的控制器，在教程中会遇到一些问题，所以推荐重新下载新文件。
+
+		git clone https://git.opendaylight.org/gerrit/p/controller.git
+
+* 检查YANG tools的版本>=0.5.8-SNAPSHOT即可。
+
+		vi controller/opendaylight/commons/opendaylight/pom.xml
+		...
+		<yangtools.version>0.5.8-SNAPSHOT</yangtools.version>
+		...
+
+* 编译控制器
+
+		cd controller/opendaylight/distribution/opendaylight
+		mvn clean install
+
+###第二步：使用YANG定义model-ping
+
+在ODL中使用YANG来描述底层的数据结构，所以我们需要首先要建立一个YANG model文件，目的是为了生成JAVA API。YANG文件定义的数据结构可以一一对应生成java 接口等API，更详细的资料请看：	
+
+	https://wiki.opendaylight.org/view/YANG_Tools:YANG_to_Java_Mapping
+
+最简单的方式是在md-sal/model中建立model，这样可以和使用其他模块的pom.xml。在完成第一步的基础上，按照以下命令，创建YANG工程
+
+	cd ../../md-sal/model/
+	mkdir model-ping
+	cd model-ping/
+	mkdir -p src/main/yang
+
+然后在src/main/yang目录创建文件
+
+	vi src/main/yang/ping.yang
+
+
+这个ping model的yang文件首先需要定义一个简单的RPC(Remote Procedure Call Protocol)来完成ping request的初始化，这个过程需要IPV4的地址作为参数，所以我们需要import “ietf-inet-types” model。同时，我们也要为这个调用设置返回值。具体如下：（复制粘贴时请将中文注释删除）
+
+	module ping {        #模块名称
+	  namespace "urn:opendaylight:ping";
+	  prefix ping;
+	  import ietf-inet-types {prefix inet;}#import
+	  revision "2013-09-11" {
+	    description "TCP ping module";    #对模块/模型描述
+	  }
+	  rpc send-echo {          #定义rpc 
+	    description "Send TCP ECHO request";
+	    input {    #输入
+	      leaf destination {  
+	        type inet:ipv4-address;   #参数为ipv4地址
+	      }
+	    }
+	    output {   #输出
+	      leaf echo-result {
+	        type enumeration {
+	          enum "reachable" {    #返回类型
+	            value 0;
+	            description "Received reply";
+	          }
+	          enum "unreachable" {
+	            value 1;
+	            description "No reply during timeout";
+	          }
+	          enum "error" {
+	            value 2;
+	            description "Error happened";
+	          }
+	        }
+	        description "Result types";
+	      }
+	    }
+	  }
+	}
+
+完成之后，我们需要为maven项目model-ping构建pom.xml文件。
+	
+	vi pom.xml
+
+在pom.xml中使用model-parent 会使整个pom.xml变得很简单。
+
+	
+	<?xml version="1.0" encoding="UTF-8"?>
+	<project xmlns="http://maven.apache.org/POM/4.0.0"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	  <parent>
+	    <artifactId>model-parent</artifactId>
+	    <groupId>org.opendaylight.controller.model</groupId>
+	    <version>1.1-SNAPSHOT</version>
+	    <relativePath></relativePath>
+	  </parent>
+	
+	  <modelVersion>4.0.0</modelVersion>
+	  <artifactId>model-ping</artifactId>
+	  <packaging>bundle</packaging>
+	</project>
+
+完成以上的步骤之后，就可以使用maven编译生成API和bundle了。
+
+	mvn clean install
+
+若想运行ODL的时候运行bundle，则需要将生成的jar包复制到plugins目录。
+
+	cp ./target/model-ping-1.1-SNAPSHOT.jar ../../../distribution/opendaylight/target/\
+	distribution.opendaylight-osgipackage/opendaylight/plugins/\
+	org.opendaylight.controller.model.model-ping-1.1-SNAPSHOT.jar
+
+###第三步：ping plugin
+
+上一步我们创建了一个model，定义了数据结构，这一步我们需要创建一个bundle来实现这个ping的插件。从而提供ping的服务。
+
+在controller/opendaylight/ping目录创建工程，命令如下：
+
+	cd ../../../
+	mkdir -p ping/plugin/src/main/java/org/opendaylight/controller/ping/plugin/internal
+	cd ping/plugin
+
+这依然是一个maven工程，所以我们需要创建他的pom.xml文件，用于描述工程。
+
+	vi pom.xml
+
+在pom.xml文件中，我们需要为上一步定义的model-ping描述依赖关系。并需要引入上一步编译生成的包：org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911。 同时，为了定义ipv4，我们还需要引入依赖包：org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev100924
+
+
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<project xmlns="http://maven.apache.org/POM/4.0.0"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	 <modelVersion>4.0.0</modelVersion>
+	 <parent>
+	   <groupId>org.opendaylight.controller</groupId>
+	   <artifactId>commons.opendaylight</artifactId>
+	   <version>1.4.2-SNAPSHOT</version>
+	   <relativePath>../../commons/opendaylight</relativePath>
+	 </parent>
+	 <artifactId>ping.plugin</artifactId>
+	 <version>0.4.0-SNAPSHOT</version>
+	 <packaging>bundle</packaging>
+	 <build>  #构建工程
+	   <plugins>
+	     <plugin>
+	       <groupId>org.apache.felix</groupId>
+	       <artifactId>maven-bundle-plugin</artifactId>
+	       <version>${bundle.plugin.version}</version>
+	       <extensions>true</extensions>
+	       <configuration>
+	         <instructions>
+	           <Import-Package>
+	             org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911,
+	             org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev100924,
+	             org.opendaylight.yangtools.yang.common,
+	             org.opendaylight.yangtools.yang.binding,
+	             org.opendaylight.controller.sal.binding.api,
+	             org.opendaylight.controller.sal.common.util,
+	             com.google.common.util.concurrent,
+	             org.osgi.framework
+	           </Import-Package>
+	           <Export-Package>
+	             org.opendaylight.controller.ping.plugin.internal#生成包，java文件所在目录
+	           </Export-Package>
+	           <Bundle-Activator>
+	             org.opendaylight.controller.ping.plugin.internal.PingProvider
+	           </Bundle-Activator>
+	         </instructions>
+	         <manifestLocation>${project.basedir}/META-INF</manifestLocation>
+	       </configuration>
+	     </plugin>
+	   </plugins>
+	 </build>
+	 <dependencies>#依赖关系
+	    <dependency>
+	      <groupId>org.osgi</groupId>
+	      <artifactId>org.osgi.core</artifactId>
+	    </dependency>
+	   <dependency>
+	     <groupId>org.opendaylight.controller.model</groupId>
+	     <artifactId>model-ping</artifactId>
+	     <version>1.1-SNAPSHOT</version>
+	   </dependency>
+	   <dependency>
+	     <groupId>org.opendaylight.controller</groupId>
+	     <artifactId>sal-binding-api</artifactId>
+	     <version>1.1-SNAPSHOT</version>
+	   </dependency>
+	   <dependency>
+	     <groupId>org.opendaylight.controller</groupId>
+	     <artifactId>sal-common-util</artifactId>
+	     <version>1.1-SNAPSHOT</version>
+	   </dependency>
+	   <dependency>
+	     <groupId>org.opendaylight.yangtools</groupId>
+	     <artifactId>yang-common</artifactId>
+	     <version>${yangtools.version}</version>
+	   </dependency>
+	   <dependency>
+	     <groupId>org.opendaylight.yangtools</groupId>
+	     <artifactId>yang-binding</artifactId>
+	     <version>${yangtools.version}</version>
+	   </dependency>
+	 </dependencies>
+	</project>
+
+
+完成pom.xml之后，我们需要在正确的目录添加接口实现文件
+
+	vi src/main/java/org/opendaylight/controller/ping/plugin/internal/PingImpl.java
+
+在第一步完成之后，我们已经由YANG文件生成了PingService的接口。PingImpl将实现PingService接口。在PingService中有sendEcho 的RPC方法声明，所以PingImpl也有这一方法。这个RPC方法将IPV4数据 “SendEchoInput”作为参数传入，并返回枚举类型"SendEchoOutput"。返回值是由YANG定义的EchoResult.Reachable或者EchoResult.Unreachable，错误还会返回EchoResult.Error。类中用InetAddress.isReachable(timeout)函数去检测IPV4地址是否可达。
+
+	package org.opendaylight.controller.ping.plugin.internal;
+	
+	import java.io.IOException;
+	import java.net.InetAddress;
+	import java.util.Collections;
+	import java.util.concurrent.Future;
+	
+	import org.opendaylight.controller.sal.common.util.Rpcs;
+	import org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911.PingService;
+	import org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911.SendEchoInput;
+	import org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911.SendEchoOutput;
+	import org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911.SendEchoOutput.EchoResult;
+	import org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911.SendEchoOutputBuilder;
+	import org.opendaylight.yangtools.yang.common.RpcError;
+	import org.opendaylight.yangtools.yang.common.RpcResult;
+	
+	import com.google.common.util.concurrent.Futures;
+	
+	public class PingImpl implements PingService {
+	
+	    private EchoResult pingHost(InetAddress destination) throws IOException {
+	        if (destination.isReachable(5000)) {
+	            return EchoResult.Reachable;
+	        } else {
+	            return EchoResult.Unreachable;
+	        }
+	    }//EchoResult是在YANG文件中定义的输出数据格式，编译之后生成的JAVA类型。
+	
+	    @Override
+	    public Future<RpcResult<SendEchoOutput>> sendEcho(SendEchoInput destination) {
+	        try {
+	            InetAddress dst = InetAddress.getByName(destination
+	                    .getDestination().getValue());
+	            EchoResult result = this.pingHost(dst);
+	
+	            /* Build the result and return it. */
+	            SendEchoOutputBuilder ob = new SendEchoOutputBuilder();
+	            ob.setEchoResult(result);
+	            RpcResult<SendEchoOutput> rpcResult =
+	                    Rpcs.<SendEchoOutput> getRpcResult(true, ob.build(),
+	                            Collections.<RpcError> emptySet());
+	
+	            return Futures.immediateFuture(rpcResult);
+	        } catch (Exception e) {
+	
+	            /* Return error result. */
+	            SendEchoOutputBuilder ob = new SendEchoOutputBuilder();
+	            ob.setEchoResult(EchoResult.Error);
+	            RpcResult<SendEchoOutput> rpcResult =
+	                    Rpcs.<SendEchoOutput> getRpcResult(true, ob.build(),
+	                            Collections.<RpcError> emptySet());
+	            return Futures.immediateFuture(rpcResult);
+	        }
+	    }
+	
+	}
+
+Futures:represents the result of an asynchronous computation.
+
+more:http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html
+
+完成PingImpl.java之后我们还需要一个java文件，作用在于在osgi上注册plugin service，是bundle的activator。
+
+	vi src/main/java/org/opendaylight/controller/ping/plugin/internal/PingProvider.java
+
+
+这个类需要继承AbstractBindingAwareProvider 接口（这个接口非常重要，后续的教程教详细介绍相关内容）。在我们的例子这个接口中的onSessionInitiated 是最重要的方法。我们使用这个方法，将pingservice的接口和实现作为参数参入，实现服务在OSGI框架注册，从而让其他bundle感知到。
+
+	package org.opendaylight.controller.ping.plugin.internal;
+	
+	import java.util.Collection;
+	
+	import org.opendaylight.controller.sal.binding.api.AbstractBindingAwareProvider;
+	// import org.opendaylight.controller.sal.binding.api.BindingAwareBroker.ConsumerContext;
+	import org.opendaylight.controller.sal.binding.api.BindingAwareBroker.ProviderContext;
+	import org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911.PingService;
+	import org.opendaylight.yangtools.yang.binding.RpcService;
+	import org.osgi.framework.BundleContext;
+	
+	public class PingProvider extends AbstractBindingAwareProvider {
+	
+	    PingImpl pingImpl;
+	
+	    public PingProvider() {
+	        pingImpl = new PingImpl();//构造实例
+	    }
+	
+	    @Override
+	    public Collection<? extends RpcService> getImplementations() {
+	        return null;
+	    }
+	
+	    @Override
+	    public Collection<? extends ProviderFunctionality> getFunctionality() {
+	        return null;
+	    }
+	
+	    @Override
+	    public void onSessionInitiated(ProviderContext session) {
+	        session.addRpcImplementation(PingService.class, pingImpl);//注册服务
+	    }
+	
+	    @Override
+	    protected void startImpl(BundleContext context) {
+	    }
+	
+	}
+
+这一步我们完成了activator和implementation。完成了服务的实现和注册。然后编译工程：
+
+	mvn clean install
+
+将生成的jar文件复制到plugins目录
+
+	cp target/ping.plugin-0.4.0-SNAPSHOT.jar ../../distribution/opendaylight/target/distribution.opendaylight-osgipackage/opendaylight/plugins/org.opendaylight.controller.ping.plugin-0.4.0-SNAPSHOT.jar
+
+
+####测试
+
+以上的步骤已经完成了YANG定义model,以及服务生产者的实现。我们可以通过自动生成的RESTAPI去调用send-echo RPC。可使用curl进行测试，命令如下：
+
+	curl -v -H "Content-Type:application/json" -X POST -u admin:admin -d "{input:{destination:127.0.0.1}}" http://localhost:8080/restconf/operations/ping:send-echo
+
+其中destination的值可换成任意你想要ping的地址。
+
+如果ping成功将会返回
+
+	{"output":{"echo-result":"reachable"}}
+
+否则返回其他。
+
+###第三步 通过REST API使用Ping RPC
+
+接下来的部门将介绍如何为ping model构造消费者（以上的provider是生产者）,然后为这个消费者实现一个REST API.
+
+####Ping service
+
+为了让北向接口和YANG model解耦，我们使用Ping service来连接ping plugin和Ping northbound。所以我们还需要构建一个作为osgi bundle的maven工程，构建目录在controller/opendaylight/ping
+
+	cd ..
+	mkdir -p service/src/main/java/org/opendaylight/controller/ping/service/api
+	mkdir -p service/src/main/java/org/opendaylight/controller/ping/service/impl
+	cd service
+
+每一个maven项目，我们都需要有一个pom.xml文件。
+
+	vi pom.xml
+
+在pom.xml中，我们需要指明这个bundle的activator(osgi的每一个bundle都有activator，用于启动。详情请google),同时，还需要暴露出plugin service 接口，以便其他的bundle使用，比如Ping northbound。
+	
+	<project xmlns="http://maven.apache.org/POM/4.0.0"
+	  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  xsi:schemaLocation="http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	
+	  <modelVersion>4.0.0</modelVersion>
+	  <parent>
+	    <groupId>org.opendaylight.controller</groupId>
+	    <artifactId>commons.opendaylight</artifactId>
+	    <version>1.4.2-SNAPSHOT</version>
+	    <relativePath>../../commons/opendaylight</relativePath>
+	  </parent>
+	  <artifactId>ping.service</artifactId>
+	  <packaging>bundle</packaging>
+	  <version>1.1-SNAPSHOT</version>
+	
+	  <build>
+	    <plugins>
+	      <plugin>
+	        <groupId>org.apache.felix</groupId>
+	        <artifactId>maven-bundle-plugin</artifactId>
+	        <version>${bundle.plugin.version}</version>
+	        <extensions>true</extensions>
+	        <configuration>
+	          <instructions>
+	            <Import-Package>
+	              org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911,
+	              org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev100924,
+	              org.opendaylight.yangtools.yang.common,
+	              org.opendaylight.yangtools.yang.binding,
+	              org.opendaylight.controller.sal.binding.api,
+	              org.osgi.framework
+	            </Import-Package>
+	            <Export-Package>org.opendaylight.controller.ping.service.api</Export-Package>#导出api包
+	            <Bundle-Activator>org.opendaylight.controller.ping.service.impl.PingServiceImpl</Bundle-Activator>  #activator的指明
+	          </instructions>
+	          <manifestLocation>${project.basedir}/META-INF</manifestLocation>
+	        </configuration>
+	      </plugin>
+	    </plugins>
+	  </build>
+	
+	  <dependencies>
+	    <dependency>
+	      <groupId>org.osgi</groupId>
+	      <artifactId>org.osgi.core</artifactId>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.opendaylight.controller.model</groupId>
+	      <artifactId>model-ping</artifactId>
+	      <version>1.1-SNAPSHOT</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.opendaylight.controller</groupId>
+	      <artifactId>sal-binding-api</artifactId>
+	      <version>1.1-SNAPSHOT</version>
+	    </dependency>
+	    <dependency>
+	     <groupId>org.opendaylight.yangtools</groupId>
+	     <artifactId>yang-common</artifactId>
+	     <version>${yangtools.version}</version>
+	    </dependency>
+	    <dependency>
+	     <groupId>org.opendaylight.yangtools</groupId>
+	     <artifactId>yang-binding</artifactId>
+	     <version>${yangtools.version}</version>
+	    </dependency>
+	  </dependencies>
+	</project>
+
+完成pom.xml之后，我们需要开始定义ping service的接口和实现。
+
+	vi src/main/java/org/opendaylight/controller/ping/service/api/PingServiceAPI.java
+ 
+ping service的接口非常简单。参数为传入的目标地址，返回会boolean类型，表明是否可达。具体如下：
+
+	package org.opendaylight.controller.ping.service.api;
+	
+	public interface PingServiceAPI {
+	
+	    /**
+	     * pingDestination
+	     *
+	     * @param address An IPv4 address to be pinged
+	     * @return True if address is reachable,
+	     * false if address is unreachable or error occurs.
+	     */
+	    boolean pingDestination(String address);
+	}
+
+完成接口定义之后，我们还需要实现接口。
+	
+	vi src/main/java/org/opendaylight/controller/ping/service/impl/PingServiceImpl.java
+
+这里的PingServiceImpl类继承了AbstractBindingAwareConsumer类。在AbstractBindingAwareConsumer类中提供了回调函数，以osgi启动bundle。
+
+**（这个重要的类所属的目录为：controller/opendaylight/md-sal/sal-binding-api/src/main/java/org/opendaylight/controller/sal/binding/api。着这个目录中有非常重要的类如BindingAwareBroker.java。在后续的教程中将重点分析次目录。）**
+
+在onSessionInitialized方法中，'ConsumerContext'被存储等待后续使用。而startImpl方法则是调用了register函数，将bundle注册到了osgi平台。pingDestination方法首先寻找是否存在ping service 的RPC调用。如存在则继续使用ping.recv130911b包内的SendEchoInput类构建input,然后调用ping plugin中的sendEcho，返回的SendEchoOutput字符串映射成boolean值，返回调用者。
+
+	package org.opendaylight.controller.ping.service.impl;
+	
+	import java.util.concurrent.ExecutionException;
+	
+	import org.opendaylight.controller.ping.service.api.PingServiceAPI;
+	import org.opendaylight.controller.sal.binding.api.AbstractBindingAwareConsumer;
+	import org.opendaylight.controller.sal.binding.api.BindingAwareBroker.ConsumerContext;
+	import org.opendaylight.controller.sal.binding.api.BindingAwareConsumer;
+	import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev100924.Ipv4Address;
+	import org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911.PingService;
+	import org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911.SendEchoInputBuilder;
+	import org.opendaylight.yang.gen.v1.urn.opendaylight.ping.rev130911.SendEchoOutput;
+	import org.opendaylight.yangtools.yang.common.RpcResult;
+	import org.osgi.framework.BundleActivator;
+	import org.osgi.framework.BundleContext;
+	
+	public class PingServiceImpl extends AbstractBindingAwareConsumer implements
+	        BundleActivator, BindingAwareConsumer, PingServiceAPI {
+	
+	    private PingService ping;
+	    private ConsumerContext session;
+	
+	    @Override
+	    public void onSessionInitialized(ConsumerContext session) {
+	        this.session = session;
+	    }
+	
+	    @Override
+	    protected void startImpl(BundleContext context) {
+	        context.registerService(PingServiceAPI.class, this, null);
+	    }
+	
+	    @Override
+	    public boolean pingDestination(String address) {
+	
+	        if (ping == null) {
+	            ping = this.session.getRpcService(PingService.class);
+	            if (ping == null) {
+	
+	                /* No ping service found. */
+	                return false;
+	            }
+	        }
+	
+	        Ipv4Address destination = new Ipv4Address(address);
+	
+	        SendEchoInputBuilder ib = new SendEchoInputBuilder();
+	        ib.setDestination(destination);
+	        try {
+	            RpcResult<SendEchoOutput> result = ping.sendEcho(ib.build()).get();
+	            switch (result.getResult().getEchoResult()) {
+	            case Reachable:
+	                return true;
+	            case Unreachable:
+	            case Error:
+	            default:
+	                return false;
+	            }
+	        } catch (InterruptedException ie) {
+	        } catch (ExecutionException ee) {
+	        }
+	
+	        return false;
+	    }
+	
+	}
+
+
+完成以上内容之后，对bundle使用mvn进行编译，并将生成的jar包复制到指定目录。
+
+	mvn clean install
+	cp target/ping.service-1.1-SNAPSHOT.jar ../../distribution/opendaylight/target/distribution.opendaylight-osgipackage/opendaylight/plugins/org.opendaylight.controller.ping.service-1.1-SNAPSHOT.jar
+
+
+####Ping Northbound
+
+在完成了ping service之后，我们最后还需要构建一个北向API，调用ping service。
+
+在controller/opendaylight/ping目录在创建northbound目录。
+
+	cd ..
+	mkdir -p northbound/src/main/java/org/opendaylight/controller/ping/northbound
+	mkdir -p northbound/src/main/resources/META-INF
+	mkdir -p northbound/src/main/resources/WEB-INF
+	cd northbound
+
+同样的为工程添加pom.xml
+
+	vi pom.xml
+
+在pom.xml文件中我们需要import Ping service包，以便使用Ping Service。同时，我们也要需要确定许多WEB服务的信息。例如ContextPath,我们定义ContextPath为'/controller/nb/v2',所以我们可以通过HTTP PUT的方式向http://localhost:8080/controller/nb/v2/ping/{ipAddress}发送send ping请求。
+	
+	<?xml version="1.0" encoding="UTF-8"?>
+	<project xmlns="http://maven.apache.org/POM/4.0.0"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	  <modelVersion>4.0.0</modelVersion>
+	  <parent>
+	    <groupId>org.opendaylight.controller</groupId>
+	    <artifactId>commons.opendaylight</artifactId>
+	    <version>1.4.2-SNAPSHOT</version>
+	    <relativePath>../../commons/opendaylight</relativePath>
+	  </parent>
+	  <artifactId>ping.northbound</artifactId>
+	  <version>1.0-SNAPSHOT</version>
+	  <packaging>bundle</packaging>
+	
+	  <build>
+	    <plugins>
+	      <plugin>
+	        <groupId>org.codehaus.enunciate</groupId>
+	        <artifactId>maven-enunciate-plugin</artifactId>
+	        <version>${enunciate.version}</version>
+	        <dependencies>
+	          <dependency>
+	            <groupId>org.opendaylight.controller</groupId>
+	            <artifactId>sal</artifactId>
+	            <version>0.7.1-SNAPSHOT</version>
+	          </dependency>
+	        </dependencies>
+	      </plugin>
+	      <plugin>
+	        <groupId>org.apache.felix</groupId>
+	        <artifactId>maven-bundle-plugin</artifactId>
+	        <version>${bundle.plugin.version}</version>
+	        <extensions>true</extensions>
+	        <configuration>
+	          <instructions>
+	            <Import-Package>
+	              org.opendaylight.controller.ping.service.api,
+	              org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev100924,
+	              org.apache.commons.logging,
+	              com.sun.jersey.spi.container.servlet,
+	              org.opendaylight.controller.northbound.commons,
+	              org.opendaylight.controller.northbound.commons.exception,
+	              org.opendaylight.controller.northbound.commons.utils,
+	              org.opendaylight.controller.sal.utils,
+	              org.opendaylight.controller.sal.authorization,
+	              org.opendaylight.controller.sal.packet.address,
+	              javax.ws.rs,
+	              javax.ws.rs.core,
+	              javax.xml.bind.annotation,
+	              javax.xml.bind,
+	              org.slf4j,
+	              org.apache.catalina.filters,
+	              com.fasterxml.jackson.jaxrs.base,
+	              com.fasterxml.jackson.jaxrs.json,
+	              !org.codehaus.enunciate.jaxrs
+	            </Import-Package>
+	            <Web-ContextPath>/controller/nb/v2</Web-ContextPath>
+	          </instructions>
+	          <manifestLocation>${project.basedir}/src/main/resources/META-INF</manifestLocation>
+	        </configuration>
+	      </plugin>
+	    </plugins>
+	  </build>
+	  <dependencies>
+	    <dependency>
+	      <groupId>org.opendaylight.controller.thirdparty</groupId>
+	      <artifactId>com.sun.jersey.jersey-servlet</artifactId>
+	      <version>1.17</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.opendaylight.controller</groupId>
+	      <artifactId>commons.northbound</artifactId>
+	      <version>0.4.2-SNAPSHOT</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.codehaus.enunciate</groupId>
+	      <artifactId>enunciate-core-annotations</artifactId>
+	      <version>${enunciate.version}</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.opendaylight.controller.thirdparty</groupId>
+	      <artifactId>org.apache.catalina.filters.CorsFilter</artifactId>
+	      <version>7.0.42</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.opendaylight.controller</groupId>
+	      <artifactId>ping.service</artifactId>
+	      <version>1.1-SNAPSHOT</version>
+	    </dependency>
+	  </dependencies>
+	</project>
+
+
+接下来我们创建enunciate.xml。什么是enunciate?  http://enueciate.codehaus.org
+
+	<?xml version="1.0"?>
+	<enunciate label="full" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	    xsi:noNamespaceSchemaLocation="http://enunciate.codehaus.org/schemas/enunciate-1.26.xsd">
+	
+	  <services>
+	    <rest defaultRestSubcontext="/controller/nb/v2/ping"/>
+	  </services>
+	
+	  <modules>
+	    <docs docsDir="rest" title="Ping REST API" includeExampleXml="true" includeExampleJson="true"/>
+	  </modules>
+	</enunciate>
+
+最后我们还需要配置web.xml
+
+	vi src/main/resources/WEB-INF/web.xml
+
+web.xml可以从其他类似的北向的项目中复制，然后修改。在servlet标签中声明：JAXRSPing,对应到param-value中的PingNorthboundRSApplication。我们将马上实现这个文件。
+
+	<?xml version="1.0" encoding="ISO-8859-1"?>
+	<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+	 http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	 version="3.0">
+	  <servlet>
+	    <servlet-name>JAXRSPing</servlet-name>
+	    <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+	    <init-param>
+	      <param-name>javax.ws.rs.Application</param-name>
+	      <param-value>org.opendaylight.controller.ping.northbound.PingNorthboundRSApplication</param-value>
+	    </init-param>
+	    <load-on-startup>1</load-on-startup>
+	  </servlet>
+	
+	  <servlet-mapping>
+	    <servlet-name>JAXRSPing</servlet-name>
+	    <url-pattern>/*</url-pattern>
+	  </servlet-mapping>
+	
+	        <filter>
+	          <filter-name>CorsFilter</filter-name>
+	          <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+	          <init-param>
+	            <param-name>cors.allowed.origins</param-name>
+	            <param-value>*</param-value>
+	          </init-param>
+	          <init-param>
+	            <param-name>cors.allowed.methods</param-name>
+	            <param-value>GET,POST,HEAD,OPTIONS,PUT</param-value>
+	          </init-param>
+	          <init-param>
+	            <param-name>cors.allowed.headers</param-name>
+	            <param-value>Content-Type,X-Requested-With,accept,authorization, origin,Origin,Access-Control-Request-Method,Access-Control-Request-Headers</param-value>
+	          </init-param>
+	          <init-param>
+	            <param-name>cors.exposed.headers</param-name>
+	            <param-value>Access-Control-Allow-Origin,Access-Control-Allow-Credentials</param-value>
+	          </init-param>
+	          <init-param>
+	            <param-name>cors.support.credentials</param-name>
+	            <param-value>true</param-value>
+	          </init-param>
+	          <init-param>
+	            <param-name>cors.preflight.maxage</param-name>
+	            <param-value>10</param-value>
+	          </init-param>
+	        </filter>
+	        <filter-mapping>
+	          <filter-name>CorsFilter</filter-name>
+	          <url-pattern>/*</url-pattern>
+	        </filter-mapping>
+	
+	        <security-constraint>
+	          <web-resource-collection>
+	            <web-resource-name>NB api</web-resource-name>
+	            <url-pattern>/*</url-pattern>
+	            <http-method>POST</http-method>
+	            <http-method>GET</http-method>
+	            <http-method>PUT</http-method>
+	            <http-method>PATCH</http-method>
+	            <http-method>DELETE</http-method>
+	            <http-method>HEAD</http-method>
+	          </web-resource-collection>
+	          <auth-constraint>
+	            <role-name>System-Admin</role-name>
+	            <role-name>Network-Admin</role-name>
+	            <role-name>Network-Operator</role-name>
+	            <role-name>Container-User</role-name>
+	          </auth-constraint>
+	        </security-constraint>
+	
+	        <security-role>
+	                <role-name>System-Admin</role-name>
+	        </security-role>
+	        <security-role>
+	                <role-name>Network-Admin</role-name>
+	        </security-role>
+	        <security-role>
+	                <role-name>Network-Operator</role-name>
+	        </security-role>
+	        <security-role>
+	                <role-name>Container-User</role-name>
+	        </security-role>
+	
+	        <login-config>
+	                <auth-method>BASIC</auth-method>
+	                <realm-name>opendaylight</realm-name>
+	        </login-config>
+	</web-app>
+
+完成xml文件之后，我们首先需要完成源文件PingNorthboundRSApplication.java
+
+	vi src/main/java/org/opendaylight/controller/ping/northbound/PingNorthboundRSApplication.java
+
+这个文件将PingNorthbound作为一个web service app。当REST 调用对应URI的资源时将被调用。
+
+	package org.opendaylight.controller.ping.northbound;
+	
+	import java.util.HashSet;
+	import java.util.Set;
+	
+	import javax.ws.rs.core.Application;
+	
+	public class PingNorthboundRSApplication extends Application {
+	    @Override
+	    public Set<Class<?>> getClasses() {
+	        Set<Class<?>> classes = new HashSet<Class<?>>();
+	        classes.add(PingNorthbound.class);
+	        return classes;
+	    }
+	}
+
+在PingNorthbound文件中应用的实例定义为PingNorthbound，所以我们需要实现这个类。
+
+	vi src/main/java/org/opendaylight/controller/ping/northbound/PingNorthbound.java
+
+PingNorthnound定义了ping方法，用于相应特定URI路径的资源相应。ping方法会查找ping service的接口和pingDestination的方法，并根据返回值构建HTTP相应。
+
+
+	package org.opendaylight.controller.ping.northbound;
+	
+	import javax.ws.rs.PUT;
+	import javax.ws.rs.Path;
+	import javax.ws.rs.PathParam;
+	import javax.ws.rs.core.Response;
+	
+	import org.codehaus.enunciate.jaxrs.ResponseCode;
+	import org.codehaus.enunciate.jaxrs.StatusCodes;
+	import org.opendaylight.controller.ping.service.api.PingServiceAPI;
+	import org.opendaylight.controller.sal.utils.ServiceHelper;
+	
+	@Path("/")
+	public class PingNorthbound {
+	    /**
+	     * Ping test
+	     */
+	    @Path("/ping/{ipAddress}")
+	    @PUT
+	    @StatusCodes({
+	        @ResponseCode(code = 200, condition = "Destination reachable"),
+	        @ResponseCode(code = 503, condition = "Internal error"),
+	        @ResponseCode(code = 503, condition = "Destination unreachable") })
+	    public Response ping(@PathParam(value = "ipAddress") String ipAddress) {
+	        PingServiceAPI ping = (PingServiceAPI) ServiceHelper.getGlobalInstance(
+	                PingServiceAPI.class, this);
+	        if (ping == null) {
+	
+	            /* Ping service not found. */
+	            return Response.ok(new String("No ping service")).status(500)
+	                    .build();
+	        }
+	        if (ping.pingDestination(ipAddress))
+	            return Response.ok(new String(ipAddress + " - reachable")).build();
+	
+	        return Response.ok(new String(ipAddress + " - unreachable")).status(503)
+	                .build();
+	    }
+	}
+
+终于，我们完成了northbound的实现，别忘记对工程进行编译。
+
+	mvn clean install
+
+还要把对应的jar包复制到plugins目录下
+
+	cp target/ping.northbound-1.0-SNAPSHOT.jar ../../distribution/opendaylight/target/distribution.opendaylight-osgipackage/opendaylight/plugins/org.opendaylight.controller.ping.northbound-1.0-SNAPSHOT.jar
+
+
+**测试**
+
+运行odl，并通过curl测试
+
+	cd ../../distribution/opendaylight/target/distribution.opendaylight-0.1.0-SNAPSHOT-osgipackage/opendaylight
+	./run.sh
+
+此时可以输入命令
+	
+	ss ping
+
+启动关于ping内容的bundle,可以看到5个内容，其中4个是我们刚刚添加的bundle.再开终端使用curl测试，测试命令和结果如下：
+
+	$ curl --user "admin":"admin" -X PUT http://localhost:8080/controller/nb/v2/ping/127.0.0.1
+	127.0.0.1 - reachable
+	$ curl --user "admin":"admin" -X PUT http://localhost:8080/controller/nb/v2/ping/128.0.0.1
+	128.0.0.1 - unreachable
+
+到目前位置，我们已经完成了绝大部分的工作！最后我们还需要将工程和整个工程一起编译。
+
+###最后一步  编译整个工程
+
+全部的ping工程都需要作为控制器的一部分进行编译和安装，我们需要通过在pom.xml的修改达到这一目的。
+
+官网上的教程说的是'sal/yang-prototype/sal/modules'目录，但是新版的控制器并没有这一目录，所以博主努力寻找了一下，在opendylight/md-sal/model下找到了类似的pom.xml。博主认为这就是正确的文件。
+
+	vi controller/opendaylight/md-sal/model/pom.xml
+
+将 <module>model-ping</module>添加到一下部分中
+	
+	 ...
+	 <modules>
+	        <module>model-inventory</module>
+	        <module>model-flow-base</module>
+	        <module>model-flow-service</module>
+	        <module>model-flow-statistics</module>
+	        <module>model-topology-bgp</module>
+			<module>model-ping</module>
+	 </modules>
+	 ...
+
+剩下的3个工程同样需要编译，将其加入到对应的pom.xml中。官网给的文件目录是对的，但是内容不对。
+
+	vi controller/opendaylight/distribution/opendaylight/pom.xml
+
+添加内容如下
+
+	 ...
+	 <!-- Ping -->	
+	    <dependency>
+		  <groupId>org.opendaylight.controller</groupId>
+	      <artifactId>ping.northbound</artifactId>
+          <version>1.0-SNAPSHOT</version>
+	    </dependency>	
+	    <dependency>	
+	      <groupId>org.opendaylight.controller</groupId>	
+	      <artifactId>ping.plugin</artifactId>
+		  <version>0.4.0-SNAPSHOT</version>
+	    </dependency>	
+	    <dependency>	
+	      <groupId>org.opendaylight.controller</groupId>	
+	      <artifactId>ping.service</artifactId>	
+		  <version>1.1-SNAPSHOT</version>
+	    </dependency>
+     
+     <!--Southbound bundles-->
+	 ...
+	 ...
+	    <dependency>	
+	      <groupId>org.opendaylight.controller.model</groupId>	
+	      <artifactId>model.ping</artifactId>	
+		  <version>1.1-SNAPSHOT</version>
+	    </dependency>
+
+	<!-- toaster example I'm pretty sure we should trim -->
+    ...
+
+两处修改大概在500+和1000+行处。
+
+最后编译所有文件
+
+	cd controller/opendaylight/distribution/opendaylight
+	mvn clean install
+
+运行odl,再次测试，无误！
+
+官网对应教程：https://wiki.opendaylight.org/view/Ping
+
+

@@ -1,0 +1,12 @@
+date:2014/3/13
+title:SDN实现HTTP网络加速实验
+tags:SDN,HTTP,OpenFlow
+category:Tech
+
+###由于篇幅太长，且这个实验室是很久以前，我和我的小伙伴们一起做的课设，没有时间进行排版书写。
+
+附上链接：
+
+http://user.qzone.qq.com/350959853/blog/1394681174
+
+北邮学弟学妹做这个课设的可以联系628中某学长。
