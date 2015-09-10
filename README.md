@@ -1,4 +1,6 @@
 muzixing.github.io
 ==================
 
-welcome to my world!
+muzixing.github.io/www.muzixing.com is licheng's blog.
+
+www.muzixing.com focus on SDN technology, welcome to my world.
