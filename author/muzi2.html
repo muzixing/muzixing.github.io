@@ -62,6 +62,35 @@
  
 
     <div class='article'>
+        <a href="../pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html"><h2>SDN网络感知服务与最短路径应用</h2></a>
+        <div class= "well small"> 2015-07-08
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>本文将介绍RYU中的网络感知服务，与基于网络服务的最短路径应用，主要内容包括网络资源感知模块，网络监控模块和基于网络信息的最短路由模块介绍。在一个真实的网络环境下，需掌握网络的实时动态，包括网络的资源以及网络流量状况，其中网络的信息包括交换机，端口，主机的信息，以及基于流的流量统计信息和基于端口的流量统计信息。在掌握这些关键的网络信息后，控制器就可以根据这些信息作出当下最正确的路由决策，完成网络的通信。</p>
+<h3>网络资源感知</h3>
+<p>网络资源感知模块用于感知网络资源的实时变化，包括拓扑信息以及主机信息的变化。任何网络应用，可达性都是最基本的要求。SDN网络的集中控制，使得控制器可以根据全局的信息作出最佳决策而无需在交换节点上采用分布式的路由算法。所以感知网络资源是SDN应用最基础的一项服务。网络资源感知模块源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">network_aware</a>.</p>
+<p>实现该模块的类为Network_Aware类，该类描述如下：</p>
+<div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Network_Aware</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+        <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+        <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;network_aware&#39;</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Network_Aware</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Network_Aware&quot;</span>
+            <span class="bp">self ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html"><h2>初学者的SDN学习之路</h2></a>
         <div class= "well small"> 2015-06-22
 
@@ -166,52 +195,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <li>Cacheable ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2015/05/10/getting-started-with-restapi-of-ryu.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html"><h2>RYU3.16 GUI安装与Topology模块分析</h2></a>
-        <div class= "well small"> 2015-04-21
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>最近很多SDN研究人员问起如何安装RYU的GUI，网上也有一些教程。但是由于RYU版本问题，导致安装没有成功。本片博文将介绍RYU3.16版本下如何安装GUI，以及对RYU拓扑模块进行简单分析。</p>
-<h3>安装GUI</h3>
-<p><a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/">Linton的博客</a>已经有详细介绍，我在这里将一些可能出现问题的地方再提醒一次。</p>
-<h4>第一步：依赖安装及修改代码</h4>
-<p>建议查看<a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/">Linton的博客</a>，比较简单，不赘述。</p>
-<h4>第二步：运行相关组建</h4>
-<ul>
-<li>
-<p><strong>运行RYU相关APP</strong></p>
-<div class="highlight"><pre><span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="o">--</span><span class="n">verbose</span> <span class="o">--</span><span class="n">observe</span><span class="o">-</span><span class="n">links</span> <span class="n">app</span><span class="o">/</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">py</span> <span class="n">ryu</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">switches</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_topology</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">ofctl_rest</span>
-</pre></div>
-
-
-<p><img alt="运行截图" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi3oujndj20k60co75c.jpg" /></p>
-<p>运行截图如下：
-<img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi90ztcij20jx0cqqa0.jpg" /></p>
-</li>
-<li>
-<p><strong>运行controller.py文件</strong></p>
-<p>进入到gui目录，运行controller.py文件。</p>
-<div class="highlight"><pre><span class="n">python</span> <span class="n">controller</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-
-
-<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1erdi91ct7ej20mh0im12r.jpg" /></p>
-</li>
-<li>
-<p><strong>访问页面</strong></p>
-<p>打开浏览器，访问http://127 ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../author/muzi.html">&larr; Previous</a></li>
@@ -277,7 +260,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 <li><a href="http://www.sdnap.com/">SDNAP</a></li>
                 <li><a href="http://www.richardzhao.me/">Richardzhao</a></li>
                 <li><a href="http://ikimi.net/">Kimi Yang</a></li>
-                <li><a href="http://bbs.iplaypython.com/">玩蛇网论坛</a></li>
             </ul>
             </div>
 
