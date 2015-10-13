@@ -5,12 +5,6 @@ tags:about me
 
 # Cheng Li
 
-Communication Engineering
-
-School of Information and Communication Engineering (SICE)
-
-Beijing University of Posts and Telecommunications (BUPT)
-
 Email:licheng185408@gmail.com
 
 [Github:https://github.com/muzixing](https://github.com/muzixing)
@@ -27,48 +21,49 @@ School of Information and Communication Engineering (SICE)
 
 Beijing University of Posts and Telecommunications (BUPT)
 
-Freshman of Graduate Student
+The Second Year of Postgraduate Student
 
 ## Internship
 
-*   **China Academy of Telecommunication Research of MIIT(CATR)——OTN extension of OpenFlow1.0，Load balancing application. (2013.7 - 2014.1)**
-    *   Complete packets static library encapsulation of OpenFlow1.0, and add OTN extended byte
-    *   Develop an original Controller which supports IP and OTN
-    *   Test OTN extension via my controller, Mininet, and Sprient Testcenter
+*   **China Academy of Telecommunication Research of MIIT(CATR)——OTN extension of OpenFlow1.0，Load Balancing Application. (2013.7 - 2014.1)**
+    *   Complete encapsulation of OpenFlow1.0 data structure, and add OTN extended byte
+    *   Develop an original Controller "Miracle" which supports IP and OTN
+    *   Test OTN extension via Miracle, Mininet, and Sprient Testcenter
     *   Achieve Load balancing between IP and OTN demo
     
-*   **China future network Valley•Future Networks Innovation Institute —— Research of SDN controller（2014.3 - 2014-9）**
+*   **China Future Network Valley•Future Networks Innovation Institute —— Research of SDN Controller（2014.3 - 2014-9）**
     *   Complete the 16th chapter "Development of Micro-Controller:Miracle" of [《SDN Core Principles and Application Pratice》](http://www.ptpress.com.cn/Book.aspx?id=39373)
     *   Complete an outstanding dissertation for bachelor's degree:"[Research of SDN controller and Development of Micro-Controller](http://www.fnlab.net/index.php/-2014.html)"(TOP1%)
     *   Study and Research OpenDayLight
 
 ## Project Experience
 
-*   **Design and Implement Open eXchange Protocol of SDN controller(2015.3 - 2015.9)**
+*   **Design and Implement Open eXchange Protocol of SDN Controller(2015.3 - 2015.9)**
 
     *   Research the West-East Interface of SDN controller, and propose Open eXchange Protocol
-    *   Design the Open eXchange Protocol, and implement it on Ryu
-    *   Achieve the coordinate work of multiple controller to make the shortest forwarding cross multi domains
+    *   Design the Open eXchange Protocol, and implement it on SDN controller: Ryu
+    *   Achieve the coordinate work of multiple controllers to make the shortest forwarding cross multi-domains
 
-*   **Load Balancing on Fattree topology based on OpenFlow(2015.1 - 2015.2)**
+*   **Load Balancing on Fattree Topology Based on OpenFlow(2015.1 - 2015.2)**
 
-    *   Build [Fattree topology](http://www.muzixing.com/pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html) in Mininet, and implement two extension functions of traffic design:Random and Probability Stride
-    *   Implement load balance application based on DLB(Dynamic Load Balancing) algorithm
+    *   Implement two extension functions of traffic design: Random and Probability Stride
+    *   Implement load balance application based on DLB(Dynamic Load Balancing) algorithm in [Fattree topology](http://www.muzixing.com/pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html) 
     *   Evaluate the average bandwidth ratio of different algorithms
 
-*   **Load Balance based on Multipath(2014.9 - 2014.10)**
+*   **Load Balance Based on Multipath(2014.9 - 2014.10)**
 
     *   Implement [ARP proxy](https://github.com/muzixing/ryu/blob/master/ryu/app/arp_proxy_13.py) to avoid storm
     *   Implement QoS via queue to provide customized service
     *   Achieve load balancing application based on multipath by select group table
     
-*   **HTTP Acceleration application based on VLAN(2013.3 - 2013.5)**
+*   **HTTP Acceleration Application Based on VLAN(2013.3 - 2013.5)**
 
-    *   Build the test platform by RYU/POX+OpenvSwitch+Nginx to accelerate the speed of HTTP
+    *   Build the test platform by RYU/POX + OpenvSwitch + Nginx to accelerate the speed of HTTP traffic
     *   Achieve the customized service provider, and support switching of VLAN
 
 ## Awards
 
+*   “Winning Prize” of National University Software Defined Networking Competition (2015)
 *   "Honorable Mention" of ICM ( The Interdisciplinary Contest in Modeling)of American university students(2013)
 *   "Outstanding dissertation for bachelor's degree" of BUPT:"[Research of SDN controller and Development of Micro-Controller](http://www.fnlab.net/index.php/-2014.html)"(TOP1%)
 *   "The Second Prize" of "Challenge Cup" national university student extracurricular academic science and technology work competition
@@ -186,7 +181,7 @@ Email:licheng185408@gmail.com
 *   编程语言：Python(90%),Java(5%)，C/C++(5%)
 *   熟悉TCP/IP, OpenFlow协议，网络与交换理论知识扎实
 *   熟悉操作系统运行过程，熟悉Linux系统
-*   通过CET-6，英文文档阅读能力和演讲能力良好,口语流畅
+*   CET-6，英文文档阅读能力和演讲能力良好,口语流畅
 
 ## 社会实践
 
