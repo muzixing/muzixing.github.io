@@ -15,13 +15,9 @@ Email:licheng185408@gmail.com
 
 ## Education background
 
-Communication Engineering
+The second year of postgraduate student of Beijing University of Posts and Telecommunications(2014 - now)
 
-School of Information and Communication Engineering (SICE)
-
-Beijing University of Posts and Telecommunications (BUPT)
-
-The Second Year of Postgraduate Student
+Bachelor of Communication Engineering   Beijing University of Posts and Telecommunications (2010 - 2014)
 
 ## Internship
 
