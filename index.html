@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2015/09/28/sdnying-yong-lu-you-suan-fa-shi-xian-gong-ju-zhi-networkx.html"><h1>SDN应用路由算法实现工具之Networkx</h1></a>
-2015-09-28
+            <a href="./pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html"><h1>SDN东西向现状简介</h1></a>
+2015-10-29
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
  
@@ -72,64 +72,59 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>SDN(Software Defined Networking)是一种新型的网络架构，通过集中式的控制平面管理数据层面的转发等操作。网络的联通性是最基础的需求，为保证网络联通性，控制器需要应用相应的图论算法，计算出转发路径，完成数据转发。在开发SDN应用时，为完成基础的路径计算，时常需要开发者独立编写网络算法，不仅麻烦，性能和代码可复用性还受开发者个人编程水平影响。所以本篇文章将介绍网络算法工具networkx，用于完成路径算法开发工作。</p>
-<p><a href="https://networkx.github.io/">networkx</a>是用于创建、操作和研究复杂网络动态、结构和功能的Python语言包。networkx支持创建简单无向图，有向图和多重图（multigraph）；内置了许多标准的图论算法，节点可为任意数据，如图像文件；支持任意的边值维度，功能丰富，简单易用。</p>
-<p>由于Networkx代码经过多次测试，性能方面也做了很多的工作，使用Networkx内置的多种图论算法能给开发SDN应用带来很多的便利，可以节省开发时间，降低代码故障率。networkx的安装和使用，读者可从<a href="http://networkx.github.io/documentation/networkx-1.9.1/index.html#">官网文档</a>中快速得到，不加赘述。接下来的内容将简要介绍Networkx的经典图论算法内容， 包括<a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/algorithms.shortest_paths.html">最短路径</a>, <a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/generated/networkx.algorithms.simple_paths.all_simple_paths.html">KSP(K Shortest Paths)</a>算法和<a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/algorithms.traversal.html">Traversal(遍历)算法</a>BFS（Breadth First Search）/DFS(Depth First Search)。</p>
-<h2>最短路径算法Dijkstra和Floyd</h2>
-<p>计算单源到其他所有节点的最短路径的Dijkstra算法和计算所有节点之间最短路径的Floyd算法是最经典的网络算法之一。在networkx中对于二者的实现将在介绍如下。</p>
-<h3>Dijkstra</h3>
-<p>无论有向图还是无向图均可以使用的Dijkstra算法， G为networkx生成的图数据结构。source为起点，target为终点。起点、终点和权重均为可选参数。</p>
-<div class="highlight"><pre><span class="n">networkx</span><span class="o">.</span><span class="n">shortest_path</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">None</span><span class="p">)</span>
-</pre></div>
-
-
-<p><strong>无权图</strong></p>
-<div class="highlight"><pre><span class="n">networkx</span><span class="o">.</span><span class="n">single_source_shortest_path</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">source</span><span class="p">[,</span> <span class="n">cutoff</span><span class="p">])</span>
-</pre></div>
-
-
-<p><strong>有权图</strong></p>
-<div class="highlight"><pre><span class="n">networkx</span><span class="o">.</span><span class="n">dijkstra_path</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s">&#39;weight&#39;</span><span class="p">)</span>
-</pre></div>
-
-
-<h3>Floyd</h3>
-<p>对于Floyd算法，有无权图和有权图两种实现：</p>
-<p><strong>无权图</strong></p>
-<div class="highlight"><pre><span class="n">networkx</span><span class="o">.</span><span class="n">all_pairs_shortest_path</span><span class="p">(</span><span class="n">G</span><span class="p">[,</span> <span class="n">cutoff</span><span class="p">])</span>
-</pre></div>
-
-
-<p><strong>有权图</strong></p>
-<div class="highlight"><pre><span class="n">networkx</span><span class="o">.</span><span class="n">all_pairs_dijkstra_path</span><span class="p">(</span><span class="n">G</span><span class="p">[,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">weight</span><span class="p">])</span>
-</pre></div>
-
-
-<p>对于路径的长度的计算可以调用network.XXX_length函数获得，XXX为对应的路径计算算法名称。除了以上提到的几个算法以外，networkx还针对很多需求设计了变种的函数，如返回同样长度的多条最佳路径算法等，读者可根据需求自定义学习内容。</p>
-<h2>K-Shortest paths</h2>
-<p>在研究网络路由算法/转发算法时，除了使用跳数作为计算最优路径的标准以外，还会使用到很多其他的指标，如带宽，时延等，也有可能根据多种指标，建立多维度评价系统，计算加权值，从而计算最佳路径。例如，当涉及到带宽为标准时，计算量就会很大。首先，获取网络链路的剩余带宽数据，然后从源头开始，选途径路径中带宽最大的路径。由于一条链路中的最大剩余带宽取决与剩余带宽最小的那一条，若使用贪心算法逐跳排除，很可能计算错误，所以每遇到一个分支就需要选择一个路径，并保存其他未选择的路径数据。每一个节点都需要对所有的数据进行对比，从而选择当下最优的路径，直至所有的链路都比较完成。这样的算法可以通过修改Dijkstra算法完成，逻辑不困难，但效率并不高，具体实现不加赘述，读者可查看笔者在网上找到的一个介绍文章:<a href="http://www.0x94.com/doc/0o3dyiZgX_3k94OWp.html">基于SDN的最短路径算法(迪杰斯特拉)dijkstra</a>。</p>
-<p>在研究的过程中，发现许多论文提的方法都是基于拓扑信息算法K条最短路径，然后在根据带宽计算最优路径。根据算法可以直接在这K条中选择最大的路径最为最优，也可以设置权重，计算跳数和带宽的加权值，再选择最优。由于跳数的数值和带宽的数值相差甚远，所以二者均需进行归一化/正则化。</p>
-<p>考虑跳数的原因在于：每经过一个交换机，消耗的资源就多一份，所以需要考虑在内。举例：路径A带宽100M，跳数为2； 路径B带宽110M，跳数为5,若按照带宽选择则选择B，然而B经过的路径是A的若干倍，消耗的资源更多，产生的传输时延，以及传播时延（假设跳数为5的链路长度大于2， 否则不成立）也更多，所以综合考虑A可能是更好的路径。</p>
-<p>传统的KSP算法很多，Yen, Jin Y于1971年发表的论文 "Finding the k Shortest Loopless Paths in a Network"中提出的<a href="https://en.wikipedia.org/wiki/Yen%27s_algorithm">Yen's algorithm</a>就是经典算法之一，读者可直接查看点击<a href="https://en.wikipedia.org/wiki/Yen%27s_algorithm">Yen's algorithm</a>的wiki。其算法思想并不复杂，基本思想为：</p>
-<ul>
-<li>Dijkstra选择第1条最优路径， 保存为A[0]</li>
-<li>外循环，k从1到k。 内循环，以第k-1条（前一条）最优路径为路径，从该路径的第一个点开始作为分叉节点，分叉节点之前的为前一条最优路径与当前路径一致的部分，称之为rootpaths；将分叉点上已选的最优路径分支去掉（权值设置为正无穷），然后再运算dijkstra,将路径计算结果放到临时数据结构B中，随着循环的进行，分叉点不断前进，直至终点前一跳，内循环比较，已选出多条潜在的最优路径。</li>
-<li>对临时数据结构B中的路径进行排序，找到最优路径，添加到A数据结构中， 存为A[k], 外循环一轮结束。</li>
-<li>外循环继续，直至找到K条最优路径。</li>
-</ul>
-<p>Networkx已经实现了KSP算法，该算法patch于2015年4月份左右才加入networkx项目，由于networkx中all_shrtest_paths名字已被使用，所以新加入的算法在networkx中对应函数命名为<a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/generated/networkx.algorithms.simple_paths.all_simple_paths.html">all_simple_pay</a>，具体参数如下所示：</p>
-<div class="highlight"><pre><span class="n">all_simple_paths</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">None</span><span class="p">)</span>
-</pre></div>
-
-
-<p>其中G为networkx的图数据结构，source为起点，target为终点，cutoff为搜索深度，只返回路径长度短于cutoff的路径。为优化性能，函数返回值为一个generator(生成器)， 读者可通过for循环，生成对应的K shortest paths。采用generator可以逐次计算结果，而不会一次运算全部结果都写入内存，可以大大降低内存使用</p>
-<h2>Traversal</h2>
-<p>在某些网络应用场景中，会使用到遍历算法，如BFS（Breadth First Search）/DFS(Depth First Search)算法， networkx已经定义好的对应函数，具体内容由于篇幅限制，不再介绍。读者可查看networkx官方文档中关于<a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/algorithms.traversal.html">遍历</a>的文档进行学习。</p>
-<h2>总结</h2>
-<p>在开发SDN应用中，网络联通性是最基本的需求。在开发网络应用时，可采用networkx来保存网络数据，计算路径等，可大大提高开发效率。在学习的过程中，从不断自己造轮子，到逐渐使用成熟的开源软件，接触了很多工具，学习到了很多有用的知识。自己造的轮子很多时候，性能，适用度以及接口的稳定读都是很大的考验，逐渐尝试优秀的开源工具将成为我在未来编程学习的方向。</p></div>
+        <div><h3>What is SDN West-East Interface</h3>
+<p>在SDN架构中，控制平面掌控全局网络的资源，控制数据平面的转发等功能，尤其重要，所以控制平面的性能对整体网络的性能有直接的影响。以前控制平面多以单例控制器为主，控制平面能力欠缺成为SDN网络规模受限的最大原因之一。 后来OpenDayLight，ONOS等控制器的出现，使用了集群技术，使得SDN控制平面性能得到了提升，是当下解决SDN控制平面性能不足的主要解决方案之一。</p>
+<p>然而，这样的解决方案只能用于同一控制器之间的性能扩展，无法完成异构控制器之间的协同工作。此外，某些场景对于安全，隐私方面的考虑，需要隐藏网络内部的细节，所以还需要有SDN域的概念。如何完成跨域之间的流量处理，实现多异构控制器之间的协同工作是未来研究的方向之一，笔者将其归类为SDN控制平面的东西向接口。SDN控制平面的南向接口面对数据平面，北向接口面向应用，容易理解，控制器之间的接口称之为东西向接口，用于完成控制器之间的通信。</p>
+<p><center><img alt="West-East" src="http://ww2.sinaimg.cn/mw690/7f593341jw1exixzvkpi6j20og0d2gml.jpg" /></center>
+<center>Figure1. West-East Interface of SDN</center></p>
+<h3>Why SDN need West-East Interface</h3>
+<p>SDN东西向接口是定义控制器之间通信的接口。由于单控制器能力有限，为满足大规模和可拓展性要求，东西向接口的研究成为下一个SDN研究领域。目前对于SDN东西向接口的研究还处于初级阶段，还缺少行业标准。标准的SDN东西向接口应与SDN控制器解耦，能实现不同厂家控制器之间通信。</p>
+<p>在很多场景中都需要控制器之间的协同工作，如在运营商网络场景中，接入网，回传网，核心网三者功能差异很大，需要制定不同的控制器去运行不同的应用，而这三者又需要协同合作，实现全网的最优化。此时就需要东西向接口来完成控制器之间的通信。跨数据中心的网络中，多数据中心的控制器也有相互通信的需求。</p>
+<p><center><img alt="West-East interface for mobiel network" src="http://ww4.sinaimg.cn/mw690/7f593341jw1exixzu4513j20wq0cm76v.jpg" /></center>
+<center>Figure2. Federation of SDN Controllers</center></p>
+<p>目前南向的标准还为统一，OpenFlow成为SDN南向接口的通用标准之一，其他还有许多可以实现SDN架构的南向接口协议。总的来说，目前南向接口是百花齐放的状态。北向接口方面，目前ONF已经有相关部门在进行这项工作。统一的北向接口标准可以降低在不同控制器上开发应用的成本。关于东西向接口的标准，目前在业界中还未的到重视，仅ONF一个项目组在关注这个方向。</p>
+<h3>Approach for West-East Interface</h3>
+<p>SDN控制平面性能拓展方案中，目前的设计方案有两种，一种是垂直架构的，另一种是水平架构的[1]。垂直架构的实现方案是在多个控制器之上再叠加一层高级控制层，用于协调多个异构控制器之间的通信，从而完成跨控制器的通信请求。水平架构中，所有的节点都在同一层级，身份也相同，没有级别之分。目前比较常见的架构为水平架构，比如华为的SDNi[2]，Pingping Lin博士提出的West-East Bridge for SDN inter-domain network peering[3]。垂直架构目前在中国移动提出的SPTN架构中有涉及，笔者正在研究的内容也正是这部分内容。</p>
+<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1exixzuopf7j20jj0a4gm1.jpg" /></center>
+<center>Figure3. Vertical Approach for Inter-SDN Controller Communication </center></p>
+<p><center><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1exixzud6drj20ky07b74i.jpg" /></center>
+<center>Figure4. VerticHorizontal Approach for Inter-SDN Controller Communication </center></p>
+<h3>Previous Research</h3>
+<p>东西向接口其实并不是一个新鲜事，在很多架构中都会被提到。2013年， 清华的博士pingping lin的论文“East-West Bridge for SDN Network Peering”中提出了West-East Bridge的概念。论文中介绍了他们设计的东西向接口的功能，并完成了部署和测试。</p>
+<p>SDNi是华为提出的一种SDN东西向的实现，目前已经在OpenDayLight中部署实现。其架构为水平架构，可实现多OpenDayLight实例之间的通信，完成跨域通信。目前支持传输Topology Data, QoS Data和其他一些拓展内容。</p>
+<p>中国移动发布的关于SPTN的白皮书中也有设计多控制器协同工作的内容，然而目前仅仅处于白皮书阶段，并没有实际部署和测试。SPTN白皮书中提到了层级式的SDN控制平面架构，分别为Super层和Domain层。Super层的Super Controller负责跨域通信的业务，Domain层的Domain Controller负责域内的通信。分级的架构能使得SDN控制平面能力得到大大的提升。</p>
+<p>TATA在很久以前发布了关于跨域通信的报告。报告中介绍了实现SDN跨域通信的两种架构：垂直架构和水平架构。此外还提出了基于BGP或者SIP协议去完成SDN东西向接口的想法，不过报告内容仅限于次，并没有提及任何实际部署的内容。目前为止，依然没有搜集到相关的实践部署。</p>
+<p>其他相关论文也有若干，但影响力不够，暂不介绍。</p>
+<p>目前笔者正在研究SDN东西向的内容，期待后续能有所产出。</p>
+<h3>Conclusion</h3>
+<p>随着SDN的发展，部署SDN的网络规模将越来越大，对SDN控制平面的性能要求也越来越高。虽然当下业界对SDN控制层面东西向并不够重视，但相信随着技术的发展，东西向方向的解决方案，技术标准将逐渐完善。期待未来自己的成果能顺利发表，产生一定的影响。</p>
+<h3>References</h3>
+<p>[1]：http://www.tcs.com/SiteCollectionDocuments/White%20Papers/Inter-SDN-Controller-Communication-Border-Gateway-Protocol-0314-1.pdf 
+[2]：https://tools.ietf.org/html/draft-yin-sdn-sdni-00
+[3]：Lin P, Bi J, Chen Z, et al. WE-bridge: West-East Bridge for SDN inter-domain network peering[C]//Computer Communications Workshops (INFOCOM WKSHPS), 2014 IEEE Conference on. IEEE, 2014: 111-112.</p></div>
         <hr />
     </div>
 		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2015/09/28/sdnying-yong-lu-you-suan-fa-shi-xian-gong-ju-zhi-networkx.html"><h2>SDN应用路由算法实现工具之Networkx</h2></a>
+        <div class= "well small"> 2015-09-28
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>SDN(Software Defined Networking)是一种新型的网络架构，通过集中式的控制平面管理数据层面的转发等操作。网络的联通性是最基础的需求，为保证网络联通性，控制器需要应用相应的图论算法，计算出转发路径，完成数据转发。在开发SDN应用时，为完成基础的路径计算，时常需要开发者独立编写网络算法，不仅麻烦，性能和代码可复用性还受开发者个人编程水平影响。所以本篇文章将介绍网络算法工具networkx，用于完成路径算法开发工作。</p>
+<p><a href="https://networkx.github.io/">networkx</a>是用于创建、操作和研究复杂网络动态、结构和功能的Python语言包。networkx支持创建简单无向图，有向图和多重图（multigraph）；内置了许多标准的图论算法，节点可为任意数据，如图像文件；支持任意的边值维度，功能丰富，简单易用。</p>
+<p>由于Networkx代码经过多次测试，性能方面也做了很多的工作，使用Networkx内置的多种图论算法能给开发SDN应用带来很多的便利，可以节省开发时间，降低代码故障率。networkx的安装和使用，读者可从<a href="http://networkx.github.io/documentation/networkx-1.9.1/index.html#">官网文档</a>中快速得到，不加赘述。接下来的内容将简要介绍Networkx的经典图论算法内容， 包括<a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/algorithms.shortest_paths.html">最短路径</a>, <a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/generated/networkx.algorithms.simple_paths.all_simple_paths.html">KSP(K Shortest Paths)</a>算法和<a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/algorithms.traversal.html">Traversal ...</a></p> <a class="btn btn-info xsmall" href="./pages/2015/09/28/sdnying-yong-lu-you-suan-fa-shi-xian-gong-ju-zhi-networkx.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -212,29 +207,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">controllers</span> <span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;Start OpenFlow reference user datapath.</span>
 <span class="sd">               Log to /tmp/sN- ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html"><h2>Ryu:OpenFlow协议源码分析</h2></a>
-        <div class= "well small"> 2015-07-24
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Ryu支持OpenFlow所有的版本，是所有SDN控制器中对OpenFlow支持最好的控制器之一。这得益于Ryu的代码设计，Ryu中关于OpenFlow协议的代码量不多。阅读Ryu源码，不仅让我了解到了Ryu的运行细节，也学会了许多的编码知识。这为我当前开发的协议提供了很大的帮助。</p>
-<p>本篇将从交换机与控制器建立连接开始，介绍OpenFlow报文的解析的相关代码实现。关于如何注册handler和发送报文，可查看之前的<a href="http://www.muzixing.com/pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html">RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager</a>。该篇侧重点为Ryu整体架构的运作，重点在RyuApp和AppManager;本篇重点在与详细介绍OpenFlow的解析和封装实现。希望对读者提供帮助。</p>
-<h3><strong>Ofp_handler</strong></h3>
-<p>负责底层数据通信的模块是ofp_handler模块。ofp_handler启动之后，start函数实例化了一个controller.OpenFlowController实例。OpenFlowController实例化之后，立即调用_<em>call_</em>()函数，call函数启动了server_loop去创建server socket，其handler为domain_connection_factory函数。每当收到一个switch连接，domain_connection_factory就会实例化一个datapath对象。这个对象用于描述交换机的所有行为。其中定义了接收循环和发送循环。</p>
-<h3><strong>Datapath</strong></h3>
-<p>datapath.serve函数是socket通信收发逻辑的入口。该函数启动了一个绿色线程去处理发送循环，然后本线程负责接收循环的处理。self._send_loop是发送主循环。其主要逻辑为：不断获取发送队列是否有数据，若有，则发送；底层调用的是socket.send_all（）函数 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

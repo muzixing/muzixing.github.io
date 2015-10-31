@@ -62,6 +62,29 @@
  
 
     <div class='article'>
+        <a href="../pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html"><h2>Ryu:OpenFlow协议源码分析</h2></a>
+        <div class= "well small"> 2015-07-24
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>Ryu支持OpenFlow所有的版本，是所有SDN控制器中对OpenFlow支持最好的控制器之一。这得益于Ryu的代码设计，Ryu中关于OpenFlow协议的代码量不多。阅读Ryu源码，不仅让我了解到了Ryu的运行细节，也学会了许多的编码知识。这为我当前开发的协议提供了很大的帮助。</p>
+<p>本篇将从交换机与控制器建立连接开始，介绍OpenFlow报文的解析的相关代码实现。关于如何注册handler和发送报文，可查看之前的<a href="http://www.muzixing.com/pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html">RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager</a>。该篇侧重点为Ryu整体架构的运作，重点在RyuApp和AppManager;本篇重点在与详细介绍OpenFlow的解析和封装实现。希望对读者提供帮助。</p>
+<h3><strong>Ofp_handler</strong></h3>
+<p>负责底层数据通信的模块是ofp_handler模块。ofp_handler启动之后，start函数实例化了一个controller.OpenFlowController实例。OpenFlowController实例化之后，立即调用_<em>call_</em>()函数，call函数启动了server_loop去创建server socket，其handler为domain_connection_factory函数。每当收到一个switch连接，domain_connection_factory就会实例化一个datapath对象。这个对象用于描述交换机的所有行为。其中定义了接收循环和发送循环。</p>
+<h3><strong>Datapath</strong></h3>
+<p>datapath.serve函数是socket通信收发逻辑的入口。该函数启动了一个绿色线程去处理发送循环，然后本线程负责接收循环的处理。self._send_loop是发送主循环。其主要逻辑为：不断获取发送队列是否有数据，若有，则发送；底层调用的是socket.send_all（）函数 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html"><h2>SDN网络感知服务与最短路径应用</h2></a>
         <div class= "well small"> 2015-07-08
 
@@ -164,35 +187,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <span class="k">if</span> <span class="s">&#39;subject&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
         <span class="n">subject</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s">&#39;subject&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">else ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/05/10/getting-started-with-restapi-of-ryu.html"><h2>Getting started with RESTAPI of RYU</h2></a>
-        <div class= "well small"> 2015-05-10
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>在使用RYU的过程中，有时需要使用web拓扑，有时也需要通过API去下发流表等操作。这些操作在RYU中都会使用到RESTAPI。在学习RYU的过程中多次涉及到REST相关的内容，总是不知道如何实现和使用。最近在做实验需要这方面的知识，才有机会去学习REST并总结成博文。希望能给其他学习者提供帮助。本篇博文将简要介绍两部分内容：</p>
-<ul>
-<li>What is REST?</li>
-<li>How to use REST API in RYU?</li>
-</ul>
-<h2>What is REST</h2>
-<p><a href="http://zh.wikipedia.org/zh/REST">REST</a>:表征性状态传输（英文：Representational State Transfer，简称REST）是Roy Fielding博士在2000年他的博士论文中提出来的一种软件架构风格。更多REST的相关介绍可以查看<a href="http://www.restapitutorial.com/lessons/whatisrest.html">视频介绍</a>.</p>
-<p>REST架构风格中，资源是通过URI来描述的。对资源的操作采用了HTTP的GET，POST，PUT和DELETE方法相对应。资源的表现形式可以是json或xml。REST的架构是Client-Server架构，同时链接是无状态的。所以要求在传输的过程中需要包含状态信息。此外，可以使用cache机制增进性能。在上述视频中提到REST的6中限制为：</p>
-<ul>
-<li>Uniform Interface</li>
-<li>Stateless</li>
-<li>Cacheable ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2015/05/10/getting-started-with-restapi-of-ryu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
