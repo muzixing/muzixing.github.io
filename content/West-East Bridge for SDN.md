@@ -31,7 +31,7 @@ SDN控制平面性能拓展方案中，目前的设计方案有两种，一种�
 <center>Figure3. Vertical Approach for Inter-SDN Controller Communication </center>
 
 <center>![](http://ww3.sinaimg.cn/mw690/7f593341jw1exixzud6drj20ky07b74i.jpg)</center>
-<center>Figure4. VerticHorizontal Approach for Inter-SDN Controller Communication </center>
+<center>Figure4. Horizontal Approach for Inter-SDN Controller Communication </center>
 
 ###Previous Research
 
