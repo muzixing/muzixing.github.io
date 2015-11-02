@@ -1,5 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Thu, 29 Oct 2015 00:00:00 +0800</lastBuildDate><item><title>SDN东西向现状简介</title><link>http://www.muzixing.com/pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html</link><description>&lt;h3&gt;What is SDN West-East Interface&lt;/h3&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Mon, 02 Nov 2015 00:00:00 +0800</lastBuildDate><item><title>Script for ONOS installation</title><link>http://www.muzixing.com/pages/2015/11/02/script-for-onos-installation.html</link><description>&lt;p&gt;工欲善其事，必先利其器。在部署SDN实践时，通常需要安装OVS和控制器等软件，经历过的同学都知道，很多是时候会被一些细节卡住，影响生产效率。有时由于实验需要还需要多次部署同样的内容，重复敲多遍同样的命令，浪费时间。所以很有必要将安装过程转化为一键安装脚本。本文总结的一键安装脚本就是在部署ONOS集群时，为提高安装ONOS效率而整理的，希望能帮助到同样需要多次安装ONOS的其他人。&lt;/p&gt;
+&lt;h3&gt;安装脚本&lt;/h3&gt;
+&lt;p&gt;安装脚本将安装ONOS及其依赖软件的所有命令都写到了shell文件，并加一些必要判断语句，使得安装脚本使用起来更加人性化。需要注意的是，此文件仅完成了ONOS的安装，并没有完成ONOS启动之前的配置，需要启动相关服务，还需手动进行配置。脚本内容如下所示：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
+    &lt;span class="c"&gt;#make sure only root can run our script.&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;$(id -u)&amp;quot;&lt;/span&gt; !&lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;0&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;]&lt;/span&gt;; &lt;span class="k"&gt;then&lt;/span&gt;
+&lt;span class="k"&gt;       &lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;You need to be &amp;#39;root&amp;#39; dude.&amp;quot;&lt;/span&gt; 1&amp;gt;&amp;amp;2
+       &lt;span class="nb"&gt;exit &lt;/span&gt;1
+    &lt;span class="k"&gt;fi&lt;/span&gt;
+
+&lt;span class="k"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;_version&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;1.0&amp;quot;&lt;/span&gt;
+
+    &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;========================INSTALL ONOS=======================&amp;quot;&lt;/span&gt;
+
+    &lt;span class="c"&gt;# Download and unzip apache-karaf&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; -d /root/Applications &lt;span class="o"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;then &lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; /root/Applications
+    &lt;span class="k"&gt;else&lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;mkdir /root/Applications
+        &lt;span class="nb"&gt;cd&lt;/span&gt; /root/Applications
+    &lt;span class="k"&gt;fi&lt;/span&gt;
+
+&lt;span class="k"&gt;    if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; -f apache-karaf-3.0.2.tar.gz &lt;span class="o"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;then &lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;apache-karaf-3.0.2.tar.gz has exist&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;else &lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;wget http://apache.fayea.com/karaf/3.0.2/apache-karaf-3.0.2.tar.gz
+        tar -xzf apache-karaf-3.0.2.tar.gz
+    &lt;span class="k"&gt;fi&lt;/span&gt;
+
+    &lt;span class="c"&gt;# Download and install apache-maven&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; -f apache-maven-3.2.5-bin.tar.gz &lt;span class="o"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;then&lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;apache-maven-3.2.5.bin.tar.gz has exist&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;else &lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;wget http://mirror.bit.edu.cn/apache/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
+        tar -xzf apache-maven-3.2.5-bin.tar.gz
+        mv apache-maven-3.2.5 /usr/local/apache-maven
+
+        &lt;span class="c"&gt;# set environment&lt;/span&gt;
+        &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;export M2_HOME=/usr/local/apache-maven&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/profile
+        &lt;span class="nb"&gt;source&lt;/span&gt; /etc/profile
+        &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;export PATH=$PATH:$M2_HOME/bin&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/profile
+        &lt;span class="nb"&gt;source&lt;/span&gt; /etc/profile
+        &lt;span class="c"&gt;# in case of failure of setting environment&lt;/span&gt;
+        &lt;span class="nb"&gt;export &lt;/span&gt;&lt;span class="nv"&gt;PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$PATH&lt;/span&gt;:&lt;span class="nv"&gt;$M2_HOME&lt;/span&gt;/bin
+    &lt;span class="k"&gt;fi&lt;/span&gt;
+
+    &lt;span class="c"&gt;# Install java-8-oracle&lt;/span&gt;
+
+    &lt;span class="k"&gt;if &lt;/span&gt;which java
+    &lt;span class="k"&gt;then &lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;java-8 has been installed.&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;
+&lt;span class="k"&gt;            &lt;/span&gt;apt-get install python-software-properties
+        sudo add-apt-repository ppa:webupd8team/java -y
+        sudo apt-get update
+        sudo apt-get install oracle-java8-installer oracle-java8-set-default -y
+        &lt;span class="c"&gt;# set JAVA_HOME&lt;/span&gt;
+        &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;export JAVA_HOME=/usr/lib/jvm/java-8-oracle&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/profile
+        &lt;span class="nb"&gt;source&lt;/span&gt; /etc/profile
+    &lt;span class="k"&gt;fi&lt;/span&gt;
+    &lt;span class="c"&gt;# show the info of java and maven to check.&lt;/span&gt;
+
+    java -version
+    mvn --version
+
+    &lt;span class="c"&gt;# Download ONOS&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; -d /home/onos &lt;span class="o"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;then &lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; /home/onos
+    &lt;span class="k"&gt;else&lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;mkdir /home/onos
+        &lt;span class="nb"&gt;cd&lt;/span&gt; /home/onos
+    &lt;span class="k"&gt;fi&lt;/span&gt;
+
+&lt;span class="k"&gt;    if &lt;/span&gt;which zip
+    &lt;span class="k"&gt;then &lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;zip has been installed&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;apt-get install zip
+    &lt;span class="k"&gt;fi&lt;/span&gt;
+
+&lt;span class="k"&gt;    if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; -f onos-&lt;span class="nv"&gt;$_version&lt;/span&gt;.zip &lt;span class="o"&gt;]&lt;/span&gt; 
+    &lt;span class="k"&gt;then &lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;onos-$_version.zip has exist&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;wget https://github.com/opennetworkinglab/onos/archive/onos-&lt;span class="nv"&gt;$_version&lt;/span&gt;.zip
+        unzip onos-&lt;span class="nv"&gt;$_version&lt;/span&gt;.zip
+
+        &lt;span class="c"&gt;# set environment of ONOS&lt;/span&gt;
+
+        &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;export ONOS_ROOT=/home/onos/onos-onos-$_version&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/profile
+        &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;export KARAF_ROOT=/root/Applications/apache-karaf-3.0.2&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/profile
+
+        &lt;span class="nb"&gt;source&lt;/span&gt; /etc/profile
+        &lt;span class="nb"&gt;source&lt;/span&gt; &lt;span class="nv"&gt;$ONOS_ROOT&lt;/span&gt;/tools/dev/bash_profile
+    &lt;span class="k"&gt;fi&lt;/span&gt;
+    &lt;span class="c"&gt;# Build ONOS&lt;/span&gt;
+
+    &lt;span class="nb"&gt;cd &lt;/span&gt;onos-onos-&lt;span class="nv"&gt;$_version&lt;/span&gt;/
+    mvn clean install
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note: 若需下载其他版本ONOS，直接修改&lt;strong&gt;下载源码部分和ONOS_ROOT&lt;/strong&gt;即可，无需修改Karaf，maven，java8等内容。&lt;/p&gt;
+&lt;h3&gt;初始化配置&lt;/h3&gt;
+&lt;p&gt;在安装完ONOS之后，还需要进行一些必要的配置，才能启动运行了制定服务的ONOS。需要编辑$KARAF_ROOT/etc/org.apache.karaf.features.cfg文件，脚本中即为/root/Applications/apache-karaf-3.0.2/etc/org.apache.karaf.features.cfg。 在该文件中的 featuresRepositories部分和featuresBoot部分分别添加如下内容：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;featuresRepositories&lt;/span&gt;&lt;span class="err"&gt;：&lt;/span&gt;&lt;span class="n"&gt;mvn:org&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;onosproject&lt;/span&gt;&lt;span class="sr"&gt;/onos-features/&lt;/span&gt;&lt;span class="mf"&gt;1.0.0&lt;/span&gt;&lt;span class="sr"&gt;/xml/&lt;/span&gt;&lt;span class="n"&gt;features&lt;/span&gt;&lt;span class="err"&gt;（逗号隔开，加到最后即可）&lt;/span&gt;
+&lt;span class="n"&gt;featuresBoot&lt;/span&gt;&lt;span class="err"&gt;：&lt;/span&gt;&lt;span class="n"&gt;onos&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;onos&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;core&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;trivial&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;onos&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;cli&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;onos&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;openflow&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;onos&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;fwd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;onos&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;mobility&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;onos&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;gui&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;更多逐步安装和初始化配置内容可以查看SDNLAB的文章&lt;a href="http://www.sdnlab.com/4603.html"&gt;《Ubuntu14.04源码安装ONOS》&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;下载地址&lt;/h3&gt;
+&lt;p&gt;脚本下载地址为：&lt;a href="https://github.com/muzixing/onosinstallhelper"&gt;muzixing/onosinstallhelper&lt;/a&gt;。在github/muzixing上还有&lt;a href="https://github.com/muzixing/ovsinstallhelper"&gt;muzixing/ovsinstallhelper&lt;/a&gt;, 和fork过来的&lt;a href="https://github.com/muzixing/ryuInstallHelper"&gt;ryuinstallhelper&lt;/a&gt;可供下载，可以大大减少重复安装OVS和控制器时的重复劳动，提高生产效率。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Mon, 02 Nov 2015 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2015-11-02:pages/2015/11/02/script-for-onos-installation.html</guid><category>onos</category></item><item><title>SDN东西向现状简介</title><link>http://www.muzixing.com/pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html</link><description>&lt;h3&gt;What is SDN West-East Interface&lt;/h3&gt;
 &lt;p&gt;在SDN架构中，控制平面掌控全局网络的资源，控制数据平面的转发等功能，尤其重要，所以控制平面的性能对整体网络的性能有直接的影响。以前控制平面多以单例控制器为主，控制平面能力欠缺成为SDN网络规模受限的最大原因之一。 后来OpenDayLight，ONOS等控制器的出现，使用了集群技术，使得SDN控制平面性能得到了提升，是当下解决SDN控制平面性能不足的主要解决方案之一。&lt;/p&gt;
 &lt;p&gt;然而，这样的解决方案只能用于同一控制器之间的性能扩展，无法完成异构控制器之间的协同工作。此外，某些场景对于安全，隐私方面的考虑，需要隐藏网络内部的细节，所以还需要有SDN域的概念。如何完成跨域之间的流量处理，实现多异构控制器之间的协同工作是未来研究的方向之一，笔者将其归类为SDN控制平面的东西向接口。SDN控制平面的南向接口面对数据平面，北向接口面向应用，容易理解，控制器之间的接口称之为东西向接口，用于完成控制器之间的通信。&lt;/p&gt;
 &lt;p&gt;&lt;center&gt;&lt;img alt="West-East" src="http://ww2.sinaimg.cn/mw690/7f593341jw1exixzvkpi6j20og0d2gml.jpg" /&gt;&lt;/center&gt;
