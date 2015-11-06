@@ -62,48 +62,6 @@
  
 
     <div class='article'>
-        <a href="./pages/2014/08/10/openflow13xue-xi-bi-ji.html"><h2>OpenFlow1.3学习笔记</h2></a>
-        <div class= "well small"> 2014-08-10
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。</p>
-<h2>OpenFlow端口</h2>
-<p>OF端口是OF处理流程和网络其他部分进行转发数据包的网络接口。
-OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必须支持的端口类型为</p>
-<ul>
-<li>物理端口</li>
-<li>逻辑端口</li>
-<li>保留端口</li>
-</ul>
-<p>逻辑端口和物理端口的不同在于，逻辑端口比物理端口更高一级，是对物理端口的虚拟化，提高可复用性，逻辑端口的数据包需要有tunnel_id，而物理端口没有。    </p>
-<p>保留端口中又分为：</p>
-<ul>
-<li>ALL</li>
-<li>CONTROLLER</li>
-<li>TABLE</li>
-<li>IN_PORT</li>
-<li>ANY</li>
-<li>LOCAL</li>
-<li>NORMAL</li>
-<li>FLOOD</li>
-</ul>
-<p>其中所有OF交换机都要支持ALL,CONTROLLER,TABLE,IN_PORT,ANY类型端口，OF_ONLY不要求支持LOCAL,NORMAL,FLOOD端口。</p>
-<h2>OpenFlow Table</h2>
-<p>OpenFlow ...</p> <a class="btn btn-info xsmall" href="./pages/2014/08/10/openflow13xue-xi-bi-ji.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
         <a href="./pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html"><h2>Opendaylight中开发模块Ping</h2></a>
         <div class= "well small"> 2014-08-06
 
@@ -203,6 +161,38 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>我时常在想地球作为一个行星在太阳系中，而太阳系作为一个星系在银河系中这种情况和电子围绕原子运转，而不同的原子组成一个微观世界一样。从而我得出结论，在某种意义上，微观世界和宏观的宇宙遵循着同样的物理原理。这一点也可以由万有引力得以印证。当然这种认识是非常肤浅的！仅仅是感官上的认识。没有太大的根据。</p>
 <p>那么如果我们的宏观作为另一个更大的世界的微观，那么我们就成为了别人世界的原子和电子。依次类推，我们的世界可能是很多重世界中的一个环节。但是我们本身并不能看到这个层次。就像假如我们是生存在电子上的生物，而他们的一生，或者从这个种族有意识，有记录的历史环节中都无法和这个原子以及这个原子周边的世界发生交集。当发生交集的时候，很可能就是毁灭的一刻。所以在他们的意识形态中，他们的世界就是这个电子，或者更大一点的范围。但是他们无法意识到他们是组成宏观世界材料的一个极其普通以及微小到甚至宏观世界的概念里很长一段时间没有他们的存在。所以他们就生存在他们认为的全世界中，安然繁衍。不知道当某一天电子上的生物得知自己在这个世界中是那么微小，稍有不慎，整个电子星球就毁灭，而他们却完全没有还手之力的时候，会不会充满恐惧。当然我觉得在那样的世界里面，时间也应当和空间一样，需要用非常细小的粒度去衡量，举个不恰当的例子，比如飞秒是他们世界的秒。那么我们就可以想象一个围观的世界上面，时间和空间都浓缩的空间里，有另一个小世界存在。而他们的意识中他们的世界是很大的，正如我们意识中的一样。</p>
 <p>从另一个角度看。如果我们这个世界是外面“大世界”的一个微小到根本看不见的存在。那么也可以理解。在他们的很长一段时间之内，他们也无法认识到由许多我们这样的世界组成的系统构成了他们世界中的组基础的材料如我们世界中的碳或者铁等元素 ...</p> <a class="btn btn-info xsmall" href="./pages/2014/07/14/guan-yu-zhe-ge-shi-jie-de-si-kao.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2014/05/04/noxshi-xian-natgong-neng.html"><h2>nox实现nat功能</h2></a>
+        <div class= "well small"> 2014-05-04
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>nat功能是一个非常简单，但却非常重要的功能。保留10，127,192三个网段作为公网地址，通过nat实现地址复用，可以解决现网IPV4地址不够用的尴尬局面。本篇主要讲如何使用nox实现nat的demo.</p>
+<h3>环境</h3>
+<ul>
+<li>nox  安装比较困难，请参看其他教程</li>
+<li>mininet    网络环境搭建神器</li>
+</ul>
+<h3>控制器</h3>
+<p>首先在nox/src/coreapps/switch中找到switch.cc。
+在class switch中添加成员变量uint32_t src_ip，nat_ip；由于只是一个简单的demo，就不做映射列表了。</p>
+<p>handle_packet_in中将if(setup_flows &amp;&amp; out_port!=-1)的逻辑修改如下：</p>
+<div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">setup_flows</span> <span class="o">&amp;&amp;</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">auto</span> <span class="n">fm</span> <span class="o">=</span> <span class="nn">v1::</span><span class="n">ofp_flow_mod</span><span class="p">()</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">())</span>
+               <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/05/04/noxshi-xian-natgong-neng.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

@@ -62,32 +62,6 @@
  
 
     <div class='article'>
-        <a href="../pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html"><h2>Mininet搭建多控制器拓扑</h2></a>
-        <div class= "well small"> 2015-08-05
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Mininet是一款非常轻巧但是功能很强大的网络模拟器。网络研究者可以使用Mininet创建支持OpenFlow的SDN拓扑。随着SDN研究的发展，多控制器协作成为未来的研究方向，所以使用Mininet构建多控制器网络拓扑也成为一种需求。本篇将讲述如何使用Mininet搭建多控制器网络拓扑。</p>
-<h3>Multi-Controller</h3>
-<p>多控制器有两种理解，一种理解是面向交换机的多控制器。即一个交换机会连接多个控制器，控制器之间的关系可以是equal，也可以是master/slave模式。关于多控制器的介绍，有兴趣的读者可以参考OpenFlow1.3协议的multi-controller部分内容。另一种理解是面向控制器的多控制器。即，多个控制器分别管理各自的数据平面网络，且数据平面之间有链路互联。这种模式下，控制器之间没有关系，控制器所控制的数据平面也没有关系。关于多控制器方面的研究，笔者会在后续的博客中大篇幅介绍。</p>
-<p>本篇将针对这两种理解，介绍如何搭建多控制器的Mininet拓扑。</p>
-<h3>面向交换机的多控制器网络拓扑</h3>
-<p>对于一个交换机而言，可以连接多个控制器，其实现方式非常简单， 在Mininet的源码中已经实现。从Mininet的<a href="https://github.com/mininet/mininet/blob/master/mininet/node.py">node.py</a>文件中，我们可以找到有用的代码：</p>
-<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">controllers</span> <span class="p">):</span>
-            <span class="sd">&quot;&quot;&quot;Start OpenFlow reference user datapath.</span>
-<span class="sd">               Log to /tmp/sN- ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
         <a href="../pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html"><h2>Ryu:OpenFlow协议源码分析</h2></a>
         <div class= "well small"> 2015-07-24
 
@@ -182,6 +156,37 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>输出：使用集合Vnew和Enew来描述所得到的最小生成树。</p>
 <p>算法实现采用数据结构为邻接矩阵,实现如下：</p>
 <div class="highlight"><pre>    <span class="k">def ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html"><h2>RYU中WSGI学习笔记与RESTAPI开发</h2></a>
+        <div class= "well small"> 2015-05-13
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>另一篇博文中已经介绍如何使用RYU的RESTAPI，本篇将继续介绍相关内容，主要分为WSGI学习总结和以ofctl_rest.py为例的RESTAPI的实现与内部机制。由于第一次学习WSGI，还有许多地方不是特别理解，所学知识均来自Google。文中若有错误之处，敬请指出，谢谢。</p>
+<h3>WSGI</h3>
+<p><a href="http://zh.wikipedia.org/wiki/Web%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BD%91%E5%85%B3%E6%8E%A5%E5%8F%A3">Web服务器网关接口</a>（Python Web Server Gateway Interface，缩写为WSGI）是为Python语言定义的Web服务器和Web应用程序或框架之间的一种简单而通用的接口。为了理解WSGI，可以尝试一下的小例子。</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">cgi</span> <span class="kn">import</span> <span class="n">parse_qs</span>
+<span class="kn">from</span> <span class="nn">cgi</span> <span class="kn">import</span> <span class="n">escape</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">):</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">parse_qs</span><span class="p">(</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;QUERY_STRING&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="s">&#39;subject&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s">&#39;subject&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

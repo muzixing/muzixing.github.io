@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2015/11/02/script-for-onos-installation.html"><h1>Script for ONOS installation</h1></a>
-2015-11-02
+            <a href="./pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html"><h1>SDN东西向现状简介</h1></a>
+2015-10-29
 
 by <a class="url fn" href="./author/muzi.html">muzi</a>
  
@@ -72,151 +72,39 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>工欲善其事，必先利其器。在部署SDN实践时，通常需要安装OVS和控制器等软件，经历过的同学都知道，很多是时候会被一些细节卡住，影响生产效率。有时由于实验需要还需要多次部署同样的内容，重复敲多遍同样的命令，浪费时间。所以很有必要将安装过程转化为一键安装脚本。本文总结的一键安装脚本就是在部署ONOS集群时，为提高安装ONOS效率而整理的，希望能帮助到同样需要多次安装ONOS的其他人。</p>
-<h3>安装脚本</h3>
-<p>安装脚本将安装ONOS及其依赖软件的所有命令都写到了shell文件，并加一些必要判断语句，使得安装脚本使用起来更加人性化。需要注意的是，此文件仅完成了ONOS的安装，并没有完成ONOS启动之前的配置，需要启动相关服务，还需手动进行配置。脚本内容如下所示：</p>
-<div class="highlight"><pre>    <span class="c">#!/bin/bash</span>
-    <span class="c">#make sure only root can run our script.</span>
-    <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$(id -u)&quot;</span> !<span class="o">=</span> <span class="s2">&quot;0&quot;</span> <span class="o">]</span>; <span class="k">then</span>
-<span class="k">       </span><span class="nb">echo</span> <span class="s2">&quot;You need to be &#39;root&#39; dude.&quot;</span> 1&gt;&amp;2
-       <span class="nb">exit </span>1
-    <span class="k">fi</span>
-
-<span class="k">    </span><span class="nv">_version</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span>
-
-    <span class="nb">echo</span> <span class="s2">&quot;========================INSTALL ONOS=======================&quot;</span>
-
-    <span class="c"># Download and unzip apache-karaf</span>
-    <span class="k">if</span> <span class="o">[</span> -d /root/Applications <span class="o">]</span>
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">cd</span> /root/Applications
-    <span class="k">else</span>
-<span class="k">        </span>mkdir /root/Applications
-        <span class="nb">cd</span> /root/Applications
-    <span class="k">fi</span>
-
-<span class="k">    if</span> <span class="o">[</span> -f apache-karaf-3.0.2.tar.gz <span class="o">]</span>
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;apache-karaf-3.0.2.tar.gz has exist&quot;</span>
-    <span class="k">else </span>
-<span class="k">        </span>wget http://apache.fayea.com/karaf/3.0.2/apache-karaf-3.0.2.tar.gz
-        tar -xzf apache-karaf-3.0.2.tar.gz
-    <span class="k">fi</span>
-
-    <span class="c"># Download and install apache-maven</span>
-
-    <span class="k">if</span> <span class="o">[</span> -f apache-maven-3.2.5-bin.tar.gz <span class="o">]</span>
-    <span class="k">then</span>
-<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;apache-maven-3.2.5.bin.tar.gz has exist&quot;</span>
-    <span class="k">else </span>
-<span class="k">        </span>wget http://mirror.bit.edu.cn/apache/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
-        tar -xzf apache-maven-3.2.5-bin.tar.gz
-        mv apache-maven-3.2.5 /usr/local/apache-maven
-
-        <span class="c"># set environment</span>
-        <span class="nb">echo</span> <span class="s2">&quot;export M2_HOME=/usr/local/apache-maven&quot;</span> &gt;&gt; /etc/profile
-        <span class="nb">source</span> /etc/profile
-        <span class="nb">echo</span> <span class="s2">&quot;export PATH=$PATH:$M2_HOME/bin&quot;</span> &gt;&gt; /etc/profile
-        <span class="nb">source</span> /etc/profile
-        <span class="c"># in case of failure of setting environment</span>
-        <span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$M2_HOME</span>/bin
-    <span class="k">fi</span>
-
-    <span class="c"># Install java-8-oracle</span>
-
-    <span class="k">if </span>which java
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;java-8 has been installed.&quot;</span>
-    <span class="k">else</span>
-<span class="k">            </span>apt-get install python-software-properties
-        sudo add-apt-repository ppa:webupd8team/java -y
-        sudo apt-get update
-        sudo apt-get install oracle-java8-installer oracle-java8-set-default -y
-        <span class="c"># set JAVA_HOME</span>
-        <span class="nb">echo</span> <span class="s2">&quot;export JAVA_HOME=/usr/lib/jvm/java-8-oracle&quot;</span> &gt;&gt; /etc/profile
-        <span class="nb">source</span> /etc/profile
-    <span class="k">fi</span>
-    <span class="c"># show the info of java and maven to check.</span>
-
-    java -version
-    mvn --version
-
-    <span class="c"># Download ONOS</span>
-    <span class="k">if</span> <span class="o">[</span> -d /home/onos <span class="o">]</span>
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">cd</span> /home/onos
-    <span class="k">else</span>
-<span class="k">        </span>mkdir /home/onos
-        <span class="nb">cd</span> /home/onos
-    <span class="k">fi</span>
-
-<span class="k">    if </span>which zip
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;zip has been installed&quot;</span>
-    <span class="k">else</span>
-<span class="k">        </span>apt-get install zip
-    <span class="k">fi</span>
-
-<span class="k">    if</span> <span class="o">[</span> -f onos-<span class="nv">$_version</span>.zip <span class="o">]</span> 
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;onos-$_version.zip has exist&quot;</span>
-    <span class="k">else</span>
-<span class="k">        </span>wget https://github.com/opennetworkinglab/onos/archive/onos-<span class="nv">$_version</span>.zip
-        unzip onos-<span class="nv">$_version</span>.zip
-
-        <span class="c"># set environment of ONOS</span>
-
-        <span class="nb">echo</span> <span class="s2">&quot;export ONOS_ROOT=/home/onos/onos-onos-$_version&quot;</span> &gt;&gt; /etc/profile
-        <span class="nb">echo</span> <span class="s2">&quot;export KARAF_ROOT=/root/Applications/apache-karaf-3.0.2&quot;</span> &gt;&gt; /etc/profile
-
-        <span class="nb">source</span> /etc/profile
-        <span class="nb">source</span> <span class="nv">$ONOS_ROOT</span>/tools/dev/bash_profile
-    <span class="k">fi</span>
-    <span class="c"># Build ONOS</span>
-
-    <span class="nb">cd </span>onos-onos-<span class="nv">$_version</span>/
-    mvn clean install
-</pre></div>
-
-
-<p>Note: 若需下载其他版本ONOS，直接修改<strong>下载源码部分和ONOS_ROOT</strong>即可，无需修改Karaf，maven，java8等内容。</p>
-<h3>初始化配置</h3>
-<p>在安装完ONOS之后，还需要进行一些必要的配置，才能启动运行了制定服务的ONOS。需要编辑$KARAF_ROOT/etc/org.apache.karaf.features.cfg文件，脚本中即为/root/Applications/apache-karaf-3.0.2/etc/org.apache.karaf.features.cfg。 在该文件中的 featuresRepositories部分和featuresBoot部分分别添加如下内容：</p>
-<div class="highlight"><pre><span class="n">featuresRepositories</span><span class="err">：</span><span class="n">mvn:org</span><span class="o">.</span><span class="n">onosproject</span><span class="sr">/onos-features/</span><span class="mf">1.0.0</span><span class="sr">/xml/</span><span class="n">features</span><span class="err">（逗号隔开，加到最后即可）</span>
-<span class="n">featuresBoot</span><span class="err">：</span><span class="n">onos</span><span class="o">-</span><span class="n">api</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">core</span><span class="o">-</span><span class="n">trivial</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">cli</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">openflow</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">app</span><span class="o">-</span><span class="n">fwd</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">app</span><span class="o">-</span><span class="n">mobility</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">gui</span>
-</pre></div>
-
-
-<p>更多逐步安装和初始化配置内容可以查看SDNLAB的文章<a href="http://www.sdnlab.com/4603.html">《Ubuntu14.04源码安装ONOS》</a></p>
-<h3>下载地址</h3>
-<p>脚本下载地址为：<a href="https://github.com/muzixing/onosinstallhelper">muzixing/onosinstallhelper</a>。在github/muzixing上还有<a href="https://github.com/muzixing/ovsinstallhelper">muzixing/ovsinstallhelper</a>, 和fork过来的<a href="https://github.com/muzixing/ryuInstallHelper">ryuinstallhelper</a>可供下载，可以大大减少重复安装OVS和控制器时的重复劳动，提高生产效率。</p></div>
-        <hr />
-    </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html"><h2>SDN东西向现状简介</h2></a>
-        <div class= "well small"> 2015-10-29
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>What is SDN West-East Interface</h3>
+        <div><h3>What is SDN West-East Interface</h3>
 <p>在SDN架构中，控制平面掌控全局网络的资源，控制数据平面的转发等功能，尤其重要，所以控制平面的性能对整体网络的性能有直接的影响。以前控制平面多以单例控制器为主，控制平面能力欠缺成为SDN网络规模受限的最大原因之一。 后来OpenDayLight，ONOS等控制器的出现，使用了集群技术，使得SDN控制平面性能得到了提升，是当下解决SDN控制平面性能不足的主要解决方案之一。</p>
 <p>然而，这样的解决方案只能用于同一控制器之间的性能扩展，无法完成异构控制器之间的协同工作。此外，某些场景对于安全，隐私方面的考虑，需要隐藏网络内部的细节，所以还需要有SDN域的概念。如何完成跨域之间的流量处理，实现多异构控制器之间的协同工作是未来研究的方向之一，笔者将其归类为SDN控制平面的东西向接口。SDN控制平面的南向接口面对数据平面，北向接口面向应用，容易理解，控制器之间的接口称之为东西向接口，用于完成控制器之间的通信。</p>
 <p><center><img alt="West-East" src="http://ww2.sinaimg.cn/mw690/7f593341jw1exixzvkpi6j20og0d2gml.jpg" /></center>
 <center>Figure1. West-East Interface of SDN</center></p>
 <h3>Why SDN need West-East Interface</h3>
-<p>SDN东西向接口是定义控制器之间通信的接口。由于单控制器能力有限，为满足大规模和可拓展性要求，东西向接口的研究成为下一个SDN研究领域。目前对于SDN东西向接口的研究还处于初级阶段，还缺少行业标准。标准的SDN东西向接口应与SDN控制器解耦 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html">read more</a></div>
-    </div>	
-				
+<p>SDN东西向接口是定义控制器之间通信的接口。由于单控制器能力有限，为满足大规模和可拓展性要求，东西向接口的研究成为下一个SDN研究领域。目前对于SDN东西向接口的研究还处于初级阶段，还缺少行业标准。标准的SDN东西向接口应与SDN控制器解耦，能实现不同厂家控制器之间通信。</p>
+<p>在很多场景中都需要控制器之间的协同工作，如在运营商网络场景中，接入网，回传网，核心网三者功能差异很大，需要制定不同的控制器去运行不同的应用，而这三者又需要协同合作，实现全网的最优化。此时就需要东西向接口来完成控制器之间的通信。跨数据中心的网络中，多数据中心的控制器也有相互通信的需求。</p>
+<p><center><img alt="West-East interface for mobiel network" src="http://ww4.sinaimg.cn/mw690/7f593341jw1exixzu4513j20wq0cm76v.jpg" /></center>
+<center>Figure2. Federation of SDN Controllers</center></p>
+<p>目前南向的标准还为统一，OpenFlow成为SDN南向接口的通用标准之一，其他还有许多可以实现SDN架构的南向接口协议。总的来说，目前南向接口是百花齐放的状态。北向接口方面，目前ONF已经有相关部门在进行这项工作。统一的北向接口标准可以降低在不同控制器上开发应用的成本。关于东西向接口的标准，目前在业界中还未的到重视，仅ONF一个项目组在关注这个方向。</p>
+<h3>Approach for West-East Interface</h3>
+<p>SDN控制平面性能拓展方案中，目前的设计方案有两种，一种是垂直架构的，另一种是水平架构的[1]。垂直架构的实现方案是在多个控制器之上再叠加一层高级控制层，用于协调多个异构控制器之间的通信，从而完成跨控制器的通信请求。水平架构中，所有的节点都在同一层级，身份也相同，没有级别之分。目前比较常见的架构为水平架构，比如华为的SDNi[2]，Pingping Lin博士提出的West-East Bridge for SDN inter-domain network peering[3]。垂直架构目前在中国移动提出的SPTN架构中有涉及，笔者正在研究的内容也正是这部分内容。</p>
+<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1exixzuopf7j20jj0a4gm1.jpg" /></center>
+<center>Figure3. Vertical Approach for Inter-SDN Controller Communication </center></p>
+<p><center><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1exixzud6drj20ky07b74i.jpg" /></center>
+<center>Figure4. Horizontal Approach for Inter-SDN Controller Communication </center></p>
+<h3>Previous Research</h3>
+<p>东西向接口其实并不是一个新鲜事，在很多架构中都会被提到。2013年， 清华的博士pingping lin的论文“East-West Bridge for SDN Network Peering”中提出了West-East Bridge的概念。论文中介绍了他们设计的东西向接口的功能，并完成了部署和测试。</p>
+<p>SDNi是华为提出的一种SDN东西向的实现，目前已经在OpenDayLight中部署实现。其架构为水平架构，可实现多OpenDayLight实例之间的通信，完成跨域通信。目前支持传输Topology Data, QoS Data和其他一些拓展内容。</p>
+<p>中国移动发布的关于SPTN的白皮书中也有设计多控制器协同工作的内容，然而目前仅仅处于白皮书阶段，并没有实际部署和测试。SPTN白皮书中提到了层级式的SDN控制平面架构，分别为Super层和Domain层。Super层的Super Controller负责跨域通信的业务，Domain层的Domain Controller负责域内的通信。分级的架构能使得SDN控制平面能力得到大大的提升。</p>
+<p>TATA在很久以前发布了关于跨域通信的报告。报告中介绍了实现SDN跨域通信的两种架构：垂直架构和水平架构。此外还提出了基于BGP或者SIP协议去完成SDN东西向接口的想法，不过报告内容仅限于次，并没有提及任何实际部署的内容。目前为止，依然没有搜集到相关的实践部署。</p>
+<p>其他相关论文也有若干，但影响力不够，暂不介绍。</p>
+<p>目前笔者正在研究SDN东西向的内容，期待后续能有所产出。</p>
+<h3>Conclusion</h3>
+<p>随着SDN的发展，部署SDN的网络规模将越来越大，对SDN控制平面的性能要求也越来越高。虽然当下业界对SDN控制层面东西向并不够重视，但相信随着技术的发展，东西向方向的解决方案，技术标准将逐渐完善。期待未来自己的成果能顺利发表，产生一定的影响。</p>
+<h3>References</h3>
+<p>[1]：http://www.tcs.com/SiteCollectionDocuments/White%20Papers/Inter-SDN-Controller-Communication-Border-Gateway-Protocol-0314-1.pdf </p>
+<p>[2]：https://tools.ietf.org/html/draft-yin-sdn-sdni-00</p>
+<p>[3]：Lin P, Bi J, Chen Z, et al. WE-bridge: West-East Bridge for SDN inter-domain network peering[C]//Computer Communications Workshops (INFOCOM WKSHPS), 2014 IEEE Conference on. IEEE, 2014: 111-112.</p></div>
+        <hr />
+    </div>
+		
 
  
         
@@ -293,6 +181,32 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <center>图3.11 SDN网络架构1.0版本</center></p>
 <p><center><img alt="sdnarchiteture1.1" src="http://ww1.sinaimg.cn/mw690/7f593341jw1evl062y0pwj20oa0jdwhv.jpg" /></center>
 <center>图3 ...</center></p> <a class="btn btn-info xsmall" href="./pages/2015/08/30/sdnkong-zhi-ping-mian-fa-zhan-li-shi-ji-qu-shi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html"><h2>Mininet搭建多控制器拓扑</h2></a>
+        <div class= "well small"> 2015-08-05
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>Mininet是一款非常轻巧但是功能很强大的网络模拟器。网络研究者可以使用Mininet创建支持OpenFlow的SDN拓扑。随着SDN研究的发展，多控制器协作成为未来的研究方向，所以使用Mininet构建多控制器网络拓扑也成为一种需求。本篇将讲述如何使用Mininet搭建多控制器网络拓扑。</p>
+<h3>Multi-Controller</h3>
+<p>多控制器有两种理解，一种理解是面向交换机的多控制器。即一个交换机会连接多个控制器，控制器之间的关系可以是equal，也可以是master/slave模式。关于多控制器的介绍，有兴趣的读者可以参考OpenFlow1.3协议的multi-controller部分内容。另一种理解是面向控制器的多控制器。即，多个控制器分别管理各自的数据平面网络，且数据平面之间有链路互联。这种模式下，控制器之间没有关系，控制器所控制的数据平面也没有关系。关于多控制器方面的研究，笔者会在后续的博客中大篇幅介绍。</p>
+<p>本篇将针对这两种理解，介绍如何搭建多控制器的Mininet拓扑。</p>
+<h3>面向交换机的多控制器网络拓扑</h3>
+<p>对于一个交换机而言，可以连接多个控制器，其实现方式非常简单， 在Mininet的源码中已经实现。从Mininet的<a href="https://github.com/mininet/mininet/blob/master/mininet/node.py">node.py</a>文件中，我们可以找到有用的代码：</p>
+<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">controllers</span> <span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Start OpenFlow reference user datapath.</span>
+<span class="sd">               Log to /tmp/sN- ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

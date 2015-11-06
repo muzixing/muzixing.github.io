@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/11/02/script-for-onos-installation.html"><h1>Script for ONOS installation</h1></a>
-2015-11-02
+            <a href="../pages/2014/11/26/onoslun-wen-jie-xi.html"><h1>ONOS论文解析</h1></a>
+2014-11-26
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,148 +72,89 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>工欲善其事，必先利其器。在部署SDN实践时，通常需要安装OVS和控制器等软件，经历过的同学都知道，很多是时候会被一些细节卡住，影响生产效率。有时由于实验需要还需要多次部署同样的内容，重复敲多遍同样的命令，浪费时间。所以很有必要将安装过程转化为一键安装脚本。本文总结的一键安装脚本就是在部署ONOS集群时，为提高安装ONOS效率而整理的，希望能帮助到同样需要多次安装ONOS的其他人。</p>
-<h3>安装脚本</h3>
-<p>安装脚本将安装ONOS及其依赖软件的所有命令都写到了shell文件，并加一些必要判断语句，使得安装脚本使用起来更加人性化。需要注意的是，此文件仅完成了ONOS的安装，并没有完成ONOS启动之前的配置，需要启动相关服务，还需手动进行配置。脚本内容如下所示：</p>
-<div class="highlight"><pre>    <span class="c">#!/bin/bash</span>
-    <span class="c">#make sure only root can run our script.</span>
-    <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$(id -u)&quot;</span> !<span class="o">=</span> <span class="s2">&quot;0&quot;</span> <span class="o">]</span>; <span class="k">then</span>
-<span class="k">       </span><span class="nb">echo</span> <span class="s2">&quot;You need to be &#39;root&#39; dude.&quot;</span> 1&gt;&amp;2
-       <span class="nb">exit </span>1
-    <span class="k">fi</span>
-
-<span class="k">    </span><span class="nv">_version</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span>
-
-    <span class="nb">echo</span> <span class="s2">&quot;========================INSTALL ONOS=======================&quot;</span>
-
-    <span class="c"># Download and unzip apache-karaf</span>
-    <span class="k">if</span> <span class="o">[</span> -d /root/Applications <span class="o">]</span>
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">cd</span> /root/Applications
-    <span class="k">else</span>
-<span class="k">        </span>mkdir /root/Applications
-        <span class="nb">cd</span> /root/Applications
-    <span class="k">fi</span>
-
-<span class="k">    if</span> <span class="o">[</span> -f apache-karaf-3.0.2.tar.gz <span class="o">]</span>
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;apache-karaf-3.0.2.tar.gz has exist&quot;</span>
-    <span class="k">else </span>
-<span class="k">        </span>wget http://apache.fayea.com/karaf/3.0.2/apache-karaf-3.0.2.tar.gz
-        tar -xzf apache-karaf-3.0.2.tar.gz
-    <span class="k">fi</span>
-
-    <span class="c"># Download and install apache-maven</span>
-
-    <span class="k">if</span> <span class="o">[</span> -f apache-maven-3.2.5-bin.tar.gz <span class="o">]</span>
-    <span class="k">then</span>
-<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;apache-maven-3.2.5.bin.tar.gz has exist&quot;</span>
-    <span class="k">else </span>
-<span class="k">        </span>wget http://mirror.bit.edu.cn/apache/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
-        tar -xzf apache-maven-3.2.5-bin.tar.gz
-        mv apache-maven-3.2.5 /usr/local/apache-maven
-
-        <span class="c"># set environment</span>
-        <span class="nb">echo</span> <span class="s2">&quot;export M2_HOME=/usr/local/apache-maven&quot;</span> &gt;&gt; /etc/profile
-        <span class="nb">source</span> /etc/profile
-        <span class="nb">echo</span> <span class="s2">&quot;export PATH=$PATH:$M2_HOME/bin&quot;</span> &gt;&gt; /etc/profile
-        <span class="nb">source</span> /etc/profile
-        <span class="c"># in case of failure of setting environment</span>
-        <span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$M2_HOME</span>/bin
-    <span class="k">fi</span>
-
-    <span class="c"># Install java-8-oracle</span>
-
-    <span class="k">if </span>which java
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;java-8 has been installed.&quot;</span>
-    <span class="k">else</span>
-<span class="k">            </span>apt-get install python-software-properties
-        sudo add-apt-repository ppa:webupd8team/java -y
-        sudo apt-get update
-        sudo apt-get install oracle-java8-installer oracle-java8-set-default -y
-        <span class="c"># set JAVA_HOME</span>
-        <span class="nb">echo</span> <span class="s2">&quot;export JAVA_HOME=/usr/lib/jvm/java-8-oracle&quot;</span> &gt;&gt; /etc/profile
-        <span class="nb">source</span> /etc/profile
-    <span class="k">fi</span>
-    <span class="c"># show the info of java and maven to check.</span>
-
-    java -version
-    mvn --version
-
-    <span class="c"># Download ONOS</span>
-    <span class="k">if</span> <span class="o">[</span> -d /home/onos <span class="o">]</span>
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">cd</span> /home/onos
-    <span class="k">else</span>
-<span class="k">        </span>mkdir /home/onos
-        <span class="nb">cd</span> /home/onos
-    <span class="k">fi</span>
-
-<span class="k">    if </span>which zip
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;zip has been installed&quot;</span>
-    <span class="k">else</span>
-<span class="k">        </span>apt-get install zip
-    <span class="k">fi</span>
-
-<span class="k">    if</span> <span class="o">[</span> -f onos-<span class="nv">$_version</span>.zip <span class="o">]</span> 
-    <span class="k">then </span>
-<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;onos-$_version.zip has exist&quot;</span>
-    <span class="k">else</span>
-<span class="k">        </span>wget https://github.com/opennetworkinglab/onos/archive/onos-<span class="nv">$_version</span>.zip
-        unzip onos-<span class="nv">$_version</span>.zip
-
-        <span class="c"># set environment of ONOS</span>
-
-        <span class="nb">echo</span> <span class="s2">&quot;export ONOS_ROOT=/home/onos/onos-onos-$_version&quot;</span> &gt;&gt; /etc/profile
-        <span class="nb">echo</span> <span class="s2">&quot;export KARAF_ROOT=/root/Applications/apache-karaf-3.0.2&quot;</span> &gt;&gt; /etc/profile
-
-        <span class="nb">source</span> /etc/profile
-        <span class="nb">source</span> <span class="nv">$ONOS_ROOT</span>/tools/dev/bash_profile
-    <span class="k">fi</span>
-    <span class="c"># Build ONOS</span>
-
-    <span class="nb">cd </span>onos-onos-<span class="nv">$_version</span>/
-    mvn clean install
-</pre></div>
-
-
-<p>Note: 若需下载其他版本ONOS，直接修改<strong>下载源码部分和ONOS_ROOT</strong>即可，无需修改Karaf，maven，java8等内容。</p>
-<h3>初始化配置</h3>
-<p>在安装完ONOS之后，还需要进行一些必要的配置，才能启动运行了制定服务的ONOS。需要编辑$KARAF_ROOT/etc/org.apache.karaf.features.cfg文件，脚本中即为/root/Applications/apache-karaf-3.0.2/etc/org.apache.karaf.features.cfg。 在该文件中的 featuresRepositories部分和featuresBoot部分分别添加如下内容：</p>
-<div class="highlight"><pre><span class="n">featuresRepositories</span><span class="err">：</span><span class="n">mvn:org</span><span class="o">.</span><span class="n">onosproject</span><span class="sr">/onos-features/</span><span class="mf">1.0.0</span><span class="sr">/xml/</span><span class="n">features</span><span class="err">（逗号隔开，加到最后即可）</span>
-<span class="n">featuresBoot</span><span class="err">：</span><span class="n">onos</span><span class="o">-</span><span class="n">api</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">core</span><span class="o">-</span><span class="n">trivial</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">cli</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">openflow</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">app</span><span class="o">-</span><span class="n">fwd</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">app</span><span class="o">-</span><span class="n">mobility</span><span class="p">,</span><span class="n">onos</span><span class="o">-</span><span class="n">gui</span>
-</pre></div>
-
-
-<p>更多逐步安装和初始化配置内容可以查看SDNLAB的文章<a href="http://www.sdnlab.com/4603.html">《Ubuntu14.04源码安装ONOS》</a></p>
-<h3>下载地址</h3>
-<p>脚本下载地址为：<a href="https://github.com/muzixing/onosinstallhelper">muzixing/onosinstallhelper</a>。在github/muzixing上还有<a href="https://github.com/muzixing/ovsinstallhelper">muzixing/ovsinstallhelper</a>, 和fork过来的<a href="https://github.com/muzixing/ryuInstallHelper">ryuinstallhelper</a>可供下载，可以大大减少重复安装OVS和控制器时的重复劳动，提高生产效率。</p></div>
+        <div><h2>前言</h2>
+<p>不久之前，onlab的那群人，发布了ONOS。同时也在SIGCOMM上发表了一篇论文<a href="http://onos.wpengine.com/wp-content/uploads/2014/11/HotSDN-paper-2014-ONOS-Towards-an-Open-Distributed-SDN-OS.pdf">ONOS: Towards an Open, Distributed SDN OS</a>,这引起了很多人的关注。博主刚好得知这个消息，阅读了一遍ONOS的论文，总（翻）结（译）了一下论文的内容，作为自己的论文笔记（好长的笔记）。但是越来越感觉读论文，然后写一些读书或者读论文笔记没有意思。因为写着写着，写成了翻译，完全没有自己的观点。还不如去做些实验，写点教程来得实在。读研究生的生活也感觉有些无所事事了，我想我应该做点有意义的事情，比如学一下Docker, OpenStack之类的。搞学术，学术不让啊！</p>
+<h2>ABSTRACT</h2>
+<p>ONOS(Open Networking Operating System)是一个分布式的SDN控制平台。ONOS满足了大规模网络操作系统对性能，拓展性等需求。在论文中，他们提出了来那个个ONOS的模型。第一个模型实现了核心的特性，完成了一个分布式的网络操作系统模型，但是性能不够好。第二个模型则在第一个模型的基础之上，大大提高了ONOS的性能。</p>
+<h2>INTRODUCTION</h2>
+<p>为了支持大规模网络的需求，ONOS可能需要满足一下极具挑战性的需求：</p>
+<ul>
+<li>High Throughput: up to 1M requests/second</li>
+<li>Low Latency: 10 - 100 ms event processing</li>
+<li>Global Network State Size: up to 1TB of data</li>
+<li>High Availability: 99.99% service availability</li>
+</ul>
+<p><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1emom6fdh4rj20ir0b4gmw.jpg" /></p>
+<h2>PROTOTYPE 1: NETWORK VIEW, SCALE-OUT, FAULT TOLERANCE</h2>
+<p>ONOS的第一个模型使用了若干的开源软件来构建整个系统。比如使用FloodLight的一些现有模块，如switch manger、I/O loop、link discovery、module management、以及REST API。也使用到了Zookeeper, Titan, Cassandra以及Blueprints等开源软件。</p>
+<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emoijpm69xj20g50c2dha.jpg" /></p>
+<h4>Global Network View</h4>
+<p>ONOS维持了一个全网拓扑视图，从而允许一个ONOS集群内的实例能相互之间分享和管理网路信息。其全网拓扑信息包括switch、port、link和host等信息。ONOS使用<a href="http://thinkaurelius.github.io/titan/">Titan</a> graph database来存储，并使用Cassandra 来保障分布式和可持续性。由于Cassandra具有一致性存储的特性，所以保障了网络视图的最终一致性。</p>
+<h4>Scale-out.</h4>
+<p>ONOS的一个关键特性就是拓展性。ONOS分布式运行在多个服务器上，每一个实例是其管理的网络子集中的交换机的控制器。一个独立的ONOS实例将独立地完成网络的控制，并始终保持与全网视图的一致，即网络中发生状态变化，如添加交换机等时间，都应该由ONOS实例负责将这个事件传播到全局网络视图（Global Network View）。</p>
+<h4>Fault tolerance</h4>
+<p>分布式的ONOS允许即使某一个组件甚至某一个ONOS实例Down掉也不会影响整个系统的运行。ONOS允许component作为一个单独的实例去运作，不过也提供了多冗余容灾的能力。多实例的情况下，需要选择出leader，这个在分布式系统中是分厂必要的行为。在OpenFlow1.3版本中，有多控制器的定义。ONOS可以允许交换机连接到多控制器，但是对于交换机而言只有一个控制器是master，其他的是slaver。当某一个ONOS发生故障Down掉之后，他所管理的交换机将由别的ONOS实例接管。ONOS使用<a href="http://zookeeper.apache.org/">Zookeeper</a>来存储交换机和控制器之间的关系数据。每一个ONOS实例都需要连接Zookeeper。<a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-zookeeper/">Zookeeper</a>曾经是<a href="http://hadoop.apache.org/">Hadoop</a>的一个子项目。现在已经好似一个顶级项目。它主要是用来解决分布式应用中经常遇到的一些数据管理问题，如：统一命名服务、状态同步服务、集群管理、分布式应用配置项的管理等。</p>
+<h3>Evaluation</h3>
+<p>ONOS的第一个模型花了4个月的时间（好快！）。但是，这个Prototype的性能表现并不好。论文中举例分析如下：</p>
+<p><strong>Consistency and Integrity</strong>:  这一部分论文写得比较模糊，没有看懂，所以不发表评论。</p>
+<p><strong>Low Performance and Visibility</strong></p>
+<p>模型一的性能并不好，特别是延迟比预期的要差许多，比如30s才可以获取到网络拓扑状态变化情况。主要原因在与使用了开源软件，虽然很快可以完成开发，但是这些开源软件之间的协调，并不容易。而且ONOS的开发者并不是特别熟悉这些开源代码，导致性能并不高。</p>
+<p><strong>Data Model Issues</strong></p>
+<p>由于使用Titan存储，所以所有数据如Port,flow entries等都需要以Vertices存储。而且需要构建一个索引来查询数据如交换机数据。当大量节点加入网络时，并发的数据量就会很大，所以索引构建就会成为瓶颈。即使一个很小的改动，也会引起许多许多数据库更新的操作。</p>
+<p><strong>Excessive Data Store Operations</strong></p>
+<p>由于使用了Cassandra和Titan,完成这两者之间的数据转换则产生过多的数据存储操作。每一个简单的网络操作都会由于过多的数据读取和写入操作而延迟。原因如下：</p>
+<p><strong>Polling</strong></p>
+<p>由于时间紧张，第一个模型，并没有实现订阅分发，而是通过周期同步数据，显然这样增加了CPU的使用率。</p>
+<p><strong>Lessons Learned</strong></p>
+<p>第一个模型的测试能学到一些教训，比如设计更高效的数据模型，减少多余的数据操作，以及更简化的API等等。</p>
+<h2>PROTOTYPE 2: IMPROVING PERFORMANCE</h2>
+<p>第二个模型关注于提升性能。所以第二个模型改变了network view architecture,还增加了一个事件通知框架。在第一个模型中，远程操作是造成性能瓶颈的重要原因之一，所以在模型二中，通过减少远程操作的数量和加快远程操作的速度来解决这个问题。改变之后的模型二如下图所示：</p>
+<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqixkwgv8j20jw0f5762.jpg" /></p>
+<p><strong>RAMCloud Data Store</strong>: <a href="https://ramcloud.atlassian.net/wiki/display/RAM/RAMCloud">RAMCloud</a>中文名字应该叫“内存云”，顾名思义，使用内存来代替普通硬盘来存储，从而大大提高存储速度。
+<strong>Optimized Data Model</strong>： 优化向来都是一个复杂的事情。他们新设计了一个data model（中文怎么称呼都不舒服），也不追求数据完整性了，许多更新都是相对独立的，从而大大减少了数据的读写操作，优化了性能。</p>
+<p><strong>Topology Cache</strong>： 读取拓扑是一个非常耗时的操作，所以新的ONOS将拓扑信息存在高速缓存中，从而提高了读取拓扑的速度。除此之外，他们还构建了一个索引用于更快速地查找数据。构建索引的过程可以在任何时刻由全部的数据生成，但是一般情况下，只有新的ONOS节点接入时，才会读取全部数据，所以从全局来看，这并不会消耗太多时间。</p>
+<p><strong>Event Notification</strong>： 前面已经提到由于周期获取数据而引起的性能问题，所以一个事件通知机制非常必要。模型二创建了一个实例内部的发布-订阅的事件机制，然后将这个通信系统部署在了<a href="http://hazelcast.com/">Hazelcast</a>上（又一个牛逼的开源软件。）发布订阅模式无需赘述。</p>
+<p><strong>Network View API</strong>： 关于API的改动，ONOS用自己设计的API取代了生成的Blueprints graph API。Figure4展示了网络视图所包含的内容。ONOS的API主要由以下三个主要部分组成：</p>
+<ul>
+<li>对底层设施拓扑的抽象描述的接口;</li>
+<li>处理网络或系统Events（事件）的接口;</li>
+<li>提供安装流表等信息的接口。</li>
+</ul>
+<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqk7nvjdwj20m10e175m.jpg" /></p>
+<h3>Evaluation</h3>
+<p>对于模型二的性能主要分为一下三个方面进行测试和评价：</p>
+<ul>
+<li>对基础网络状态改变的反应</li>
+<li>对网络事件的反应</li>
+<li>下发流表路径部署</li>
+</ul>
+<p><strong>Basic Network State Changes</strong></p>
+<p>网络中状态的改变会阻塞ONOS的操作，直到数据更新完成。所以这一点对整个ONOS的性能影响巨大。</p>
+<p>测试案例中使用了三个节点的ONOS集群，连接了81个OpenFlow交换机，组成了一个典型的WAN拓扑，每一个交换机上都有四个活跃的端口。</p>
+<p>为测试这个性能，ONOS采用了对比的方式。Table 1中展示了添加一个交换机这个动作所需要的latency。从表中可以看出，使用通用的API，速度最慢。使用自定义的API速度快了很多。因为使用新的Data model仅仅需要一个操作可以完成添加交换机的操作，所以时间从22.2ms下降到了1.19ms。在序列化方面还尝试了<a href="http://www.ibm.com/developerworks/cn/linux/l-cn-gpb/">Google Protocol Buffers</a>，这个尝试可以将latency下降了0.244ms。最后他们还尝试了使用<a href="http://en.wikipedia.org/wiki/InfiniBand">Infiniband</a>的I/O架构，从而得到了更好的数据。</p>
+<p><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1emql9ck45tj20gk05tgma.jpg" /></p>
+<p><strong>Reaction to Network Events</strong></p>
+<p>这项测试组要用于评价ONOS对网络事件的反应速度等性能。如网路中某一个link down掉之后，ONOS对流量重新路由的过程需要多长时间。这个性能直接关系到SLA（Service-Level Agreement）的性能。</p>
+<p>这个实验使用了6个节点的ONOS的集群，数据层面使用mininet模拟了206个软件交换机和416个link。他们将16000条flows添加到网络中，然后关掉网络中的某一个交换端口，则足以导致1000多条flow发生改变，从而重新路由这些flow。其中每一条流有六跳，当某个端口down掉之后，他们都变成7跳的流。</p>
+<p>Table 2展示了重新路由进度进行到一半和99%的数据。其中包括从网络时间被捕捉到到下发第一条flow_mod的过程。以及全部Flow_mod都下发。</p>
+<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqrajqucxj20em03ywer.jpg" /></p>
+<p><strong>Path Installation</strong></p>
+<p>第三个性能指标测试了ONOS系统的吞吐量。这次测试使用了与第二项性能指标一样的拓扑。但是预下发了15000条静态流表。他们添加了1000条6hops的flow。Table 3展示的测试结果。吞吐量和延时成反比，所以在进程进行到一半的时候吞吐量为18832paths/sec。（好像性能不够好！）</p>
+<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqrthq20mj20ex03w0sy.jpg" /></p>
+<p>在Prototype2中，ONOS对网络事件的延迟上达到了预期的要求，但是在吞吐量上还没有达到1M path/sec的标准。不过作者们将这个原因归咎与仅仅使用一个ONOS节点来计算路径。如果分布式计算路径效果肯定会更好一些吧。</p>
+<h3>Demonstration on Internet2</h3>
+<p>论文作者们将ONOS部署在Internet2上，运行正常。</p>
+<p><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1emqsv4wsd3j20f80b20uy.jpg" />
+<img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqsv58p7yj20fg0bd40z.jpg" /></p>
+<h2>DISCUSSION: TOWARDS AN OPEN, DISTRIBUTED NETWORK OS</h2>
+<h3>Use Cases</h3>
+<p>ONOS可以提供的使用案例如下图所示。</p>
+<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1emqt0ik8xej20up0li0v1.jpg" /></p>
+<h3>后语</h3>
+<p>ONOS看起来应该是个不错的产品，希望性能和稳定度上能达到不错的水平。在读ONOS论文的过程中，学习到了许多关于分布式计算的知识，也看到了使用开源软件快速开发的模式。我想这些都是我们应该学习的。目前已经有太多优秀的开源软件，合理使用开源软件能够避免重新造轮子的过程。不过我们也从ONOS的例子中看到，并不是使用开源软件叠加就能出来一个非常好的产品，关键的数据模型等方面还是需要研发人员用心设计才能达到一个非常好的效果。希望ONOS能给SDN带来更多市场吧。</p></div>
         <hr />
     </div>
 		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/11/26/onoslun-wen-jie-xi.html"><h2>ONOS论文解析</h2></a>
-        <div class= "well small"> 2014-11-26
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>不久之前，onlab的那群人，发布了ONOS。同时也在SIGCOMM上发表了一篇论文<a href="http://onos.wpengine.com/wp-content/uploads/2014/11/HotSDN-paper-2014-ONOS-Towards-an-Open-Distributed-SDN-OS.pdf">ONOS: Towards an Open, Distributed SDN OS</a>,这引起了很多人的关注。博主刚好得知这个消息，阅读了一遍ONOS的论文，总（翻）结（译）了一下论文的内容，作为自己的论文笔记（好长的笔记）。但是越来越感觉读论文，然后写一些读书或者读论文笔记没有意思。因为写着写着，写成了翻译，完全没有自己的观点。还不如去做些实验，写点教程来得实在。读研究生的生活也感觉有些无所事事了，我想我应该做点有意义的事情，比如学一下Docker, OpenStack之类的。搞学术，学术不让啊！</p>
-<h2>ABSTRACT</h2>
-<p>ONOS(Open Networking Operating System)是一个分布式的SDN控制平台。ONOS满足了大规模网络操作系统对性能，拓展性等需求。在论文中，他们提出了来那个个ONOS的模型。第一个模型实现了核心的特性，完成了一个分布式的网络操作系统模型，但是性能不够好。第二个模型则在第一个模型的基础之上 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/11/26/onoslun-wen-jie-xi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
