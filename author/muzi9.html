@@ -62,6 +62,39 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html"><h2>[C语言]两个栈实现队列</h2></a>
+        <div class= "well small"> 2014-04-15
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>这是学习c语言的第一个训练题。刚开始写得真的非常差！！后来在大男哥的知道下学会了如何写c语言。本篇教程是：如何使用两个栈实现队列的功能。基本上这个代码也是他手把手教的。</p>
+<h3>算法</h3>
+<p>如何使用两个栈实现队列？
+大家都能想到需要在pop的时候从一个栈到另一个栈倒一下，再pop，这样就有做到先入先出了。但是如何判别哪一个是目前正在使用的，而哪一个又是用来接收第一个栈pop数据的呢？</p>
+<p>其实有一个好办法就是，指定一个是专门用于入栈的栈in_stack，所有数据入栈的时候必须入到这个栈中，而出栈的时候，需要将数据pop到另一个栈中，然后再从另一个栈中出栈。第二次出栈的时候直接从out_stack。直到out_stack的数据为空，则将in_stack的数据pop到out_stack中。这样就能保证出栈的顺序是FIFO了。</p>
+<p>同时，in_stack的深度就是队列的最小深度。</p>
+<p>最大深度是len(in_stack+out_stack).当且仅当第一次push时，全部push到满，然后pop数据，之后继续push直到满。严格意义上来说应该是len(in_stack+out_stack)-1，因为有一个pop掉了。</p>
+<h3>实现</h3>
+<h4>stack的实现</h4>
+<p>首先我们要实现stack。以下是stack.h</p>
+<div class="highlight"><pre><span class="o">/*</span>
+<span class="c1">##################</span>
+<span class="n">Author:</span> <span class="n">muzi</span>
+<span class="n">Date:2014</span><span class="sr">/4/</span><span class="mi">10</span>
+<span class="n">TODO ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html"><h2>The study notes of East-west Bridge for SDN Network Peering</h2></a>
         <div class= "well small"> 2014-04-10
 
@@ -178,27 +211,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>非常赞的一个视频！学习如何使用MARKDOWN添加视频的成果咯！</p> <a class="btn btn-info xsmall" href="../pages/2014/03/21/markdowntian-jia-shi-pin-jiao-cheng-idina-menzehe-caleb-hylesji-qing-dui-chang-let-it-go.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html"><h2>SDN实现HTTP网络加速实验</h2></a>
-        <div class= "well small"> 2014-03-13
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>由于篇幅太长，且这个实验室是很久以前，我和我的小伙伴们一起做的课设，没有时间进行排版书写。</h3>
-<p>附上链接：</p>
-<p>http://user.qzone.qq.com/350959853/blog/1394681174</p>
-<p>北邮学弟学妹做这个课设的可以联系628中某学长。</p> <a class="btn btn-info xsmall" href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../author/muzi8.html">&larr; Previous</a></li>
@@ -247,7 +259,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">life</a></li>
+                <li><a href="../category/life.html">Life</a></li>
                 <li><a href="../category/tech.html">Tech</a></li>
                    
             </ul>

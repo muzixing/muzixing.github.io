@@ -62,6 +62,48 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html"><h2>OpenFlow1.3学习笔记</h2></a>
+        <div class= "well small"> 2014-08-10
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。</p>
+<h2>OpenFlow端口</h2>
+<p>OF端口是OF处理流程和网络其他部分进行转发数据包的网络接口。
+OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必须支持的端口类型为</p>
+<ul>
+<li>物理端口</li>
+<li>逻辑端口</li>
+<li>保留端口</li>
+</ul>
+<p>逻辑端口和物理端口的不同在于，逻辑端口比物理端口更高一级，是对物理端口的虚拟化，提高可复用性，逻辑端口的数据包需要有tunnel_id，而物理端口没有。    </p>
+<p>保留端口中又分为：</p>
+<ul>
+<li>ALL</li>
+<li>CONTROLLER</li>
+<li>TABLE</li>
+<li>IN_PORT</li>
+<li>ANY</li>
+<li>LOCAL</li>
+<li>NORMAL</li>
+<li>FLOOD</li>
+</ul>
+<p>其中所有OF交换机都要支持ALL,CONTROLLER,TABLE,IN_PORT,ANY类型端口，OF_ONLY不要求支持LOCAL,NORMAL,FLOOD端口。</p>
+<h2>OpenFlow Table</h2>
+<p>OpenFlow ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html"><h2>Opendaylight中开发模块Ping</h2></a>
         <div class= "well small"> 2014-08-06
 
@@ -163,38 +205,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>从另一个角度看。如果我们这个世界是外面“大世界”的一个微小到根本看不见的存在。那么也可以理解。在他们的很长一段时间之内，他们也无法认识到由许多我们这样的世界组成的系统构成了他们世界中的组基础的材料如我们世界中的碳或者铁等元素 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/07/14/guan-yu-zhe-ge-shi-jie-de-si-kao.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/05/04/noxshi-xian-natgong-neng.html"><h2>nox实现nat功能</h2></a>
-        <div class= "well small"> 2014-05-04
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>nat功能是一个非常简单，但却非常重要的功能。保留10，127,192三个网段作为公网地址，通过nat实现地址复用，可以解决现网IPV4地址不够用的尴尬局面。本篇主要讲如何使用nox实现nat的demo.</p>
-<h3>环境</h3>
-<ul>
-<li>nox  安装比较困难，请参看其他教程</li>
-<li>mininet    网络环境搭建神器</li>
-</ul>
-<h3>控制器</h3>
-<p>首先在nox/src/coreapps/switch中找到switch.cc。
-在class switch中添加成员变量uint32_t src_ip，nat_ip；由于只是一个简单的demo，就不做映射列表了。</p>
-<p>handle_packet_in中将if(setup_flows &amp;&amp; out_port!=-1)的逻辑修改如下：</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">setup_flows</span> <span class="o">&amp;&amp;</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">auto</span> <span class="n">fm</span> <span class="o">=</span> <span class="nn">v1::</span><span class="n">ofp_flow_mod</span><span class="p">()</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">())</span>
-               <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/05/04/noxshi-xian-natgong-neng.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../author/muzi6.html">&larr; Previous</a></li>
@@ -243,7 +253,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">life</a></li>
+                <li><a href="../category/life.html">Life</a></li>
                 <li><a href="../category/tech.html">Tech</a></li>
                    
             </ul>

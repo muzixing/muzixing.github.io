@@ -62,6 +62,37 @@
  
 
     <div class='article'>
+        <a href="../pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html"><h2>RYU中WSGI学习笔记与RESTAPI开发</h2></a>
+        <div class= "well small"> 2015-05-13
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>另一篇博文中已经介绍如何使用RYU的RESTAPI，本篇将继续介绍相关内容，主要分为WSGI学习总结和以ofctl_rest.py为例的RESTAPI的实现与内部机制。由于第一次学习WSGI，还有许多地方不是特别理解，所学知识均来自Google。文中若有错误之处，敬请指出，谢谢。</p>
+<h3>WSGI</h3>
+<p><a href="http://zh.wikipedia.org/wiki/Web%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BD%91%E5%85%B3%E6%8E%A5%E5%8F%A3">Web服务器网关接口</a>（Python Web Server Gateway Interface，缩写为WSGI）是为Python语言定义的Web服务器和Web应用程序或框架之间的一种简单而通用的接口。为了理解WSGI，可以尝试一下的小例子。</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">cgi</span> <span class="kn">import</span> <span class="n">parse_qs</span>
+<span class="kn">from</span> <span class="nn">cgi</span> <span class="kn">import</span> <span class="n">escape</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">):</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">parse_qs</span><span class="p">(</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;QUERY_STRING&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="s">&#39;subject&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s">&#39;subject&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2015/05/10/getting-started-with-restapi-of-ryu.html"><h2>Getting started with RESTAPI of RYU</h2></a>
         <div class= "well small"> 2015-05-10
 
@@ -170,27 +201,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         <div class="summary"><p>In many scenes, we need to get the real time link bandwidth so that controller can make some decisions in time. For example, load balance, network alert and so on. This article will demostrate how to get the bandwidth of a flow or a port(flow speed or port speed ...</p> <a class="btn btn-info xsmall" href="../pages/2015/03/04/traffic-monitor-in-ryu.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html"><h2>Fattree topo and iperfmulti function in mininet</h2></a>
-        <div class= "well small"> 2015-02-22
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>This article will show you 1)how to build a <a href="http://ccr.sigcomm.org/online/files/p63-alfares.pdf">fattree</a> topo and 2)how to extend the iperfmulti function in mininet.</p>
-<p>本篇博文将讲述1）如何搭建fatree网络拓扑和2）如何在mininet中拓展iperfmulti功能。</p>
-<p>众所周知，数据中心是目前网络研究的一个热门领域。随着云计算的兴起与发展，会对数据中心网络提出更多的需求，也为学术研究提供了更多的课题。TE（Traffic Engineering）是网络研究中最基础的研究之一，在TE中Load balance是比较主要的研究内容之一。 然而由于数据中心网络的流量走势与传统网络不同，导致数据中心网络与传统网络的架构有所不同。在传统网络中上下行流量在总流量中占据很大比重，而相比之下，数据中心的流量分类中，横向流量的比重要远远大于传统网络架构的比重。为了更好解决数据中心网络流量问题，数据中心架构的设计就变得非常重要，在众多网络架构中，Fat-tree架构是比较出名和成功的。</p>
-<p>SDN兴起于校园网，盛开于数据中心，这是一种比较准确的描述。目前SDN的研究领域内 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../author/muzi2.html">&larr; Previous</a></li>
@@ -239,7 +249,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">life</a></li>
+                <li><a href="../category/life.html">Life</a></li>
                 <li><a href="../category/tech.html">Tech</a></li>
                    
             </ul>
