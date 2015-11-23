@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html"><h1>Ryu:模块间通信机制分析</h1></a>
-2015-09-08
+            <a href="../pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html"><h1>基于Ryu打造自定义控制器</h1></a>
+2015-11-20
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,142 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>Ryu是一款非常轻便的SDN控制器，在科研方面得到了广泛的应用。相比其他控制器，受益于Python语言，在Ryu上开发SDN应用的效率要远高于其他控制器。为了解决复杂的业务，有时需要在Ryu上开发多模块来协同工作，从而共同完成复杂的业务。本文将介绍Ryu模块之间通信的包括Context等方式的多种通信方式。</p>
+        <div><p>控制器是SDN网络中最重要的组成部分。在开发SDN应用时，需要基于某一个控制器开发，而大部分开源控制器都是一个框架或者平台，更多个性化的设置和应用需要开发者自己完成。对于开发者而言，一个自定义的控制器可以让控制器更加适配开发场景，发挥控制器最大的作用，提高开发效率。本篇文章将以Ryu为例，介绍如何修改Ryu源码，打造属于自己风格的自定义控制器。其内容包括自定义参数，事件，启动顺序，报文，协议和底层服务。</p>
+<h3>自定义参数</h3>
+<p>很多应用都会涉及相关参数的输入才能运行， 如OpenFlow协议的启动需要配置监听端口。在编写新应用时，需要获取相关参数的值来运行应用，所以需要开发应用时注册参数。目前已有的参数可以通过ryu-manager -h查看。而不同的应用注册的参数很可能名字一样，这就有可能发生冲突。为解决这个问题，Ryu采用了OpenStack的Oslo库，支持全局的命令注册和解析。Oslo支持全局的命令注册和解析，成功解除了命令冲突的难题，也大大降低了参数注册和解析的难度。注册新参数的方法很简单，只需要新建一个文件，然后按照如下案例完成注册，最后再在cmd/manager.py中import即可。</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">cfg</span>
+
+<span class="n">CONF</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span>
+<span class="n">CONF</span><span class="o">.</span><span class="n">register_cli_opts</span><span class="p">([</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">StrOpt</span><span class="p">(</span>
+        <span class="s">&#39;milestone-argument&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;my test argument&#39;</span><span class="p">),</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">IntOpt</span><span class="p">(</span><span class="s">&#39;milestone-server-port&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">6666</span><span class="p">,</span>
+               <span class="n">help</span><span class="o">=</span><span class="s">&#39;milestone server port&#39;</span><span class="p">)])</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">flags</span>
+<span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">version</span>
+<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="kn">import</span> <span class="n">wsgi</span>
+<span class="kn">from</span> <span class="nn">ryu.base.app_manager</span> <span class="kn">import</span> <span class="n">AppManager</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">controller</span>
+<span class="kn">from</span> <span class="nn">ryu.milestone</span> <span class="kn">import</span> <span class="n">milestone</span>
+<span class="kn">from</span> <span class="nn">ryu.topology</span> <span class="kn">import</span> <span class="n">switches</span>
+</pre></div>
+
+
+<p>通过python setup.py install重新安装Ryu之后即可通过ryu-manager -h来查看到新注册的命令。</p>
+<h3>自定义事件</h3>
+<p>Ryu的应用之间通信通过事件机制来完成。比如底层的协议解析模块解析报文之后，生成对应的报文事件，然后分发到各个监听该事件的监听函数。不过，目前为止事件类型还不够丰富，很多需要的信息还无法通过事件传递。比如网络流量监控服务监控到流量发生变化的事件之后，需要生成对应的事件。又比如OFPPacket_in事件包含了所有报文类型的数据，还可以根据触发Packet_in的数据的协议类型来定义细粒度的事件去分流，从而使得处理ARP报文的函数只接收ARP报文的Packet_in, 而不是全部接收到然后再去判断是否是不是ARP报文。以网络流量变化事件EventOXPTrafficStateChange为例，定义事件，生成事件和处理事件的流程如下：</p>
+<p>(1) 在controller/ofp_event.py中添加相关类描述：</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">EventOXPTrafficStateChange</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">traffic</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EventOXPTrafficStateChange</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">traffic</span> <span class="o">=</span> <span class="n">traffic</span>
+</pre></div>
+
+
+<p>(2) 在相关应用中实例化事件，并通过OFPHandler模块的send_event_to_observers函数分发到指定函数。</p>
+<div class="highlight"><pre>    <span class="n">event</span> <span class="o">=</span> <span class="n">oxp_event</span><span class="o">.</span><span class="n">EventOXPTrafficStateChange</span><span class="p">(</span><span class="n">traffic</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">free_band_width</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">oxp_brick</span> <span class="o">=</span> <span class="n">app_manager</span><span class="o">.</span><span class="n">lookup_service_brick</span><span class="p">(</span><span class="s">&#39;oxp_event&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">oxp_brick</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+</pre></div>
+
+
+<p>(3) 注册handler处理事件， 使用@set_ev_cls来注册handler监听该事件。</p>
+<div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">oxp_event</span><span class="o">.</span><span class="n">EventOXPTrafficStateChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">reflesh_bw_best_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">free_band_width</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">traffic</span>
+    <span class="n">do_some_thing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">free_band_width</span><span class="p">)</span>
+</pre></div>
+
+
+<p>像Packet_in分流的定义可以参考以上的做法，将事件作为新事件的属性。也可以参考ofp_event模块中的修改类名的方式将类名修改，从而生成新的事件。</p>
+<h3>自定义启动顺序</h3>
+<p>Ryu关于Application的启动源码在cmd/manager.py文件中。main函数中完成了app_lists的赋值，即启动应用的顺序。若在Ryu开发了一个很重要的底层应用，需要在启动那个时启动，则可以将其加入app_lists中. 比如当milestone参数为1时，启动多个应用，否则仅启动基础应用的示例如下：</p>
+<div class="highlight"><pre><span class="k">if</span> <span class="ow">not</span> <span class="n">app_lists</span><span class="p">:</span>
+    <span class="n">app_lists</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="n">CONF</span><span class="o">.</span><span class="n">milestone</span> <span class="o">==</span> <span class="s">&#39;1&#39;</span><span class="p">:</span>
+    <span class="n">my_app_list</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;muzixing&quot;</span><span class="p">,</span> <span class="s">&quot;milestone&quot;</span><span class="p">]</span>
+    <span class="n">app_lists</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">my_app_list</span><span class="p">)</span>
+</pre></div>
+
+
+<p>这个自定义启动顺序一般情况下不需要修改，但是当开发的应用是非常重要的底层服务时，可能需要初始化就启动，所以也是非常关键的自定义内容之一。</p>
+<h3>自定义报文</h3>
+<p>在某些特定的场景中，需要对OpenFlow协议等协议进行报文拓展，从而完成新报文，新字段的测试工作。在Ryu中自定义OpenFlow报文的操作步骤如下：</p>
+<p>(1) 在对应版本的ofproto_v1_x.py中定义所有需要使用到的字段值，如最重要的报文类型，以定义一个名为milestone的报文为例，报文类型为25, 字段只有一个字符串类型的data, 可以用来放任何信息，长度为64bits。所以在文件中定义/声明 报文名字和类型的对应，报文的格式和长度，以便序列化和解析。Ryu使用struct对数据进行序列化和解析。</p>
+<div class="highlight"><pre><span class="n">OFPT_MILESTONE</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="n">OFP_MILESTONE_PACK_STR</span> <span class="o">=</span> <span class="s">&#39;!8s&#39;</span>  <span class="c">#定义报文格式</span>
+<span class="n">OFP_MILESTONE_SIZE</span> <span class="o">=</span> <span class="mi">16</span>    <span class="c"># 定义报文长度</span>
+<span class="k">assert</span> <span class="p">(</span><span class="n">calcsize</span><span class="p">(</span><span class="n">OFP_MILESTONE_PACK_STR</span><span class="p">)</span> <span class="o">+</span> <span class="n">OFP_HEADER_SIZE</span> <span class="o">==</span><span class="n">OFP_MILESTONE_SIZE</span><span class="err">）</span>  <span class="c"># 检查长度是否正确</span>
+</pre></div>
+
+
+<p>(2) 在对应版本的ofproto_v1_x_parser.py中添加对应报文类的定义，包括其解析方法和序列化方法。其中解析方法是一个类方法，在MsgBase中定义，派生类调用时需要使用类型来区分。序列化方法分为self._serialize_pre(), self._serialize_body()和self._serialize_header()三部分。派生类仅需完成self._serialize_body()的内容即可。值得注意的是，如果需要对报文进行除报头以外的解析，则必须在完成parser函数之后使用@_register_parser装饰符将对应函数和类名的映射关系加入到关系字典中，以便使用时查找，否则会报错。</p>
+<div class="highlight"><pre><span class="nd">@_register_parser</span>
+<span class="nd">@_set_msg_type</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPT_MILESTONE</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">OFPMILESTONE</span><span class="p">(</span><span class="n">MsgBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MILESTONE message</span>
+
+<span class="sd">    It is a test msg:www.muzixing.com</span>
+<span class="sd">    ========== =========================================================</span>
+<span class="sd">    Attribute  Description</span>
+<span class="sd">    ========== =========================================================</span>
+<span class="sd">    data       just some data.</span>
+<span class="sd">    ========== =========================================================</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">OFPMILESTONE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">parser</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">OFPMILESTONE</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span>
+                                          <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_HELLO_HEADER_SIZE</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_MILESTONE_PACK_STR</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">buf</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+
+        <span class="n">msg</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_body</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">msg_pack_into</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_MILESTONE_PACK_STR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buf</span><span class="p">,</span>
+                      <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_HEADER_SIZE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+
+<p>至此，自定义报文完成。关于struct模块的使用，以及OpenFlow协议代码的介绍可以参考另一篇文章<a href="http://www.muzixing.com/pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html">《Ryu:OpenFlow协议源码分析》</a>。重新安装Ryu即可将该报文写入到Ryu运行代码中，Ryu的事件机制会自动将这个报文生成对应的事件，进一步测试需要读者自行开发。</p>
+<h3>自定义协议</h3>
+<p>既然讲到自定义报文，那么继续提一下自定义协议。读者可以根据<a href="http://www.muzixing.com/pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html">《Ryu:OpenFlow协议源码分析》</a>提到的思路去模仿编写一个新的协议。底层的数据收发可以学习controller/controller.py, 协议定义可以学习ofproto目录下的一系列内容。各种需要自定义的细节，如自定义参数，自定义事件等都已经在上文提到。后续将会专门书写如何在Ryu中开发新协议，本文不再展开。</p>
+<h3>自定义服务</h3>
+<p>为了更好的开发应用，开发者应该开发一套底层的服务，为自己的进一步开发提供帮助。如ARP代理，DHCP服务，基础的网络资源感知服务等等。SDN集中式的优点很大在于拥有全局的视角，可以掌握全局的资源，从而进行全局最优的业务部署。所有业务的基础都基于对网络资源的感知，所以此处以网络资源感知为例。首先需要完成网络拓扑的最优路径的计算，此外处于某些场景的需求，需要收集网络流量状况的数据，从而完成基于流量的最优化决策。在此基础之上，完成基础的
+最短路径转发应用，实现最基础的网络应用，为其他更高层次的应用开发和算法验证提供基本的服务支撑。由于篇幅限制，本文不加展开，详情可查看<a href="http://www.muzixing.com/pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html">《SDN网络感知服务与最短路径应用》</a>。如果读者希望自己搭建一套底层服务，或者在笔者的基础之上加工，推荐使用networkx进行拓扑信息的存储。networkx提供了大量高效有用的函数，可以最大程度降低开发者在算法问题上的工作量。</p>
+<p>完成以上应用之后，可将其作为启动服务的一种，并通过参数来确定是否启动Ryu时启动这些业务。这些业务中涉及到的自定义事件，可用于与上层应用之间的通信，实现定制化的SDN控制器。</p>
+<h3>总结</h3>
+<p>本篇文章介绍了基于Ryu打造自定义控制器的内容，包括自定义参数，事件，启动顺序，报文，协议和服务。相信读者如果能根据应用场景进行深度自定义，可以很大程度上提升开发效率。关于自定义协议部分，后续会有更多文章介绍，敬请期待。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html"><h2>Ryu:模块间通信机制分析</h2></a>
+        <div class= "well small"> 2015-09-08
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>Ryu是一款非常轻便的SDN控制器，在科研方面得到了广泛的应用。相比其他控制器，受益于Python语言，在Ryu上开发SDN应用的效率要远高于其他控制器。为了解决复杂的业务，有时需要在Ryu上开发多模块来协同工作，从而共同完成复杂的业务。本文将介绍Ryu模块之间通信的包括Context等方式的多种通信方式。</p>
 <h3>_CONTEXTS</h3>
 <p>在RyuApp类中有一个属性是_CONTEXTS。_CONTEXTS中的内容将作为当前模块的服务在模块初始化时得到加载。示例如下：</p>
 <div class="highlight"><pre>    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span>
@@ -88,51 +223,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 </pre></div>
 
 
-<p>在模块启动时，首先会将_CONTEXTS中的模块先启动，在模块的初始化函数中可以通过self.network_aware = kwargs["Network_Aware"]的形式获得该服务模块的实例，从而获取到该模块的数据，并具有完全的读写能力。这种模式很清晰地体现了模块之间的关系。然而在Ryu的实现中，这个机制并不完美，或者有所限制。首先，当某个模块作为别的模块的服务启动时，就无法在启动Ryu时手动启动。这种做法应该是出于保证模块启动顺序，从而顺利完成多模块启动而设计。另一方面，Ryu不支持多级的服务关系， 如A是B的服务，那么B就不能作为其他模块的服务，也即这种服务关系只有两层。所以在设计模块时，若完全使用_CONTEXTS方式来传递信息则需将架构设计成两层以内。若希望不受此限制，开发者可以自己修改其源码解除这个限制。</p>
-<h3>app_manager.lookup_service_brick()</h3>
-<p>在某些业务场景，我们需要使用其他模块的数据，但是又不希望将对方作为自己的服务来加载，则可以通过app_manager.lookup_service_brick('module name')来获取运行中的某个模块的实例，从而获取其数据。典型案例可以参考controller/controller.py中的Datapath类。示例如下：</p>
-<div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">ofp_brick</span> <span class="o">=</span> <span class="n">ryu</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">app_manager</span><span class="o">.</span><span class="n">lookup_service_brick</span><span class="p">(</span><span class="s">&#39;ofp_event&#39;</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
-            <span class="n">ev</span> <span class="o">=</span> <span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPStateChange</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-            <span class="n">ev</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ofp_brick</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
-</pre></div>
-
-
-<p>这种做法区别于import, import引入的是静态的数据，如某个类的函数的定义，静态数据的定义。当涉及到动态的数据，import则无法获取到对应的数据。如名为app的模块中有一个属性self.domain = Domain(）,那么import可以获得其类的定义，而实际上，我们需要的是运行状态时Domain的实例，而import无法做到这一点。通过app = app_manager.lookup_service_brick(‘app’)可以获得当前的app实例，进而通过app.domain来获取当前的domain实例的数据。</p>
-<h3>Event</h3>
-<p>通过事件系统来通信是模块之间通信的最普通的形式。每当交换机和Ryu建立连接，都会实例化一个Datapath对象来处理这个连接。在Datapath对象中，会将接收到的数据解析成对应的报文，进而转化成对应的事件，然后发布。注册了对应事件的模块将收到事件，然后调用对应的handler处理事件。示例如下：</p>
-<div class="highlight"><pre>    <span class="p">[</span><span class="n">module</span><span class="p">:</span> <span class="n">controller</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
-        <span class="n">ev</span> <span class="o">=</span> <span class="n">ofp_event</span><span class="o">.</span><span class="n">ofp_msg_to_ev</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ofp_brick</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
-
-        <span class="n">dispatchers</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">ev</span><span class="o">.</span><span class="n">__class__</span><span class="p">]</span><span class="o">.</span><span class="n">dispatchers</span>
-        <span class="n">handlers</span> <span class="o">=</span> <span class="p">[</span><span class="n">handler</span> <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">ofp_brick</span><span class="o">.</span><span class="n">get_handlers</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span> <span class="k">if</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="n">dispatchers</span><span class="p">(</span><span class="n">handler</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
-            <span class="n">handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
-
-    <span class="p">[</span><span class="n">module</span><span class="p">:</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">py</span><span class="p">]</span>
-    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
-</pre></div>
-
-
-<p>编译运行之后，simple_switch_13模块的_packet_in_handler函数注册了事件ofp_event.EventOFPPacketIn, 当Controller模块中的Datapath分发ofp_event.EventOFPPacketIn事件时， 将会分发到_packet_in_handler函数，在Datapath中调用handler(ev)来处理事件，从而完成了信息在模块之间的通信。</p>
-<h3>公共文件读写</h3>
-<p>除了以上的形式以外，某些数据的通信则通过读写公共文件完成。最典型的案例是oslo.config的使用。<a href="https://wiki.openstack.org/wiki/Oslo">oslo</a>是OpenStack的开源库。oslo.config提供一个全局的配置文件，同时也完成命令行的解析。通过读写公共文件的内容，可以完成信息的传递，如模块A将config中CONF对象的某个参数arg的i值修改为1, B再读取对应的参数arg，则可以获得数值1, 从而完成通信。面对配置信息等全局信息时，公共文件的使用可以避免不同模块之间的冲突，从而实现全局数据的统一。但是这种做法会频繁地读写文件，效率不高。且此类数据仅适合静态数据的传递，不适合存在于实例中的动态数据。</p>
-<h3>总结</h3>
-<p>在使用Ryu开发SDN网络应用的过程中，多模块协同工作是非常常见的场景。使用_CONTEXTS形式可以更清晰地体现模块之间的关系，代码架构可读性更高；采用app_manager.lookup_service_brick()形式可以得到运行的实例，可以达到_CONTEXTS的效果，适用与仅需使用某模块某小部分功能集合，模块之间没有明显的服务关系的场景；Event是最普通的模块见通信，可以实现订阅发布模式的多模块协同工作场景，实现模块之间解偶；采用公共文件作为信息的中转站是最后的选择，效率比较低，适用于全局信息的传递。以上的几种方式是笔者在实验过程中总结的通信方式，若有错误指出，敬请指出，万分感谢。</p></div>
-        <hr />
-    </div>
-		
+<p>在模块启动时，首先会将_CONTEXTS中的模块先启动，在模块的初始化函数中可以通过self.network_aware = kwargs["Network_Aware"]的形式获得该服务模块的实例，从而获取到该模块的数据 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -214,35 +307,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <span class="k">if</span> <span class="s">&#39;subject&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
         <span class="n">subject</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s">&#39;subject&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">else ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/05/10/getting-started-with-restapi-of-ryu.html"><h2>Getting started with RESTAPI of RYU</h2></a>
-        <div class= "well small"> 2015-05-10
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>在使用RYU的过程中，有时需要使用web拓扑，有时也需要通过API去下发流表等操作。这些操作在RYU中都会使用到RESTAPI。在学习RYU的过程中多次涉及到REST相关的内容，总是不知道如何实现和使用。最近在做实验需要这方面的知识，才有机会去学习REST并总结成博文。希望能给其他学习者提供帮助。本篇博文将简要介绍两部分内容：</p>
-<ul>
-<li>What is REST?</li>
-<li>How to use REST API in RYU?</li>
-</ul>
-<h2>What is REST</h2>
-<p><a href="http://zh.wikipedia.org/zh/REST">REST</a>:表征性状态传输（英文：Representational State Transfer，简称REST）是Roy Fielding博士在2000年他的博士论文中提出来的一种软件架构风格。更多REST的相关介绍可以查看<a href="http://www.restapitutorial.com/lessons/whatisrest.html">视频介绍</a>.</p>
-<p>REST架构风格中，资源是通过URI来描述的。对资源的操作采用了HTTP的GET，POST，PUT和DELETE方法相对应。资源的表现形式可以是json或xml。REST的架构是Client-Server架构，同时链接是无状态的。所以要求在传输的过程中需要包含状态信息。此外，可以使用cache机制增进性能。在上述视频中提到REST的6中限制为：</p>
-<ul>
-<li>Uniform Interface</li>
-<li>Stateless</li>
-<li>Cacheable ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2015/05/10/getting-started-with-restapi-of-ryu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html"><h1>SDN东西向现状简介</h1></a>
-2015-10-29
+            <a href="../pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html"><h1>基于Ryu打造自定义控制器</h1></a>
+2015-11-20
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,39 +72,150 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h3>What is SDN West-East Interface</h3>
+        <div><p>控制器是SDN网络中最重要的组成部分。在开发SDN应用时，需要基于某一个控制器开发，而大部分开源控制器都是一个框架或者平台，更多个性化的设置和应用需要开发者自己完成。对于开发者而言，一个自定义的控制器可以让控制器更加适配开发场景，发挥控制器最大的作用，提高开发效率。本篇文章将以Ryu为例，介绍如何修改Ryu源码，打造属于自己风格的自定义控制器。其内容包括自定义参数，事件，启动顺序，报文，协议和底层服务。</p>
+<h3>自定义参数</h3>
+<p>很多应用都会涉及相关参数的输入才能运行， 如OpenFlow协议的启动需要配置监听端口。在编写新应用时，需要获取相关参数的值来运行应用，所以需要开发应用时注册参数。目前已有的参数可以通过ryu-manager -h查看。而不同的应用注册的参数很可能名字一样，这就有可能发生冲突。为解决这个问题，Ryu采用了OpenStack的Oslo库，支持全局的命令注册和解析。Oslo支持全局的命令注册和解析，成功解除了命令冲突的难题，也大大降低了参数注册和解析的难度。注册新参数的方法很简单，只需要新建一个文件，然后按照如下案例完成注册，最后再在cmd/manager.py中import即可。</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">cfg</span>
+
+<span class="n">CONF</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span>
+<span class="n">CONF</span><span class="o">.</span><span class="n">register_cli_opts</span><span class="p">([</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">StrOpt</span><span class="p">(</span>
+        <span class="s">&#39;milestone-argument&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;my test argument&#39;</span><span class="p">),</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">IntOpt</span><span class="p">(</span><span class="s">&#39;milestone-server-port&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">6666</span><span class="p">,</span>
+               <span class="n">help</span><span class="o">=</span><span class="s">&#39;milestone server port&#39;</span><span class="p">)])</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">flags</span>
+<span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">version</span>
+<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="kn">import</span> <span class="n">wsgi</span>
+<span class="kn">from</span> <span class="nn">ryu.base.app_manager</span> <span class="kn">import</span> <span class="n">AppManager</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">controller</span>
+<span class="kn">from</span> <span class="nn">ryu.milestone</span> <span class="kn">import</span> <span class="n">milestone</span>
+<span class="kn">from</span> <span class="nn">ryu.topology</span> <span class="kn">import</span> <span class="n">switches</span>
+</pre></div>
+
+
+<p>通过python setup.py install重新安装Ryu之后即可通过ryu-manager -h来查看到新注册的命令。</p>
+<h3>自定义事件</h3>
+<p>Ryu的应用之间通信通过事件机制来完成。比如底层的协议解析模块解析报文之后，生成对应的报文事件，然后分发到各个监听该事件的监听函数。不过，目前为止事件类型还不够丰富，很多需要的信息还无法通过事件传递。比如网络流量监控服务监控到流量发生变化的事件之后，需要生成对应的事件。又比如OFPPacket_in事件包含了所有报文类型的数据，还可以根据触发Packet_in的数据的协议类型来定义细粒度的事件去分流，从而使得处理ARP报文的函数只接收ARP报文的Packet_in, 而不是全部接收到然后再去判断是否是不是ARP报文。以网络流量变化事件EventOXPTrafficStateChange为例，定义事件，生成事件和处理事件的流程如下：</p>
+<p>(1) 在controller/ofp_event.py中添加相关类描述：</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">EventOXPTrafficStateChange</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">traffic</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EventOXPTrafficStateChange</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">traffic</span> <span class="o">=</span> <span class="n">traffic</span>
+</pre></div>
+
+
+<p>(2) 在相关应用中实例化事件，并通过OFPHandler模块的send_event_to_observers函数分发到指定函数。</p>
+<div class="highlight"><pre>    <span class="n">event</span> <span class="o">=</span> <span class="n">oxp_event</span><span class="o">.</span><span class="n">EventOXPTrafficStateChange</span><span class="p">(</span><span class="n">traffic</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">free_band_width</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">oxp_brick</span> <span class="o">=</span> <span class="n">app_manager</span><span class="o">.</span><span class="n">lookup_service_brick</span><span class="p">(</span><span class="s">&#39;oxp_event&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">oxp_brick</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+</pre></div>
+
+
+<p>(3) 注册handler处理事件， 使用@set_ev_cls来注册handler监听该事件。</p>
+<div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">oxp_event</span><span class="o">.</span><span class="n">EventOXPTrafficStateChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">reflesh_bw_best_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">free_band_width</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">traffic</span>
+    <span class="n">do_some_thing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">free_band_width</span><span class="p">)</span>
+</pre></div>
+
+
+<p>像Packet_in分流的定义可以参考以上的做法，将事件作为新事件的属性。也可以参考ofp_event模块中的修改类名的方式将类名修改，从而生成新的事件。</p>
+<h3>自定义启动顺序</h3>
+<p>Ryu关于Application的启动源码在cmd/manager.py文件中。main函数中完成了app_lists的赋值，即启动应用的顺序。若在Ryu开发了一个很重要的底层应用，需要在启动那个时启动，则可以将其加入app_lists中. 比如当milestone参数为1时，启动多个应用，否则仅启动基础应用的示例如下：</p>
+<div class="highlight"><pre><span class="k">if</span> <span class="ow">not</span> <span class="n">app_lists</span><span class="p">:</span>
+    <span class="n">app_lists</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="n">CONF</span><span class="o">.</span><span class="n">milestone</span> <span class="o">==</span> <span class="s">&#39;1&#39;</span><span class="p">:</span>
+    <span class="n">my_app_list</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;muzixing&quot;</span><span class="p">,</span> <span class="s">&quot;milestone&quot;</span><span class="p">]</span>
+    <span class="n">app_lists</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">my_app_list</span><span class="p">)</span>
+</pre></div>
+
+
+<p>这个自定义启动顺序一般情况下不需要修改，但是当开发的应用是非常重要的底层服务时，可能需要初始化就启动，所以也是非常关键的自定义内容之一。</p>
+<h3>自定义报文</h3>
+<p>在某些特定的场景中，需要对OpenFlow协议等协议进行报文拓展，从而完成新报文，新字段的测试工作。在Ryu中自定义OpenFlow报文的操作步骤如下：</p>
+<p>(1) 在对应版本的ofproto_v1_x.py中定义所有需要使用到的字段值，如最重要的报文类型，以定义一个名为milestone的报文为例，报文类型为25, 字段只有一个字符串类型的data, 可以用来放任何信息，长度为64bits。所以在文件中定义/声明 报文名字和类型的对应，报文的格式和长度，以便序列化和解析。Ryu使用struct对数据进行序列化和解析。</p>
+<div class="highlight"><pre><span class="n">OFPT_MILESTONE</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="n">OFP_MILESTONE_PACK_STR</span> <span class="o">=</span> <span class="s">&#39;!8s&#39;</span>  <span class="c">#定义报文格式</span>
+<span class="n">OFP_MILESTONE_SIZE</span> <span class="o">=</span> <span class="mi">16</span>    <span class="c"># 定义报文长度</span>
+<span class="k">assert</span> <span class="p">(</span><span class="n">calcsize</span><span class="p">(</span><span class="n">OFP_MILESTONE_PACK_STR</span><span class="p">)</span> <span class="o">+</span> <span class="n">OFP_HEADER_SIZE</span> <span class="o">==</span><span class="n">OFP_MILESTONE_SIZE</span><span class="err">）</span>  <span class="c"># 检查长度是否正确</span>
+</pre></div>
+
+
+<p>(2) 在对应版本的ofproto_v1_x_parser.py中添加对应报文类的定义，包括其解析方法和序列化方法。其中解析方法是一个类方法，在MsgBase中定义，派生类调用时需要使用类型来区分。序列化方法分为self._serialize_pre(), self._serialize_body()和self._serialize_header()三部分。派生类仅需完成self._serialize_body()的内容即可。值得注意的是，如果需要对报文进行除报头以外的解析，则必须在完成parser函数之后使用@_register_parser装饰符将对应函数和类名的映射关系加入到关系字典中，以便使用时查找，否则会报错。</p>
+<div class="highlight"><pre><span class="nd">@_register_parser</span>
+<span class="nd">@_set_msg_type</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPT_MILESTONE</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">OFPMILESTONE</span><span class="p">(</span><span class="n">MsgBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MILESTONE message</span>
+
+<span class="sd">    It is a test msg:www.muzixing.com</span>
+<span class="sd">    ========== =========================================================</span>
+<span class="sd">    Attribute  Description</span>
+<span class="sd">    ========== =========================================================</span>
+<span class="sd">    data       just some data.</span>
+<span class="sd">    ========== =========================================================</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">OFPMILESTONE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">parser</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">OFPMILESTONE</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span>
+                                          <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_HELLO_HEADER_SIZE</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_MILESTONE_PACK_STR</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">buf</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+
+        <span class="n">msg</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_body</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">msg_pack_into</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_MILESTONE_PACK_STR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buf</span><span class="p">,</span>
+                      <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_HEADER_SIZE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+
+<p>至此，自定义报文完成。关于struct模块的使用，以及OpenFlow协议代码的介绍可以参考另一篇文章<a href="http://www.muzixing.com/pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html">《Ryu:OpenFlow协议源码分析》</a>。重新安装Ryu即可将该报文写入到Ryu运行代码中，Ryu的事件机制会自动将这个报文生成对应的事件，进一步测试需要读者自行开发。</p>
+<h3>自定义协议</h3>
+<p>既然讲到自定义报文，那么继续提一下自定义协议。读者可以根据<a href="http://www.muzixing.com/pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html">《Ryu:OpenFlow协议源码分析》</a>提到的思路去模仿编写一个新的协议。底层的数据收发可以学习controller/controller.py, 协议定义可以学习ofproto目录下的一系列内容。各种需要自定义的细节，如自定义参数，自定义事件等都已经在上文提到。后续将会专门书写如何在Ryu中开发新协议，本文不再展开。</p>
+<h3>自定义服务</h3>
+<p>为了更好的开发应用，开发者应该开发一套底层的服务，为自己的进一步开发提供帮助。如ARP代理，DHCP服务，基础的网络资源感知服务等等。SDN集中式的优点很大在于拥有全局的视角，可以掌握全局的资源，从而进行全局最优的业务部署。所有业务的基础都基于对网络资源的感知，所以此处以网络资源感知为例。首先需要完成网络拓扑的最优路径的计算，此外处于某些场景的需求，需要收集网络流量状况的数据，从而完成基于流量的最优化决策。在此基础之上，完成基础的
+最短路径转发应用，实现最基础的网络应用，为其他更高层次的应用开发和算法验证提供基本的服务支撑。由于篇幅限制，本文不加展开，详情可查看<a href="http://www.muzixing.com/pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html">《SDN网络感知服务与最短路径应用》</a>。如果读者希望自己搭建一套底层服务，或者在笔者的基础之上加工，推荐使用networkx进行拓扑信息的存储。networkx提供了大量高效有用的函数，可以最大程度降低开发者在算法问题上的工作量。</p>
+<p>完成以上应用之后，可将其作为启动服务的一种，并通过参数来确定是否启动Ryu时启动这些业务。这些业务中涉及到的自定义事件，可用于与上层应用之间的通信，实现定制化的SDN控制器。</p>
+<h3>总结</h3>
+<p>本篇文章介绍了基于Ryu打造自定义控制器的内容，包括自定义参数，事件，启动顺序，报文，协议和服务。相信读者如果能根据应用场景进行深度自定义，可以很大程度上提升开发效率。关于自定义协议部分，后续会有更多文章介绍，敬请期待。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html"><h2>SDN东西向现状简介</h2></a>
+        <div class= "well small"> 2015-10-29
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>What is SDN West-East Interface</h3>
 <p>在SDN架构中，控制平面掌控全局网络的资源，控制数据平面的转发等功能，尤其重要，所以控制平面的性能对整体网络的性能有直接的影响。以前控制平面多以单例控制器为主，控制平面能力欠缺成为SDN网络规模受限的最大原因之一。 后来OpenDayLight，ONOS等控制器的出现，使用了集群技术，使得SDN控制平面性能得到了提升，是当下解决SDN控制平面性能不足的主要解决方案之一。</p>
 <p>然而，这样的解决方案只能用于同一控制器之间的性能扩展，无法完成异构控制器之间的协同工作。此外，某些场景对于安全，隐私方面的考虑，需要隐藏网络内部的细节，所以还需要有SDN域的概念。如何完成跨域之间的流量处理，实现多异构控制器之间的协同工作是未来研究的方向之一，笔者将其归类为SDN控制平面的东西向接口。SDN控制平面的南向接口面对数据平面，北向接口面向应用，容易理解，控制器之间的接口称之为东西向接口，用于完成控制器之间的通信。</p>
 <p><center><img alt="West-East" src="http://ww2.sinaimg.cn/mw690/7f593341jw1exixzvkpi6j20og0d2gml.jpg" /></center>
 <center>Figure1. West-East Interface of SDN</center></p>
 <h3>Why SDN need West-East Interface</h3>
-<p>SDN东西向接口是定义控制器之间通信的接口。由于单控制器能力有限，为满足大规模和可拓展性要求，东西向接口的研究成为下一个SDN研究领域。目前对于SDN东西向接口的研究还处于初级阶段，还缺少行业标准。标准的SDN东西向接口应与SDN控制器解耦，能实现不同厂家控制器之间通信。</p>
-<p>在很多场景中都需要控制器之间的协同工作，如在运营商网络场景中，接入网，回传网，核心网三者功能差异很大，需要制定不同的控制器去运行不同的应用，而这三者又需要协同合作，实现全网的最优化。此时就需要东西向接口来完成控制器之间的通信。跨数据中心的网络中，多数据中心的控制器也有相互通信的需求。</p>
-<p><center><img alt="West-East interface for mobiel network" src="http://ww4.sinaimg.cn/mw690/7f593341jw1exixzu4513j20wq0cm76v.jpg" /></center>
-<center>Figure2. Federation of SDN Controllers</center></p>
-<p>目前南向的标准还为统一，OpenFlow成为SDN南向接口的通用标准之一，其他还有许多可以实现SDN架构的南向接口协议。总的来说，目前南向接口是百花齐放的状态。北向接口方面，目前ONF已经有相关部门在进行这项工作。统一的北向接口标准可以降低在不同控制器上开发应用的成本。关于东西向接口的标准，目前在业界中还未的到重视，仅ONF一个项目组在关注这个方向。</p>
-<h3>Approach for West-East Interface</h3>
-<p>SDN控制平面性能拓展方案中，目前的设计方案有两种，一种是垂直架构的，另一种是水平架构的[1]。垂直架构的实现方案是在多个控制器之上再叠加一层高级控制层，用于协调多个异构控制器之间的通信，从而完成跨控制器的通信请求。水平架构中，所有的节点都在同一层级，身份也相同，没有级别之分。目前比较常见的架构为水平架构，比如华为的SDNi[2]，Pingping Lin博士提出的West-East Bridge for SDN inter-domain network peering[3]。垂直架构目前在中国移动提出的SPTN架构中有涉及，笔者正在研究的内容也正是这部分内容。</p>
-<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1exixzuopf7j20jj0a4gm1.jpg" /></center>
-<center>Figure3. Vertical Approach for Inter-SDN Controller Communication </center></p>
-<p><center><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1exixzud6drj20ky07b74i.jpg" /></center>
-<center>Figure4. Horizontal Approach for Inter-SDN Controller Communication </center></p>
-<h3>Previous Research</h3>
-<p>东西向接口其实并不是一个新鲜事，在很多架构中都会被提到。2013年， 清华的博士pingping lin的论文“East-West Bridge for SDN Network Peering”中提出了West-East Bridge的概念。论文中介绍了他们设计的东西向接口的功能，并完成了部署和测试。</p>
-<p>SDNi是华为提出的一种SDN东西向的实现，目前已经在OpenDayLight中部署实现。其架构为水平架构，可实现多OpenDayLight实例之间的通信，完成跨域通信。目前支持传输Topology Data, QoS Data和其他一些拓展内容。</p>
-<p>中国移动发布的关于SPTN的白皮书中也有设计多控制器协同工作的内容，然而目前仅仅处于白皮书阶段，并没有实际部署和测试。SPTN白皮书中提到了层级式的SDN控制平面架构，分别为Super层和Domain层。Super层的Super Controller负责跨域通信的业务，Domain层的Domain Controller负责域内的通信。分级的架构能使得SDN控制平面能力得到大大的提升。</p>
-<p>TATA在很久以前发布了关于跨域通信的报告。报告中介绍了实现SDN跨域通信的两种架构：垂直架构和水平架构。此外还提出了基于BGP或者SIP协议去完成SDN东西向接口的想法，不过报告内容仅限于次，并没有提及任何实际部署的内容。目前为止，依然没有搜集到相关的实践部署。</p>
-<p>其他相关论文也有若干，但影响力不够，暂不介绍。</p>
-<p>目前笔者正在研究SDN东西向的内容，期待后续能有所产出。</p>
-<h3>Conclusion</h3>
-<p>随着SDN的发展，部署SDN的网络规模将越来越大，对SDN控制平面的性能要求也越来越高。虽然当下业界对SDN控制层面东西向并不够重视，但相信随着技术的发展，东西向方向的解决方案，技术标准将逐渐完善。期待未来自己的成果能顺利发表，产生一定的影响。</p>
-<h3>References</h3>
-<p>[1]：http://www.tcs.com/SiteCollectionDocuments/White%20Papers/Inter-SDN-Controller-Communication-Border-Gateway-Protocol-0314-1.pdf </p>
-<p>[2]：https://tools.ietf.org/html/draft-yin-sdn-sdni-00</p>
-<p>[3]：Lin P, Bi J, Chen Z, et al. WE-bridge: West-East Bridge for SDN inter-domain network peering[C]//Computer Communications Workshops (INFOCOM WKSHPS), 2014 IEEE Conference on. IEEE, 2014: 111-112.</p></div>
-        <hr />
-    </div>
-		
+<p>SDN东西向接口是定义控制器之间通信的接口。由于单控制器能力有限，为满足大规模和可拓展性要求，东西向接口的研究成为下一个SDN研究领域。目前对于SDN东西向接口的研究还处于初级阶段，还缺少行业标准。标准的SDN东西向接口应与SDN控制器解耦 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -181,32 +292,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <center>图3.11 SDN网络架构1.0版本</center></p>
 <p><center><img alt="sdnarchiteture1.1" src="http://ww1.sinaimg.cn/mw690/7f593341jw1evl062y0pwj20oa0jdwhv.jpg" /></center>
 <center>图3 ...</center></p> <a class="btn btn-info xsmall" href="../pages/2015/08/30/sdnkong-zhi-ping-mian-fa-zhan-li-shi-ji-qu-shi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html"><h2>Mininet搭建多控制器拓扑</h2></a>
-        <div class= "well small"> 2015-08-05
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Mininet是一款非常轻巧但是功能很强大的网络模拟器。网络研究者可以使用Mininet创建支持OpenFlow的SDN拓扑。随着SDN研究的发展，多控制器协作成为未来的研究方向，所以使用Mininet构建多控制器网络拓扑也成为一种需求。本篇将讲述如何使用Mininet搭建多控制器网络拓扑。</p>
-<h3>Multi-Controller</h3>
-<p>多控制器有两种理解，一种理解是面向交换机的多控制器。即一个交换机会连接多个控制器，控制器之间的关系可以是equal，也可以是master/slave模式。关于多控制器的介绍，有兴趣的读者可以参考OpenFlow1.3协议的multi-controller部分内容。另一种理解是面向控制器的多控制器。即，多个控制器分别管理各自的数据平面网络，且数据平面之间有链路互联。这种模式下，控制器之间没有关系，控制器所控制的数据平面也没有关系。关于多控制器方面的研究，笔者会在后续的博客中大篇幅介绍。</p>
-<p>本篇将针对这两种理解，介绍如何搭建多控制器的Mininet拓扑。</p>
-<h3>面向交换机的多控制器网络拓扑</h3>
-<p>对于一个交换机而言，可以连接多个控制器，其实现方式非常简单， 在Mininet的源码中已经实现。从Mininet的<a href="https://github.com/mininet/mininet/blob/master/mininet/node.py">node.py</a>文件中，我们可以找到有用的代码：</p>
-<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">controllers</span> <span class="p">):</span>
-            <span class="sd">&quot;&quot;&quot;Start OpenFlow reference user datapath.</span>
-<span class="sd">               Log to /tmp/sN- ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
