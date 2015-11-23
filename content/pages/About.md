@@ -15,7 +15,7 @@ Email:licheng185408@gmail.com
 
 ## Education background
 
-The second year of postgraduate student of Beijing University of Posts and Telecommunications(2014 - now)
+The second year of postgraduate student of Beijing University of Posts and Telecommunications(2014 - present)
 
 Bachelor of Communication Engineering   Beijing University of Posts and Telecommunications (2010 - 2014)
 
