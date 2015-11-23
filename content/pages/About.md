@@ -69,7 +69,7 @@ Bachelor of Communication Engineering   Beijing University of Posts and Telecomm
 
 ## Skills
 
-*   Programming language: Python(90%), C／C++(5%), Java(5%)
+*   Programming language: Python(90%), Java(10%)
 *   Familiar with TCP/IP, OpenFlow protocol, SDN
 *   System: Linux (Familiar with Ubuntu )
 *   Languages:
@@ -174,7 +174,7 @@ Email:licheng185408@gmail.com
 
 ## 个人技能
 
-*   编程语言：Python(90%),Java(5%)，C/C++(5%)
+*   编程语言：Python(90%),Java(10%)
 *   熟悉TCP/IP, OpenFlow协议，网络与交换理论知识扎实
 *   熟悉操作系统运行过程，熟悉Linux系统
 *   CET-6，英文文档阅读能力和演讲能力良好,口语流畅
