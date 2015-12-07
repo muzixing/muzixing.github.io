@@ -62,6 +62,28 @@
  
 
     <div class='article'>
+        <a href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html"><h2>初学者的SDN学习之路</h2></a>
+        <div class= "well small"> 2015-06-22
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>Software Defined Network顾名思义软件定义网络，可以简单地分为网络和软件两个部分：软件和网络。此外，通过使用OpenFlow协议来实现SDN是一种较为普遍的方式，
+所以本篇将从软件和网络以及OpenFlow三个方面进行介绍。在研究SDN的研究者之中，有相当大比例的网络工程师，他们了解网络，精通网络，然而却并不了解软件开发。除此之外，还有很大比例的研究者是软件工程师，他们软件开发能力出色，然而并不了解网络运作的机制，在接触SDN之前，他们的范围仅仅只是应用层，底层的东西交给全交给主机的协议栈了。还有一部分同学是像我这样，通信工程出身，学的是物理层的编码解码，误码率，电磁波。不像计算机专业那些学生一样，学习各种语言，操弄各种编译器，混迹于github这种全球最大的男性交友网站。剩下最后一种就是又懂网络，又懂编程。这种人，我一般称之为老师，是用来请教问题的，比如地球-某某老师。一般的,他们不屑于看到这种文章，太low。</p>
+<p>本篇主要的目标用户是对网络和软件开发都不太了解，或者网络和编程开发只擅长一种的研究者。由于我也是一个初学者，所以仅当做经验分享吧。如有表达不对的地方，敬请指出，万分感谢。</p>
+<h2>网络</h2>
+<p>软件定义网络，如果不了解网络，那如何去定义一个你不了解的东西？如果不知道网络中存在的问题 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html"><h2>Fattree topo and iperfmulti function in mininet</h2></a>
         <div class= "well small"> 2015-02-22
 
@@ -156,60 +178,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="s">                          host4</span>
 
 <span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"><h2>基于SDN的RYU应用——ARP_PROXY</h2></a>
-        <div class= "well small"> 2014-10-19
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>在传统网络中，存在着一定的广播流量，占据了一部分的网络带宽。同时，在有环的拓扑中，如果不运行某些协议，广播数据还会引起网络风暴，使网络瘫痪。传统的解决方案是运行STP（生成树协议），来解决环路带来的风暴隐患。但是这样的难题在SDN之后，解决起来似乎变得要简单一些。本文将介绍如何在控制器RYU上开发ARP代理模块，用于代理回复ARP请求，以及解决环状拓扑风暴的问题。</p>
-<h3>算法逻辑</h3>
-<p>具体的算法流程图如下：</p>
-<div class="highlight"><pre>packet_in
-    <span class="o">|</span>
-    <span class="o">|</span>
-  ARP learning
-  MAC_to_Port learning
-    <span class="o">|</span>
-    <span class="o">|</span>
-    <span class="o">|</span>               No  
-Multicast? <span class="o">--------------------------------------------&gt;|</span>
-    <span class="o">|</span>                                                   <span class="o">|</span>
-    <span class="o">|</span> Yes                                               <span class="o">|</span>
-    <span class="o">|</span>                                                   <span class="o">|</span>
-    <span class="o">|</span>                                                   <span class="o">|</span>
-    <span class="o">|</span>      No                                           <span class="o">|</span>
-   loop? <span class="o">-----&gt;</span><span class="p">(</span>dpid<span class="p">,</span>eth_src<span class="p">,</span>dst_ip<span class="p">)</span>learning            <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>               No              <span class="o">|</span>         No
-    <span class="o">|</span>Yes        dst_ip in arp_table? <span class="o">-------&gt;</span>dst in mac_to_port? <span class="o">----&gt;</span>Flood
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>Yes                            <span class="o">|</span>Yes            <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-   drop             ARP_REPLY                       flow_mod            <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-    <span class="o">|</span>                   <span class="o">|</span>                               <span class="o">|</span>               <span class="o">|</span>
-    <span class="o">|&lt;------------------|&lt;------------------------------|&lt;--------------|</span>               
-    <span class="o">|</span>
-    <span class="o">|</span>
-    end
-</pre></div>
-
-
-<h3>解决环路风暴 ...</h3> <a class="btn btn-info xsmall" href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

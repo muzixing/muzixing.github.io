@@ -245,127 +245,13 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         <hr />
     </div>
 		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html"><h2>基于Ryu打造自定义控制器</h2></a>
-        <div class= "well small"> 2015-11-20
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>控制器是SDN网络中最重要的组成部分。在开发SDN应用时，需要基于某一个控制器开发，而大部分开源控制器都是一个框架或者平台，更多个性化的设置和应用需要开发者自己完成。对于开发者而言，一个自定义的控制器可以让控制器更加适配开发场景，发挥控制器最大的作用，提高开发效率。本篇文章将以Ryu为例，介绍如何修改Ryu源码，打造属于自己风格的自定义控制器。其内容包括自定义参数，事件，启动顺序，报文，协议和底层服务。</p>
-<h3>自定义参数</h3>
-<p>很多应用都会涉及相关参数的输入才能运行， 如OpenFlow协议的启动需要配置监听端口。在编写新应用时，需要获取相关参数的值来运行应用，所以需要开发应用时注册参数。目前已有的参数可以通过ryu-manager -h查看。而不同的应用注册的参数很可能名字一样，这就有可能发生冲突。为解决这个问题，Ryu采用了OpenStack的Oslo库，支持全局的命令注册和解析。Oslo支持全局的命令注册和解析，成功解除了命令冲突的难题，也大大降低了参数注册和解析的难度。注册新参数的方法很简单，只需要新建一个文件，然后按照如下案例完成注册，最后再在cmd/manager.py中import即可。</p>
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">cfg</span>
-
-<span class="n">CONF</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span>
-<span class="n">CONF</span><span class="o">.</span><span class="n">register_cli_opts</span><span class="p">([</span>
-    <span class="n">cfg</span><span class="o">.</span><span class="n">StrOpt ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html"><h2>SDN东西向现状简介</h2></a>
-        <div class= "well small"> 2015-10-29
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>What is SDN West-East Interface</h3>
-<p>在SDN架构中，控制平面掌控全局网络的资源，控制数据平面的转发等功能，尤其重要，所以控制平面的性能对整体网络的性能有直接的影响。以前控制平面多以单例控制器为主，控制平面能力欠缺成为SDN网络规模受限的最大原因之一。 后来OpenDayLight，ONOS等控制器的出现，使用了集群技术，使得SDN控制平面性能得到了提升，是当下解决SDN控制平面性能不足的主要解决方案之一。</p>
-<p>然而，这样的解决方案只能用于同一控制器之间的性能扩展，无法完成异构控制器之间的协同工作。此外，某些场景对于安全，隐私方面的考虑，需要隐藏网络内部的细节，所以还需要有SDN域的概念。如何完成跨域之间的流量处理，实现多异构控制器之间的协同工作是未来研究的方向之一，笔者将其归类为SDN控制平面的东西向接口。SDN控制平面的南向接口面对数据平面，北向接口面向应用，容易理解，控制器之间的接口称之为东西向接口，用于完成控制器之间的通信。</p>
-<p><center><img alt="West-East" src="http://ww2.sinaimg.cn/mw690/7f593341jw1exixzvkpi6j20og0d2gml.jpg" /></center>
-<center>Figure1. West-East Interface of SDN</center></p>
-<h3>Why SDN need West-East Interface</h3>
-<p>SDN东西向接口是定义控制器之间通信的接口。由于单控制器能力有限，为满足大规模和可拓展性要求，东西向接口的研究成为下一个SDN研究领域。目前对于SDN东西向接口的研究还处于初级阶段，还缺少行业标准。标准的SDN东西向接口应与SDN控制器解耦 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/09/28/sdnying-yong-lu-you-suan-fa-shi-xian-gong-ju-zhi-networkx.html"><h2>SDN应用路由算法实现工具之Networkx</h2></a>
-        <div class= "well small"> 2015-09-28
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>SDN(Software Defined Networking)是一种新型的网络架构，通过集中式的控制平面管理数据层面的转发等操作。网络的联通性是最基础的需求，为保证网络联通性，控制器需要应用相应的图论算法，计算出转发路径，完成数据转发。在开发SDN应用时，为完成基础的路径计算，时常需要开发者独立编写网络算法，不仅麻烦，性能和代码可复用性还受开发者个人编程水平影响。所以本篇文章将介绍网络算法工具networkx，用于完成路径算法开发工作。</p>
-<p><a href="https://networkx.github.io/">networkx</a>是用于创建、操作和研究复杂网络动态、结构和功能的Python语言包。networkx支持创建简单无向图，有向图和多重图（multigraph）；内置了许多标准的图论算法，节点可为任意数据，如图像文件；支持任意的边值维度，功能丰富，简单易用。</p>
-<p>由于Networkx代码经过多次测试，性能方面也做了很多的工作，使用Networkx内置的多种图论算法能给开发SDN应用带来很多的便利，可以节省开发时间，降低代码故障率。networkx的安装和使用，读者可从<a href="http://networkx.github.io/documentation/networkx-1.9.1/index.html#">官网文档</a>中快速得到，不加赘述。接下来的内容将简要介绍Networkx的经典图论算法内容， 包括<a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/algorithms.shortest_paths.html">最短路径</a>, <a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/generated/networkx.algorithms.simple_paths.all_simple_paths.html">KSP(K Shortest Paths)</a>算法和<a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/algorithms.traversal.html">Traversal ...</a></p> <a class="btn btn-info xsmall" href="../pages/2015/09/28/sdnying-yong-lu-you-suan-fa-shi-xian-gong-ju-zhi-networkx.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html"><h2>Ryu:模块间通信机制分析</h2></a>
-        <div class= "well small"> 2015-09-08
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Ryu是一款非常轻便的SDN控制器，在科研方面得到了广泛的应用。相比其他控制器，受益于Python语言，在Ryu上开发SDN应用的效率要远高于其他控制器。为了解决复杂的业务，有时需要在Ryu上开发多模块来协同工作，从而共同完成复杂的业务。本文将介绍Ryu模块之间通信的包括Context等方式的多种通信方式。</p>
-<h3>_CONTEXTS</h3>
-<p>在RyuApp类中有一个属性是_CONTEXTS。_CONTEXTS中的内容将作为当前模块的服务在模块初始化时得到加载。示例如下：</p>
-<div class="highlight"><pre>    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s">&quot;Network_Aware&quot;</span><span class="p">:</span> <span class="n">network_aware</span><span class="o">.</span><span class="n">Network_Aware</span><span class="p">,</span>
-        <span class="s">&quot;Network_Monitor&quot;</span><span class="p">:</span> <span class="n">network_monitor</span><span class="o">.</span><span class="n">Network_Monitor</span><span class="p">,</span>
-    <span class="p">}</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Shortest_forwarding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;shortest_forwarding&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">network_aware</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;Network_Aware&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">network_monitor</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;Network_Monitor&quot;</span><span class="p">]</span>
-</pre></div>
-
-
-<p>在模块启动时，首先会将_CONTEXTS中的模块先启动，在模块的初始化函数中可以通过self.network_aware = kwargs["Network_Aware"]的形式获得该服务模块的实例，从而获取到该模块的数据 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
-    <li class="active"><a href="../category/tech.html">1</a></li>
-    <li class=""><a href="../category/tech2.html">2</a></li>
-    <li class=""><a href="../category/tech3.html">3</a></li>
-    <li class=""><a href="../category/tech4.html">4</a></li>
-    <li class=""><a href="../category/tech5.html">5</a></li>
-    <li class=""><a href="../category/tech6.html">6</a></li>
-    <li class=""><a href="../category/tech7.html">7</a></li>
-    <li class=""><a href="../category/tech8.html">8</a></li>
-    <li class=""><a href="../category/tech9.html">9</a></li>
-    <li class=""><a href="../category/tech10.html">10</a></li>
-    <li class=""><a href="../category/tech11.html">11</a></li>
-    <li class=""><a href="../category/tech12.html">12</a></li>
+    <li class="active"><a href="../tag/forwarding.html">1</a></li>
 
-    <li class="next"><a href="../category/tech2.html">Next &rarr;</a></li>
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
 
 </ul>
 </div>

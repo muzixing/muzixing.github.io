@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html"><h1>SDN东西向现状简介</h1></a>
-2015-10-29
+            <a href="../pages/2015/11/30/ji-yu-liu-liang-de-sdnzui-duan-lu-jing-zhuan-fa-ying-yong.html"><h1>基于流量的SDN最短路径转发应用</h1></a>
+2015-11-30
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,39 +72,203 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><h3>What is SDN West-East Interface</h3>
+        <div><p>网络的转发是通信的基本功能，其完成信息在网络中传递，实现有序的数据交换。通过SDN控制器的集中控制，可以轻松实现基础的转发算法有二层MAC学习转发和基于跳数的最短路径算法。然而，网络跳数并不是决定路径优劣的唯一状态。除了跳数以外，还有带宽，时延等标准。本文将介绍如何通过SDN控制器Ryu开发基于流量的最短路径转发应用。</p>
+<h3>Forwarding Algorithm</h3>
+<p>目前基于流量的路由算法基本的解决思路有两种：</p>
+<p>(1) 首先基于跳数计算最优K条路径，然后在这些路径中选择可用带宽最大的路径。</p>
+<p>(2) 首先基于跳数计算最优路径，归一化路径的评价分数，然后基于流量计算最优路径，归一化基于带宽的评价；设置跳数和带宽的权重，对基于跳数和带宽的评分求其加权总和；按照加权求和值降序排序，取前K条作为最优评价路径。</p>
+<p>本文以第一种算法为例，介绍基于网络流量的最短路径转发应用开发。第二种算法基于前者的基础修改即可完成。</p>
+<h3>Network Awareness</h3>
+<p>首先我们需要编写一个网络感知应用，用于发现网络的资源，包括节点，链路，终端主机等。并根据拓扑信息计算基于条数的最短路径。开发此应用基本步骤如下：</p>
+<ul>
+<li>创建继承app_manager.RyuApp的应用network_awareness</li>
+<li>从topology.switches获取拓扑信息，包括交换机节点信息，链路信息</li>
+<li>使用Networkx 创建拓扑图的对象，用于存储网络拓扑</li>
+<li>使用Networkx的函数all_simple_paths(G, source, target, cutoff=None)计算K条最优路径并存储，该函数实现了<a href="https://en.wikipedia.org/wiki/Yen%27s_algorithm">Yen's algorithm</a></li>
+</ul>
+<p>示例代码可由<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">muzixing/ryu/network_awareness</a>获取。</p>
+<p><strong>Note that:</strong> 以上的示例代码中，拓扑信息的存储并没有使用networkx，所以读者需要独立完成基于networkx的存储和算法调用部分。</p>
+<h3>Network Monitor</h3>
+<p>第二个应用是网络流量监控应用。网络流量监控应用完成网络流量的实时监控，计算出实时的流量统计数据。基于本应用的数据，可以完成转发算法的第二部分内容。示例代码可由<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_monitor.py">muzixing/ryu/network_monitor</a>获取。</p>
+<p>为了让其他模块获取到最新的流量信息，可在Ryu中自定义事件，具体教程请查看<a href="http://www.muzixing.com/pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html">《基于Ryu打造自定义控制器》</a>的自定义事件部分内容。不定义事件的情况下，需要将此模块作为新模块的CONTEXT。详情可阅读<a href="http://www.muzixing.com/pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html">《Ryu:模块间通信机制分析》</a>的相关内容。</p>
+<h3>Forwarding Application</h3>
+<p>基于以上两个模块的数据，转发应用模块需要完成如下几个步骤，从而完成基于流量的最优路径转发。</p>
+<ul>
+<li>获取network awareness和network monitor的数据</li>
+<li>将network monitor的数据整合到networkx存储的网络拓扑信息中</li>
+<li>比较最短K条路径中各路径的剩余带宽，选择最优路径，剩余路径为备份路径和逃生路径</li>
+<li>基于路径信息，安装流表项</li>
+</ul>
+<p>整合流量信息代码示例代码如下, 其中，link2port为链路信息，bw_dict为network monitor模块的流量数据。</p>
+<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">create_bw_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">link2port</span><span class="p">,</span> <span class="n">bw_dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">link2port</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">src_dpid</span><span class="p">,</span> <span class="n">dst_dpid</span><span class="p">)</span> <span class="o">=</span> <span class="n">link</span>
+            <span class="p">(</span><span class="n">src_port</span><span class="p">,</span> <span class="n">dst_port</span><span class="p">)</span> <span class="o">=</span> <span class="n">link2port</span><span class="p">[</span><span class="n">link</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">src_dpid</span> <span class="ow">in</span> <span class="n">bw_dict</span> <span class="ow">and</span> <span class="n">dst_dpid</span> <span class="ow">in</span> <span class="n">bw_dict</span><span class="p">:</span>
+                <span class="n">bw_src</span> <span class="o">=</span> <span class="n">bw_dict</span><span class="p">[</span><span class="n">src_dpid</span><span class="p">][</span><span class="n">src_port</span><span class="p">]</span>
+                <span class="n">bw_dst</span> <span class="o">=</span> <span class="n">bw_dict</span><span class="p">[</span><span class="n">dst_dpid</span><span class="p">][</span><span class="n">dst_port</span><span class="p">]</span>
+                <span class="n">graph</span><span class="p">[</span><span class="n">src_dpid</span><span class="p">][</span><span class="n">dst_dpid</span><span class="p">][</span><span class="s">&#39;bandwidth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">bw_src</span><span class="p">,</span> <span class="n">bw_dst</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">graph</span><span class="p">[</span><span class="n">src_dpid</span><span class="p">][</span><span class="n">dst_dpid</span><span class="p">][</span><span class="s">&#39;bandwidth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">graph</span>
+</pre></div>
+
+
+<p>获取最短K条路径函数示例代码如下所示。</p>
+<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">k_shortest_paths</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+        <span class="n">path_generator</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">shortest_simple_paths</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span>
+                                                  <span class="n">target</span><span class="o">=</span><span class="n">dst</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s">&#39;weight&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">path_generator</span>
+</pre></div>
+
+
+<p>基于流量的最优路径比较算法示例代码如下所示：</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">band_width_compare</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">best_paths</span><span class="p">):</span>
+    <span class="n">capabilities</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">MAX_CAPACITY</span> <span class="o">=</span> <span class="mi">100000</span>
+    <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">[</span><span class="n">src</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">dst</span><span class="p">:</span>
+                <span class="n">best_paths</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">src</span><span class="p">]</span>
+                <span class="n">capabilities</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="p">{</span><span class="n">src</span><span class="p">:</span> <span class="n">MAX_CAPACITY</span><span class="p">})</span>
+                <span class="n">capabilities</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">MAX_CAPACITY</span>
+                <span class="k">continue</span>
+            <span class="n">max_bw_of_paths</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">best_path</span> <span class="o">=</span> <span class="n">paths</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]:</span>
+                <span class="n">min_bw</span> <span class="o">=</span> <span class="n">MAX_CAPACITY</span>
+                <span class="n">min_bw</span> <span class="o">=</span> <span class="n">get_min_bw_of_links</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">min_bw</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">min_bw</span> <span class="o">&gt;</span> <span class="n">max_bw_of_paths</span><span class="p">:</span>
+                    <span class="n">max_bw_of_paths</span> <span class="o">=</span> <span class="n">min_bw</span>
+                    <span class="n">best_path</span> <span class="o">=</span> <span class="n">path</span>
+
+            <span class="n">best_paths</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span> <span class="o">=</span> <span class="n">best_path</span>
+            <span class="n">capabilities</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="p">{</span><span class="n">dst</span><span class="p">:</span> <span class="n">max_bw_of_paths</span><span class="p">})</span>
+            <span class="n">capabilities</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_bw_of_paths</span>
+
+    <span class="k">return</span> <span class="n">capabilities</span><span class="p">,</span> <span class="n">best_paths</span>
+
+
+<span class="k">def</span> <span class="nf">best_paths_by_bw</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">topo</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">_graph</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">best_paths</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c"># find ksp in graph.</span>
+    <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+        <span class="n">paths</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="p">{</span><span class="n">src</span><span class="p">:</span> <span class="p">[</span><span class="n">src</span><span class="p">]})</span>
+        <span class="n">best_paths</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="p">{</span><span class="n">src</span><span class="p">:</span> <span class="p">[</span><span class="n">src</span><span class="p">]})</span>
+        <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">dst</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">paths</span><span class="p">[</span><span class="n">src</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">best_paths</span><span class="p">[</span><span class="n">src</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">path_generator</span> <span class="o">=</span> <span class="n">k_shortest_paths</span><span class="p">(</span><span class="n">_graph</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+
+            <span class="n">k</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">path_generator</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">paths</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="n">k</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="c"># find best path by comparing bandwidth.</span>
+    <span class="n">capabilities</span><span class="p">,</span> <span class="n">best_paths</span> <span class="o">=</span> <span class="n">band_width_compare</span><span class="p">(</span><span class="n">_graph</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">best_paths</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">capabilities</span><span class="p">,</span> <span class="n">best_paths</span><span class="p">,</span> <span class="n">paths</span>
+</pre></div>
+
+
+<p>安装流表项函数示例代码如下：</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">install_flow</span><span class="p">(</span><span class="n">datapaths</span><span class="p">,</span> <span class="n">link2port</span><span class="p">,</span> <span class="n">access_table</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">flow_info</span><span class="p">,</span> <span class="n">buffer_id</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; path=[dpid1, dpid2, dpid3...]</span>
+<span class="sd">        flow_info=(eth_type, src_ip, dst_ip, in_port)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;PATH ERROR&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="n">in_port</span> <span class="o">=</span> <span class="n">flow_info</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">first_dp</span> <span class="o">=</span> <span class="n">datapaths</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">out_port</span> <span class="o">=</span> <span class="n">first_dp</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_LOCAL</span>
+    <span class="n">reverse_flow_info</span> <span class="o">=</span> <span class="p">(</span><span class="n">flow_info</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">flow_info</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">flow_info</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">get_link2port</span><span class="p">(</span><span class="n">link2port</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">port_next</span> <span class="o">=</span> <span class="n">get_link2port</span><span class="p">(</span><span class="n">link2port</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">port</span> <span class="ow">and</span> <span class="n">port_next</span><span class="p">:</span>
+                <span class="n">src_port</span><span class="p">,</span> <span class="n">dst_port</span> <span class="o">=</span> <span class="n">port</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">port_next</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">datapath</span> <span class="o">=</span> <span class="n">datapaths</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                <span class="n">send_flow_mod</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">flow_info</span><span class="p">,</span> <span class="n">src_port</span><span class="p">,</span> <span class="n">dst_port</span><span class="p">)</span>
+                <span class="n">send_flow_mod</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">reverse_flow_info</span><span class="p">,</span> <span class="n">dst_port</span><span class="p">,</span> <span class="n">src_port</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c"># the last flow entry: tor -&gt; host</span>
+        <span class="n">last_dp</span> <span class="o">=</span> <span class="n">datapaths</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">port_pair</span> <span class="o">=</span> <span class="n">get_link2port</span><span class="p">(</span><span class="n">link2port</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">port_pair</span><span class="p">:</span>
+            <span class="n">src_port</span> <span class="o">=</span> <span class="n">port_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">dst_port</span> <span class="o">=</span> <span class="n">get_port</span><span class="p">(</span><span class="n">flow_info</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">access_table</span><span class="p">)</span>
+
+        <span class="n">send_flow_mod</span><span class="p">(</span><span class="n">last_dp</span><span class="p">,</span> <span class="n">flow_info</span><span class="p">,</span> <span class="n">src_port</span><span class="p">,</span> <span class="n">dst_port</span><span class="p">)</span>
+        <span class="n">send_flow_mod</span><span class="p">(</span><span class="n">last_dp</span><span class="p">,</span> <span class="n">reverse_flow_info</span><span class="p">,</span> <span class="n">dst_port</span><span class="p">,</span> <span class="n">src_port</span><span class="p">)</span>
+
+        <span class="c"># the first flow entry</span>
+        <span class="n">port_pair</span> <span class="o">=</span> <span class="n">get_link2port</span><span class="p">(</span><span class="n">link2port</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">port_pair</span><span class="p">:</span>
+            <span class="n">out_port</span> <span class="o">=</span> <span class="n">port_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">send_flow_mod</span><span class="p">(</span><span class="n">first_dp</span><span class="p">,</span> <span class="n">flow_info</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">out_port</span><span class="p">)</span>
+        <span class="n">send_flow_mod</span><span class="p">(</span><span class="n">first_dp</span><span class="p">,</span> <span class="n">reverse_flow_info</span><span class="p">,</span> <span class="n">out_port</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+
+        <span class="n">send_packet_out</span><span class="p">(</span><span class="n">first_dp</span><span class="p">,</span> <span class="n">buffer_id</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">out_port</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="c"># ensure the first ping success.</span>
+        <span class="c"># send_packet_out(last_dp, buffer_id, src_port, dst_port, data)</span>
+    <span class="c"># src and dst on the same datapath</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out_port</span> <span class="o">=</span> <span class="n">get_port</span><span class="p">(</span><span class="n">flow_info</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">access_table</span><span class="p">)</span>
+        <span class="n">send_flow_mod</span><span class="p">(</span><span class="n">first_dp</span><span class="p">,</span> <span class="n">flow_info</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">out_port</span><span class="p">)</span>
+        <span class="n">send_flow_mod</span><span class="p">(</span><span class="n">first_dp</span><span class="p">,</span> <span class="n">reverse_flow_info</span><span class="p">,</span> <span class="n">out_port</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+        <span class="n">send_packet_out</span><span class="p">(</span><span class="n">first_dp</span><span class="p">,</span> <span class="n">buffer_id</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">out_port</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+
+<p>读者可以基于<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/shortest_route.py">muzixing/ryu/shortest_route</a>的代码进行修改。该代码是初始版本，质量欠佳，但是可以成功运行。</p>
+<p><strong>Note that:</strong> 以上的代码均为示例代码，不可直接运行，完整版代码后续将发布。</p>
+<h3>Implementation and Test</h3>
+<p>启动network_awareness, network_monitor,和写好的forwarding模块，再启动一个简单拓扑连接到控制器Ryu。拓扑中，h1, h2到h39有两条路径：[1,2,4]和[1,3,4]。每条链路的最大带宽为500Mbits/s。然后xterm到h1, h2 和还h39，并在h39之上启动iperf服务端程序。先启动h1上的iperf客户端程序，向h39打流，等一个Monitor模块的周期之后，启动h2的iperf客户端程序，向h39打流。此操作的原因在于需要等待控制器获取流量信息和计算出最优路径。测试截图如下图所示。</p>
+<p><img alt="shortest forwarding" src="http://ww3.sinaimg.cn/mw690/7f593341jw1eyiwle5hubj20je09ngmo.jpg" /></p>
+<p>上图左上为控制器的显示，路径选择了[1,2,4]和[1,3,4]。右侧的数据为h1的流量信息，左下为h2的流量信息，可以发现h1和h2各自独占一条路径，都打满了500Mbits。实验成功。</p>
+<h3>Conclusion</h3>
+<p>本文介绍了在Ryu控制器中开发基于流量的最优转发的流程。不过内容仅仅涉及了解决思路，实际工程代码的发布还需要等待一段时间。文中提到的第二种算法的解决方法与本文举例类似，仅需加上归一化数据，求加权求和评分步骤就可以完成新解决方案的工作。希望本文能给读者带来一些帮助。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html"><h2>SDN东西向现状简介</h2></a>
+        <div class= "well small"> 2015-10-29
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>What is SDN West-East Interface</h3>
 <p>在SDN架构中，控制平面掌控全局网络的资源，控制数据平面的转发等功能，尤其重要，所以控制平面的性能对整体网络的性能有直接的影响。以前控制平面多以单例控制器为主，控制平面能力欠缺成为SDN网络规模受限的最大原因之一。 后来OpenDayLight，ONOS等控制器的出现，使用了集群技术，使得SDN控制平面性能得到了提升，是当下解决SDN控制平面性能不足的主要解决方案之一。</p>
 <p>然而，这样的解决方案只能用于同一控制器之间的性能扩展，无法完成异构控制器之间的协同工作。此外，某些场景对于安全，隐私方面的考虑，需要隐藏网络内部的细节，所以还需要有SDN域的概念。如何完成跨域之间的流量处理，实现多异构控制器之间的协同工作是未来研究的方向之一，笔者将其归类为SDN控制平面的东西向接口。SDN控制平面的南向接口面对数据平面，北向接口面向应用，容易理解，控制器之间的接口称之为东西向接口，用于完成控制器之间的通信。</p>
 <p><center><img alt="West-East" src="http://ww2.sinaimg.cn/mw690/7f593341jw1exixzvkpi6j20og0d2gml.jpg" /></center>
 <center>Figure1. West-East Interface of SDN</center></p>
 <h3>Why SDN need West-East Interface</h3>
-<p>SDN东西向接口是定义控制器之间通信的接口。由于单控制器能力有限，为满足大规模和可拓展性要求，东西向接口的研究成为下一个SDN研究领域。目前对于SDN东西向接口的研究还处于初级阶段，还缺少行业标准。标准的SDN东西向接口应与SDN控制器解耦，能实现不同厂家控制器之间通信。</p>
-<p>在很多场景中都需要控制器之间的协同工作，如在运营商网络场景中，接入网，回传网，核心网三者功能差异很大，需要制定不同的控制器去运行不同的应用，而这三者又需要协同合作，实现全网的最优化。此时就需要东西向接口来完成控制器之间的通信。跨数据中心的网络中，多数据中心的控制器也有相互通信的需求。</p>
-<p><center><img alt="West-East interface for mobiel network" src="http://ww4.sinaimg.cn/mw690/7f593341jw1exixzu4513j20wq0cm76v.jpg" /></center>
-<center>Figure2. Federation of SDN Controllers</center></p>
-<p>目前南向的标准还为统一，OpenFlow成为SDN南向接口的通用标准之一，其他还有许多可以实现SDN架构的南向接口协议。总的来说，目前南向接口是百花齐放的状态。北向接口方面，目前ONF已经有相关部门在进行这项工作。统一的北向接口标准可以降低在不同控制器上开发应用的成本。关于东西向接口的标准，目前在业界中还未的到重视，仅ONF一个项目组在关注这个方向。</p>
-<h3>Approach for West-East Interface</h3>
-<p>SDN控制平面性能拓展方案中，目前的设计方案有两种，一种是垂直架构的，另一种是水平架构的[1]。垂直架构的实现方案是在多个控制器之上再叠加一层高级控制层，用于协调多个异构控制器之间的通信，从而完成跨控制器的通信请求。水平架构中，所有的节点都在同一层级，身份也相同，没有级别之分。目前比较常见的架构为水平架构，比如华为的SDNi[2]，Pingping Lin博士提出的West-East Bridge for SDN inter-domain network peering[3]。垂直架构目前在中国移动提出的SPTN架构中有涉及，笔者正在研究的内容也正是这部分内容。</p>
-<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1exixzuopf7j20jj0a4gm1.jpg" /></center>
-<center>Figure3. Vertical Approach for Inter-SDN Controller Communication </center></p>
-<p><center><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341jw1exixzud6drj20ky07b74i.jpg" /></center>
-<center>Figure4. Horizontal Approach for Inter-SDN Controller Communication </center></p>
-<h3>Previous Research</h3>
-<p>东西向接口其实并不是一个新鲜事，在很多架构中都会被提到。2013年， 清华的博士pingping lin的论文“East-West Bridge for SDN Network Peering”中提出了West-East Bridge的概念。论文中介绍了他们设计的东西向接口的功能，并完成了部署和测试。</p>
-<p>SDNi是华为提出的一种SDN东西向的实现，目前已经在OpenDayLight中部署实现。其架构为水平架构，可实现多OpenDayLight实例之间的通信，完成跨域通信。目前支持传输Topology Data, QoS Data和其他一些拓展内容。</p>
-<p>中国移动发布的关于SPTN的白皮书中也有设计多控制器协同工作的内容，然而目前仅仅处于白皮书阶段，并没有实际部署和测试。SPTN白皮书中提到了层级式的SDN控制平面架构，分别为Super层和Domain层。Super层的Super Controller负责跨域通信的业务，Domain层的Domain Controller负责域内的通信。分级的架构能使得SDN控制平面能力得到大大的提升。</p>
-<p>TATA在很久以前发布了关于跨域通信的报告。报告中介绍了实现SDN跨域通信的两种架构：垂直架构和水平架构。此外还提出了基于BGP或者SIP协议去完成SDN东西向接口的想法，不过报告内容仅限于次，并没有提及任何实际部署的内容。目前为止，依然没有搜集到相关的实践部署。</p>
-<p>其他相关论文也有若干，但影响力不够，暂不介绍。</p>
-<p>目前笔者正在研究SDN东西向的内容，期待后续能有所产出。</p>
-<h3>Conclusion</h3>
-<p>随着SDN的发展，部署SDN的网络规模将越来越大，对SDN控制平面的性能要求也越来越高。虽然当下业界对SDN控制层面东西向并不够重视，但相信随着技术的发展，东西向方向的解决方案，技术标准将逐渐完善。期待未来自己的成果能顺利发表，产生一定的影响。</p>
-<h3>References</h3>
-<p>[1]：http://www.tcs.com/SiteCollectionDocuments/White%20Papers/Inter-SDN-Controller-Communication-Border-Gateway-Protocol-0314-1.pdf </p>
-<p>[2]：https://tools.ietf.org/html/draft-yin-sdn-sdni-00</p>
-<p>[3]：Lin P, Bi J, Chen Z, et al. WE-bridge: West-East Bridge for SDN inter-domain network peering[C]//Computer Communications Workshops (INFOCOM WKSHPS), 2014 IEEE Conference on. IEEE, 2014: 111-112.</p></div>
-        <hr />
-    </div>
-		
+<p>SDN东西向接口是定义控制器之间通信的接口。由于单控制器能力有限，为满足大规模和可拓展性要求，东西向接口的研究成为下一个SDN研究领域。目前对于SDN东西向接口的研究还处于初级阶段，还缺少行业标准。标准的SDN东西向接口应与SDN控制器解耦 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -176,28 +340,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
             <span class="nb">super</span><span class="p">(</span><span class="n">Network_Aware</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Network_Aware&quot;</span>
             <span class="bp">self ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html"><h2>初学者的SDN学习之路</h2></a>
-        <div class= "well small"> 2015-06-22
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Software Defined Network顾名思义软件定义网络，可以简单地分为网络和软件两个部分：软件和网络。此外，通过使用OpenFlow协议来实现SDN是一种较为普遍的方式，
-所以本篇将从软件和网络以及OpenFlow三个方面进行介绍。在研究SDN的研究者之中，有相当大比例的网络工程师，他们了解网络，精通网络，然而却并不了解软件开发。除此之外，还有很大比例的研究者是软件工程师，他们软件开发能力出色，然而并不了解网络运作的机制，在接触SDN之前，他们的范围仅仅只是应用层，底层的东西交给全交给主机的协议栈了。还有一部分同学是像我这样，通信工程出身，学的是物理层的编码解码，误码率，电磁波。不像计算机专业那些学生一样，学习各种语言，操弄各种编译器，混迹于github这种全球最大的男性交友网站。剩下最后一种就是又懂网络，又懂编程。这种人，我一般称之为老师，是用来请教问题的，比如地球-某某老师。一般的,他们不屑于看到这种文章，太low。</p>
-<p>本篇主要的目标用户是对网络和软件开发都不太了解，或者网络和编程开发只擅长一种的研究者。由于我也是一个初学者，所以仅当做经验分享吧。如有表达不对的地方，敬请指出，万分感谢。</p>
-<h2>网络</h2>
-<p>软件定义网络，如果不了解网络，那如何去定义一个你不了解的东西？如果不知道网络中存在的问题 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
