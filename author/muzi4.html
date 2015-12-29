@@ -62,6 +62,52 @@
  
 
     <div class='article'>
+        <a href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html"><h2>RYU3.16 GUI安装与Topology模块分析</h2></a>
+        <div class= "well small"> 2015-04-21
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>最近很多SDN研究人员问起如何安装RYU的GUI，网上也有一些教程。但是由于RYU版本问题，导致安装没有成功。本片博文将介绍RYU3.16版本下如何安装GUI，以及对RYU拓扑模块进行简单分析。</p>
+<h3>安装GUI</h3>
+<p><a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/">Linton的博客</a>已经有详细介绍，我在这里将一些可能出现问题的地方再提醒一次。</p>
+<h4>第一步：依赖安装及修改代码</h4>
+<p>建议查看<a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/">Linton的博客</a>，比较简单，不赘述。</p>
+<h4>第二步：运行相关组建</h4>
+<ul>
+<li>
+<p><strong>运行RYU相关APP</strong></p>
+<div class="highlight"><pre><span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="o">--</span><span class="n">verbose</span> <span class="o">--</span><span class="n">observe</span><span class="o">-</span><span class="n">links</span> <span class="n">app</span><span class="o">/</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">py</span> <span class="n">ryu</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">switches</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_topology</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">ofctl_rest</span>
+</pre></div>
+
+
+<p><img alt="运行截图" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi3oujndj20k60co75c.jpg" /></p>
+<p>运行截图如下：
+<img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi90ztcij20jx0cqqa0.jpg" /></p>
+</li>
+<li>
+<p><strong>运行controller.py文件</strong></p>
+<p>进入到gui目录，运行controller.py文件。</p>
+<div class="highlight"><pre><span class="n">python</span> <span class="n">controller</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+
+
+<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1erdi91ct7ej20mh0im12r.jpg" /></p>
+</li>
+<li>
+<p><strong>访问页面</strong></p>
+<p>打开浏览器，访问http://127 ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2015/03/08/zhan-zai-shi-zi-lu-kou-de-nian.html"><h2>站在十字路口的一年</h2></a>
         <div class= "well small"> 2015-03-08
 
@@ -139,29 +185,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
              <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">,</span>
              <span class="n">default_config_files</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/usr/local/etc/ryu ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/12/19/ryuxue-xi-oslo.html"><h2>RYU学习:Oslo</h2></a>
-        <div class= "well small"> 2014-12-19
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>前段时间开始认真看了一下RYU的源码，发现OSLO是一个非常方便的命令行解析库，可以用于CLI和CONF的解析。oslo是<a href="https://wiki.openstack.org/wiki/Oslo">OpenStack</a>发起的项目，全称为OpenStack Common Libraries,是OpenStack Projects共享的基础库。</p>
-<h3>Oslo</h3>
-<p>在RYU的目录下可以找到cfg.py文件，这个文件中import了oslo的相关模块，以便调用时减少引用数目。从文件中可以发现oslo.config.cfg文件是关键文件，其在系统中的文件位置在：/usr/local/lib/python2.7/dist-packages/oslo/config/cfg.py。想查看源码的读者可以自行查看。在该cfg.py文件中 定义了ConfigOpts类，包含了_opts, _groups等成员变量。该类完成了命令行和配置参数的解析。</p>
-<p>如果要快速学习某一个知识，最好的办法就是把它用起来。所以首先我会介绍一个入门的教程。如果你没有看懂，可以去看原始的<a href="http://www.giantflyingsaucer.com/blog/?p=4822">教程</a>。</p>
-<p>首先安装<a href="https://virtualenv.pypa.io/en/latest/virtualenv.html">python-virtualenv</a>，此python库可以用于创建一个虚拟的，与外界隔离的运行环境，听起来和docker好像有点像。</p>
-<div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/19/ryuxue-xi-oslo.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

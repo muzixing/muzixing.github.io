@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="../pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/12/29/sdnyu-wang-luo-xu-ni-hua.html"><h1>SDN与网络虚拟化</h1></a>
+            <h1>SDN与网络虚拟化</h1>
 2015-12-29
 
-by <a class="url fn" href="../author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><p>网络虚拟化是一种重要的网络技术，该技术可在物理网络上虚拟多个相互隔离的虚拟网络，从而使得不同用户之间使用独立的网络资源切片，从而提高网络资源利用率，实现弹性的网络。SDN的出现使得网络虚拟化的实现更加灵活和高效，同时网络虚拟化也成为SDN应用中的重量级应用。本文将介绍SDN与网络虚拟化的关系以及通过SDN实现网络虚拟化的方法，其中第二部分内容将从虚拟化平台，网络资源虚拟化和网络隔离三个方面介绍。</p>
 <h2>SDN与网络虚拟化</h2>
 <p>由于早期成功的的SDN方案中网络虚拟化案例较多，有的读者可能会认为SDN和网络虚拟化是同一个层面的，然而这是一个错误的说法。SDN不是网络虚拟化，网络虚拟化也不是SDN。SDN是一种集中控制的网络架构，可将网络划分为数据层面和控制层面。而网络虚拟化是一种网络技术，可以在物理拓扑上创建虚拟网络。传统的网络虚拟化部署需要手动逐跳部署，其效率低下，人力成本很高。而在数据中心等场景中，为实现快速部署和动态调整，必须使用自动化的业务部署。SDN的出现给网络虚拟化业务部署提供了新的解决方案。通过集中控制的方式，网络管理员可以通过控制器的API来编写程序，从而实现自动化的业务部署，大大缩短业务部署周期，同时也实现随需动态调整。</p>
@@ -121,81 +115,23 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>本文介绍了SDN与网络虚拟化的关系以及如何通过SDN实现网络虚拟化。第二部分内容通过介绍网络虚拟化平台，网络资源虚拟化，网络隔离等三个方面来介绍如何通过SDN实现网络虚拟化。随着SDN和网络虚拟化的发展，更多基于SDN的网络虚拟化案例将会诞生，从而为用户提供更灵活的网络服务。后续将有文章介绍基于SDN的网络虚拟化技术的产品和应用案例，敬请期待。</p>
 <h2>References</h2>
 <p>[1] Blenk A, Basta A, Reisslein M, et al. Survey on Network Virtualization Hypervisors for Software Defined Networking[J]. 2015.</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = 'SDN与网络虚拟化';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/10/28/openvirtexoperation-and-subsystems.html"><h2>OpenVirteX：Operation and Subsystems</h2></a>
-        <div class= "well small"> 2014-10-28
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>继上篇<a href="http://www.muzixing.com/pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html">《OpenVirteX文档概述（一）：Overview and Components》</a>之后，本篇将继续介绍OVX的Operation and Subsystems部分。主要讲述OVX内部的运作原理，本文属于个人简介，有误之处敬请指出，希望对读者有所帮助。本篇的顺序依然是按照官网文档的顺序介绍。</p>
-<h2>简介</h2>
-<p>本部分将介绍OVX内部的工作原理，如哪些内部子系统实现了哪一些功能，从而使得OVX能支持OpenFlow网络的虚拟化。以下的内容将分为如下的小点介绍：</p>
-<ul>
-<li>System Overview</li>
-<li>Startup and Shutdown</li>
-<li>The Event Loops</li>
-<li>Network Discovery and Presentation</li>
-<li>Virtualization and De-virtualization</li>
-<li>State Synchronization</li>
-<li>Reslience</li>
-<li>persistence</li>
-<li>The JSONRPC API</li>
-</ul>
-<h2>System Overveiw</h2>
-<p>OVX分为以下几个主要的部分：</p>
-<ul>
-<li>一半是面向南向物理基础设施的部分 ，管理了datapath到OVX之间的OpenFlow通道，并建立和维持了一系列数据结构，用于描述物理基础网络 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2014/10/28/openvirtexoperation-and-subsystems.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html"><h2>OpenVirteX文档详解（一）——Overview and Components</h2></a>
-        <div class= "well small"> 2014-10-23
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>本篇博文将按照OpenVirteX Documentation的顺序详细介绍OpenVirteX的相关内容。完整翻译版，请查看@北邮-张歌 翻译的文章。转载请声明出处。</p>
-<h2>Overview</h2>
-<p>OpenVirteX(以下简称OVX)是onlab开发的一个网络虚拟化平台，可以实现多租户的网络虚拟化。对于租户而言，需要在OVX上注册，申请资源，配置自己的网络，指定自己的控制器。剩下的工作就由OVX完成了。OVX可以根据租户的需求，将租户的网络拓扑映射到具体的物理拓扑上，完成网络的联通。对于租户而言，看到的是一个虚拟的网络，无法看到真实的物理拓扑，也不需要关心，即租户“认为”得到了一个属于自己的真实网络。而OVX的位置相当于一个介于租户控制器和交换机之间的转换平台。面对租户，OVX就是一个物理的网络，而面对交换机，OVX就是控制器。（这种转换平台的角色可以实现很多功能，不仅仅是网络虚拟化，还可以模拟许多信息，比如在某个项目中我们将OVS模拟成一个OTN的交换机，验证了一些想法）</p>
-<h3>网络虚拟化</h3>
-<p>网络虚拟化允许多租户占用同一个网络基础设施，同时允许租户对其网络的控制能力，对于租户而言，感觉上是自己控制了整个网络。OVX通过使租户能够获取到自己的虚拟拓扑和全网的地址空间来实现网络虚拟化。前者可以允许租户自定义网络拓扑，后者则是用于隔离不同租户的流量，防止冲突。</p>
-<p>与flowspace的切分slice，使租户使用网络的一部分不一样的是 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../tag/network-virtualization.html">1</a></li>
-
-    <li class="next disabled"><a href="#">&rarr; Next</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -206,8 +142,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
 		</li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
@@ -221,8 +157,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">Life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">Life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -261,7 +197,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
