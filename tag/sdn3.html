@@ -62,6 +62,42 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html"><h2>Load balance(Multipath) Application on RYU</h2></a>
+        <div class= "well small"> 2014-11-07
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>本篇博文介绍的是如何在RYU上通过使用select group 来实现multipath，从而实现流量的调度，完成简单的负载均衡Demo。OpenFlow13中有group table,可用于实现组播和冗余容灾等功能。实验中还是用了queue,完成了链路带宽的保障。</p>
+<h2>相关工作</h2>
+<p>要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。</p>
+<h3>网络拓扑</h3>
+<div class="highlight"><pre><span class="s">&quot;&quot;&quot;Custom loop topo example</span>
+
+<span class="s">   There are two paths between host1 and host2.</span>
+
+
+<span class="s">                |--------switch2 --------|</span>
+<span class="s">                |                        |</span>
+<span class="s">   host1 --- switch1                   switch4 -----host2</span>
+<span class="s">                |                        |   |------host3</span>
+<span class="s">                -------- switch3 ---------</span>
+<span class="s">                            |</span>
+<span class="s">                          host4</span>
+
+<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"><h2>基于SDN的RYU应用——ARP_PROXY</h2></a>
         <div class= "well small"> 2014-10-19
 
@@ -186,36 +222,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>附上链接：</p>
 <p>http://user.qzone.qq.com/350959853/blog/1394681174</p>
 <p>北邮学弟学妹做这个课设的可以联系628中某学长。</p> <a class="btn btn-info xsmall" href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html"><h2>【原】基于mininet的OpenFlow拓展性拓扑搭建</h2></a>
-        <div class= "well small"> 2014-03-11
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>我们普遍情况下，都是单一控制器去控制一个网络。但是如果多控制器呢？我们如何实现多控制情况下的通信要求呢？</p>
-<p>这有点难度！需要一些东西向的协议来实现控制器之间的数据共享与交换。不是我一个人一两天能搞定的事情。且不同控制器对拓扑信息等存储方式不一样，需要一个统一的标准就显得比较困难。我们先不去想太多。首先，我们需要完成的第一项工作就是数据平面上，不同控制器之间的网络可以相互通信。</p>
-<p>最简单的通信莫过于ping了！</p>
-<h2>实验目的</h2>
-<p>使用mininet搭建两个独立的网络，分别属于不同的控制器。同时，底层数据平面可以相互ping通。这就是我们这个实验的目的。</p>
-<h2>拓扑搭建</h2>
-<p>底层拓扑搭建我们使用mininet2.0，因为mininet1.0版本好像没有link文件，也没有intf类。也许是我没有找到吧。</p>
-<p>以下的代码的作用在于创建一个OVS的网络，并使虚拟机的某个（无ip）网卡连接到这个网中。</p>
-<p>直接上代码：</p>
-<div class="highlight"><pre><span class="o">\</span><span class="c1">#!/usr/bin/python</span>
-<span class="s">&quot;&quot;&quot;</span>
-<span class="s">    This is a topu of our test. It shows that how to add an ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
