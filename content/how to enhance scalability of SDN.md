@@ -93,20 +93,29 @@ DISCO[10]本质上可以理解为一种和SDNi类似的东西向协议，但是�
 ### 参考文献
 
 [1] Curtis A R, Mogul J C, Tourrilhes J, et al. DevoFlow: Scaling flow management for high-performance networks[C]//ACM SIGCOMM Computer Communication Review. ACM, 2011, 41(4): 254-265.
+
 [2] Curtis A R, Mogul J C, Tourrilhes J, et al. DevoFlow: Scaling flow management for high-performance networks[C]//ACM SIGCOMM Computer Communication Review. ACM, 2011, 41(4): 254-265.
+
 [3] Tootoonchian A, Ganjali Y. HyperFlow: A distributed control plane for OpenFlow[C]//Proceedings of the 2010 internet network management conference on Research on enterprise networking. USENIX Association, 2010: 3-3.
+
 [4] Koponen T, Casado M, Gude N, et al. Onix: A Distributed Control Platform for Large-scale Production Networks[C]//OSDI. 2010, 10: 1-6.
+
 [5] Berde P, Gerola M, Hart J, et al. ONOS: towards an open, distributed SDN OS[C]//Proceedings of the third workshop on Hot topics in software defined networking. ACM, 2014: 1-6.
+
 [6] Yin, H., Xie, H., Tsou, T., Lopez, D., Aranda, P.A., Sidi, R.: SDNi: A message exchange protocol for software defined networks (SDNs) across multiple domains. IRTF InternetDraft (2012)
+
 [7] Lin P, Bi J, Chen Z, et al. WE-bridge: West-East Bridge for SDN inter-domain network peering[C]//Computer Communications Workshops (INFOCOM WKSHPS), 2014 IEEE Conference on. IEEE, 2014: 111-112.
+
 [8] https://wiki.opendaylight.org/view/ODL-SDNi_App:Main
+
 [9] Hassas Yeganeh S, Ganjali Y. Kandoo: a framework for efficient and scalable offloading of control applications[C]//Proceedings of the first workshop on Hot topics in software defined networks. ACM, 2012: 19-24.
+
 [10] Phemius K, Bouet M, Leguay J. Disco: Distributed multi-domain sdn controllers[C]//Network Operations and Management Symposium (NOMS), 2014 IEEE. IEEE, 2014: 1-4.
 
 作者简介：
 李呈，2014/09-至今，北京邮电大学信息与通信工程学院未来网络理论与应用实验室（FNL实验室）攻读硕士研究生。
 
-个人博客：www.muzixing.com
+个人博客：http://www.muzixing.com
 
 
 
