@@ -15,9 +15,10 @@ Email:licheng185408@gmail.com
 
 ## Education background
 
-The second year of postgraduate student of Beijing University of Posts and Telecommunications(2014 - present)
-
-Bachelor of Communication Engineering   Beijing University of Posts and Telecommunications (2010 - 2014)
+* Beijing University of Posts and Telecommunications(2014-Present)
+	* M.E       Software Defined Networking                   
+* Beijing University of Posts and Telecommunications(2010-2014)
+	* B.E       Communication Engineering
 
 ## Internship
 
@@ -62,7 +63,7 @@ Bachelor of Communication Engineering   Beijing University of Posts and Telecomm
 *   “Winning Prize” of National University Software Defined Networking Competition (2015)
 *   "Honorable Mention" of ICM ( The Interdisciplinary Contest in Modeling)of American university students(2013)
 *   "Outstanding dissertation for bachelor's degree" of BUPT:"[Research of SDN controller and Development of Micro-Controller](http://www.fnlab.net/index.php/-2014.html)"(TOP1%)
-*   "The Second Prize" of "Challenge Cup" national university student extracurricular academic science and technology work competition
+*   "The Second Prize" of "Challenge Cup" Capital university student extracurricular academic science and technology work competition
 *   "The Second Prize in final" & "The Best Pronounciation Award" of 2012 CCTV “Star of Outlook English talent competition”（Drama）of Beijing
 *   "The Second university scholarship" of BUPT for three times.(Top:47/593/7.9%)
 *   "Excellent manager" & "Outstanding volunteer" of "Hainan “Beautiful Minds” college students volunteer teachers association.(www.meizaixinling.com)
@@ -167,7 +168,7 @@ Email:licheng185408@gmail.com
 ## 所获奖项
 
 *   美国大学生数学建模竞赛ICM ( The Interdisciplinary Contest in Modeling ) Honorable Mention(二等奖) (2013)
-*   “挑战杯”学术科技类•全国二等奖(2013)
+*   “挑战杯”首都大学生课外学术作品竞赛二等奖(2013)
 *   2012年度CCTV“希望之星”英语风采大赛（话剧类）北京赛区•总决赛二等奖第一名，最佳语言奖
 *   连续三年获得北京邮电大学•校级奖学金二等奖（三年综合: 47/593），保送工学研究生
 *   海南省“美在心灵”大学生支教志愿者协会（支教项目荣获第八届（2010）中国青年志愿者优秀项目奖）优秀管理者，优秀志愿者，香港交流志愿者(2011-2012)
