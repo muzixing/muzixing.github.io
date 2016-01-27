@@ -1,5 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feed/all.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 20 Jan 2016 00:00:00 +0800</lastBuildDate><item><title>如何提升SDN可拓展性</title><link>http://www.muzixing.com/pages/2016/01/20/ru-he-ti-sheng-sdnke-tuo-zhan-xing.html</link><description>&lt;p&gt;Software Defined Networking是一种控制平面和数据平面分离的可编程的网络架构，目前已经有许多商业落地案例。在部署SDN时，往往会因SDN控制器性能不足而限制了SDN的可拓展性。因此SDN网络的规模往往不大。针对此问题，笔者在研究相关文献之后，总结了相关的解决方案，并通过本文来记录和分享。&lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feed/all.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 27 Jan 2016 00:00:00 +0800</lastBuildDate><item><title>基于SDN的网络状态测量</title><link>http://www.muzixing.com/pages/2016/01/27/ji-yu-sdnde-wang-luo-zhuang-tai-ce-liang.html</link><description>&lt;p&gt;为了更好地管理和运行网络，非常有必要收集网络资源及其状态信息。在很多网络场景中，SDN控制器的决策都取决时延，带宽和拓扑等网络状态。在开发SDN应用的过程中，笔者总结了一些有用的网络状态测量的解决方案，可以为初学者在解决网络问题时提供一些启发。本文将主要介绍如何通过SDN控制器和OpenFlow协议来测量和收集网络中的时延、带宽以及拓扑状态等信息。&lt;/p&gt;
+&lt;h3&gt;时延&lt;/h3&gt;
+&lt;p&gt;时延的测试在终端会显得很容易，但是在交换机节点上测试时延就比较麻烦。在SDN中，可以通过一下步骤实现交换机之间链路的时延。&lt;/p&gt;
+&lt;p&gt;（1）控制器向交换机A下发一个Packet_out报文。报文的数据段携带了任意一个约定好的协议报文，其报文的数据段携带了控制器下发报文时的时间戳。Packet_out报文的动作指示交换机将其泛洪或者转发到某端口。
+（2）交换机B收到了交换机A发送过来的数据包，无法匹配对应流表项，从而packet_in到控制器。控制器接收到这个数据包之后，和当下时间相减，得到时间差T1。其时间差约等于数据包从控制器到交换机A + 交换机A到交换机B + 交换机B到控制器的时延。
+（3）同理，控制器向交换机B发送一个类似的报文。然后控制器从交换机A收到Packet_in报文，记录下时间差T2。所以T1+T2=控制器到交换机A的RTT+控制器到交换机B的RTT+交换机A到交换机B的时延RTT。
+（4）控制器向交换机A和交换机B分别发送带有时间戳的Echo request。交换机收到之后即刻回复携带echo request时间戳的echo reply消息。所以控制器可以通过Echo reply的时间戳减去Echo reply携带的时间，从而得到对应交换机和控制器之间的RTT。通过这种方法测得控制器到交换机A,B的RTT分别为Ta，Tb。
+（5）T1+T2-Ta-Tb则得到交换机A到交换机B的RTT。假设往返时间一样，则交换机A到交换机B的链路时延为（T1+T2-Ta-Tb）/2。&lt;/p&gt;
+&lt;p&gt;这种方法可以相对准确地测试到链路的实验，无法计算而忽略掉的部分时间是数据包在交换机中的处理时延。而这种简单的方法已经被申请专利了，不知道我这么写会不会有问题。&lt;/p&gt;
+&lt;h3&gt;带宽&lt;/h3&gt;
+&lt;p&gt;带宽数据是网络状态中的重要数据。在SDN网络中获取带宽可以通过OpenFlow协议，也可以通过第三方的测量软件获取数据，如sFlow。此处仅介绍如何通过OpenFlow协议来获取可用带宽。&lt;/p&gt;
+&lt;p&gt;一条链路的带宽由两个端口的能力决定。所以我们可以通过获取端口的流量来得到链路的流量。OpenFlow协议中可以通过统计报文来获取端口、流表、流表项、组表和meter表的统计信息。以端口的统计信息为例，控制器通过周期下发Port statistics消息可以获得交换机端口的统计信息，其返回的统计消息格式如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;ofp_port_stats&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;port_no&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;uint8_t&lt;/span&gt; &lt;span class="n"&gt;pad&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;&lt;span class="sr"&gt;/* Align to 64-bits. */&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;rx_packets&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="sr"&gt;/* Number of received packets. */&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;tx_packets&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="sr"&gt;/* Number of transmitted packets. */&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;rx_bytes&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="sr"&gt;/* Number of received bytes. */&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;tx_bytes&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="sr"&gt;/* Number of transmitted bytes. */&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;rx_dropped&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="sr"&gt;/* Number of packets dropped by RX. */&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;tx_dropped&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="sr"&gt;/* Number of packets dropped by TX. */&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;rx_errors&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="o"&gt;/*&lt;/span&gt; &lt;span class="n"&gt;Number&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;receive&lt;/span&gt; &lt;span class="n"&gt;errors&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="n"&gt;This&lt;/span&gt; &lt;span class="n"&gt;is&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;super&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;set&lt;/span&gt;
+                         &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;more&lt;/span&gt; &lt;span class="n"&gt;specific&lt;/span&gt; &lt;span class="n"&gt;receive&lt;/span&gt; &lt;span class="n"&gt;errors&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="n"&gt;should&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;tx_errors&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;/*&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;rx_frame_err&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;rx_over_err&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;rx_crc_err&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;uint64_t&lt;/span&gt; &lt;span class="n"&gt;collisions&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;duration_sec&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;duration_nsec&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;};&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;从消息格式中可以发现可获取到收发的包数、字节数以及这个统计持续的时间。如果把两个不同时间的统计消息的字节数相减，再除以两个消息差也即统计时间差则可以得到统计流量速度。如果想得到剩余带宽则可以用端口最大带宽减去当前流量带宽，则得端口剩余带宽。同理，可以计算出对应流表项或者组表等的统计流量。基于以上计算出来的端口剩余带宽等数据，可为部署负载均衡等流量优化工程提高数据支撑。&lt;/p&gt;
+&lt;h3&gt;拓扑&lt;/h3&gt;
+&lt;p&gt;拓扑的发现比较容易理解。控制器通过将携带dpid+port_no信息的LLDP数据包从对应端口packet_out出去，然后LLDP数据包被对端交换机Packet_in到控制器，最后再由控制器结合Packet_in消息报头的DPID和in_port和LLDP报文中的DPID和Port_no从而得出一条链路信息。依次类推，控制器可以发现全部的链路信息，从而发现网络拓扑。&lt;/p&gt;
+&lt;p&gt;以上的解决方案需要向每个端口下发packet_out，而此举会产生很多的OpenFlow消息，消耗OpenFlow channel宝贵的带宽资源。所以可以采用以下的优化结局方式。&lt;/p&gt;
+&lt;p&gt;（1）收集swicth features时记录交换机上端口号和端口mac的对应关系。
+（2）弃用port_id的tlv，转而使用端口的mac作为端口的标记。
+（3）下发packet_out时，actions中添加对每个端口的OFPActionSetField(eth_src=port_infor.hw_addr)动作和OFPActionOutput(port_infor.port_no)动作,从而使得仅对交换机下发一个Packet_out就可以完成对所有的端口进行LLDP发送的操作。在每个端口发送数据之前，都需要对数据的src_mac地址置位成端口的mac地址。而控制器收到LLDP的packet_in时，通过mac和port_id的对应关系找出链路。通过这种方法可以将packet_out的数目大大降低，从每个端口发送端口数目N个降低至到1个。&lt;/p&gt;
+&lt;p&gt;以上的解决方案仅能发现OpenFlow的网络，如果OpenFlow网络中间存在传统网络设备形成的子网络，则以上的解决方案将会将与传统网络连接的端口误认为是接入端口。&lt;/p&gt;
+&lt;p&gt;这个问题可以通过LLDP和发送广播包的方式解决。首先通过LLDP发现OpenFlow的拓扑。然后再往“边缘端口”（与传统网络相连的端口此时也被认为是边缘端口）发送广播包，如果广播包从某一个交换机端口回来，则说明这个端口之外未知的地方还有一些交换设备，则证明这个端口不是主机的接入端口。但是传统设备如果不通过其他形式去发现还是无法发现具体的网络拓扑的信息。&lt;/p&gt;
+&lt;h3&gt;总结&lt;/h3&gt;
+&lt;p&gt;本文总结了在SDN网络中如何发现和测量网络的一些基础的信息，比如链路的时延和带宽，网络的拓扑等等。发现和测量这些基础的网络状态可以用于其他的网络决策，从而使得网络运行更加合理，进而提高资源利用率。以上部分内容以实现并公布，比如带宽测量模块可查看&lt;a href="http://www.muzixing.com/pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html"&gt;《SDN网络感知服务与最短路径应用》&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;作者简介：
+李呈，2014/09-至今，北京邮电大学信息与通信工程学院未来网络理论与应用实验室（FNL实验室）攻读硕士研究生。&lt;/p&gt;
+&lt;p&gt;个人博客：www.muzixing.com&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Wed, 27 Jan 2016 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2016-01-27:pages/2016/01/27/ji-yu-sdnde-wang-luo-zhuang-tai-ce-liang.html</guid><category>measure</category></item><item><title>如何提升SDN可拓展性</title><link>http://www.muzixing.com/pages/2016/01/20/ru-he-ti-sheng-sdnke-tuo-zhan-xing.html</link><description>&lt;p&gt;Software Defined Networking是一种控制平面和数据平面分离的可编程的网络架构，目前已经有许多商业落地案例。在部署SDN时，往往会因SDN控制器性能不足而限制了SDN的可拓展性。因此SDN网络的规模往往不大。针对此问题，笔者在研究相关文献之后，总结了相关的解决方案，并通过本文来记录和分享。&lt;/p&gt;
 &lt;h2&gt;解决方案&lt;/h2&gt;
 &lt;p&gt;SDN分离了网络的控制平面和数据平面，而控制平面是SDN的大脑，其能力极大地影响着SDN网络的可拓展性。所以基本上，解决方案都是围绕如何给控制平面减压或者提升控制平面的能力来实现。根据控制器数目的不同，解决方案可以分为如下两类：&lt;/p&gt;
 &lt;ul&gt;
@@ -392,7 +439,7 @@
 最短路径转发应用，实现最基础的网络应用，为其他更高层次的应用开发和算法验证提供基本的服务支撑。由于篇幅限制，本文不加展开，详情可查看&lt;a href="http://www.muzixing.com/pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html"&gt;《SDN网络感知服务与最短路径应用》&lt;/a&gt;。如果读者希望自己搭建一套底层服务，或者在笔者的基础之上加工，推荐使用networkx进行拓扑信息的存储。networkx提供了大量高效有用的函数，可以最大程度降低开发者在算法问题上的工作量。&lt;/p&gt;
 &lt;p&gt;完成以上应用之后，可将其作为启动服务的一种，并通过参数来确定是否启动Ryu时启动这些业务。这些业务中涉及到的自定义事件，可用于与上层应用之间的通信，实现定制化的SDN控制器。&lt;/p&gt;
 &lt;h3&gt;总结&lt;/h3&gt;
-&lt;p&gt;本篇文章介绍了基于Ryu打造自定义控制器的内容，包括自定义参数，事件，启动顺序，报文，协议和服务。相信读者如果能根据应用场景进行深度自定义，可以很大程度上提升开发效率。关于自定义协议部分，后续会有更多文章介绍，敬请期待。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 20 Nov 2015 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2015-11-20:pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html</guid><category>Ryu</category></item><item><title>Improv and Communication</title><link>http://www.muzixing.com/pages/2015/11/14/improv-and-communication.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
+&lt;p&gt;本篇文章介绍了基于Ryu打造自定义控制器的内容，包括自定义参数，事件，启动顺序，报文，协议和服务。相信读者如果能根据应用场景进行深度自定义，可以很大程度上提升开发效率。关于自定义协议部分，后续会有更多文章介绍，敬请期待。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 20 Nov 2015 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2015-11-20:pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html</guid><category>Ryu</category></item><item><title>即兴戏剧与沟通／通信</title><link>http://www.muzixing.com/pages/2015/11/14/ji-xing-xi-ju-yu-gou-tong-tong-xin.html</link><description>&lt;h3&gt;前言&lt;/h3&gt;
 &lt;p&gt;即兴剧第一次出现在我的世界，是2015年3月份的时候。那时大学校园里春意盎然，遍地都是刚褪去厚重冬衣的男男女女，走在大道上欢声谈笑着，一转眼， 又到了一年一度交配的季节。我裹着厚厚的风衣，戴着黑框眼镜，面带微笑地欣赏着这美好时光。脚上那经历一个冬天磨砺的大靴子，在阳光的照耀下，也变得崭新了一些。&lt;/p&gt;
 &lt;p&gt;“同学，参加即兴戏剧社吗？”一个甜美的声音吸引了我的注意。今天是社团招新的日子，校园大道上都是社团在摇旗呐喊，特别热闹。我寻声望去，却有点小失望。简陋的展台，只有一张桌子，几个穿着并不像演员的人在那里对着我憨笑，不免让我觉得有些不过去有些不给面子，有些尴尬。&lt;/p&gt;
 &lt;p&gt;“什么是即兴剧啊？”我自小个性张扬，梦想是当一面导演，然后导演出传世的经典。在经过快20年的努力，饱读诗书十余载，学习街舞，在KTV当麦霸之后，终于成为了北京电影学院旁边的北京邮电大学的一个学通信工程的学生。高中就渴望着能考到一个离北影近一些的学校，这样平时就可以到对面蹭课了。虽然现实有些让人失望，但是梦想总是要有的，只要留住梦想的火种，总有一天，它就会熄灭。在熄灭之前，任何时候，我都做好了燎原的准备。不管是什么剧，抓住就是机会啊，学习，表演，签约，红地毯，当红影星，演员，我已经梦过很多次这样的场景了！&lt;/p&gt;
@@ -461,7 +508,7 @@
 &lt;p&gt;同理，还有其他很多场景可以和即兴剧的理论相通，比如网络协议。传统的网络协议多是分布式的，由多个实例一起运作，从而完成共同的工作。即兴剧中同样强调去中心化，分布式控制，即一场演出是由多名演员一起创作而成的，每个人都有控制权，而不是大家都听某一个主演的，由主演主导演出。此外，即兴戏剧中强调尽力就好，不强求完美，且确实无法做到完美。在通信系统中为了更好地通信，传输，有一些协议的传输是尽力而为的，如IP报文的传输。&lt;/p&gt;
 &lt;p&gt;本质上，如果你抽象能力够强，通信的学科，包括计算机学科的内容是可以抽象出来，然后在生活的具体案例中找到映射。比如负载均衡可以找到多窗口检票进站，分布式可以类比成一个医院的不同部门。网络类比成现实生活中的交通系统，路由表项则对应这路标，等等。而即兴戏剧的智慧来源于生活而高于生活，所以通过即兴戏剧来学习，培养生活中的智慧，并将其应用到相关的学科学习中，是一件一举多得的事情，对个人的成长起到了很大的帮助。&lt;/p&gt;
 &lt;h3&gt;总结&lt;/h3&gt;
-&lt;p&gt;学习即兴戏剧半年多了，一直在学习，却从未停下来总结过。直到这学期一边学习，一边教授新人如何去学习即兴戏剧，才发现自己的知识还没有系统地整理过，讲得并不是很好，所以花了两个晚上，总结了一下即兴戏剧的学习。这半年来，我也接触了开心麻花等多个即兴戏剧团体，发现很多有才的人，并向他们学习。此外，最近在课堂上尝试将通信有趣话描述之后，我突然发现之前我脑海里总结的那些很学术的知识，可以通过如此生动形象的方式来介绍，真的可以让学习变得很快乐。学习即兴戏剧让我改变很大，变成一个更加包容的人，懂得去倾听、去包容、去支持、去学习更好的沟通方式，同时也打开了我生活的另一扇门，走向了一个新鲜的有趣的世界。感谢大可老师，带领我学习即兴戏剧，还应该感谢的应该是隔壁班的女同学，是你骗我来当主角，结果发现大家都是主角。同时，希望此文能给不了解即兴戏剧的同学一个初步的介绍，帮助即兴戏剧在中国继续传播。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Sat, 14 Nov 2015 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2015-11-14:pages/2015/11/14/improv-and-communication.html</guid><category>improv</category><category>communication</category></item><item><title>SDN东西向现状简介</title><link>http://www.muzixing.com/pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html</link><description>&lt;h3&gt;What is SDN West-East Interface&lt;/h3&gt;
+&lt;p&gt;学习即兴戏剧半年多了，一直在学习，却从未停下来总结过。直到这学期一边学习，一边教授新人如何去学习即兴戏剧，才发现自己的知识还没有系统地整理过，讲得并不是很好，所以花了两个晚上，总结了一下即兴戏剧的学习。这半年来，我也接触了开心麻花等多个即兴戏剧团体，发现很多有才的人，并向他们学习。此外，最近在课堂上尝试将通信有趣话描述之后，我突然发现之前我脑海里总结的那些很学术的知识，可以通过如此生动形象的方式来介绍，真的可以让学习变得很快乐。学习即兴戏剧让我改变很大，变成一个更加包容的人，懂得去倾听、去包容、去支持、去学习更好的沟通方式，同时也打开了我生活的另一扇门，走向了一个新鲜的有趣的世界。感谢大可老师，带领我学习即兴戏剧，还应该感谢的应该是隔壁班的女同学，是你骗我来当主角，结果发现大家都是主角。同时，希望此文能给不了解即兴戏剧的同学一个初步的介绍，帮助即兴戏剧在中国继续传播。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Sat, 14 Nov 2015 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2015-11-14:pages/2015/11/14/ji-xing-xi-ju-yu-gou-tong-tong-xin.html</guid><category>improv</category><category>communication</category></item><item><title>SDN东西向现状简介</title><link>http://www.muzixing.com/pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html</link><description>&lt;h3&gt;What is SDN West-East Interface&lt;/h3&gt;
 &lt;p&gt;在SDN架构中，控制平面掌控全局网络的资源，控制数据平面的转发等功能，尤其重要，所以控制平面的性能对整体网络的性能有直接的影响。以前控制平面多以单例控制器为主，控制平面能力欠缺成为SDN网络规模受限的最大原因之一。 后来OpenDayLight，ONOS等控制器的出现，使用了集群技术，使得SDN控制平面性能得到了提升，是当下解决SDN控制平面性能不足的主要解决方案之一。&lt;/p&gt;
 &lt;p&gt;然而，这样的解决方案只能用于同一控制器之间的性能扩展，无法完成异构控制器之间的协同工作。此外，某些场景对于安全，隐私方面的考虑，需要隐藏网络内部的细节，所以还需要有SDN域的概念。如何完成跨域之间的流量处理，实现多异构控制器之间的协同工作是未来研究的方向之一，笔者将其归类为SDN控制平面的东西向接口。SDN控制平面的南向接口面对数据平面，北向接口面向应用，容易理解，控制器之间的接口称之为东西向接口，用于完成控制器之间的通信。&lt;/p&gt;
 &lt;p&gt;&lt;center&gt;&lt;img alt="West-East" src="http://ww2.sinaimg.cn/mw690/7f593341jw1exixzvkpi6j20og0d2gml.jpg" /&gt;&lt;/center&gt;
