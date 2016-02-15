@@ -62,6 +62,31 @@
  
 
     <div class='article'>
+        <a href="./pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html"><h2>基于Ryu打造自定义控制器</h2></a>
+        <div class= "well small"> 2015-11-20
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>控制器是SDN网络中最重要的组成部分。在开发SDN应用时，需要基于某一个控制器开发，而大部分开源控制器都是一个框架或者平台，更多个性化的设置和应用需要开发者自己完成。对于开发者而言，一个自定义的控制器可以让控制器更加适配开发场景，发挥控制器最大的作用，提高开发效率。本篇文章将以Ryu为例，介绍如何修改Ryu源码，打造属于自己风格的自定义控制器。其内容包括自定义参数，事件，启动顺序，报文，协议和底层服务。</p>
+<h3>自定义参数</h3>
+<p>很多应用都会涉及相关参数的输入才能运行， 如OpenFlow协议的启动需要配置监听端口。在编写新应用时，需要获取相关参数的值来运行应用，所以需要开发应用时注册参数。目前已有的参数可以通过ryu-manager -h查看。而不同的应用注册的参数很可能名字一样，这就有可能发生冲突。为解决这个问题，Ryu采用了OpenStack的Oslo库，支持全局的命令注册和解析。Oslo支持全局的命令注册和解析，成功解除了命令冲突的难题，也大大降低了参数注册和解析的难度。注册新参数的方法很简单，只需要新建一个文件，然后按照如下案例完成注册，最后再在cmd/manager.py中import即可。</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">cfg</span>
+
+<span class="n">CONF</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span>
+<span class="n">CONF</span><span class="o">.</span><span class="n">register_cli_opts</span><span class="p">([</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">StrOpt ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2015/11/14/ji-xing-xi-ju-yu-gou-tong-tong-xin.html"><h2>即兴戏剧与沟通／通信</h2></a>
         <div class= "well small"> 2015-11-14
 
@@ -154,30 +179,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>在模块启动时，首先会将_CONTEXTS中的模块先启动，在模块的初始化函数中可以通过self.network_aware = kwargs["Network_Aware"]的形式获得该服务模块的实例，从而获取到该模块的数据 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/08/30/sdnkong-zhi-ping-mian-fa-zhan-li-shi-ji-qu-shi.html"><h2>SDN控制平面发展历史及趋势</h2></a>
-        <div class= "well small"> 2015-08-30
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>SDN的特点之一就是控制平面与数据平面分离，其主张通过集中式的控制器平台实现网络的控制。在SDN架构中，控制平面是逻辑集中的，通过某种协议将控制信息下发至底层的数据平面去执行。所以，控制平台被称为SDN的大脑，指挥整个数据网络的运行。</p>
-<p>得益于集中控制的优势，控制平面的存在能使得网络的部署和配置更加智能和简化。支持编程的SDN控制平面使得网络更加智能，更加灵活和易于拓展。控制器通过SDN的南向协议的API可以对数据层面的网元设备下发指令，完成控制平面与数据平面的控制传输。2008年，SDN和OpenFlow一起诞生于斯坦福大学。目前，在SDN领域中，OpenFlow协议是最流行的南向协议之一。</p>
-<p>SDN出现初期，控制平面的表现形式更多的是以单实例的控制器出现，实现SDN的协议也是以OpenFlow为主。所以在SDN发展初期，SDN控制器更多指的是OpenFlow控制器。SDN出现之后，ONF[1]成立。ONF(Open Network Foundation),中文名为“开放网络基金会” ，是致力于推进SDN标准化的一个用户驱动的组织。在ONF的白皮书中，提出了SDN的架构标准，SDN架构1.0版本和1.1版本分别如图3.11和 图3.12[2]所示。</p>
-<p><center><img alt="sdn architecture" src="https://upload.wikimedia.org/wikipedia/commons/e/e6/SDN-architecture-overview-transparent.png" /></center>
-<center>图3.11 SDN网络架构1.0版本</center></p>
-<p><center><img alt="sdnarchiteture1.1" src="http://ww1.sinaimg.cn/mw690/7f593341jw1evl062y0pwj20oa0jdwhv.jpg" /></center>
-<center>图3 ...</center></p> <a class="btn btn-info xsmall" href="./pages/2015/08/30/sdnkong-zhi-ping-mian-fa-zhan-li-shi-ji-qu-shi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="./index.html">&larr; Previous</a></li>
@@ -195,6 +196,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     <li class=""><a href="./index11.html">11</a></li>
     <li class=""><a href="./index12.html">12</a></li>
     <li class=""><a href="./index13.html">13</a></li>
+    <li class=""><a href="./index14.html">14</a></li>
 
     <li class="next"><a href="./index3.html">Next &rarr;</a></li>
 

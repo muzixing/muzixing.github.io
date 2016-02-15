@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>Milestone</title>
+    <meta name="description" content="">
+    <meta name="author" content="muzi">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="../../../../theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="../../../..">Milestone</a>
+
+        <div class="nav-collapse">
+
+        <ul class="nav">
+            
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
+        </ul>
+	<form class="navbar-search pull-right" action="/search.html">
+    	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
+</form>
+
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+    <div class='article'>
+        <div class="content-title">
+            <h1>SDN组网相关解决方案</h1>
+2016-02-14
+
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
+ 
+
+
+        </div>
+	
+        <div><p>SDN作为一种新的网络架构，正被应用到越来越多的网络场景中。而网络的关键在于通信，如何使得SDN网络正常运行，并且能够和传统网络相互通信是SDN组网需要解决的基本问题。本文将介绍SDN组网相关解决方案中的数据平面到控制平面的组网解决方案、多SDN域组网解决方案和SDN网络与传统网络组网通信的解决方案。</p>
+<h3>SDN数据平面到控制平面组网</h3>
+<p>目前为止，在数据层面到控制到控制平面之间的组网方案主要有两大类：带外组网和带内(in-band)组网。</p>
+<ul>
+<li>
+<p>带外（out-band）组网: </p>
+<p>数据平面到控制平面的控制数据通过专门的控制网络，而不经过数据平面转发，从而将数据平面的数据和控制平面数据隔离运行在两张独立的网络中。在带外组网方案中，每个交换机都有连接到控制平面的专属线路，而无需通过其他数据平面交换机转发。带外组网可以减少组网的难度和运维的难度。缺点是交换机多时，链路数量较多。</p>
+</li>
+</ul>
+<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1f0ywymcw76j20b807s74v.jpg" /></center>
+<center>图1. out-band组网方案</center>   </p>
+<ul>
+<li>
+<p>带内（in-band）组网</p>
+<p>带内组网指的是控制数据和数据平面数据可以共享一个物理链路。即数据平面的有些交换机直连控制器，而其他的交换机的需要经过数据平面的链路才能到达控制器。非直交换机的控制数据需要通过数据平面的链路进行转发，并通过直连交换机转发到控制器。此种组网方式可以减少许多交换机到控制器的链路数量，但是配置带内组网比较麻烦，可靠性较低，维护成本也相对要高。
+<center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341gw1f0ywykadhmj20ay0763z2.jpg" /></center>
+<center>图2. in-band组网方案</center></p>
+</li>
+</ul>
+<h3>多SDN域组网方案</h3>
+<p>当网络规模过大时，需要部署多域的组网方案。其中每个SDN域都由各自的控制平面控制。多域组网方案有水平架构和垂直架构两种。水平架构形式的多域组网方案中，域控制平面之间的关系是对等的。而在垂直架构中，则划分为域控制器层和超级控制器层。其中域控制器层负责自身域内的控制，超级控制器层负责管理域间的通信。</p>
+<ul>
+<li>
+<p>水平架构</p>
+<p>实现水平架构的多域控制器的解决方案有分布式集群和东西向接口协议两种方式。部署分布式集群可以实现同类型多控制器实例的协同工作，无法支持异构控制器之间的协同工作。而东西向接口协议支持异构多域控制器之间的协同工作，其通过交换路由等信息实现多域网络通信。水平架构多域组网架构图如图3所示：</p>
+</li>
+</ul>
+<p><center><img alt="muti-domains" src="http://ww1.sinaimg.cn/mw690/7f593341gw1f0yw1r2dg6j20gn0bg75y.jpg" /></center>
+<center>图3. 水平架构多域控制器组网方案</center></p>
+<ul>
+<li>
+<p>垂直架构</p>
+<p>垂直架构的多域控制器组网中超级控制器负责域间通信，而域控制器负责域内的通信。超级控制器相当于集中式的路由器，负责域间的通信，而每一个域由的域控制器模拟成独立的网络域，从而实现全局网络的管理。目前实现垂直架构的多域控制器协同工作的协议有Open eXchange 协议，其组网架构图如图4所示：</p>
+</li>
+</ul>
+<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1f0yw1swzo4j20hi0bjdhj.jpg" /></center>
+<center>图4. 垂直架构多域控制器组网方案</center></p>
+<h3>SDN与传统互联</h3>
+<p>以上介绍的SDN组网仅仅是SDN网络部分的组网，而如何与其他传统网络相互通信则是本小节的内容。根据现实网关功能的设备种类不同，可以将组网方案分为传统设备组网方案和SDN设备组网方案两种。采用传统路由器作为网关方案中，SDN网络作为内部网络运营，而与其他网络通信的工作由传统路由器完成。
+而采用SDN设备模拟网关时，由SDN控制器在边缘交换机上模拟网关行为，从而完成与其他域之间的网络通信。</p>
+<ul>
+<li>
+<p>传统网络设备作网关</p>
+<p>在此方案中，采用传统路由器作为网络出口，由其完成和其他路由器之间的路由同步等工作。此方案中，复杂的网关功能由现网设备完成，而SDN控制器只需控制内部网络节点，从而降低了组网的难度，也提升了对内部网络的管控能力。</p>
+</li>
+</ul>
+<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1f0ywf1xbo2j20fg087q3r.jpg" /></center>
+<center>图5. 采用传统设备作网关方案</center></p>
+<ul>
+<li>
+<p>SDN数据交换机作网关</p>
+<p>SDN设备解决方案中，SDN控制器需将边缘交换机模拟成一个路由器，如运行BGP协议的路由器，从而实现对传统路由协议的响应和支持，向外表现出路由器的特征，进而实现与互联网的互联互通。</p>
+</li>
+</ul>
+<p><center><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341gw1f0yweyc3msj20f00ac3zc.jpg" /></center>
+<center>图6. 采用SDN设备模拟网关组网方案示意图</center></p>
+<h3>总结</h3>
+<p>作为一名SDN初学者，在平时学习研究中，仅仅需要通过Mininet模拟则可以完成实验。而当真正部署SDN网络时，则需要考虑到很多实际问题，尤其是基本的组网方案。本文从数据平面到控制平面组网、SDN域之间组网和SDN域与传统网络之间组网三个方面简要介绍了SDN组网的相关解决方案。以此作为一个学习的总结，同时也希望这篇文章能帮助到有需要的研究人员。</p>
+<p>作者简介：</p>
+<p>李呈，2014/09-至今，北京邮电大学信息与通信工程学院未来网络理论与应用实验室（FNL实验室）攻读硕士研究生。</p>
+<p>个人博客：www.muzixing.com</p></div>
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = 'SDN组网相关解决方案';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
+                <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
+		</li>
+                <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="../../../../category/life.html">Life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
+                   
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Links
+                </li>
+            
+                <li><a href="http://www.sdnlab.com/">SDNLAB</a></li>
+                <li><a href="http://www.sdnap.com/">SDNAP</a></li>
+                <li><a href="http://www.richardzhao.me/">Richardzhao</a></li>
+                <li><a href="http://ikimi.net/">Kimi Yang</a></li>
+            </ul>
+            </div>
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="https://github.com/muzixing">Github</a></li>
+                <li><a href="http://weibo.com/u/2136552257">Weibo</a></li>
+                <li><a href="http://linkedin.com/profile/view?id=334725834">Linkedin</a></li>
+                <li><a href="http://350959853.qzone.qq.com">Qzone</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+<script>var _gaq=[['_setAccount','UA-45955656-1'],['_trackPageview']];(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s)}(document,'script'))</script>
+ 
+</body>
+</html>

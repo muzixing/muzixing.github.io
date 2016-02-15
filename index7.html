@@ -62,6 +62,42 @@
  
 
     <div class='article'>
+        <a href="./pages/2014/10/28/openvirtexoperation-and-subsystems.html"><h2>OpenVirteX：Operation and Subsystems</h2></a>
+        <div class= "well small"> 2014-10-28
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>继上篇<a href="http://www.muzixing.com/pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html">《OpenVirteX文档概述（一）：Overview and Components》</a>之后，本篇将继续介绍OVX的Operation and Subsystems部分。主要讲述OVX内部的运作原理，本文属于个人简介，有误之处敬请指出，希望对读者有所帮助。本篇的顺序依然是按照官网文档的顺序介绍。</p>
+<h2>简介</h2>
+<p>本部分将介绍OVX内部的工作原理，如哪些内部子系统实现了哪一些功能，从而使得OVX能支持OpenFlow网络的虚拟化。以下的内容将分为如下的小点介绍：</p>
+<ul>
+<li>System Overview</li>
+<li>Startup and Shutdown</li>
+<li>The Event Loops</li>
+<li>Network Discovery and Presentation</li>
+<li>Virtualization and De-virtualization</li>
+<li>State Synchronization</li>
+<li>Reslience</li>
+<li>persistence</li>
+<li>The JSONRPC API</li>
+</ul>
+<h2>System Overveiw</h2>
+<p>OVX分为以下几个主要的部分：</p>
+<ul>
+<li>一半是面向南向物理基础设施的部分 ，管理了datapath到OVX之间的OpenFlow通道，并建立和维持了一系列数据结构，用于描述物理基础网络 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2014/10/28/openvirtexoperation-and-subsystems.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html"><h2>OpenVirteX文档详解（一）——Overview and Components</h2></a>
         <div class= "well small"> 2014-10-23
 
@@ -217,33 +253,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <div class="highlight"><pre><span class="n">phoronix</span><span class="o">-</span><span class="n">test ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/09/17/qemuvirt-managerphoronix-test-suitefu-wu-qi-ce-shi.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html"><h2>OpenDayLight中MD-SAL学习笔记</h2></a>
-        <div class= "well small"> 2014-08-13
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>在学习opendaylight的过程中，总是遇到AD-SAL( API-Driven SAL)和MD-SAL（Model-Driven SAL）等概念。在努力查找资料学习之后，有了一点学习笔记，写出来加深印象。同时也给同样迷惑的同学一点帮助。</p>
-<p>转载请声明：北邮-李呈：www.muzixing.com</p>
-<h2>About MD-SAL</h2>
-<p>MD-SAL使得在SDN控制器那些丰富的服务和模块可以使用统一的数据结构和南向和北向的API。</p>
-<p><img alt="sal-comparison" src="https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png" /></p>
-<p>上图引用地址：https://wiki.opendaylight.org/images/4/4d/SAL-Comparison.png</p>
-<p>MD-SAL提供请求路由（request routing）和基础设施去支持服务的适配，但它不提供服务的适应本身;业务适配是由插件提供。MD-SAL认为适配插件是一个普通的插件：它向SAL提供数据，并通过模型生产的API来读取消费数据。</p>
-<h3>Request outing</h3>
-<p>为SAL中，request routing可用于消费者的请求路由，从而寻找到对应的生产者。当一个plugin注册之后，就会在routing table中有对应记录，consumer向SAL发起RPC应用申请的时候 ...</p> <a class="btn btn-info xsmall" href="./pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="./index6.html">&larr; Previous</a></li>
@@ -261,6 +270,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     <li class=""><a href="./index11.html">11</a></li>
     <li class=""><a href="./index12.html">12</a></li>
     <li class=""><a href="./index13.html">13</a></li>
+    <li class=""><a href="./index14.html">14</a></li>
 
     <li class="next"><a href="./index8.html">Next &rarr;</a></li>
 

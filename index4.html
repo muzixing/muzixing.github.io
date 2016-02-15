@@ -62,6 +62,35 @@
  
 
     <div class='article'>
+        <a href="./pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html"><h2>Graph algorithms: Prim,Kruskal, Dijkstra, Floyd</h2></a>
+        <div class= "well small"> 2015-05-31
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>最近有了一点点空闲时间，想想以后的项目肯定是需要用到图中的路径算法，于是花了一些时间把4大经典算法实现了一遍。算法实现水平不高，时间复杂度都太高了一点。但是逻辑相对比较清晰，测试结果正确。如果读者发现算法中的问题，敬请指出，万分感谢。</p>
+<h3>Prim</h3>
+<p><a href="http://zh.wikipedia.org/wiki/%E6%99%AE%E6%9E%97%E5%A7%86%E7%AE%97%E6%B3%95">Prim</a>算法是最小生成树算法的一种，其算法逻辑为：</p>
+<p>从单一顶点开始，普里姆算法按照以下步骤逐步扩大树中所含顶点的数目，直到遍及连通图的所有顶点。
+输入：一个加权连通图，其中顶点集合为V，边集合为E；</p>
+<p>初始化：Vnew = {x}，其中x为集合V中的任一节点（起始点），Enew = {}；
+重复下列操作，直到Vnew = V：</p>
+<p>1：在集合E中选取权值最小的边（u,v），其中u为集合Vnew中的元素，而v则是V中没有加入Vnew的顶点（如果存在有多条   满足前述条件即具有相同权值的边，则可任意选取其中之一）；
+2：将v加入集合Vnew中，将（u, v）加入集合Enew中；</p>
+<p>输出：使用集合Vnew和Enew来描述所得到的最小生成树。</p>
+<p>算法实现采用数据结构为邻接矩阵,实现如下：</p>
+<div class="highlight"><pre>    <span class="k">def ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html"><h2>RYU中WSGI学习笔记与RESTAPI开发</h2></a>
         <div class= "well small"> 2015-05-13
 
@@ -183,24 +212,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>在南京的生活和工作没有区别，唯一不同的是薪水是可怜2000。每天和学长们一起坐班车去无线谷上班，下午再一起回来。但是在一个陌生的城市工作的感觉很孤独 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/03/08/zhan-zai-shi-zi-lu-kou-de-nian.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/03/04/traffic-monitor-in-ryu.html"><h2>Traffic monitor in RYU</h2></a>
-        <div class= "well small"> 2015-03-04
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>In many scenes, we need to get the real time link bandwidth so that controller can make some decisions in time. For example, load balance, network alert and so on. This article will demostrate how to get the bandwidth of a flow or a port(flow speed or port speed ...</p> <a class="btn btn-info xsmall" href="./pages/2015/03/04/traffic-monitor-in-ryu.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="./index3.html">&larr; Previous</a></li>
@@ -218,6 +229,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     <li class=""><a href="./index11.html">11</a></li>
     <li class=""><a href="./index12.html">12</a></li>
     <li class=""><a href="./index13.html">13</a></li>
+    <li class=""><a href="./index14.html">14</a></li>
 
     <li class="next"><a href="./index5.html">Next &rarr;</a></li>
 
