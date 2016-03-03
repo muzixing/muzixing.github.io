@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2016/02/14/sdnzu-wang-xiang-guan-jie-jue-fang-an.html"><h1>SDN组网相关解决方案</h1></a>
-2016-02-14
+            <a href="../pages/2016/03/03/openflowde-ban-lu-xie-yi-of-config.html"><h1>OpenFlow的伴侣协议：OF-CONFIG</h1></a>
+2016-03-03
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,85 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>SDN作为一种新的网络架构，正被应用到越来越多的网络场景中。而网络的关键在于通信，如何使得SDN网络正常运行，并且能够和传统网络相互通信是SDN组网需要解决的基本问题。本文将介绍SDN组网相关解决方案中的数据平面到控制平面的组网解决方案、多SDN域组网解决方案和SDN网络与传统网络组网通信的解决方案。</p>
+        <div><p>本文将简要介绍OpenFlow协议的伴侣协议即补充协议OF-CONFIG，主要内容包括OF-CONFIG的简介、原理以及发展趋势。希望能让读者对OF-CONFIG有一个初步的认识。</p>
+<h3>简介</h3>
+<p>在OpenFlow协议的规范中，控制器需要和已配置的交换机进行通信。而交换机在正常工作之前需要对其特性以及资源进行配置才能正常工作。而这些配置超出了OpenFlow协议规范的范围，理应由其他的配置协议来完成。OF-Config（OpenFlow Management and Configuration Protocol）协议就是一种OpenFlow交换机配置协议。OF-CONFIG由ONF于2012年1月提出，目前已经演化到1.2版本。OF-CONFIG协议与OpenFlow协议的关系如图1所示。</p>
+<p>作为一种交换机配置协议，OF-CONFIG的主要功能包括配置交换机连接的多个控制器信息、端口和队列等资源的配置以及端口等资源的状态修改等内容。此外，作为一个配置协议，OF-CONFIG也要求链接必须是安全可靠的。为满足实际网络运维要求，OF-CONFIG支持通过配置点对多个交换机进行配置，也支持多个配置点对同一个交换机进行配置。</p>
+<p>为了满足OpenFlow版本更新的需求以及协议的可拓展要求，OF-CONFIG采用XML来描述其数据结构。此外，在OF-CONFIG的初始规范中也规定了采用NETCONF协议作为其传输协议。由于OF-Config协议没有和数据交换和路由等模块直接相关，所以相比于对实时性要求高的OpenFlow等南向协议而言，OF-CONFIG协议对实时性要求并不高。</p>
+<p><center><img alt="of-config and openflow" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f1f92gb9fij209k09e3yz.jpg" /></center>
+<center>图1. OF-CONFIG 与OpenFlow以及OpenFlow Switch之间的关系图</center></p>
+<h3>原理</h3>
+<p>OF-Config协议主要分为Server和Client两部分，其中Server运行在OpenFlow交换机端，而Client运行在OpenFlow配置点上。本质上，OpenFlow配置点就是一个普通的通信节点，其可以是独立的服务器，也可以是部署了控制器的服务器。通过OpenFlow Configuration Point(OpenFlow配置点)上的Client程序可以实现远程配置交换机的相关特性，比如连接的控制器信息、交换机特性及端口和队列等相关配置。最新的1.2版本的OF-CONFIG协议支持OpenFlow1.3版本的交换机的主要配置如下：</p>
+<ul>
+<li>配置datapath（在OF-CONFIG协议中称为OpenFlow逻辑交换机）连接的控制器信息，支持配置多个控制器信息，实现备份。</li>
+<li>配置交换机的端口和队列，实现资源的分配</li>
+<li>远程改变端口的状态以及特性</li>
+<li>完成OpenFlow交换机与OpenFlow控制器之间安全链接的证书配置</li>
+<li>发现OpenFlow逻辑交换机的能力</li>
+<li>配置VXLAN、NV-GRE等隧道协议</li>
+</ul>
+<p>OF-CONFIG采用XML来描述其数据结构，并通过NETCONF协议来传输其内容。其最顶层的数据结构图如图2所示。其中OpenFlow Capable Switch是有OpenFlow Logical Switch实例化出来的一个数据结构，用于与OpenFlow配置节点通信，并由配置节点对其属性进行配置。OpenFlow逻辑交换机是指对OpenFlow交换机实体的逻辑描述，用于指导交换机进行相关动作，也是与OpenFlow控制器通信的实体。OpenFlow逻辑交换机拥有包括端口，队列，流表等资源。</p>
+<p><center><img alt="data model of of-config" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f1f92gkmecj20i40c0abh.jpg" /></center>
+<center>图2. OF-CONFIG 核心数据结构UML图</center></p>
+<p>作为OpenFlow的伴侣协议，OF-CONFIG很好地弥补了OpenFlow协议规范之外的内容。在OpenFlow协议的SDN框架中，OF-CONFIG需完成交换机的配置工作，包括配置控制器信息等内容。当交换机和控制器建立连接之后，将通过OpenFlow协议来传递信息。从面向对象的角度看，OpenFlow协议规范的范围仅负责指导交换机对数据流进行操作而无法对交换机的资源进行配置，转而由OF-CONFIG等配置协议来完成交换机的配置工作，此设计体现了面向对象的理念，使得协议内容更加合理。</p>
+<p>而作为伴侣协议，OF-CONFIG协议是对OpenFlow协议的补充，所以其设计动机、设计目的和实现方式等方式都不一样。但值得注意的是，OpenFlow逻辑交换机的某些属性可以通过OpenFlow协议和OF-CONFIG协议两种方式来进行配置，所以两个协议也有相互重叠的地方。笔者将OpenFlow和OF-CONFIG的差异整理于表1。</p>
+<p><center>表1. OpenFlow与OF-CONFIG的差异</center></p>
+<table class="table-bordered table-striped table-condensed">
+    <tr>
+        <td width='100'></td>
+        <td width='350'><strong>OpenFlow</strong></td>
+        <td width='350'><strong>OF-CONFIG</strong></td>
+    </tr>
+    <tr>
+        <td><strong>设计动机</strong></td>
+        <td>修改流表项等规则来指导通过OpenFlow交换机的网络数据包的修改和转发等动作。</td>
+        <td>通过远端的配置点来对多个OpenFlow交换机进行配置，简化网络运维工作。 </td>
+    </tr>
+    <tr>
+        <td><strong>传输</strong></td>
+        <td>通过TCP，TSL或者SSL来传输OpenFlow比特流。</td>
+        <td>通过XML来描述数据，并通过NETCONF来传输。 </td>
+    </tr>
+    <tr>
+        <td><strong>协议终结点</strong></td>
+        <td><p>(1) OpenFlow控制器(代理或者中间层在交换机看来就是控制器)</p>
+            <p>(2) OpenFlow交换机/datapath</p></td>
+        <td><p>(1)OF-CONFIG配置点</p>
+            <p>(2) OpenFlow使能交换机</p></td>
+    </tr>
+    <tr>
+        <td><strong>使用示例</strong></td>
+        <td>OpenFlow控制器下发一条流表项指导交换机将从端口1进入的数据包丢弃。</td>
+        <td>通过OF-CONFIG配置点将某个OpenFlow使能交换机连接到指定的控制器。 </td>
+    </tr>
+</table>
+
+<h3>发展趋势</h3>
+<p>自2012年发布的OF-CONFIG 1.0版本之后，为支持OpenFlow协议的新版本特性，OF-CONFIG协议也不断更新协议版本。至2014年为止，OF-CONFIG已更新到1.2版本，其支持OpenFlow1.3版本协议的新特性。目前为止尚无更新版本更新。</p>
+<p>与OF-CONFIG类似的配置协议还有OVSDB，其专门为OpenVSwitch的数据库配置服务，可用于创建网桥并配置。而随着OpenVSwitch的流行，OVSDB的曝光率相比要高于OF-CONFIG，所以两者在技术上是一种竞争关系。但是OF-CONFIG适用于所有支持OpenFlow协议的交换机，包括软件交换机和硬件交换机，而OVSDB只支持OpenVSwitch交换机。这点差异使得OF-CONFIG在物理交换机环境下占有一定优势。</p>
+<p>随着SDN的发展，OpenFlow不再是唯一的，也不再是必须的选项。但是无论选择哪一种南向协议，都需要通过交换机配置协议，所以相比OpenFlow而言，OF-CONFIG似乎更有生命力。因此笔者看好OF-CONFIG在SDN发展的很长一段时间内将拥有稳定的技术市场，这个趋势和OpenFlow的发展有很大的关系，但是OF-CONFIG不会随着OpenFlow的可能消亡而失去竞争力。</p>
+<p>作者简介：</p>
+<p>李呈，2014/09-至今，北京邮电大学信息与通信工程学院未来网络理论与应用实验室（FNL实验室）攻读硕士研究生。</p>
+<p>个人博客：www.muzixing.com</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2016/02/14/sdnzu-wang-xiang-guan-jie-jue-fang-an.html"><h2>SDN组网相关解决方案</h2></a>
+        <div class= "well small"> 2016-02-14
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>SDN作为一种新的网络架构，正被应用到越来越多的网络场景中。而网络的关键在于通信，如何使得SDN网络正常运行，并且能够和传统网络相互通信是SDN组网需要解决的基本问题。本文将介绍SDN组网相关解决方案中的数据平面到控制平面的组网解决方案、多SDN域组网解决方案和SDN网络与传统网络组网通信的解决方案。</p>
 <h3>SDN数据平面到控制平面组网</h3>
 <p>目前为止，在数据层面到控制到控制平面之间的组网方案主要有两大类：带外组网和带内(in-band)组网。</p>
 <ul>
@@ -92,50 +170,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 </li>
 </ul>
 <h3>多SDN域组网方案</h3>
-<p>当网络规模过大时，需要部署多域的组网方案。其中每个SDN域都由各自的控制平面控制。多域组网方案有水平架构和垂直架构两种。水平架构形式的多域组网方案中，域控制平面之间的关系是对等的。而在垂直架构中，则划分为域控制器层和超级控制器层。其中域控制器层负责自身域内的控制，超级控制器层负责管理域间的通信。</p>
-<ul>
-<li>
-<p>水平架构</p>
-<p>实现水平架构的多域控制器的解决方案有分布式集群和东西向接口协议两种方式。部署分布式集群可以实现同类型多控制器实例的协同工作，无法支持异构控制器之间的协同工作。而东西向接口协议支持异构多域控制器之间的协同工作，其通过交换路由等信息实现多域网络通信。水平架构多域组网架构图如图3所示：</p>
-</li>
-</ul>
-<p><center><img alt="muti-domains" src="http://ww1.sinaimg.cn/mw690/7f593341gw1f0yw1r2dg6j20gn0bg75y.jpg" /></center>
-<center>图3. 水平架构多域控制器组网方案</center></p>
-<ul>
-<li>
-<p>垂直架构</p>
-<p>垂直架构的多域控制器组网中超级控制器负责域间通信，而域控制器负责域内的通信。超级控制器相当于集中式的路由器，负责域间的通信，而每一个域由的域控制器模拟成独立的网络域，从而实现全局网络的管理。目前实现垂直架构的多域控制器协同工作的协议有Open eXchange 协议，其组网架构图如图4所示：</p>
-</li>
-</ul>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1f0yw1swzo4j20hi0bjdhj.jpg" /></center>
-<center>图4. 垂直架构多域控制器组网方案</center></p>
-<h3>SDN与传统互联</h3>
-<p>以上介绍的SDN组网仅仅是SDN网络部分的组网，而如何与其他传统网络相互通信则是本小节的内容。根据现实网关功能的设备种类不同，可以将组网方案分为传统设备组网方案和SDN设备组网方案两种。采用传统路由器作为网关方案中，SDN网络作为内部网络运营，而与其他网络通信的工作由传统路由器完成。
-而采用SDN设备模拟网关时，由SDN控制器在边缘交换机上模拟网关行为，从而完成与其他域之间的网络通信。</p>
-<ul>
-<li>
-<p>传统网络设备作网关</p>
-<p>在此方案中，采用传统路由器作为网络出口，由其完成和其他路由器之间的路由同步等工作。此方案中，复杂的网关功能由现网设备完成，而SDN控制器只需控制内部网络节点，从而降低了组网的难度，也提升了对内部网络的管控能力。</p>
-</li>
-</ul>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1f0ywf1xbo2j20fg087q3r.jpg" /></center>
-<center>图5. 采用传统设备作网关方案</center></p>
-<ul>
-<li>
-<p>SDN数据交换机作网关</p>
-<p>SDN设备解决方案中，SDN控制器需将边缘交换机模拟成一个路由器，如运行BGP协议的路由器，从而实现对传统路由协议的响应和支持，向外表现出路由器的特征，进而实现与互联网的互联互通。</p>
-</li>
-</ul>
-<p><center><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341gw1f0yweyc3msj20f00ac3zc.jpg" /></center>
-<center>图6. 采用SDN设备模拟网关组网方案示意图</center></p>
-<h3>总结</h3>
-<p>作为一名SDN初学者，在平时学习研究中，仅仅需要通过Mininet模拟则可以完成实验。而当真正部署SDN网络时，则需要考虑到很多实际问题，尤其是基本的组网方案。本文从数据平面到控制平面组网、SDN域之间组网和SDN域与传统网络之间组网三个方面简要介绍了SDN组网的相关解决方案。以此作为一个学习的总结，同时也希望这篇文章能帮助到有需要的研究人员。</p>
-<p>作者简介：</p>
-<p>李呈，2014/09-至今，北京邮电大学信息与通信工程学院未来网络理论与应用实验室（FNL实验室）攻读硕士研究生。</p>
-<p>个人博客：www.muzixing.com</p></div>
-        <hr />
-    </div>
-		
+<p>当网络规模过大时，需要部署多域的组网方案。其中每个SDN域都由各自的控制平面控制。多域组网方案有水平架构和垂直架构两种。水平架构形式的多域组网方案中，域控制平面之间的关系是对等的。而在垂直架构中，则划分为域控制器层和超级控制器层 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/02/14/sdnzu-wang-xiang-guan-jie-jue-fang-an.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -210,36 +247,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>随着IaaS的发展，数据中心网络对网络虚拟化技术的需求将会越来越强烈。SDN出现不久后，SDN初创公司Nicira就开发了网络虚拟化产品NVP(Network Virtualization Platform)。Nicira被VMware收购之后，VMware结合NVP和自己的产品vCloud Networking and Security (vCNS)，推出了VMware的网络虚拟化和安全产品NSX。NSX可以为数据中心提供软件定义化的网络虚拟化服务。由于网络虚拟化是SDN早期少数几个可以落地的应用，所以大众很容易将网络虚拟化和SDN弄混淆。正如前面所说 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/12/29/sdnyu-wang-luo-xu-ni-hua.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/11/30/ji-yu-liu-liang-de-sdnzui-duan-lu-jing-zhuan-fa-ying-yong.html"><h2>基于流量的SDN最短路径转发应用</h2></a>
-        <div class= "well small"> 2015-11-30
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>网络的转发是通信的基本功能，其完成信息在网络中传递，实现有序的数据交换。通过SDN控制器的集中控制，可以轻松实现基础的转发算法有二层MAC学习转发和基于跳数的最短路径算法。然而，网络跳数并不是决定路径优劣的唯一状态。除了跳数以外，还有带宽，时延等标准。本文将介绍如何通过SDN控制器Ryu开发基于流量的最短路径转发应用。</p>
-<h3>Forwarding Algorithm</h3>
-<p>目前基于流量的路由算法基本的解决思路有两种：</p>
-<p>(1) 首先基于跳数计算最优K条路径，然后在这些路径中选择可用带宽最大的路径。</p>
-<p>(2) 首先基于跳数计算最优路径，归一化路径的评价分数，然后基于流量计算最优路径，归一化基于带宽的评价；设置跳数和带宽的权重，对基于跳数和带宽的评分求其加权总和；按照加权求和值降序排序，取前K条作为最优评价路径。</p>
-<p>本文以第一种算法为例，介绍基于网络流量的最短路径转发应用开发。第二种算法基于前者的基础修改即可完成。</p>
-<h3>Network Awareness</h3>
-<p>首先我们需要编写一个网络感知应用，用于发现网络的资源，包括节点，链路，终端主机等。并根据拓扑信息计算基于条数的最短路径。开发此应用基本步骤如下：</p>
-<ul>
-<li>创建继承app_manager.RyuApp的应用network_awareness</li>
-<li>从topology.switches获取拓扑信息，包括交换机节点信息，链路信息</li>
-<li>使用Networkx 创建拓扑图的对象，用于存储网络拓扑</li>
-<li>使用Networkx的函数all_simple_paths(G, source ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2015/11/30/ji-yu-liu-liang-de-sdnzui-duan-lu-jing-zhuan-fa-ying-yong.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
@@ -256,6 +263,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../category/tech10.html">10</a></li>
     <li class=""><a href="../category/tech11.html">11</a></li>
     <li class=""><a href="../category/tech12.html">12</a></li>
+    <li class=""><a href="../category/tech13.html">13</a></li>
 
     <li class="next"><a href="../category/tech2.html">Next &rarr;</a></li>
 
