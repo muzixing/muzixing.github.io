@@ -62,6 +62,30 @@
  
 
     <div class='article'>
+        <a href="./pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html"><h2>SDN东西向现状简介</h2></a>
+        <div class= "well small"> 2015-10-29
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>What is SDN West-East Interface</h3>
+<p>在SDN架构中，控制平面掌控全局网络的资源，控制数据平面的转发等功能，尤其重要，所以控制平面的性能对整体网络的性能有直接的影响。以前控制平面多以单例控制器为主，控制平面能力欠缺成为SDN网络规模受限的最大原因之一。 后来OpenDayLight，ONOS等控制器的出现，使用了集群技术，使得SDN控制平面性能得到了提升，是当下解决SDN控制平面性能不足的主要解决方案之一。</p>
+<p>然而，这样的解决方案只能用于同一控制器之间的性能扩展，无法完成异构控制器之间的协同工作。此外，某些场景对于安全，隐私方面的考虑，需要隐藏网络内部的细节，所以还需要有SDN域的概念。如何完成跨域之间的流量处理，实现多异构控制器之间的协同工作是未来研究的方向之一，笔者将其归类为SDN控制平面的东西向接口。SDN控制平面的南向接口面对数据平面，北向接口面向应用，容易理解，控制器之间的接口称之为东西向接口，用于完成控制器之间的通信。</p>
+<p><center><img alt="West-East" src="http://ww2.sinaimg.cn/mw690/7f593341jw1exixzvkpi6j20og0d2gml.jpg" /></center>
+<center>Figure1. West-East Interface of SDN</center></p>
+<h3>Why SDN need West-East Interface</h3>
+<p>SDN东西向接口是定义控制器之间通信的接口。由于单控制器能力有限，为满足大规模和可拓展性要求，东西向接口的研究成为下一个SDN研究领域。目前对于SDN东西向接口的研究还处于初级阶段，还缺少行业标准。标准的SDN东西向接口应与SDN控制器解耦 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2015/09/28/sdnying-yong-lu-you-suan-fa-shi-xian-gong-ju-zhi-networkx.html"><h2>SDN应用路由算法实现工具之Networkx</h2></a>
         <div class= "well small"> 2015-09-28
 
@@ -157,29 +181,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">controllers</span> <span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;Start OpenFlow reference user datapath.</span>
 <span class="sd">               Log to /tmp/sN- ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html"><h2>Ryu:OpenFlow协议源码分析</h2></a>
-        <div class= "well small"> 2015-07-24
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Ryu支持OpenFlow所有的版本，是所有SDN控制器中对OpenFlow支持最好的控制器之一。这得益于Ryu的代码设计，Ryu中关于OpenFlow协议的代码量不多。阅读Ryu源码，不仅让我了解到了Ryu的运行细节，也学会了许多的编码知识。这为我当前开发的协议提供了很大的帮助。</p>
-<p>本篇将从交换机与控制器建立连接开始，介绍OpenFlow报文的解析的相关代码实现。关于如何注册handler和发送报文，可查看之前的<a href="http://www.muzixing.com/pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html">RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager</a>。该篇侧重点为Ryu整体架构的运作，重点在RyuApp和AppManager;本篇重点在与详细介绍OpenFlow的解析和封装实现。希望对读者提供帮助。</p>
-<h3><strong>Ofp_handler</strong></h3>
-<p>负责底层数据通信的模块是ofp_handler模块。ofp_handler启动之后，start函数实例化了一个controller.OpenFlowController实例。OpenFlowController实例化之后，立即调用_<em>call_</em>()函数，call函数启动了server_loop去创建server socket，其handler为domain_connection_factory函数。每当收到一个switch连接，domain_connection_factory就会实例化一个datapath对象。这个对象用于描述交换机的所有行为。其中定义了接收循环和发送循环。</p>
-<h3><strong>Datapath</strong></h3>
-<p>datapath.serve函数是socket通信收发逻辑的入口。该函数启动了一个绿色线程去处理发送循环，然后本线程负责接收循环的处理。self._send_loop是发送主循环。其主要逻辑为：不断获取发送队列是否有数据，若有，则发送；底层调用的是socket.send_all（）函数 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

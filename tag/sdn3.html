@@ -62,6 +62,31 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html"><h2>RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager</h2></a>
+        <div class= "well small"> 2014-12-27
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>每接触一个控制器我都会习惯性的把控制器的源码读一读，走一走处理流程，RYU也不例外。本篇博文将从main函数入手，讲述RYU的ryuapp基类细节、app_manager类如何load apps，注册并运行application，Event的产生以及分发，还有最重要的应用ofp_handler。文章将以RYU真实运行流程作为主线，详细讲述RYU如何运作。如果文中出现理解错的地方，敬请指出，万分感谢！转载请声明原出处。</p>
+<h2>main()</h2>
+<p>RYU的main函数在ryu/cmd/manager.py文件中。main函数中CONF部分已经在在前一篇<a href="http://www.muzixing.com/pages/2014/12/19/ryuxue-xi-oslo.html">《RYU学习：oslo》</a>已经有所介绍，所以这次关注的重点的是后续部分，如app_manager如何工作。</p>
+<div class="highlight"><pre><span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
+    <span class="n">try:</span>
+        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
+             <span class="n">project</span><span class="o">=</span><span class="s">&#39;ryu&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;ryu-manager %s&#39;</span> <span class="nv">%</span> <span class="nv">version</span><span class="p">,</span>
+             <span class="n">default_config_files</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/usr/local/etc/ryu ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/12/03/dockerbu-shu-sdnhuan-jing.html"><h2>Docker部署SDN环境</h2></a>
         <div class= "well small"> 2014-12-03
 
@@ -190,38 +215,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <li>
 <p>Northbound API / Implementation [ping-northbound]</p>
 <p>The northbound API defines the interface for interacting with the given service. For example, a REST ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/05/04/noxshi-xian-natgong-neng.html"><h2>nox实现nat功能</h2></a>
-        <div class= "well small"> 2014-05-04
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>nat功能是一个非常简单，但却非常重要的功能。保留10，127,192三个网段作为公网地址，通过nat实现地址复用，可以解决现网IPV4地址不够用的尴尬局面。本篇主要讲如何使用nox实现nat的demo.</p>
-<h3>环境</h3>
-<ul>
-<li>nox  安装比较困难，请参看其他教程</li>
-<li>mininet    网络环境搭建神器</li>
-</ul>
-<h3>控制器</h3>
-<p>首先在nox/src/coreapps/switch中找到switch.cc。
-在class switch中添加成员变量uint32_t src_ip，nat_ip；由于只是一个简单的demo，就不做映射列表了。</p>
-<p>handle_packet_in中将if(setup_flows &amp;&amp; out_port!=-1)的逻辑修改如下：</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">setup_flows</span> <span class="o">&amp;&amp;</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">auto</span> <span class="n">fm</span> <span class="o">=</span> <span class="nn">v1::</span><span class="n">ofp_flow_mod</span><span class="p">()</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">())</span>
-               <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/05/04/noxshi-xian-natgong-neng.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

@@ -62,6 +62,36 @@
  
 
     <div class='article'>
+        <a href="./pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html"><h2>【原】基于mininet的OpenFlow拓展性拓扑搭建</h2></a>
+        <div class= "well small"> 2014-03-11
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>我们普遍情况下，都是单一控制器去控制一个网络。但是如果多控制器呢？我们如何实现多控制情况下的通信要求呢？</p>
+<p>这有点难度！需要一些东西向的协议来实现控制器之间的数据共享与交换。不是我一个人一两天能搞定的事情。且不同控制器对拓扑信息等存储方式不一样，需要一个统一的标准就显得比较困难。我们先不去想太多。首先，我们需要完成的第一项工作就是数据平面上，不同控制器之间的网络可以相互通信。</p>
+<p>最简单的通信莫过于ping了！</p>
+<h2>实验目的</h2>
+<p>使用mininet搭建两个独立的网络，分别属于不同的控制器。同时，底层数据平面可以相互ping通。这就是我们这个实验的目的。</p>
+<h2>拓扑搭建</h2>
+<p>底层拓扑搭建我们使用mininet2.0，因为mininet1.0版本好像没有link文件，也没有intf类。也许是我没有找到吧。</p>
+<p>以下的代码的作用在于创建一个OVS的网络，并使虚拟机的某个（无ip）网卡连接到这个网中。</p>
+<p>直接上代码：</p>
+<div class="highlight"><pre><span class="o">\</span><span class="c1">#!/usr/bin/python</span>
+<span class="s">&quot;&quot;&quot;</span>
+<span class="s">    This is a topu of our test. It shows that how to add an ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2014/02/23/guan-yu-cheng-mai-xian-nong-cun-xiao-xue-xian-zhuang-de-cai-fang-zong-jie.html"><h2>关于澄迈县农村小学现状的采访总结</h2></a>
         <div class= "well small"> 2014-02-23
 
@@ -161,36 +191,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p><img alt="" src="http://g.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=d5cbada7a964034f0bcdc2039ff8080c/faedab64034f78f06906f9897b310a55b3191cbe.jpg?referer=8100bf6eba99a90162226e065c55&amp;x=.jpg" /></p>
 <p>也许还有一些没有花全。因为这个是我初学OpenFlow时候画的，若有错误，欢迎指正！</p>
 <p>如果你觉得我的小站还不错，可以帮忙宣传宣传咯。创建初期，积攒人气！</p> <a class="btn btn-info xsmall" href="./pages/2013/12/20/openflow10shu-ju-jie-gou-tu-shi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html"><h2>【原创】SDN控制器开发教程——打造属于你自己的控制器</h2></a>
-        <div class= "well small"> 2013-12-17
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><hr />
-<h2>前言</h2>
-<p>SDN(Software Defined Network)这些年越来越火。当我还是大三的小朋友的时候，我的学长带我走进了OpenFlow的世界。一年里，我慢慢学会了许多东西，研究过pox,写过mininet自定义拓扑，画过OpenFlow的数据结构，做过HTTP的流量引导，广播风暴解除等许多小东西。在SDN这条道路上越走越远，也希望有一天，我能在这个领域有所成就，做出一点自己的贡献。</p>
-<p>暑假的时候开始来工信部电信研究院实习，开始跟着学长一起开发，后来学长去美帝了，我继续完成剩下的工作。为了实现demo，我们顺便写了一个小小的控制器，其本质很简单，也许简单到你都不屑一顾。但是这个过程，我们需要从底层通信开始搭建，一直到最后的上层应用，无论哪一个环节，都会涉及到。到最后你会发现，其实也许这个控制器并没有太大的用处，但是更多的是这个过程中你学到的知识，那是使用别人开发的控制器说不能得到的宝贵知识。</p>
-<hr />
-<h2>你能得到的</h2>
-<ul>
-<li>底层通信：基于Tornado架构的socket通信的搭建</li>
-<li>OpenFlow协议数据结构细节</li>
-<li>通信流程的事件处理</li>
-<li>若干网络协议的熟悉与掌握。</li>
-<li>最重要的，你自己从无到有，经历了一个开发过程，所有出现的你想到的想不到的问题，你都需要自己去解决。你会在解决问题的过程中收获太多太多你想不到的财富。</li>
-<li>自信！你可以大声对自己说 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

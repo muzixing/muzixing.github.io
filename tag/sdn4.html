@@ -62,6 +62,38 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/05/04/noxshi-xian-natgong-neng.html"><h2>nox实现nat功能</h2></a>
+        <div class= "well small"> 2014-05-04
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>nat功能是一个非常简单，但却非常重要的功能。保留10，127,192三个网段作为公网地址，通过nat实现地址复用，可以解决现网IPV4地址不够用的尴尬局面。本篇主要讲如何使用nox实现nat的demo.</p>
+<h3>环境</h3>
+<ul>
+<li>nox  安装比较困难，请参看其他教程</li>
+<li>mininet    网络环境搭建神器</li>
+</ul>
+<h3>控制器</h3>
+<p>首先在nox/src/coreapps/switch中找到switch.cc。
+在class switch中添加成员变量uint32_t src_ip，nat_ip；由于只是一个简单的demo，就不做映射列表了。</p>
+<p>handle_packet_in中将if(setup_flows &amp;&amp; out_port!=-1)的逻辑修改如下：</p>
+<div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">setup_flows</span> <span class="o">&amp;&amp;</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">auto</span> <span class="n">fm</span> <span class="o">=</span> <span class="nn">v1::</span><span class="n">ofp_flow_mod</span><span class="p">()</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">())</span>
+               <span class="o">.</span><span class="n">cookie</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="nn">v1::ofp_flow_mod ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/05/04/noxshi-xian-natgong-neng.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html"><h2>SDN实现HTTP网络加速实验</h2></a>
         <div class= "well small"> 2014-03-13
 
@@ -159,36 +191,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p><img alt="" src="http://g.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=d5cbada7a964034f0bcdc2039ff8080c/faedab64034f78f06906f9897b310a55b3191cbe.jpg?referer=8100bf6eba99a90162226e065c55&amp;x=.jpg" /></p>
 <p>也许还有一些没有花全。因为这个是我初学OpenFlow时候画的，若有错误，欢迎指正！</p>
 <p>如果你觉得我的小站还不错，可以帮忙宣传宣传咯。创建初期，积攒人气！</p> <a class="btn btn-info xsmall" href="../pages/2013/12/20/openflow10shu-ju-jie-gou-tu-shi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html"><h2>【原创】SDN控制器开发教程——打造属于你自己的控制器</h2></a>
-        <div class= "well small"> 2013-12-17
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><hr />
-<h2>前言</h2>
-<p>SDN(Software Defined Network)这些年越来越火。当我还是大三的小朋友的时候，我的学长带我走进了OpenFlow的世界。一年里，我慢慢学会了许多东西，研究过pox,写过mininet自定义拓扑，画过OpenFlow的数据结构，做过HTTP的流量引导，广播风暴解除等许多小东西。在SDN这条道路上越走越远，也希望有一天，我能在这个领域有所成就，做出一点自己的贡献。</p>
-<p>暑假的时候开始来工信部电信研究院实习，开始跟着学长一起开发，后来学长去美帝了，我继续完成剩下的工作。为了实现demo，我们顺便写了一个小小的控制器，其本质很简单，也许简单到你都不屑一顾。但是这个过程，我们需要从底层通信开始搭建，一直到最后的上层应用，无论哪一个环节，都会涉及到。到最后你会发现，其实也许这个控制器并没有太大的用处，但是更多的是这个过程中你学到的知识，那是使用别人开发的控制器说不能得到的宝贵知识。</p>
-<hr />
-<h2>你能得到的</h2>
-<ul>
-<li>底层通信：基于Tornado架构的socket通信的搭建</li>
-<li>OpenFlow协议数据结构细节</li>
-<li>通信流程的事件处理</li>
-<li>若干网络协议的熟悉与掌握。</li>
-<li>最重要的，你自己从无到有，经历了一个开发过程，所有出现的你想到的想不到的问题，你都需要自己去解决。你会在解决问题的过程中收获太多太多你想不到的财富。</li>
-<li>自信！你可以大声对自己说 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
