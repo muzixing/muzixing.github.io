@@ -62,6 +62,27 @@
  
 
     <div class='article'>
+        <a href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html"><h2>Fattree topo and iperfmulti function in mininet</h2></a>
+        <div class= "well small"> 2015-02-22
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>This article will show you 1)how to build a <a href="http://ccr.sigcomm.org/online/files/p63-alfares.pdf">fattree</a> topo and 2)how to extend the iperfmulti function in mininet.</p>
+<p>本篇博文将讲述1）如何搭建fatree网络拓扑和2）如何在mininet中拓展iperfmulti功能。</p>
+<p>众所周知，数据中心是目前网络研究的一个热门领域。随着云计算的兴起与发展，会对数据中心网络提出更多的需求，也为学术研究提供了更多的课题。TE（Traffic Engineering）是网络研究中最基础的研究之一，在TE中Load balance是比较主要的研究内容之一。 然而由于数据中心网络的流量走势与传统网络不同，导致数据中心网络与传统网络的架构有所不同。在传统网络中上下行流量在总流量中占据很大比重，而相比之下，数据中心的流量分类中，横向流量的比重要远远大于传统网络架构的比重。为了更好解决数据中心网络流量问题，数据中心架构的设计就变得非常重要，在众多网络架构中，Fat-tree架构是比较出名和成功的。</p>
+<p>SDN兴起于校园网，盛开于数据中心，这是一种比较准确的描述。目前SDN的研究领域内 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/02/22/fattree-topo-and-iperfmulti-function-in-mininet.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/12/27/ryuhe-xin-yuan-ma-jie-du-ofphandlercontrollerryuapphe-appmanager.html"><h2>RYU核心源码解读：OFPHandler,Controller,RyuApp和AppManager</h2></a>
         <div class= "well small"> 2014-12-27
 
@@ -191,32 +212,6 @@ Multicast? <span class="o">--------------------------------------------&gt;|</sp
 <h3>解决环路风暴 ...</h3> <a class="btn btn-info xsmall" href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html"><h2>Opendaylight中开发模块Ping</h2></a>
-        <div class= "well small"> 2014-08-06
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>在安装和运行opendaylight之后，我们需要了解opendaylight各个目录的作用，运行机制。在此基础之上，我们需要动手进行第一个ODL模块的开发，在开发中找到ODL的重要所在。接下来的教程是在完成官网的一篇教程的基础上的总结和介绍，希望读者能有所收获。</p>
-<h3>摘要</h3>
-<p>本篇教程主要介绍如何在ODL上使用MD-SAL开发一个简单的TCP ping插件。这个插件实现了向指定地址发送ICMP，探测IP地址可达性的功能。首先我们需要使用YANG定义一个ping model,然后我们需要实现一个ping plugin,实现ping功能，再然后创建ping service 用于提供ping服务，最后我们通过REST API来实现北向接口使用ping service。</p>
-<p>其中每一个功能，我们将其创建为maven工程，并作为osgi的bundle。所以我们总共需要创建4个OSGI 的bundle：</p>
-<ul>
-<li>
-<p>Northbound API / Implementation [ping-northbound]</p>
-<p>The northbound API defines the interface for interacting with the given service. For example, a REST ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2014/08/06/opendaylightzhong-kai-fa-mo-kuai-ping.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../tag/sdn2.html">&larr; Previous</a></li>
@@ -226,6 +221,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class="active"><a href="../tag/sdn3.html">3</a></li>
     <li class=""><a href="../tag/sdn4.html">4</a></li>
     <li class=""><a href="../tag/sdn5.html">5</a></li>
+    <li class=""><a href="../tag/sdn6.html">6</a></li>
 
     <li class="next"><a href="../tag/sdn4.html">Next &rarr;</a></li>
 

@@ -62,6 +62,30 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/01/27/ji-yu-sdnde-wang-luo-zhuang-tai-ce-liang.html"><h2>基于SDN的网络状态测量</h2></a>
+        <div class= "well small"> 2016-01-27
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>为了更好地管理和运行网络，非常有必要收集网络资源及其状态信息。在很多网络场景中，SDN控制器的决策都取决时延，带宽和拓扑等网络状态。在开发SDN应用的过程中，笔者总结了一些有用的网络状态测量的解决方案，可以为初学者在解决网络问题时提供一些启发。本文将主要介绍如何通过SDN控制器和OpenFlow协议来测量和收集网络中的时延、带宽以及拓扑状态等信息。</p>
+<h3>时延</h3>
+<p>时延的测试在终端会显得很容易，但是在交换机节点上测试时延就比较麻烦。在SDN中，可以通过一下步骤实现交换机之间链路的时延。</p>
+<p>（1）控制器向交换机A下发一个Packet_out报文。报文的数据段携带了任意一个约定好的协议报文，其报文的数据段携带了控制器下发报文时的时间戳。Packet_out报文的动作指示交换机将其泛洪或者转发到某端口。</p>
+<p>（2）交换机B收到了交换机A发送过来的数据包，无法匹配对应流表项，从而packet_in到控制器。控制器接收到这个数据包之后，和当下时间相减，得到时间差T1。其时间差约等于数据包从控制器到交换机A + 交换机A到交换机B + 交换机B到控制器的时延。</p>
+<p>（3）同理，控制器向交换机B发送一个类似的报文。然后控制器从交换机A收到Packet_in报文，记录下时间差T2。所以T1+T2=控制器到交换机A的RTT+控制器到交换机B的RTT+交换机A到交换机B的时延RTT。</p>
+<p>（4）控制器向交换机A和交换机B分别发送带有时间戳的Echo request。交换机收到之后即刻回复携带echo request时间戳的echo reply消息。所以控制器可以通过Echo reply的时间戳减去Echo reply携带的时间，从而得到对应交换机和控制器之间的RTT ...</p> <a class="btn btn-info xsmall" href="../pages/2016/01/27/ji-yu-sdnde-wang-luo-zhuang-tai-ce-liang.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/01/20/ru-he-ti-sheng-sdnke-tuo-zhan-xing.html"><h2>如何提升SDN可拓展性</h2></a>
         <div class= "well small"> 2016-01-20
 
@@ -158,27 +182,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="n">CONF</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span>
 <span class="n">CONF</span><span class="o">.</span><span class="n">register_cli_opts</span><span class="p">([</span>
     <span class="n">cfg</span><span class="o">.</span><span class="n">StrOpt ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/11/14/ji-xing-xi-ju-yu-gou-tong-tong-xin.html"><h2>即兴戏剧与沟通／通信</h2></a>
-        <div class= "well small"> 2015-11-14
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>即兴剧第一次出现在我的世界，是2015年3月份的时候。那时大学校园里春意盎然，遍地都是刚褪去厚重冬衣的男男女女，走在大道上欢声谈笑着，一转眼， 又到了一年一度交配的季节。我裹着厚厚的风衣，戴着黑框眼镜，面带微笑地欣赏着这美好时光。脚上那经历一个冬天磨砺的大靴子，在阳光的照耀下，也变得崭新了一些。</p>
-<p>“同学，参加即兴戏剧社吗？”一个甜美的声音吸引了我的注意。今天是社团招新的日子，校园大道上都是社团在摇旗呐喊，特别热闹。我寻声望去，却有点小失望。简陋的展台，只有一张桌子，几个穿着并不像演员的人在那里对着我憨笑，不免让我觉得有些不过去有些不给面子，有些尴尬。</p>
-<p>“什么是即兴剧啊？”我自小个性张扬，梦想是当一面导演，然后导演出传世的经典。在经过快20年的努力，饱读诗书十余载，学习街舞，在KTV当麦霸之后，终于成为了北京电影学院旁边的北京邮电大学的一个学通信工程的学生。高中就渴望着能考到一个离北影近一些的学校，这样平时就可以到对面蹭课了。虽然现实有些让人失望，但是梦想总是要有的，只要留住梦想的火种，总有一天，它就会熄灭。在熄灭之前，任何时候，我都做好了燎原的准备。不管是什么剧，抓住就是机会啊，学习，表演 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/11/14/ji-xing-xi-ju-yu-gou-tong-tong-xin.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

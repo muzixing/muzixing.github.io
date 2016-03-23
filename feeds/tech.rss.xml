@@ -1,5 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Sat, 12 Mar 2016 00:00:00 +0800</lastBuildDate><item><title>POF:更理想的SDN?</title><link>http://www.muzixing.com/pages/2016/03/12/pofgeng-li-xiang-de-sdn.html</link><description>&lt;p&gt;OpenFlow协议实现的SDN目前已经得到了应用和推广，但OpenFlow并不完美，OpeFlow交换机还不能提供更好的可编程能力。POF作为一种新的南向协议，是OpenFlow的未来方向？还是只是一个乌托邦？本文将介绍由华为提出的协议无关转发POF，其中包括其简介、原理、原型和应用场景以及最后的发展趋势，希望能带来一些有意思的想法。&lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Wed, 23 Mar 2016 00:00:00 +0800</lastBuildDate><item><title>P4:真正的SDN还遥远吗</title><link>http://www.muzixing.com/pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html</link><description>&lt;p&gt;OpenFlow协议作为SDN最流行的南向协议，得到了很多的关注，目前发展也良好，但OpenFlow并不完美，OpeFlow交换机还不能提供更好的可编程能力。P4作为新的网络编程语言很好的弥补这个缺陷。P4会改变网络吗？是否能带来具有完全可编程能力的SDN？还是仅仅是学术界的宠儿？本文将介绍协议独立数据包处理编程语言P4，其中包括其简介、原理和发展趋势，希望笔者能带来一些有意思的观点。&lt;/p&gt;
+&lt;h3&gt;简介&lt;/h3&gt;
+&lt;p&gt;P4(Programming protocol-independent packet processors)[1]是由Pat Bosshart等人提出来的高级“协议独立数据包处理编程语言”，如OpenFlow一样是一种南向协议，但是其范围要比OpenFlow要大。不仅可以指导数据流进行转发，还可以对交换机等转发设备的数据处理流程进行软件编程定义，是真正意义上的完全SDN。值得注意的是，P4论文作者中还有斯坦福大学的Nick McKeown教授和普林斯顿大学的Jennifer Rexford教授两位业界大牛的名字。Nick教授是SDN的提出者之一，一直是SDN学术领域顶尖的存在；而后者Jennifer教授也发表了4D[2]等诸多重要的SDN相关论文，更提出了网络编程语言Frenetic[3]，同样是业界的先驱。两位教授也是P4组织的主要推动者之一。目前，P4语言作为一种潜在的OpenFlow2.0的发展方向在努力发展。&lt;/p&gt;
+&lt;h3&gt;原理&lt;/h3&gt;
+&lt;p&gt;与POF提出的目的类似，P4提出的目的也是为了解决OpenFlow编程能力不足以及其设计本身所带来的可拓展性差的难题。自OpenFlow1.0发布以来，其版本目前已经演进到1.5版本。其中匹配域的个数从1.0版本的12元组变为1.3版本的40个，最后到1.5版本的45个匹配域，其匹配域数目随着新版本支持特性的更新而不断增加。但OpenFlow并不支持弹性地增加匹配域，每增加一个匹配域就需要重新编写控制器和交换机两端的协议栈以及交换机的数据包处理逻辑，这无疑增加了交换机设计的难度，也严重影响OpenFlow协议的版本稳定性，影响OpenFlow的推广。&lt;/p&gt;
+&lt;p&gt;为了解决OpenFlow协议编程能力不足的问题，Nick教授等人提出了P4高级编程语言。P4的优点主要有如下三点：
+（1）可灵活定义转发设备数据处理流程，且可以做到转发无中断的重配置。OpenFlow所拥有的能力仅是在已经固化的交换机数据处理逻辑之上通过流表项指导数据流处理，而无法重新定义交换机处理数据的逻辑，但P4编程语言具有对交换机的数据包处理流程编程的能力。&lt;/p&gt;
+&lt;p&gt;（2）转发设备协议无关转发。交换机等交换设备无需关注协议语法语义等内容，则可以完成数据处理。由于P4可以自定义数据处理逻辑，所以可以通过控制器对交换机等转发设备编程实现对应的协议处理逻辑，而这个行为将被翻译成对应的匹配和动作从而被转发设备所理解和执行。&lt;/p&gt;
+&lt;p&gt;（3）设备无关性。正如写C语言或者Python语言时并不需要关心CPU的相关信息，使用P4语言进行网络编程同样无需关心底层设备的具体信息。P4的编译器会将通用的P4语言处理逻辑编译成设备相关的指令，从而写入转发设备，完成转发设备的配置和编程。&lt;/p&gt;
+&lt;p&gt;抽象的P4转发设备模型如图1所示。其中第一部分是可编程定制的解析器，用于编程实现自定义的数据解析流程，可将网络字节流解析成对应的协议数据包。解析之后的流程是和OpenFlow类似的Match+Action操作，其流水线支持串行和并行两种操作。受OpenFlow1.4的启发，P4设计的匹配过程也分为Ingress Pipeline和Egress Pipeline两个分离的数据处理流水线。与OpenFlow相比，P4的设计有3个优点：可定制数据解析流程，而不像OpenFlow交换机的固定解析逻辑；可执行并行和串行的匹配+动作操作，而OpenFlow仅支持串行操作；支持协议无关的转发。&lt;/p&gt;
+&lt;p&gt;&lt;center&gt;&lt;img alt="p4 model" src="http://ww3.sinaimg.cn/mw690/7f593341jw1f1ykzr2m6kj20o50hodiu.jpg" /&gt;&lt;/center&gt;
+&lt;center&gt;图1. P4转发设备模型&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;抽象的P4转发模型用于展示交换机如何被配置和编程的。在定义交换机处理逻辑时，需要定义数据包处理的依赖关系，也即数据报头的依赖关系，比如要处理IPV4报文可能需要依赖于以太网报文的处理。这些依赖关系可以通过P4编程语言描述出来，并编译生成TDG(Table Dependency Graph)，其中每个表都是对应的一种协议或者一个类别的数据包的处理。TDG描述了匹配表之间的逻辑关系，输入和对应操作等行为，用于指导交换机进行数据处理。TDG被定义出来之后，将被编译器翻译成交换机理解的逻辑或者指令，并写入到交换机等转发实体中，从而完成自定义数据包处理流程。&lt;/p&gt;
+&lt;p&gt;&lt;center&gt;&lt;img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1f1ykzqr0qfj20r30ebjue.jpg" /&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;&lt;center&gt;图2.  L2/L3交换机的TDG实例图&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;一个P4程序包含如下5个关键组件:Header、Parser、Table、Action和Control Programs。其具体介绍如下：
+Header（报头）：数据包的处理都需要根据报头的字段内容来决定其操作。所以P4中也需要定义对应的报头，报头本质上就是有序排列的字段序列。报头的描述由有序的字段名称和对应的字段长度组成，示例如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;header&lt;/span&gt; &lt;span class="n"&gt;ethernet&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;fields&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;dst_addr&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;48&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="sr"&gt;//&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt; &lt;span class="n"&gt;in&lt;/span&gt; &lt;span class="n"&gt;bits&lt;/span&gt;
+        &lt;span class="n"&gt;src_addr&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;48&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;ethertype&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt; 
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Parser（解析器）：在定义了报头之后，还需要定义报头之间的关系，及数据包解析的对应关系。比如ethernet的ethertype=0x0800时应该跳转到IPV4的header进行后续解析。以以太网报头解析为例，示例代码如下。所有的解析均从start状态开始，并在stop状态或者错误之后结束。解析器用于将字节流的信息解析为对应的协议报文，用于后续的流表项匹配和动作执行。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;parser&lt;/span&gt; &lt;span class="n"&gt;start&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt; 
+    &lt;span class="n"&gt;ethernet&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="n"&gt;parser&lt;/span&gt; &lt;span class="n"&gt;ethernet&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;switch&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ethertype&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; 
+    &lt;span class="p"&gt;{&lt;/span&gt;   &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="mh"&gt;0x8100&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;vlan&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; 
+        &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="mh"&gt;0x9100&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;vlan&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="mh"&gt;0x800&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;ipv4&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; 
+        &lt;span class="sr"&gt;//&lt;/span&gt; &lt;span class="n"&gt;Other&lt;/span&gt; &lt;span class="n"&gt;cases&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Table（表）：P4中需要定义多种用途的表用于存储匹配表项。其表的格式为Match+Action，即匹配域和对应的执行动作。P4语言定义某个表具体的匹配域以及需要执行的动作。而具体的流表项需要在网络运行过程中通过控制器来编程下发，从而完成对应数据流的处理。举个例子，比如在入口交换机上需要将对应VLAN的数据添加类似于MPLS标签的自定义标签mtag，从而数据在交换网络中通过匹配mtag来完成转发。具体示例如下，其中reads相当与读取匹配域的值，匹配类型为精确匹配；action为匹配成功之后执行的动作，此处为添加mtag标签；而max_size则描述匹配表的最大表项容量。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="n"&gt;mTag_table&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt; 
+    &lt;span class="n"&gt;reads&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;ethernet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dst_addr&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;exact&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+           &lt;span class="n"&gt;vlan&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;vid&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;exact&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;actions&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="sr"&gt;//&lt;/span&gt; &lt;span class="n"&gt;At&lt;/span&gt; &lt;span class="n"&gt;runtime&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;entries&lt;/span&gt; &lt;span class="n"&gt;are&lt;/span&gt; &lt;span class="n"&gt;programmed&lt;/span&gt; &lt;span class="n"&gt;with&lt;/span&gt; &lt;span class="n"&gt;params&lt;/span&gt; &lt;span class="sr"&gt;//&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;mTag&lt;/span&gt; &lt;span class="n"&gt;action&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="n"&gt;See&lt;/span&gt; &lt;span class="n"&gt;below&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt; 
+    &lt;span class="n"&gt;add_mTag&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;max_size&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;20000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Action（动作）：与OpenFlow的动作类似，不过P4的动作是抽象程度更高的协议无关的动作。P4定义了一套协议无关的原始指令集，基于这个指令集可以实现复杂的协议操作。P4支持的原始指令集包括set_field、add_header和checksum等为数不多的指令。复杂的动作将通过赋予不同的参数来调用这些原始指令集组合来实现，而这些参数可以是数据包匹配过程中产生的metadata。示例如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;action&lt;/span&gt; &lt;span class="n"&gt;add_mTag&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;up1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;up2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;down1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;down2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;egr_spec&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;add_header&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mTag&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;   &lt;span class="sr"&gt;//&lt;/span&gt; &lt;span class="n"&gt;Copy&lt;/span&gt; &lt;span class="n"&gt;VLAN&lt;/span&gt; &lt;span class="n"&gt;ethertype&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;mTag&lt;/span&gt;
+    &lt;span class="n"&gt;copy_field&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mTag&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ethertype&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;vlan&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ethertype&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt; &lt;span class="sr"&gt;//&lt;/span&gt; &lt;span class="n"&gt;Set&lt;/span&gt; &lt;span class="n"&gt;VLAN&lt;/span&gt;&lt;span class="err"&gt;’&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="n"&gt;ethertype&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;signal&lt;/span&gt; &lt;span class="n"&gt;mTag&lt;/span&gt;
+    &lt;span class="n"&gt;set_field&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;vlan&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ethertype&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mh"&gt;0xaaaa&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;set_field&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mTag&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;up1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;up1&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;set_field&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mTag&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;up2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;up2&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;set_field&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mTag&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;down1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;down1&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;set_field&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mTag&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;down2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;down2&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Control Program（控制程序）：控制程序决定了数据包处理的顺序，即数据包在不同匹配表中的跳转关系。当表和动作被定义和实现之后，还需要控制程序来确定不同表之间的控制流。P4的控制流包括用于数据处理的表，判决条件以及条件成立时所需采取的操作等组件。以mtag的处理为例，其过程如图2.11所示。&lt;/p&gt;
+&lt;p&gt;&lt;center&gt;&lt;img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341jw1f1ykzqju2oj20os0ar75g.jpg" /&gt;&lt;/center&gt;
+&lt;center&gt;图2.11. mTag处理流程图&lt;/center&gt;&lt;/p&gt;
+&lt;p&gt;以上是P4语言程序必要的5个关键的组件的介绍。完成一个P4语言程序之后，需要通过P4的编译器将程序编译并写入到交换机中，其主要分为数据解析逻辑的编译写入和控制流程的编译写入。数据解析部分用于将网络字节流解析为对应的协议报文，并将报文送到接下来的控制流程中进行匹配和处理。控制流程的编译和写入主要分为两步：第一步需要将P4的程序编译，然后生成设备无关的TDG(Table Dependency Graph)，之后再根据特定的底层转发设备的资源和能力，将TDG映射到转发设备的资源上。目前P4支持软件交换机、拥有RAM和TCAM存储设备的硬件交换机、支持并行表的交换机，支持在流水线最后才执行动作的交换机以及拥有少量表资源的交换机等多种交换设备。&lt;/p&gt;
+&lt;h3&gt;发展趋势&lt;/h3&gt;
+&lt;p&gt;OpenFlow协议目前的框架设计使得OpenFlow无法对转发设备的数据解析和处理流程进行编程实现，缺少足够的可编程能力。此外，由于OpenFlow的匹配项均为协议相关的，使得每增加一个匹配域均需要对协议栈以及交换机处理流程进行重新编程，而这个过程周期很长，为支持新的OpenFlow协议需要对现有交换机进行升级或者推出新的交换机产品。这样的缺点让OpenFlow协议版本难以稳定，也难以推广。服务提供商在建设网络基础设施时，需要考虑支持OpenFlow什么版本，也要担心未来OpenFlow协议推出新版本时的兼容和设备升级等问题，使得OpenFlow迟迟无法大规模应用。面对OpenFlow的缺陷，P4的推出刚好解决了这个难题。&lt;/p&gt;
+&lt;p&gt;P4语言支持对交换机处理逻辑进行编程定义，从而使得协议版本在更新迭代时无需购买新设备，只需通过控制器编程更新交换机处理逻辑即可。这种创新解决了OpenFlow编程能力不足，版本不稳定的问题。此外，由于P4可以编程定义交换机处理逻辑，从而使得交换机可以实现协议无关的转发，进而使得底层交换机更加白盒化，适用范围更广，更容易降低设备采购成本。而且作为一门编程语言，P4支持设备无关特性，使得P4可以应用在不同厂家生产的转发设备上，解除了服务提供商对网络设备厂家绑定的顾虑。&lt;/p&gt;
+&lt;p&gt;自P4诞生以来，得到了业界的关注和认可，目前发展良好。作为一门网络编程语言，其大大简化了网络编程的难度，同时也改善了目前SDN可编程能力不足的问题。P4的主要推动者Nick教授是当下SDN最流行的南向协议OpenFlow协议的发明者之一，Jennifer教授也在网络界的先驱。无论是处于对P4技术本身的认同，还是对Nick教授和Jennifer教授的认同，业界尤其是学术界都P4都非常认同，认为其将成为OpenFlow2.0的可能方向。目前，P4组织已经有了非常多的成员，其中包括AT&amp;amp;T、思科、华为、Intel、腾讯和微软等企业以及斯坦福大学，普林斯顿大学和康奈尔大学等多个全球顶尖的学术机构。此外，在P4发展的过程中，已经被多种转发设备支持，比如应用最广泛的软件交换机OpenVSwitch以及华为的POF交换机。转发设备的支持是P4继续发展的强大保障，是P4商业发展的前提。&lt;/p&gt;
+&lt;p&gt;P4的设计和华为提出的POF十分相似，只不过侧重点和实现方式不同。POF通过{offset,length}来确定数据，强调协议无关，强调指令集，而P4不仅有底层的高度抽象的协议无关指令集，更侧重与控制器端的网络编程语言的构建。还有一点不同的是，同作为开创式的技术，由美国Nick教授等业界先驱推动的P4明显要比由华为提出的POF受到的关注要多，业界对P4的认同也要比POF要高。&lt;/p&gt;
+&lt;p&gt;P4和POF相同之处在于：作为完全可编程的SDN实现，性能问题是两者需要面临的大问题，也是急需解决的技术难题。而商业因素方面，两者皆会打破目前的网络界生态平衡。选择搭上这个技术发展的进程并争取在新的技术领域占据有利地位，还是固守已有行业市场是网络厂商面连的艰难选择。完全可编程SDN的出现，将网络的重点由硬件转向软件领域，从而使得依靠硬件技术壁垒占据市场有利地位的传统巨头的优势受到严重削减。虽然巨头的决策将很大程度上影响这些创新技术的发展，但是技术的发展必然朝着更好的方向发展，无论是P4还是POF，抑或是其他的解决方案，具有更好可编程性的SDN就在不远的未来。正如SDN的出现一般，是技术发展过程中顺势而为的产物，是不可阻挡的。&lt;/p&gt;
+&lt;h3&gt;参考文献&lt;/h3&gt;
+&lt;p&gt;[1] Bosshart P, Daly D, Gibb G, et al. P4: Programming protocol-independent packet processors[J]. ACM SIGCOMM Computer Communication Review, 2014, 44(3): 87-95.&lt;/p&gt;
+&lt;p&gt;[2] Greenberg A, Hjalmtysson G, Maltz D A, et al. A clean slate 4D approach to network control and management[J]. ACM SIGCOMM Computer Communication Review, 2005, 35(5): 41-54.&lt;/p&gt;
+&lt;p&gt;[3] Foster N, Harrison R, Freedman M J, et al. Frenetic: A network programming language[C]//ACM SIGPLAN Notices. ACM, 2011, 46(9): 279-291.&lt;/p&gt;
+&lt;h3&gt;作者简介：&lt;/h3&gt;
+&lt;p&gt;李呈，2014/09-至今，北京邮电大学信息与通信工程学院未来网络理论与应用实验室（FNL实验室）攻读硕士研究生。&lt;/p&gt;
+&lt;p&gt;个人博客：http://www.muzixing.com&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Wed, 23 Mar 2016 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2016-03-23:pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html</guid><category>p4</category><category>sdn</category></item><item><title>POF:更理想的SDN?</title><link>http://www.muzixing.com/pages/2016/03/12/pofgeng-li-xiang-de-sdn.html</link><description>&lt;p&gt;OpenFlow协议实现的SDN目前已经得到了应用和推广，但OpenFlow并不完美，OpeFlow交换机还不能提供更好的可编程能力。POF作为一种新的南向协议，是OpenFlow的未来方向？还是只是一个乌托邦？本文将介绍由华为提出的协议无关转发POF，其中包括其简介、原理、原型和应用场景以及最后的发展趋势，希望能带来一些有意思的想法。&lt;/p&gt;
 &lt;h3&gt;简介&lt;/h3&gt;
 &lt;p&gt;POF(Protocol Oblivious Forwarding)[1]是由华为提出的SDN南向协议，是一种SDN实现方式，中文意思为协议无关转发。与OpenFlow相似，在POF定义的架构中分为控制平面的POF控制器和和数据平面POF转发元件(Forwarding Element)。在POF架构中，POF交换机并没有协议的概念，它仅在POF控制器的指导下通过{offset, length}来定位数据、匹配并执行对应的操作，从而完成数据处理。此举使得交换机可以在不关心协议的情况下完成数据的处理，使得在支持新协议时无需对交换机进行升级或购买新设备，仅需通过控制器下发对应流表项即可，大大加快了网络创新的进程。&lt;/p&gt;
 &lt;h3&gt;原理&lt;/h3&gt;
