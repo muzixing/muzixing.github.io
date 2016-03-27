@@ -62,6 +62,30 @@
  
 
     <div class='article'>
+        <a href="./pages/2015/08/30/sdnkong-zhi-ping-mian-fa-zhan-li-shi-ji-qu-shi.html"><h2>SDN控制平面发展历史及趋势</h2></a>
+        <div class= "well small"> 2015-08-30
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>SDN的特点之一就是控制平面与数据平面分离，其主张通过集中式的控制器平台实现网络的控制。在SDN架构中，控制平面是逻辑集中的，通过某种协议将控制信息下发至底层的数据平面去执行。所以，控制平台被称为SDN的大脑，指挥整个数据网络的运行。</p>
+<p>得益于集中控制的优势，控制平面的存在能使得网络的部署和配置更加智能和简化。支持编程的SDN控制平面使得网络更加智能，更加灵活和易于拓展。控制器通过SDN的南向协议的API可以对数据层面的网元设备下发指令，完成控制平面与数据平面的控制传输。2008年，SDN和OpenFlow一起诞生于斯坦福大学。目前，在SDN领域中，OpenFlow协议是最流行的南向协议之一。</p>
+<p>SDN出现初期，控制平面的表现形式更多的是以单实例的控制器出现，实现SDN的协议也是以OpenFlow为主。所以在SDN发展初期，SDN控制器更多指的是OpenFlow控制器。SDN出现之后，ONF[1]成立。ONF(Open Network Foundation),中文名为“开放网络基金会” ，是致力于推进SDN标准化的一个用户驱动的组织。在ONF的白皮书中，提出了SDN的架构标准，SDN架构1.0版本和1.1版本分别如图3.11和 图3.12[2]所示。</p>
+<p><center><img alt="sdn architecture" src="https://upload.wikimedia.org/wikipedia/commons/e/e6/SDN-architecture-overview-transparent.png" /></center>
+<center>图3.11 SDN网络架构1.0版本</center></p>
+<p><center><img alt="sdnarchiteture1.1" src="http://ww1.sinaimg.cn/mw690/7f593341jw1evl062y0pwj20oa0jdwhv.jpg" /></center>
+<center>图3 ...</center></p> <a class="btn btn-info xsmall" href="./pages/2015/08/30/sdnkong-zhi-ping-mian-fa-zhan-li-shi-ji-qu-shi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2015/08/05/mininetda-jian-duo-kong-zhi-qi-tuo-bu.html"><h2>Mininet搭建多控制器拓扑</h2></a>
         <div class= "well small"> 2015-08-05
 
@@ -155,35 +179,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>软件定义网络，如果不了解网络，那如何去定义一个你不了解的东西？如果不知道网络中存在的问题 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html"><h2>Graph algorithms: Prim,Kruskal, Dijkstra, Floyd</h2></a>
-        <div class= "well small"> 2015-05-31
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>最近有了一点点空闲时间，想想以后的项目肯定是需要用到图中的路径算法，于是花了一些时间把4大经典算法实现了一遍。算法实现水平不高，时间复杂度都太高了一点。但是逻辑相对比较清晰，测试结果正确。如果读者发现算法中的问题，敬请指出，万分感谢。</p>
-<h3>Prim</h3>
-<p><a href="http://zh.wikipedia.org/wiki/%E6%99%AE%E6%9E%97%E5%A7%86%E7%AE%97%E6%B3%95">Prim</a>算法是最小生成树算法的一种，其算法逻辑为：</p>
-<p>从单一顶点开始，普里姆算法按照以下步骤逐步扩大树中所含顶点的数目，直到遍及连通图的所有顶点。
-输入：一个加权连通图，其中顶点集合为V，边集合为E；</p>
-<p>初始化：Vnew = {x}，其中x为集合V中的任一节点（起始点），Enew = {}；
-重复下列操作，直到Vnew = V：</p>
-<p>1：在集合E中选取权值最小的边（u,v），其中u为集合Vnew中的元素，而v则是V中没有加入Vnew的顶点（如果存在有多条   满足前述条件即具有相同权值的边，则可任意选取其中之一）；
-2：将v加入集合Vnew中，将（u, v）加入集合Enew中；</p>
-<p>输出：使用集合Vnew和Enew来描述所得到的最小生成树。</p>
-<p>算法实现采用数据结构为邻接矩阵,实现如下：</p>
-<div class="highlight"><pre>    <span class="k">def ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/05/31/graph-algorithms-primkruskal-dijkstra-floyd.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="./index3.html">&larr; Previous</a></li>
@@ -202,6 +197,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     <li class=""><a href="./index12.html">12</a></li>
     <li class=""><a href="./index13.html">13</a></li>
     <li class=""><a href="./index14.html">14</a></li>
+    <li class=""><a href="./index15.html">15</a></li>
 
     <li class="next"><a href="./index5.html">Next &rarr;</a></li>
 

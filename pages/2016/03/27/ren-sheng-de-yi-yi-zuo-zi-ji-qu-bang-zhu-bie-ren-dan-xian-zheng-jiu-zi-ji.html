@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="../pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2016/03/27/ren-sheng-de-yi-yi-zuo-zi-ji-qu-bang-zhu-bie-ren-dan-xian-zheng-jiu-zi-ji.html"><h1>人生的意义：做自己，去帮助别人，但先拯救自己</h1></a>
+            <h1>人生的意义：做自己，去帮助别人，但先拯救自己</h1>
 2016-03-27
 
-by <a class="url fn" href="../author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><p>昨晚去北大帮忙大可老师参加北大的风采达人大赛，我又一次来到了北大。每一次来北大，都会觉得没有自信，因为自己没有能力读上北大，深感还需继续努力，这一次也一样。</p>
 <p>比赛现场气氛并不激烈，观众也不多，但是这样的场地在北邮几乎是找不到的。我看到了一个漂亮的姑娘在弹钢琴，我被这种气质所吸引。她看到我正看着她，停了下来说：“你要用吗？” 我说：“没有，我就欣赏”。比赛中有惊艳全场的琵琶，也有不错的相声节目，而这些在北邮都看不到。</p>
 <p>回到宿舍，我坐在电脑前不知道要做什么好，分明有很多事没有完成，但是感觉突然之间不明白自己要做什么。在习惯的环境中待太久就形成了定性思维，几乎不用思考就在每一天的行走着。有些时候这可以提高做事效率，但有时却让自己陷入定势，无法发生质变。</p>
@@ -107,130 +101,23 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>To be myself, to help others, but help myself first. 做自己，帮助别人，但先拯救自己（成为更好的自己，帮助别人）。</p>
 <p>作者：李呈
 博客：http://www.muzixing.com</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = '人生的意义：做自己，去帮助别人，但先拯救自己';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html"><h2>P4:真正的SDN还遥远吗</h2></a>
-        <div class= "well small"> 2016-03-23
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>OpenFlow协议作为SDN最流行的南向协议，得到了很多的关注，目前发展也良好，但OpenFlow并不完美，OpeFlow交换机还不能提供更好的可编程能力。P4作为新的网络编程语言很好的弥补这个缺陷。P4会改变网络吗？是否能带来具有完全可编程能力的SDN？还是仅仅是学术界的宠儿？本文将介绍协议独立数据包处理编程语言P4，其中包括其简介、原理和发展趋势，希望笔者能带来一些有意思的观点。</p>
-<h3>简介</h3>
-<p>P4(Programming protocol-independent packet processors)[1]是由Pat Bosshart等人提出来的高级“协议独立数据包处理编程语言”，如OpenFlow一样是一种南向协议，但是其范围要比OpenFlow要大。不仅可以指导数据流进行转发，还可以对交换机等转发设备的数据处理流程进行软件编程定义，是真正意义上的完全SDN。值得注意的是，P4论文作者中还有斯坦福大学的Nick McKeown教授和普林斯顿大学的Jennifer Rexford教授两位业界大牛的名字。Nick教授是SDN的提出者之一，一直是SDN学术领域顶尖的存在；而后者Jennifer教授也发表了4D[2]等诸多重要的SDN相关论文，更提出了网络编程语言Frenetic[3]，同样是业界的先驱。两位教授也是P4组织的主要推动者之一。目前，P4语言作为一种潜在的OpenFlow2.0的发展方向在努力发展。</p>
-<h3>原理</h3>
-<p>与POF提出的目的类似，P4提出的目的也是为了解决OpenFlow编程能力不足以及其设计本身所带来的可拓展性差的难题。自OpenFlow1.0发布以来，其版本目前已经演进到1 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/03/12/pofgeng-li-xiang-de-sdn.html"><h2>POF:更理想的SDN?</h2></a>
-        <div class= "well small"> 2016-03-12
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>OpenFlow协议实现的SDN目前已经得到了应用和推广，但OpenFlow并不完美，OpeFlow交换机还不能提供更好的可编程能力。POF作为一种新的南向协议，是OpenFlow的未来方向？还是只是一个乌托邦？本文将介绍由华为提出的协议无关转发POF，其中包括其简介、原理、原型和应用场景以及最后的发展趋势，希望能带来一些有意思的想法。</p>
-<h3>简介</h3>
-<p>POF(Protocol Oblivious Forwarding)[1]是由华为提出的SDN南向协议，是一种SDN实现方式，中文意思为协议无关转发。与OpenFlow相似，在POF定义的架构中分为控制平面的POF控制器和和数据平面POF转发元件(Forwarding Element)。在POF架构中，POF交换机并没有协议的概念，它仅在POF控制器的指导下通过{offset, length}来定位数据、匹配并执行对应的操作，从而完成数据处理。此举使得交换机可以在不关心协议的情况下完成数据的处理，使得在支持新协议时无需对交换机进行升级或购买新设备，仅需通过控制器下发对应流表项即可，大大加快了网络创新的进程。</p>
-<h3>原理</h3>
-<p>读者可能会有疑问：OpenFlow所实现的SDN目前不是发展挺好的吗，POF相比OpenFlow有什么优点呢？</p>
-<p>在OpenFlow1.0版本推出时，普遍被认为只有12个匹配域无法适应多网络场景的需求。但随着OpenFlow版本的推进，发展到OpenFlow1.3版本时已经有了40个匹配域，已经可以支持大部分的协议字段匹配。然而始终还会有更多的协议需要支持，所以这个增长趋势不会停止。不断增多的匹配域 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/12/pofgeng-li-xiang-de-sdn.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/03/03/openflowde-ban-lu-xie-yi-of-config.html"><h2>OpenFlow的伴侣协议：OF-CONFIG</h2></a>
-        <div class= "well small"> 2016-03-03
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>本文将简要介绍OpenFlow协议的伴侣协议即补充协议OF-CONFIG，主要内容包括OF-CONFIG的简介、原理以及发展趋势。希望能让读者对OF-CONFIG有一个初步的认识。</p>
-<h3>简介</h3>
-<p>在OpenFlow协议的规范中，控制器需要和已配置的交换机进行通信。而交换机在正常工作之前需要对其特性以及资源进行配置才能正常工作。而这些配置超出了OpenFlow协议规范的范围，理应由其他的配置协议来完成。OF-Config（OpenFlow Management and Configuration Protocol）协议就是一种OpenFlow交换机配置协议。OF-CONFIG由ONF于2012年1月提出，目前已经演化到1.2版本。OF-CONFIG协议与OpenFlow协议的关系如图1所示。</p>
-<p>作为一种交换机配置协议，OF-CONFIG的主要功能包括配置交换机连接的多个控制器信息、端口和队列等资源的配置以及端口等资源的状态修改等内容。此外，作为一个配置协议，OF-CONFIG也要求链接必须是安全可靠的。为满足实际网络运维要求，OF-CONFIG支持通过配置点对多个交换机进行配置，也支持多个配置点对同一个交换机进行配置。</p>
-<p>为了满足OpenFlow版本更新的需求以及协议的可拓展要求，OF-CONFIG采用XML来描述其数据结构。此外，在OF-CONFIG的初始规范中也规定了采用NETCONF协议作为其传输协议。由于OF-Config协议没有和数据交换和路由等模块直接相关，所以相比于对实时性要求高的OpenFlow等南向协议而言，OF-CONFIG协议对实时性要求并不高。</p>
-<p><center><img alt="of-config and openflow" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f1f92gb9fij209k09e3yz.jpg" /></center>
-<center>图1. OF-CONFIG 与OpenFlow以及OpenFlow Switch之间的关系图</center></p>
-<h3>原理</h3>
-<p>OF-Config协议主要分为Server和Client两部分，其中Server运行在OpenFlow交换机端，而Client运行在OpenFlow配置点上。本质上，OpenFlow配置点就是一个普通的通信节点，其可以是独立的服务器，也可以是部署了控制器的服务器。通过OpenFlow ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/03/openflowde-ban-lu-xie-yi-of-config.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/02/24/deng-feng-lai-chi-dao-de-2015nian-zhong-zong-jie.html"><h2>等风来——迟到的2015年终总结</h2></a>
-        <div class= "well small"> 2016-02-24
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>年轻的人，总是梦想着乘上远航的船，去追逐远方的未来。扬帆启航之前的等待，他都在认真地等风来。</p>
-<p><a href="http://www.muzixing.com/pages/2014/01/01/shu-yu-wo-de-2013he-2014.html">两年之前，我踏上了自己选择的路</a>，满心充满的是欢喜和感恩，感谢世界给我的幸运和关爱。<a href="http://www.muzixing.com/pages/2015/03/08/zhan-zai-shi-zi-lu-kou-de-nian.html">一年之前，我站在十字路口</a>，对未来感到彷徨，却有坚定信念。一转眼，一年又过去了，我站在港口，打包行囊，望着远方等风来。</p>
-<h2>造船的日子</h2>
-<p>过去一年的时间，是按计划造船的时间。学习生活上都按照计划进行地不错。专业学习上计划进行顺利，计划之外也收获一些惊喜。</p>
-<h3>CIIP</h3>
-<p>CIIP并不是我计划上的内容，但是当它出现的时候，我知道它成为我的计划了。大三的时候，悉尼大学的网友就和我交流过这个事情，他说他要去参加CIIP。我谷歌了一下，原来是思科的国际实习生计划。当时特别想去，没想到两年之后，我也有机会。对待CIIP申请的事，我超出常态的谨慎和认真，这得益于那次失败的SDN大赛。</p>
-<p>在SDN第二届大赛之前，我一直是一个很自信的人，做什么事都觉得肯定能行。但是不幸的是初赛的文档得分不高，仅拿到了15名左右的成绩，没有办法进入决赛。作为一个长期混迹于各个技术QQ群的我而言，我知道从此之后我再也不能随意露面，随意发言了。因为比我厉害的人还有好多，而我连决赛都进不了 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/02/24/deng-feng-lai-chi-dao-de-2015nian-zhong-zong-jie.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../author/muzi.html">1</a></li>
-    <li class=""><a href="../author/muzi2.html">2</a></li>
-    <li class=""><a href="../author/muzi3.html">3</a></li>
-    <li class=""><a href="../author/muzi4.html">4</a></li>
-    <li class=""><a href="../author/muzi5.html">5</a></li>
-    <li class=""><a href="../author/muzi6.html">6</a></li>
-    <li class=""><a href="../author/muzi7.html">7</a></li>
-    <li class=""><a href="../author/muzi8.html">8</a></li>
-    <li class=""><a href="../author/muzi9.html">9</a></li>
-    <li class=""><a href="../author/muzi10.html">10</a></li>
-    <li class=""><a href="../author/muzi11.html">11</a></li>
-    <li class=""><a href="../author/muzi12.html">12</a></li>
-    <li class=""><a href="../author/muzi13.html">13</a></li>
-    <li class=""><a href="../author/muzi14.html">14</a></li>
-    <li class=""><a href="../author/muzi15.html">15</a></li>
-
-    <li class="next"><a href="../author/muzi2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -241,8 +128,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
 		</li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
@@ -256,8 +143,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">Life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">Life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -297,7 +184,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->

@@ -62,6 +62,25 @@
  
 
     <div class='article'>
+        <a href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html"><h2>SDN的初步认识</h2></a>
+        <div class= "well small"> 2013-12-24
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>（习惯性乱扯两句，可跳过）一年之前第一次接触SDN的时候，我甚至连pox的发音都发不对。第一次看OF1.0spec的时候，更是不懂secure channel到底是什么概念，Datapath一样是云里雾里。我不知道流是一个什么概念，不知道SDN如何DN，我只是觉得，我可能会比较喜欢IP这一方面的东西，具体哪一方面我也不知道。但是无所谓啊，我还年轻，我有选择的机会。抱着试一试的态度，去学习了SDN的一些知识，慢慢地就喜欢上了。不仅仅是因为知识本身，更是因为当我获得成功时刻的成就感与自豪感，让我觉得我愿意去做这件事情！一年之后，我写过Openflow协议通信流程的教程，画过所有Openflow协议的数据结构，写完自己的一个控制器，还写了一边关于如何编写控制器的教程，懂得怎么使用mininet搭建自定义的拓扑，懂得使用spirent testcenter去打流测试，懂得pox是如何运作的，等等。我甚至可以去教一些新手一些关于SDN的技术，但是，当我想要写点东西的时候，我却突然发现，我不知道什么是SDN！我并不清楚SDN是从何而来，不知道SDN发展历程，不知道SDN目前面临的问题，不明白SDN的现状到底什么状态，不知道SDN的未来有什么前景。我只知道一些具体的技术细节，也许对于一个本科生已经不错了。但是这也正是我们本科生的弱点所在吧。缺少大局观，目光不够长远，对知识的掌握更倾向于操作而非原理 ...</p> <a class="btn btn-info xsmall" href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2013/12/20/openflow10shu-ju-jie-gou-tu-shi.html"><h2>OpenFlow1.0数据结构图示</h2></a>
         <div class= "well small"> 2013-12-20
 
@@ -188,38 +207,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>这个字典记录了用数据包的mac地址记录了数据包的目标ip,入口端口，到达时间三个信息，其实如果为了更好的对应，我们应该使用上xid,让 ...</p> <a class="btn btn-info xsmall" href="../pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html"><h2>【原创】mininet搭建自定义网络拓扑 by muzi</h2></a>
-        <div class= "well small"> 2013-12-06
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>你知道的mininet</h3>
-<p>相信很多研究SDN的朋友都知道mininet，也是用过mininet。但是恐怕大多数人都只是局限于workthough的水平.链接：http://mininet.org/walkthrough/</p>
-<p>搭建更多的，灵活的拓扑还是有一定的难度。</p>
-<p>上一次实验的时候，看了一下spirent testceter的一套测试拓扑，从中受益，学了一点。现在写出来分享一下。</p>
-<p>如果你想快速建立拓扑，请直接拉到最后一个标题</p>
-<h3>教你搭建你自己的任意拓扑</h3>
-<p>首先把需要用到的相关模块import进来。</p>
-<div class="highlight"><pre><span class="sr">/#!/</span><span class="n">usr</span><span class="sr">/bin/</span><span class="n">python</span>
-
-<span class="nb">import</span> <span class="n">re</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">cli</span> <span class="nb">import</span> <span class="n">CLI</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">log</span> <span class="nb">import</span> <span class="n">setLogLevel</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span><span class="n">error</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">net</span> <span class="nb">import</span> <span class="n">Mininet</span>
-<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">link</span> <span class="nb">import</span> <span class="n">Intf</span>
-<span class="n">from</span> <span class="n">mininet ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../author/muzi12.html">&larr; Previous</a></li>
@@ -238,6 +225,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../author/muzi12.html">12</a></li>
     <li class="active"><a href="../author/muzi13.html">13</a></li>
     <li class=""><a href="../author/muzi14.html">14</a></li>
+    <li class=""><a href="../author/muzi15.html">15</a></li>
 
     <li class="next"><a href="../author/muzi14.html">Next &rarr;</a></li>
 
