@@ -54,7 +54,7 @@ start函数在UserSwitch和OVSSwitch等交换机类中均有对应实现。所�
     controller_list = []
     
     for i in xrange(3):
-        name = 'controller[%s]' % str(i)
+        name = 'controller%s' % str(i)
         c = net.addController(name, controller=RemoteController,
                           port=6661 + i)
         controller_list.append(c)
@@ -100,7 +100,7 @@ start函数在UserSwitch和OVSSwitch等交换机类中均有对应实现。所�
         net = Mininet(controller=None, switch=OVSSwitch, link=TCLink)
     
         for i in xrange(con_num):
-            name = 'controller[%s]' % str(i)
+            name = 'controller%s' % str(i)
             c = net.addController(name, controller=RemoteController,
                                   port=6661 + i)
             controller_list.append(c)
