@@ -1461,7 +1461,7 @@ StringifyMixin类的定义在lib.stringify文件，有兴趣的读者可自行�
 &lt;p&gt;&lt;center&gt;&lt;img alt="network info" src="http://ww2.sinaimg.cn/mw690/7f593341jw1etvgswsahwj20k30ddtcl.jpg" /&gt;&lt;/center&gt;
 &lt;center&gt;图1.网络资源信息&lt;/center&gt;&lt;/p&gt;
 &lt;h3&gt;网络流量监控&lt;/h3&gt;
-&lt;p&gt;网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：&lt;a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py"&gt;Network_Monitor&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：&lt;a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_monitor.py"&gt;Network_Monitor&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;实现网络流量监控的类为：Network_Monitor,具体描述如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Network_Monitor&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;app_manager&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;RyuApp&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
         &lt;span class="n"&gt;OFP_VERSIONS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;ofproto_v1_3&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;OFP_VERSION&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
@@ -5650,7 +5650,7 @@ Multicast? &lt;span class="o"&gt;--------------------------------------------&am
 &lt;p&gt;辗转了POX,NOX,OpenDaylight等多个控制器之后，我终于意识到我只喜欢python语言的控制器。但是我依然记得OpenDaylight的Nullpointer的Exception,还记得YANG文件的深奥，但是OpenDaylight让我对控制器开发的兴趣减少了，这不是我想要的事情。最后，我下决定转向RYU。我突然发现，生活突然变得很美好。我用着我熟悉的，喜欢的，优美的python，写着充满美感的语句，犹如写诗一般的惬意。&lt;/p&gt;
 &lt;p&gt;本篇主要介绍如何安装RYU，和如何在RYU上开发APP。&lt;/p&gt;
 &lt;h3&gt;RYU的安装&lt;/h3&gt;
-&lt;p&gt;安装RYU，需要安装一些python的套件：&lt;/p&gt;
+&lt;p&gt;安装RYU，需要安装一些python的套件,具体的安装方法可以谷歌，但推荐通过pip install安装，详情查看源码安装部分。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;python-eventlet&lt;/li&gt;
 &lt;li&gt;python-routes&lt;/li&gt;
@@ -5670,13 +5670,15 @@ Multicast? &lt;span class="o"&gt;--------------------------------------------&am
 &lt;p&gt;下载源文件安装&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;git&lt;/span&gt; &lt;span class="n"&gt;clone&lt;/span&gt; &lt;span class="n"&gt;git:&lt;/span&gt;&lt;span class="sr"&gt;//gi&lt;/span&gt;&lt;span class="n"&gt;thub&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="sr"&gt;/osrg/&lt;/span&gt;&lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;git&lt;/span&gt;
 &lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="n"&gt;ryu&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;pip&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="n"&gt;tools&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pip&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;requires&lt;/span&gt;
 &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;python&lt;/span&gt; &lt;span class="n"&gt;setup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;如果遇到lxml的问题，可以通过安装lxml来解决。&lt;/p&gt;
+&lt;p&gt;依赖软件已经在源码的tools/pip-requires文件中，通过pip install来批量安装依赖文件。这种安装方式相比逐个安装依赖要方便，且所需的所有的依赖由官方提供，全面而准确，所以推荐读者通过这种方式安装依赖。&lt;/p&gt;
+&lt;p&gt;安装之后，如果遇到lxml的问题，可以通过安装lxml来解决。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;libxml2&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt; &lt;span class="n"&gt;libxslt1&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt; &lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;
 &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;lxml&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;

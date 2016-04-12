@@ -125,7 +125,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p><center><img alt="network info" src="http://ww2.sinaimg.cn/mw690/7f593341jw1etvgswsahwj20k30ddtcl.jpg" /></center>
 <center>图1.网络资源信息</center></p>
 <h3>网络流量监控</h3>
-<p>网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">Network_Monitor</a></p>
+<p>网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_monitor.py">Network_Monitor</a></p>
 <p>实现网络流量监控的类为：Network_Monitor,具体描述如下：</p>
 <div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Network_Monitor</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
         <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>

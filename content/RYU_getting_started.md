@@ -11,7 +11,7 @@ date:2014/9/20
 
 ###RYU的安装
 
-安装RYU，需要安装一些python的套件：
+安装RYU，需要安装一些python的套件,具体的安装方法可以谷歌，但推荐通过pip install安装，详情查看源码安装部分。
 
 * python-eventlet
 * python-routes
@@ -28,9 +28,12 @@ date:2014/9/20
 	
 	 	git clone git://github.com/osrg/ryu.git
 		cd ryu
+		sudo pip install -r tools/pip-requires
 		sudo python setup.py install
 
-如果遇到lxml的问题，可以通过安装lxml来解决。
+依赖软件已经在源码的tools/pip-requires文件中，通过pip install来批量安装依赖文件。这种安装方式相比逐个安装依赖要方便，且所需的所有的依赖由官方提供，全面而准确，所以推荐读者通过这种方式安装依赖。
+
+安装之后，如果遇到lxml的问题，可以通过安装lxml来解决。
 
 	apt-get install libxml2-dev libxslt1-dev python-dev
 	apt-get install python-lxml

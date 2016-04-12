@@ -64,7 +64,7 @@ Note that:可以通过置位IS_UPDATE来控制是否输出信息。此外，若�
 
 ###网络流量监控
 
-网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：[Network_Monitor](https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py)
+网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：[Network_Monitor](https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_monitor.py)
 
 实现网络流量监控的类为：Network_Monitor,具体描述如下：
 
