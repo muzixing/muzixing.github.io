@@ -9,61 +9,72 @@ CATEGORY:Tech
 
 ##相关工作
 
-要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个[博文](http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html)中已经提出。
+要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个[博文](http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html)中已经提出。本应用就是利用了这个思想，实现了环路风暴的解除（可能有的情况下不成功，原因未知）
 
 ###网络拓扑
 
+网络拓扑文件内容如下所示，也可以到github上下载，详情查看文章结尾。
+
 	"""Custom loop topo example
-	
+
 	   There are two paths between host1 and host2.
-	
-	   
-		            |--------switch2 --------|
-					|                        |
-	   host1 --- switch1                   switch4 -----host2
-	                |                        |   |------host3
+
+	                |--------switch2 --------|
+	   host1 --- switch1        |            switch4 ----host2
+	                |           |            |  |______host3
 	                -------- switch3 ---------
 	                            |
 	                          host4
-	
+
 	Adding the 'topos' dict with a key/value pair to generate our newly defined
 	topology enables one to pass in '--topo=mytopo' from the command line.
 	"""
-	
+
 	from mininet.topo import Topo
-	
-	
+
+
 	class MyTopo(Topo):
 	    "Simple loop topology example."
-	
+
 	    def __init__(self):
 	        "Create custom loop topo."
-	
+
 	        # Initialize topology
 	        Topo.__init__(self)
-	
+
 	        # Add hosts and switches
 	        host1 = self.addHost('h1')
 	        host2 = self.addHost('h2')
 	        host3 = self.addHost('h3')
-	        #host4 = self.addHost('h4')
+	        host4 = self.addHost('h4')
+	        host5 = self.addHost('h5')
+	        host6 = self.addHost('h6')
 	        switch1 = self.addSwitch("s1")
 	        switch2 = self.addSwitch("s2")
 	        switch3 = self.addSwitch("s3")
 	        switch4 = self.addSwitch("s4")
-	
+	        switch5 = self.addSwitch("s5")
+
 	        # Add links
 	        self.addLink(switch1, host1, 1)
 	        self.addLink(switch1, switch2, 2, 1)
 	        self.addLink(switch1, switch3, 3, 1)
 	        self.addLink(switch2, switch4, 2, 1)
 	        self.addLink(switch3, switch4, 2, 2)
+	        self.addLink(switch2, switch3, 3, 4)
+	        self.addLink(switch5, switch1, 1, 4)
+	        self.addLink(switch5, switch2, 2, 4)
+
 	        self.addLink(switch4, host2, 3)
 	        self.addLink(switch4, host3, 4)
-	        #self.addLink(switch3, host4, 3)
-	
-	
+	        self.addLink(switch5, switch4, 3, 5)
+	        self.addLink(switch3, host4, 3)
+	        self.addLink(switch5, switch3, 4, 5)
+	        self.addLink(switch2, host5, 5)
+	        self.addLink(switch4, host6, 6)
+
 	topos = {'mytopo': (lambda: MyTopo())}
+
 
 
 
@@ -198,138 +209,7 @@ CATEGORY:Tech
 
 ##后语
 
-这其实是简单的实验，但是由于在安装OVS的过程中遇到了很多的问题，所以过程比较痛苦，写下来，以备不时之需，也有可能帮助到别人吧。提供一个纯从[OVS上配置的方案](http://hwchiu.logdown.com/posts/207387-multipath-routing-with-group-table-at-mininet)，相比之下比开发控制要简单一些。之前的博文的名字是：Multipath and QoS Application on RYU,但是后来导师提醒Multipath 和QoS不是一个层面的，才发现自己学识粗浅。需要努力的地方还太多。所以本篇博文被我生生改成Load balance的题目，虽然很牵强，但是相比之下，犯的错误更少一些。源码没有全部贴出来是因为我写的APP也可以出售的。后续应该会上传Github。详情可以邮件沟通。
+这其实是简单的实验，但是由于在安装OVS的过程中遇到了很多的问题，所以过程比较痛苦，写下来，以备不时之需，也有可能帮助到别人吧。提供一个纯从[OVS上配置的方案](http://hwchiu.logdown.com/posts/207387-multipath-routing-with-group-table-at-mininet)，相比之下比开发控制要简单一些。之前的博文的名字是：Multipath and QoS Application on RYU,但是后来导师提醒Multipath 和QoS不是一个层面的，才发现自己学识粗浅。需要努力的地方还太多。所以本篇博文被我生生改成Load balance的题目，虽然很牵强，但是相比之下，犯的错误更少一些。
 
-折叠版代码如下：
-	
-	# Author:muzixing
-	# Time:2014/10/19
-	#
-	
-	from ryu.base import app_manager
-	from ryu.controller import ofp_event
-	from ryu.controller.handler import CONFIG_DISPATCHER
-	from ryu.controller.handler import MAIN_DISPATCHER, HANDSHAKE_DISPATCHER
-	from ryu.controller.handler import set_ev_cls
-	from ryu.ofproto import ofproto_v1_3
-	from ryu.lib.packet import packet
-	from ryu.lib.packet import ethernet
-	from ryu.lib.packet import arp
-	from ryu.lib.packet import ipv4
-	from ryu.lib.packet import icmp
-	from ryu import utils
-	
-	from ryu.lib import addrconv
-	import struct
-	import socket
-	
-	ETHERNET = ethernet.ethernet.__name__
-	ETHERNET_MULTICAST = "ff:ff:ff:ff:ff:ff"
-	ARP = arp.arp.__name__
-	ICMP = icmp.icmp.__name__
-	IPV4 = ipv4.ipv4.__name__
-	
-	def ip2long(ip):
-	    return struct.unpack("!I", socket.inet_aton(ip))[0]
-	
-	
-	class MULTIPATH_13(app_manager.RyuApp):
-	    OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-	
-	    def __init__(self, *args, **kwargs):
-	        super(MULTIPATH_13, self).__init__(*args, **kwargs)
-	        self.mac_to_port = {}
-	        self.arp_table = {}
-	        self.sw = {}
-	
-	    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
-	    def switch_features_handler(self, ev):
-	        datapath = ev.msg.datapath
-	        ofproto = datapath.ofproto
-	        parser = datapath.ofproto_parser
-	
-	        # install table-miss flow entry
-	        #
-	        # We specify NO BUFFER to max_len of the output action due to
-	        # OVS bug. At this moment, if we specify a lesser number, e.g.,
-	        # 128, OVS will send Packet-In with invalid buffer_id and
-	        # truncated packet data. In that case, we cannot output packets
-	        # correctly.
-	
-	        match = parser.OFPMatch()
-	        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
-	                                          ofproto.OFPCML_NO_BUFFER)]
-	        self.add_flow(datapath, 1, 0, match, actions)
-	
-	    def add_flow(self, datapath, hard_timeout, priority, match, actions):
-	        ofproto = datapath.ofproto
-	        parser = datapath.ofproto_parser
-	
-	        inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
-	                                             actions)]
-	
-	        mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
-	                                hard_timeout=hard_timeout,
-	                                match=match, instructions=inst)
-	        #print mod.__dict__
-	        datapath.send_msg(mod)
-	
-	    @set_ev_cls(
-	        ofp_event.EventOFPErrorMsg,
-	        [HANDSHAKE_DISPATCHER, CONFIG_DISPATCHER, MAIN_DISPATCHER])
-	    def error_msg_handler(self, ev):
-	        msg = ev.msg
-	        self.logger.debug(
-	            'OFPErrorMsg received: type=0x%02x code=0x%02x '
-	            'message=%s', msg.type, msg.code, utils.hex_array(msg.data))
-	
-	    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
-	    def _packet_in_handler(self, ev):
-			...
-	
-	    def send_packet_out(self, msg, actions):
-	        datapath = msg.datapath
-	        ofproto = datapath.ofproto
-	        parser = datapath.ofproto_parser
-	        in_port = msg.match['in_port']
-	
-	        data = None
-	        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
-	            data = msg.data
-	        out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
-	                                  in_port=in_port, actions=actions, data=data)
-	        datapath.send_msg(out)
-	
-	    def arp_handler(self, header_list, datapath, in_port, msg_buffer_id)
-			...
-	
-	    def send_group_mod(self, datapath):
-	        ofp = datapath.ofproto
-	        ofp_parser = datapath.ofproto_parser
-	
-	        port_1 = 3
-	        queue_1 = ofp_parser.OFPActionSetQueue(0)
-	        actions_1 = [queue_1, ofp_parser.OFPActionOutput(port_1)]
-	
-	        port_2 = 2
-	        queue_2 = ofp_parser.OFPActionSetQueue(0)
-	        actions_2 = [queue_2, ofp_parser.OFPActionOutput(port_2)]
-	
-	        weight_1 = 50
-	        weight_2 = 50
-	
-	        watch_port = ofproto_v1_3.OFPP_ANY
-	        watch_group = ofproto_v1_3.OFPQ_ALL
-	
-	        buckets = [
-	            ofp_parser.OFPBucket(weight_1, watch_port, watch_group, actions_1),
-	            ofp_parser.OFPBucket(weight_2, watch_port, watch_group, actions_2)]
-	
-	        group_id = 50
-	        req = ofp_parser.OFPGroupMod(
-	            datapath, ofp.OFPFC_ADD,
-	            ofp.OFPGT_SELECT, group_id, buckets)
-	
-	        datapath.send_msg(req)
+全部代码文件在github的[multipath](https://github.com/muzixing/ryu/tree/master/ryu/app/multipath),请读者到github查看具体的实验步骤。
 
-最近接触了许多网络方面的知识，深深觉得自己努力不够，接下来的日子需要好好静下心来读书学习了。希望我也能写出不错的论文。

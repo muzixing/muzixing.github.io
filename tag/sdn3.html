@@ -140,22 +140,21 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         <div class="summary"><h2>前言</h2>
 <p>本篇博文介绍的是如何在RYU上通过使用select group 来实现multipath，从而实现流量的调度，完成简单的负载均衡Demo。OpenFlow13中有group table,可用于实现组播和冗余容灾等功能。实验中还是用了queue,完成了链路带宽的保障。</p>
 <h2>相关工作</h2>
-<p>要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。</p>
+<p>要完成多径传输，那么网络拓扑必然有loop，所以首先要解决由于loop而可能产生的storm。解决方案在之前一个<a href="http://www.muzixing.com/pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html">博文</a>中已经提出。本应用就是利用了这个思想，实现了环路风暴的解除（可能有的情况下不成功，原因未知）</p>
 <h3>网络拓扑</h3>
+<p>网络拓扑文件内容如下所示，也可以到github上下载，详情查看文章结尾。</p>
 <div class="highlight"><pre><span class="s">&quot;&quot;&quot;Custom loop topo example</span>
 
 <span class="s">   There are two paths between host1 and host2.</span>
 
-
 <span class="s">                |--------switch2 --------|</span>
-<span class="s">                |                        |</span>
-<span class="s">   host1 --- switch1                   switch4 -----host2</span>
-<span class="s">                |                        |   |------host3</span>
+<span class="s">   host1 --- switch1        |            switch4 ----host2</span>
+<span class="s">                |           |            |  |______host3</span>
 <span class="s">                -------- switch3 ---------</span>
 <span class="s">                            |</span>
 <span class="s">                          host4</span>
 
-<span class="s">Adding the &#39;topos&#39; dict with a key/value pair to generate ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html">read more</a></div>
+<span class="s">Adding the &#39;topos&#39; dict ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/11/07/load-balancemultipath-application-on-ryu.html">read more</a></div>
     </div>	
 				
 

@@ -76,36 +76,33 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>网络资源感知</h3>
 <p>网络资源感知模块用于感知网络资源的实时变化，包括拓扑信息以及主机信息的变化。任何网络应用，可达性都是最基本的要求。SDN网络的集中控制，使得控制器可以根据全局的信息作出最佳决策而无需在交换节点上采用分布式的路由算法。所以感知网络资源是SDN应用最基础的一项服务。网络资源感知模块源码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py">network_aware</a>.</p>
 <p>实现该模块的类为Network_Aware类，该类描述如下：</p>
-<div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Network_Aware</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
-        <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-        <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;network_aware&#39;</span>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">Network_Aware</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_NAME</span> <span class="o">=</span> <span class="s">&#39;network_aware&#39;</span>
 
-        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">Network_Aware</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Network_Aware&quot;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">topology_api_app</span> <span class="o">=</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Network_Aware</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Network_Aware&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topology_api_app</span> <span class="o">=</span> <span class="bp">self</span>
 
-            <span class="c"># links   :(src_dpid,dst_dpid)-&gt;(src_port,dst_port)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># links_to_port:(src_dpid,dst_dpid)-&gt;(src_port,dst_port)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># access_table:{(sw,port) :[host1_ip]}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">access_table</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># switch_port_table:dpip-&gt;port_num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">switch_port_table</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># access_port:dpid-&gt;port_num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">access_ports</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># interior_ports: dpid-&gt;port_num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interior_ports</span> <span class="o">=</span> <span class="p">{}</span>
 
-            <span class="c"># {(sw,port) :[host1_ip,host2_ip,host3_ip,host4_ip]}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">access_table</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_access_table</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shortest_paths</span> <span class="o">=</span> <span class="bp">None</span>
 
-            <span class="c"># ports</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">switch_port_table</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c"># dpid-&gt;port_num</span>
-
-            <span class="c"># dpid-&gt;port_num (outer ports)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">access_ports</span> <span class="o">=</span> <span class="p">{}</span>
-
-            <span class="c"># dpid-&gt;port_num(interior ports)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">interior_ports</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="p">{}</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">pre_link_to_port</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pre_graph</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pre_access_table</span> <span class="o">=</span> <span class="p">{}</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">discover_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_discover</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">discover_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_discover</span><span class="p">)</span>
 </pre></div>
 
 
@@ -116,7 +113,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <li>switch_port_table存储交换机端口列表；</li>
 <li>access_ports存储外向端口（与终端连接的接口）；</li>
 <li>interior_ports存储内部端口;</li>
-<li>grap存储网络拓扑图；</li>
+<li>grap存储网络拓扑图, pre_graph是上一次的网络拓扑，均用 networkx的有向图存储；</li>
 <li>pre_link_to_port等带有pre前缀的数据结构用于保存上一次获取的信息，用于和当前获取信息做比较。</li>
 <li>_discover函数是主循环函数</li>
 </ul>
@@ -163,7 +160,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p><center><img alt="flow stats" src="http://ww2.sinaimg.cn/mw690/7f593341jw1etvgsx513ij20mt0ctgs9.jpg" /></center>
 <center>图3. 流表项流量统计信息</center></p>
 <h3>基于网络资源的最短路径</h3>
-<p>基于以上的网络资源感知模块与网络流量监控模块提供的数据，我们可以做很多事情，比如负载均衡等流量调度应用，有比如安全接入等安全应用。本小节介绍基于网络资源的最短路径应用。衡量最短路径的参考系是跳数，稍加修改可以变为剩余带宽，延时或者多参考系加权的方案。源代码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/shortest_route.py">shortest_route</a></p>
+<p>基于以上的网络资源感知模块与网络流量监控模块提供的数据，我们可以做很多事情，比如负载均衡等流量调度应用，有比如安全接入等安全应用。本小节介绍基于网络资源的最短路径应用。衡量最短路径的参考系是跳数，稍加修改可以变为剩余带宽，延时或者多参考系加权的方案。源代码链接：<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/shortest_forwarding.py">shortest_forwarding</a></p>
 <p>最短路径应用流程图如下：
 <center><img alt="shortest path" src="http://ww3.sinaimg.cn/mw690/7f593341jw1etvhwx97yjj20870dxq31.jpg" /></center>
 <center>图4, 最短路由流程图</center></p>
@@ -175,7 +172,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p><center><img alt="shortest path" src="http://ww3.sinaimg.cn/mw690/7f593341jw1etvgsxenqtj20gy0cradi.jpg" /></center>
 <center>图6. 流表项流量统计信息</center></p>
 <h3>总结</h3>
-<p>网络感知服务对于SDN网络而言非常重要，是一切网络应用的基础。充分利用网络资源的信息，可以对网络进行优化，提高网络的安全性。以上的Network_aware和monitor模块均可以直接做为APP的service app（在RYU中需在_CONTEXTS添加）提供数据服务，希望可以给有需要的读者提供一些帮助。</p></div>
+<p>网络感知服务对于SDN网络而言非常重要，是一切网络应用的基础。充分利用网络资源的信息，可以对网络进行优化，提高网络的安全性。以上的Network_aware和monitor模块均可以直接做为APP的service app（在RYU中需在_CONTEXTS添加）提供数据服务，希望可以给有需要的读者提供一些帮助。</p>
+<h3>更新</h3>
+<p>由于之前的设计不够好，都是自己造的一些轮子，不够优美。所以在2016年4月13日将这份代码重构了。更多详情请关注github。</p></div>
         <hr />
     </div>
 		

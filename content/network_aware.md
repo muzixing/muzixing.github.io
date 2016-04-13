@@ -12,36 +12,35 @@ category:Tech
 实现该模块的类为Network\_Aware类，该类描述如下：
 
 ```python
-    class Network_Aware(app_manager.RyuApp):
-        OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-        _NAME = 'network_aware'
-    
-        def __init__(self, *args, **kwargs):
-            super(Network_Aware, self).__init__(*args, **kwargs)
-            self.name = "Network_Aware"
-            self.topology_api_app = self
-    
-            # links   :(src_dpid,dst_dpid)->(src_port,dst_port)
-            self.link_to_port = {}
-    
-            # {(sw,port) :[host1_ip,host2_ip,host3_ip,host4_ip]}
-            self.access_table = {}
-    
-            # ports
-            self.switch_port_table = {}  # dpid->port_num
-    
-            # dpid->port_num (outer ports)
-            self.access_ports = {}
-    
-            # dpid->port_num(interior ports)
-            self.interior_ports = {}
-            self.graph = {}
-    
-            self.pre_link_to_port = {}
-            self.pre_graph = {}
-            self.pre_access_table = {}
-    
-            self.discover_thread = hub.spawn(self._discover)
+
+class Network_Aware(app_manager.RyuApp):
+    OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
+    _NAME = 'network_aware'
+
+    def __init__(self, *args, **kwargs):
+        super(Network_Aware, self).__init__(*args, **kwargs)
+        self.name = "Network_Aware"
+        self.topology_api_app = self
+
+        # links_to_port:(src_dpid,dst_dpid)->(src_port,dst_port)
+        self.link_to_port = {}
+        # access_table:{(sw,port) :[host1_ip]}
+        self.access_table = {}
+        # switch_port_table:dpip->port_num
+        self.switch_port_table = {}
+        # access_port:dpid->port_num
+        self.access_ports = {}
+        # interior_ports: dpid->port_num
+        self.interior_ports = {}
+
+        self.graph = nx.DiGraph()
+        self.pre_graph = nx.DiGraph()
+        self.pre_access_table = {}
+        self.pre_link_to_port = {}
+        self.shortest_paths = None
+
+        self.discover_thread = hub.spawn(self._discover)
+
 ```
 
 其中数据结构与其作用关系如下：
@@ -51,7 +50,7 @@ category:Tech
 * switch\_port\_table存储交换机端口列表；
 * access_ports存储外向端口（与终端连接的接口）；
 * interior\_ports存储内部端口;
-* grap存储网络拓扑图；
+* grap存储网络拓扑图, pre_graph是上一次的网络拓扑，均用 networkx的有向图存储；
 * pre\_link\_to\_port等带有pre前缀的数据结构用于保存上一次获取的信息，用于和当前获取信息做比较。
 * \_discover函数是主循环函数
 
@@ -109,7 +108,7 @@ Note that:可以通过置位IS_UPDATE来控制是否输出信息。此外，若�
 
 ###基于网络资源的最短路径
 
-基于以上的网络资源感知模块与网络流量监控模块提供的数据，我们可以做很多事情，比如负载均衡等流量调度应用，有比如安全接入等安全应用。本小节介绍基于网络资源的最短路径应用。衡量最短路径的参考系是跳数，稍加修改可以变为剩余带宽，延时或者多参考系加权的方案。源代码链接：[shortest_route](https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/shortest_route.py)
+基于以上的网络资源感知模块与网络流量监控模块提供的数据，我们可以做很多事情，比如负载均衡等流量调度应用，有比如安全接入等安全应用。本小节介绍基于网络资源的最短路径应用。衡量最短路径的参考系是跳数，稍加修改可以变为剩余带宽，延时或者多参考系加权的方案。源代码链接：[shortest_forwarding](https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/shortest_forwarding.py)
 
 最短路径应用流程图如下：
 <center>![shortest path](http://ww3.sinaimg.cn/mw690/7f593341jw1etvhwx97yjj20870dxq31.jpg)</center>
@@ -132,6 +131,10 @@ Note that:可以通过置位IS_UPDATE来控制是否输出信息。此外，若�
 ###总结
 
 网络感知服务对于SDN网络而言非常重要，是一切网络应用的基础。充分利用网络资源的信息，可以对网络进行优化，提高网络的安全性。以上的Network\_aware和monitor模块均可以直接做为APP的service app（在RYU中需在\_CONTEXTS添加）提供数据服务，希望可以给有需要的读者提供一些帮助。
+
+### 更新
+
+由于之前的设计不够好，都是自己造的一些轮子，不够优美。所以在2016年4月13日将这份代码重构了。更多详情请关注github。
 
 
 
