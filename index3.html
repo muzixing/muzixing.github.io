@@ -62,6 +62,36 @@
  
 
     <div class='article'>
+        <a href="./pages/2015/11/30/ji-yu-liu-liang-de-sdnzui-duan-lu-jing-zhuan-fa-ying-yong.html"><h2>基于流量的SDN最短路径转发应用</h2></a>
+        <div class= "well small"> 2015-11-30
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>网络的转发是通信的基本功能，其完成信息在网络中传递，实现有序的数据交换。通过SDN控制器的集中控制，可以轻松实现基础的转发算法有二层MAC学习转发和基于跳数的最短路径算法。然而，网络跳数并不是决定路径优劣的唯一状态。除了跳数以外，还有带宽，时延等标准。本文将介绍如何通过SDN控制器Ryu开发基于流量的最短路径转发应用。</p>
+<h3>Forwarding Algorithm</h3>
+<p>目前基于流量的路由算法基本的解决思路有两种：</p>
+<p>(1) 首先基于跳数计算最优K条路径，然后在这些路径中选择可用带宽最大的路径。</p>
+<p>(2) 首先基于跳数计算最优路径，归一化路径的评价分数，然后基于流量计算最优路径，归一化基于带宽的评价；设置跳数和带宽的权重，对基于跳数和带宽的评分求其加权总和；按照加权求和值降序排序，取前K条作为最优评价路径。</p>
+<p>本文以第一种算法为例，介绍基于网络流量的最短路径转发应用开发。第二种算法基于前者的基础修改即可完成。</p>
+<h3>Network Awareness</h3>
+<p>首先我们需要编写一个网络感知应用，用于发现网络的资源，包括节点，链路，终端主机等。并根据拓扑信息计算基于条数的最短路径。开发此应用基本步骤如下：</p>
+<ul>
+<li>创建继承app_manager.RyuApp的应用network_awareness</li>
+<li>从topology.switches获取拓扑信息，包括交换机节点信息，链路信息</li>
+<li>使用Networkx 创建拓扑图的对象，用于存储网络拓扑</li>
+<li>使用Networkx的函数all_simple_paths(G, source ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2015/11/30/ji-yu-liu-liang-de-sdnzui-duan-lu-jing-zhuan-fa-ying-yong.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html"><h2>基于Ryu打造自定义控制器</h2></a>
         <div class= "well small"> 2015-11-20
 
@@ -143,40 +173,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         <div class="summary"><p>SDN(Software Defined Networking)是一种新型的网络架构，通过集中式的控制平面管理数据层面的转发等操作。网络的联通性是最基础的需求，为保证网络联通性，控制器需要应用相应的图论算法，计算出转发路径，完成数据转发。在开发SDN应用时，为完成基础的路径计算，时常需要开发者独立编写网络算法，不仅麻烦，性能和代码可复用性还受开发者个人编程水平影响。所以本篇文章将介绍网络算法工具networkx，用于完成路径算法开发工作。</p>
 <p><a href="https://networkx.github.io/">networkx</a>是用于创建、操作和研究复杂网络动态、结构和功能的Python语言包。networkx支持创建简单无向图，有向图和多重图（multigraph）；内置了许多标准的图论算法，节点可为任意数据，如图像文件；支持任意的边值维度，功能丰富，简单易用。</p>
 <p>由于Networkx代码经过多次测试，性能方面也做了很多的工作，使用Networkx内置的多种图论算法能给开发SDN应用带来很多的便利，可以节省开发时间，降低代码故障率。networkx的安装和使用，读者可从<a href="http://networkx.github.io/documentation/networkx-1.9.1/index.html#">官网文档</a>中快速得到，不加赘述。接下来的内容将简要介绍Networkx的经典图论算法内容， 包括<a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/algorithms.shortest_paths.html">最短路径</a>, <a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/generated/networkx.algorithms.simple_paths.all_simple_paths.html">KSP(K Shortest Paths)</a>算法和<a href="http://networkx.github.io/documentation/networkx-1.9.1/reference/algorithms.traversal.html">Traversal ...</a></p> <a class="btn btn-info xsmall" href="./pages/2015/09/28/sdnying-yong-lu-you-suan-fa-shi-xian-gong-ju-zhi-networkx.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html"><h2>Ryu:模块间通信机制分析</h2></a>
-        <div class= "well small"> 2015-09-08
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Ryu是一款非常轻便的SDN控制器，在科研方面得到了广泛的应用。相比其他控制器，受益于Python语言，在Ryu上开发SDN应用的效率要远高于其他控制器。为了解决复杂的业务，有时需要在Ryu上开发多模块来协同工作，从而共同完成复杂的业务。本文将介绍Ryu模块之间通信的包括Context等方式的多种通信方式。</p>
-<h3>_CONTEXTS</h3>
-<p>在RyuApp类中有一个属性是_CONTEXTS。_CONTEXTS中的内容将作为当前模块的服务在模块初始化时得到加载。示例如下：</p>
-<div class="highlight"><pre>    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s">&quot;Network_Aware&quot;</span><span class="p">:</span> <span class="n">network_aware</span><span class="o">.</span><span class="n">Network_Aware</span><span class="p">,</span>
-        <span class="s">&quot;Network_Monitor&quot;</span><span class="p">:</span> <span class="n">network_monitor</span><span class="o">.</span><span class="n">Network_Monitor</span><span class="p">,</span>
-    <span class="p">}</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Shortest_forwarding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;shortest_forwarding&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">network_aware</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;Network_Aware&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">network_monitor</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;Network_Monitor&quot;</span><span class="p">]</span>
-</pre></div>
-
-
-<p>在模块启动时，首先会将_CONTEXTS中的模块先启动，在模块的初始化函数中可以通过self.network_aware = kwargs["Network_Aware"]的形式获得该服务模块的实例，从而获取到该模块的数据 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
