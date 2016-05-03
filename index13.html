@@ -62,6 +62,29 @@
  
 
     <div class='article'>
+        <a href="./pages/2014/02/23/guan-yu-cheng-mai-xian-nong-cun-xiao-xue-xian-zhuang-de-cai-fang-zong-jie.html"><h2>关于澄迈县农村小学现状的采访总结</h2></a>
+        <div class= "well small"> 2014-02-23
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>调查者：美在心灵研究中心 李呈、王毓茂、汤茗茹</p>
+<p>2014年2月，美在心灵大学生支教志愿者协会的三名志愿者开始了关于澄迈县农村小学生存现状的调查。为得到良好的对比，志愿者选择了4所典型的学校：珠宝岭小学，槟郎根小学，石浮中心学校和加乐中心小学四所小学。调查过程中，记录了相关的照片和视频，并形成了如下的采访记录。而由于研究人员后续时间精力不足，无法完成视频的处理，目前暂时搁置。采访笔记见下文。</p>
+<h3>珠宝岭小学</h3>
+<p>珠宝岭小学位于文儒镇石浮乡珠宝岭村，是一所典型的的农村小学。拥有两栋两层的教学楼，一个篮球场，还有一大片空地。校舍面积相当一个足球场大小。全校师生26人，其中教师5人，学生21人，学生全部都来自本村。</p>
+<p>珠宝岭小学名义上是一所完全小学，但只剩下三个年级，四年级以上的要到石浮中心学校或者其他更远的镇小学读书。学生数量逐年减少，学校已经没了当年两百多人时的影子。全校用于教学的只有三个教室，教室宽敞，窗户明亮，教室里寥寥地放着几张课桌，桌椅都是新的。剩下的教室里，除了少量用于教师宿舍和堆放杂物，其余的被毫无用处的空余出来。</p>
+<p>珠宝岭小学现有教师5名，均为男性，有两名教师来自本村。教师的工资都有3000元以上，教龄长一点的还会增加。除了校长未满50岁，其余四位教师都年逾花甲 ...</p> <a class="btn btn-info xsmall" href="./pages/2014/02/23/guan-yu-cheng-mai-xian-nong-cun-xiao-xue-xian-zhuang-de-cai-fang-zong-jie.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2014/01/01/shu-yu-wo-de-2013he-2014.html"><h2>属于我的2013和2014</h2></a>
         <div class= "well small"> 2014-01-01
 
@@ -168,43 +191,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <li>若干网络协议的熟悉与掌握。</li>
 <li>最重要的，你自己从无到有，经历了一个开发过程，所有出现的你想到的想不到的问题，你都需要自己去解决。你会在解决问题的过程中收获太多太多你想不到的财富。</li>
 <li>自信！你可以大声对自己说 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/17/yuan-chuang-sdnkong-zhi-qi-kai-fa-jiao-cheng-da-zao-shu-yu-ni-zi-ji-de-kong-zhi-qi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html"><h2>【原创】OpenFlow通信流程解读</h2></a>
-        <div class= "well small"> 2013-12-12
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>接触了这么久的SDN，OpenFlow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对OpenFlow协议通信流程的一些理解。</p>
-<h2>SDN中Switch和controller</h2>
-<p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
-<h3>switch组成与传统交换机的差异</h3>
-<h4>switch组成</h4>
-<p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
-<ul>
-<li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
-<li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
-</ul>
-<h4>of中sw与传统交换机的差异</h4>
-<ul>
-<li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
-<li>运行of协议，实现许多路由器的功能，比如组播。</li>
-<li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
-</ul>
-<h4>OpenFlow的switch可以从以下方式获得</h4>
-<ul>
-<li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
