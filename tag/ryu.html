@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html"><h1>基于Ryu打造自定义控制器</h1></a>
-2015-11-20
+            <a href="../pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html"><h1>Ryu:网络时延探测应用</h1></a>
+2016-05-24
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,126 +72,134 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>控制器是SDN网络中最重要的组成部分。在开发SDN应用时，需要基于某一个控制器开发，而大部分开源控制器都是一个框架或者平台，更多个性化的设置和应用需要开发者自己完成。对于开发者而言，一个自定义的控制器可以让控制器更加适配开发场景，发挥控制器最大的作用，提高开发效率。本篇文章将以Ryu为例，介绍如何修改Ryu源码，打造属于自己风格的自定义控制器。其内容包括自定义参数，事件，启动顺序，报文，协议和底层服务。</p>
+        <div><p>之前，笔者已经发布了网络感知应用和基于跳数的最短路径转发应用。本文将介绍笔者开发的网络时延探测应用。该应用通过LLDP数据包的时延和Echo数据包的时延计算得出链路的时延数据，从而实现网络链路时延的感知。详细原理和实现步骤将在文章中详细介绍。</p>
+<h3>测试原理</h3>
+<p>网络时延探测应用利用了Ryu自带的Switches模块的数据，获取到了LLDP数据发送时的时间戳，然后和收到的时间戳进行相减，得到了LLDP数据包从控制器下发到交换机A，然后从交换机A到交换机B，再上报给控制器的时延T1，示例见图1的蓝色箭头。同理反向的时延T2由绿色的箭头组成。此外，控制器到交换机的往返时延由一个蓝色箭头和一个绿色箭头组成，此部分时延由echo报文测试，分别为Ta，Tb。最后链路的前向后向平均时延T=（T1+T2-Ta-Tb）/2。</p>
+<p><center><img alt="link delay" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f40i7d39ouj20fr09lgm6.jpg" /></center>
+<center>图1. 测量链路时延原理图</center></p>
+<h3>获取LLDP时延</h3>
+<p>获取T1和T2的逻辑一样，均需要使用到Switches模块的数据。计算LLDP时延的处理逻辑如下代码所示。首先从Packet_in中解析LLDP数据包，获得源DPID，源端口。然后根据发送端口的数据获取到portdata中的发送时间戳数据，并用当下的系统时间减去发送时间戳，得到时延，最后将其保存到graph数据中。</p>
+<div class="highlight"><pre>    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">src_dpid</span><span class="p">,</span> <span class="n">src_port_no</span> <span class="o">=</span> <span class="n">LLDPPacket</span><span class="o">.</span><span class="n">lldp_parse</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">dpid</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sw_module</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sw_module</span> <span class="o">=</span> <span class="n">lookup_service_brick</span><span class="p">(</span><span class="s">&#39;switches&#39;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sw_module</span><span class="o">.</span><span class="n">ports</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">src_dpid</span> <span class="o">==</span> <span class="n">port</span><span class="o">.</span><span class="n">dpid</span> <span class="ow">and</span> <span class="n">src_port_no</span> <span class="o">==</span> <span class="n">port</span><span class="o">.</span><span class="n">port_no</span><span class="p">:</span>
+                    <span class="n">port_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sw_module</span><span class="o">.</span><span class="n">ports</span><span class="p">[</span><span class="n">port</span><span class="p">]</span>
+                    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">port_data</span><span class="o">.</span><span class="n">timestamp</span>
+                    <span class="k">if</span> <span class="n">timestamp</span><span class="p">:</span>
+                        <span class="n">delay</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">timestamp</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_save_lldp_delay</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">src_dpid</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">dpid</span><span class="p">,</span>
+                                              <span class="n">lldpdelay</span><span class="o">=</span><span class="n">delay</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">LLDPPacket</span><span class="o">.</span><span class="n">LLDPUnknownFormat</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span>
+</pre></div>
+
+
+<h3>获取Echo时延</h3>
+<p>之后，我们还需要测试控制器到交换机之间的echo往返时延。其测量方法是通过在控制器给交换机发送携带有时间戳的echo_request报文，然后解析交换机返回的echo_reply，并用当下时间减去data部分解析的发送时间，获得往返时间差。所以我们需要完成echo_request的定时发送和解析的实现，详细示例代码如下：</p>
+<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">_measure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_send_echo_request</span><span class="p">()</span>
+            <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SLEEP_PERIOD</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_send_echo_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">datapath</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%.6f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">echo_req</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPEchoRequest</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">echo_req</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPEchoReply</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">echo_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">latency</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="nb">eval</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">echo_latency</span><span class="p">[</span><span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">latency</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span>
+</pre></div>
+
+
+<p>完成echo时延的计算之后，将其保存到echo_latency字典中，已备后续计算使用。</p>
+<h3>计算链路时延</h3>
+<p>完成时延数据获取之后，还需要基于这些数据，计算出链路的时延，公式就是T=（T1+T2-Ta-Tb）/2。所以编写计算方法，示例代码如下。其中get_delay方法用于计算对应交换机之间的链路时延，_save_delay_data可以用于计算和存储lldp的时延和链路时延，其功能根据传入参数而定。而calculate_link_delay方法则用于调用计算方法，并将时延结果存储到networkx图数据结构中。</p>
+<div class="highlight"><pre>    <span class="k">def</span> <span class="nf">get_dalay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fwd_delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;lldpdelay&#39;</span><span class="p">]</span>
+            <span class="n">re_delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="n">dst</span><span class="p">][</span><span class="n">src</span><span class="p">][</span><span class="s">&#39;lldpdelay&#39;</span><span class="p">]</span>
+            <span class="n">src_latency</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">echo_latency</span><span class="p">[</span><span class="n">src</span><span class="p">]</span>
+            <span class="n">dst_latency</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">echo_latency</span><span class="p">[</span><span class="n">dst</span><span class="p">]</span>
+
+            <span class="n">delay</span> <span class="o">=</span> <span class="p">(</span><span class="n">fwd_delay</span> <span class="o">+</span> <span class="n">re_delay</span> <span class="o">-</span> <span class="n">src_latency</span> <span class="o">-</span> <span class="n">dst_latency</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_save_lldp_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lldpdelay</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;lldpdelay&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lldpdelay</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">network_aware</span> <span class="o">=</span> <span class="n">lookup_service_brick</span><span class="p">(</span><span class="s">&#39;network_aware&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_aware</span><span class="o">.</span><span class="n">graph</span>
+            <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">create_link_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">dst</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;delay&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="k">continue</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;delay&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dalay</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">network_aware</span> <span class="o">=</span> <span class="n">lookup_service_brick</span><span class="p">(</span><span class="s">&#39;network_aware&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_aware</span><span class="o">.</span><span class="n">graph</span>
+            <span class="k">return</span>
+</pre></div>
+
+
+<p>至此关于网络拓扑中链路时延的获取应用开发完成。需要注意的是，本应用需要依赖Ryu的topology/switches.py模块，所以如果单独使用时，需要配套启动switches.py。另外，与前面发表的应用相互结合，此应用中的graph是之前的network_aware模块感知的网络拓扑数据graph。</p>
+<p>时延探测应用运行结果截图如图2所示。</p>
+<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f3ye9xt1nuj20o90fjgr4.jpg" /></center>
+<center>图2.时延监控应用运行结果</center></p>
+<h3>总结</h3>
+<p>网络时延数据是网络重要数据，是许多网络决策的重要依据，所以网络时延数据测量非常重要。本文介绍了如何在Ryu中开发时延探测应用，并粘贴了关键的代码，希望对读者的学习提供一定的帮助。此外，还需要注意两点：（1）此时延探测模块十分初级，并没有精确性方面的考虑，比如需要将其放在核心层实现，在发送的最后时刻才添加时间戳，收到数据包的第一时刻马上解析时间戳等等，所以精确性不足。在Mininet模拟场景下，最开始的几组数据将会异常，但很快就可以恢复正常。（2）此处的拓扑数据均基于两个交换机之间仅有单链路存在的假设。若存在多链路，则数据会被最后获取的链路覆盖。解决这一问题的办法就是采用Neworkx的MultiGraph图结构来存储数据。最后希望本文能给读者带来一定的帮助，完整代码将于6月发布，敬请期待。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html"><h2>基于Ryu打造自定义控制器</h2></a>
+        <div class= "well small"> 2015-11-20
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>控制器是SDN网络中最重要的组成部分。在开发SDN应用时，需要基于某一个控制器开发，而大部分开源控制器都是一个框架或者平台，更多个性化的设置和应用需要开发者自己完成。对于开发者而言，一个自定义的控制器可以让控制器更加适配开发场景，发挥控制器最大的作用，提高开发效率。本篇文章将以Ryu为例，介绍如何修改Ryu源码，打造属于自己风格的自定义控制器。其内容包括自定义参数，事件，启动顺序，报文，协议和底层服务。</p>
 <h3>自定义参数</h3>
 <p>很多应用都会涉及相关参数的输入才能运行， 如OpenFlow协议的启动需要配置监听端口。在编写新应用时，需要获取相关参数的值来运行应用，所以需要开发应用时注册参数。目前已有的参数可以通过ryu-manager -h查看。而不同的应用注册的参数很可能名字一样，这就有可能发生冲突。为解决这个问题，Ryu采用了OpenStack的Oslo库，支持全局的命令注册和解析。Oslo支持全局的命令注册和解析，成功解除了命令冲突的难题，也大大降低了参数注册和解析的难度。注册新参数的方法很简单，只需要新建一个文件，然后按照如下案例完成注册，最后再在cmd/manager.py中import即可。</p>
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">cfg</span>
 
 <span class="n">CONF</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span>
 <span class="n">CONF</span><span class="o">.</span><span class="n">register_cli_opts</span><span class="p">([</span>
-    <span class="n">cfg</span><span class="o">.</span><span class="n">StrOpt</span><span class="p">(</span>
-        <span class="s">&#39;milestone-argument&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;my test argument&#39;</span><span class="p">),</span>
-    <span class="n">cfg</span><span class="o">.</span><span class="n">IntOpt</span><span class="p">(</span><span class="s">&#39;milestone-server-port&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">6666</span><span class="p">,</span>
-               <span class="n">help</span><span class="o">=</span><span class="s">&#39;milestone server port&#39;</span><span class="p">)])</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">flags</span>
-<span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">version</span>
-<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="kn">import</span> <span class="n">wsgi</span>
-<span class="kn">from</span> <span class="nn">ryu.base.app_manager</span> <span class="kn">import</span> <span class="n">AppManager</span>
-<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">controller</span>
-<span class="kn">from</span> <span class="nn">ryu.milestone</span> <span class="kn">import</span> <span class="n">milestone</span>
-<span class="kn">from</span> <span class="nn">ryu.topology</span> <span class="kn">import</span> <span class="n">switches</span>
-</pre></div>
-
-
-<p>通过python setup.py install重新安装Ryu之后即可通过ryu-manager -h来查看到新注册的命令。</p>
-<h3>自定义事件</h3>
-<p>Ryu的应用之间通信通过事件机制来完成。比如底层的协议解析模块解析报文之后，生成对应的报文事件，然后分发到各个监听该事件的监听函数。不过，目前为止事件类型还不够丰富，很多需要的信息还无法通过事件传递。比如网络流量监控服务监控到流量发生变化的事件之后，需要生成对应的事件。又比如OFPPacket_in事件包含了所有报文类型的数据，还可以根据触发Packet_in的数据的协议类型来定义细粒度的事件去分流，从而使得处理ARP报文的函数只接收ARP报文的Packet_in, 而不是全部接收到然后再去判断是否是不是ARP报文。以网络流量变化事件EventOXPTrafficStateChange为例，定义事件，生成事件和处理事件的流程如下：</p>
-<p>(1) 在controller/ofp_event.py中添加相关类描述：</p>
-<div class="highlight"><pre><span class="k">class</span> <span class="nc">EventOXPTrafficStateChange</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">traffic</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">EventOXPTrafficStateChange</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">traffic</span> <span class="o">=</span> <span class="n">traffic</span>
-</pre></div>
-
-
-<p>(2) 在相关应用中实例化事件，并通过OFPHandler模块的send_event_to_observers函数分发到指定函数。</p>
-<div class="highlight"><pre>    <span class="n">event</span> <span class="o">=</span> <span class="n">oxp_event</span><span class="o">.</span><span class="n">EventOXPTrafficStateChange</span><span class="p">(</span><span class="n">traffic</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">free_band_width</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">oxp_brick</span> <span class="o">=</span> <span class="n">app_manager</span><span class="o">.</span><span class="n">lookup_service_brick</span><span class="p">(</span><span class="s">&#39;oxp_event&#39;</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">oxp_brick</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-</pre></div>
-
-
-<p>(3) 注册handler处理事件， 使用@set_ev_cls来注册handler监听该事件。</p>
-<div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">oxp_event</span><span class="o">.</span><span class="n">EventOXPTrafficStateChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">reflesh_bw_best_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">free_band_width</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">traffic</span>
-    <span class="n">do_some_thing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">free_band_width</span><span class="p">)</span>
-</pre></div>
-
-
-<p>像Packet_in分流的定义可以参考以上的做法，将事件作为新事件的属性。也可以参考ofp_event模块中的修改类名的方式将类名修改，从而生成新的事件。</p>
-<h3>自定义启动顺序</h3>
-<p>Ryu关于Application的启动源码在cmd/manager.py文件中。main函数中完成了app_lists的赋值，即启动应用的顺序。若在Ryu开发了一个很重要的底层应用，需要在启动那个时启动，则可以将其加入app_lists中. 比如当milestone参数为1时，启动多个应用，否则仅启动基础应用的示例如下：</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="ow">not</span> <span class="n">app_lists</span><span class="p">:</span>
-    <span class="n">app_lists</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ryu.controller.ofp_handler&#39;</span><span class="p">]</span>
-
-<span class="k">if</span> <span class="n">CONF</span><span class="o">.</span><span class="n">milestone</span> <span class="o">==</span> <span class="s">&#39;1&#39;</span><span class="p">:</span>
-    <span class="n">my_app_list</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;muzixing&quot;</span><span class="p">,</span> <span class="s">&quot;milestone&quot;</span><span class="p">]</span>
-    <span class="n">app_lists</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">my_app_list</span><span class="p">)</span>
-</pre></div>
-
-
-<p>这个自定义启动顺序一般情况下不需要修改，但是当开发的应用是非常重要的底层服务时，可能需要初始化就启动，所以也是非常关键的自定义内容之一。</p>
-<h3>自定义报文</h3>
-<p>在某些特定的场景中，需要对OpenFlow协议等协议进行报文拓展，从而完成新报文，新字段的测试工作。在Ryu中自定义OpenFlow报文的操作步骤如下：</p>
-<p>(1) 在对应版本的ofproto_v1_x.py中定义所有需要使用到的字段值，如最重要的报文类型，以定义一个名为milestone的报文为例，报文类型为25, 字段只有一个字符串类型的data, 可以用来放任何信息，长度为64bits。所以在文件中定义/声明 报文名字和类型的对应，报文的格式和长度，以便序列化和解析。Ryu使用struct对数据进行序列化和解析。</p>
-<div class="highlight"><pre><span class="n">OFPT_MILESTONE</span> <span class="o">=</span> <span class="mi">25</span>
-<span class="n">OFP_MILESTONE_PACK_STR</span> <span class="o">=</span> <span class="s">&#39;!8s&#39;</span>  <span class="c">#定义报文格式</span>
-<span class="n">OFP_MILESTONE_SIZE</span> <span class="o">=</span> <span class="mi">16</span>    <span class="c"># 定义报文长度</span>
-<span class="k">assert</span> <span class="p">(</span><span class="n">calcsize</span><span class="p">(</span><span class="n">OFP_MILESTONE_PACK_STR</span><span class="p">)</span> <span class="o">+</span> <span class="n">OFP_HEADER_SIZE</span> <span class="o">==</span><span class="n">OFP_MILESTONE_SIZE</span><span class="err">）</span>  <span class="c"># 检查长度是否正确</span>
-</pre></div>
-
-
-<p>(2) 在对应版本的ofproto_v1_x_parser.py中添加对应报文类的定义，包括其解析方法和序列化方法。其中解析方法是一个类方法，在MsgBase中定义，派生类调用时需要使用类型来区分。序列化方法分为self._serialize_pre(), self._serialize_body()和self._serialize_header()三部分。派生类仅需完成self._serialize_body()的内容即可。值得注意的是，如果需要对报文进行除报头以外的解析，则必须在完成parser函数之后使用@_register_parser装饰符将对应函数和类名的映射关系加入到关系字典中，以便使用时查找，否则会报错。</p>
-<div class="highlight"><pre><span class="nd">@_register_parser</span>
-<span class="nd">@_set_msg_type</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPT_MILESTONE</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">OFPMILESTONE</span><span class="p">(</span><span class="n">MsgBase</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    MILESTONE message</span>
-
-<span class="sd">    It is a test msg:www.muzixing.com</span>
-<span class="sd">    ========== =========================================================</span>
-<span class="sd">    Attribute  Description</span>
-<span class="sd">    ========== =========================================================</span>
-<span class="sd">    data       just some data.</span>
-<span class="sd">    ========== =========================================================</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">OFPMILESTONE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">parser</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">OFPMILESTONE</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span>
-                                          <span class="n">msg_len</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
-
-        <span class="n">offset</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_HELLO_HEADER_SIZE</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_MILESTONE_PACK_STR</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">buf</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
-
-        <span class="n">msg</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="k">return</span> <span class="n">msg</span>
-
-    <span class="k">def</span> <span class="nf">_serialize_body</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">msg_pack_into</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_MILESTONE_PACK_STR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buf</span><span class="p">,</span>
-                      <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_HEADER_SIZE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-
-
-<p>至此，自定义报文完成。关于struct模块的使用，以及OpenFlow协议代码的介绍可以参考另一篇文章<a href="http://www.muzixing.com/pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html">《Ryu:OpenFlow协议源码分析》</a>。重新安装Ryu即可将该报文写入到Ryu运行代码中，Ryu的事件机制会自动将这个报文生成对应的事件，进一步测试需要读者自行开发。</p>
-<h3>自定义协议</h3>
-<p>既然讲到自定义报文，那么继续提一下自定义协议。读者可以根据<a href="http://www.muzixing.com/pages/2015/07/24/ryuopenflowxie-yi-yuan-ma-fen-xi.html">《Ryu:OpenFlow协议源码分析》</a>提到的思路去模仿编写一个新的协议。底层的数据收发可以学习controller/controller.py, 协议定义可以学习ofproto目录下的一系列内容。各种需要自定义的细节，如自定义参数，自定义事件等都已经在上文提到。后续将会专门书写如何在Ryu中开发新协议，本文不再展开。</p>
-<h3>自定义服务</h3>
-<p>为了更好的开发应用，开发者应该开发一套底层的服务，为自己的进一步开发提供帮助。如ARP代理，DHCP服务，基础的网络资源感知服务等等。SDN集中式的优点很大在于拥有全局的视角，可以掌握全局的资源，从而进行全局最优的业务部署。所有业务的基础都基于对网络资源的感知，所以此处以网络资源感知为例。首先需要完成网络拓扑的最优路径的计算，此外处于某些场景的需求，需要收集网络流量状况的数据，从而完成基于流量的最优化决策。在此基础之上，完成基础的
-最短路径转发应用，实现最基础的网络应用，为其他更高层次的应用开发和算法验证提供基本的服务支撑。由于篇幅限制，本文不加展开，详情可查看<a href="http://www.muzixing.com/pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html">《SDN网络感知服务与最短路径应用》</a>。如果读者希望自己搭建一套底层服务，或者在笔者的基础之上加工，推荐使用networkx进行拓扑信息的存储。networkx提供了大量高效有用的函数，可以最大程度降低开发者在算法问题上的工作量。</p>
-<p>完成以上应用之后，可将其作为启动服务的一种，并通过参数来确定是否启动Ryu时启动这些业务。这些业务中涉及到的自定义事件，可用于与上层应用之间的通信，实现定制化的SDN控制器。</p>
-<h3>总结</h3>
-<p>本篇文章介绍了基于Ryu打造自定义控制器的内容，包括自定义参数，事件，启动顺序，报文，协议和服务。相信读者如果能根据应用场景进行深度自定义，可以很大程度上提升开发效率。关于自定义协议部分，后续会有更多文章介绍，敬请期待。</p></div>
-        <hr />
-    </div>
-		
+    <span class="n">cfg</span><span class="o">.</span><span class="n">StrOpt ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -276,37 +284,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         <span class="nb">super</span><span class="p">(</span><span class="n">Network_Aware</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Network_Aware&quot;</span>
         <span class="bp">self ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html"><h2>RYU中WSGI学习笔记与RESTAPI开发</h2></a>
-        <div class= "well small"> 2015-05-13
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>另一篇博文中已经介绍如何使用RYU的RESTAPI，本篇将继续介绍相关内容，主要分为WSGI学习总结和以ofctl_rest.py为例的RESTAPI的实现与内部机制。由于第一次学习WSGI，还有许多地方不是特别理解，所学知识均来自Google。文中若有错误之处，敬请指出，谢谢。</p>
-<h3>WSGI</h3>
-<p><a href="http://zh.wikipedia.org/wiki/Web%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BD%91%E5%85%B3%E6%8E%A5%E5%8F%A3">Web服务器网关接口</a>（Python Web Server Gateway Interface，缩写为WSGI）是为Python语言定义的Web服务器和Web应用程序或框架之间的一种简单而通用的接口。为了理解WSGI，可以尝试一下的小例子。</p>
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">cgi</span> <span class="kn">import</span> <span class="n">parse_qs</span>
-<span class="kn">from</span> <span class="nn">cgi</span> <span class="kn">import</span> <span class="n">escape</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-
-
-<span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">):</span>
-    <span class="n">parameters</span> <span class="o">=</span> <span class="n">parse_qs</span><span class="p">(</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;QUERY_STRING&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
-
-    <span class="k">if</span> <span class="s">&#39;subject&#39;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
-        <span class="n">subject</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s">&#39;subject&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">else ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2015/05/13/ryuzhong-wsgixue-xi-bi-ji-yu-restapikai-fa.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

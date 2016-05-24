@@ -62,73 +62,6 @@
  
 
     <div class='article'>
-        <a href="../pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html"><h2>【原创】OpenFlow通信流程解读</h2></a>
-        <div class= "well small"> 2013-12-12
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>接触了这么久的SDN，OpenFlow协议前前后后也读过好多遍，但是一直没有时间总结一下自己的一些见解。现在有时间了，就写一写自己对OpenFlow协议通信流程的一些理解。</p>
-<h2>SDN中Switch和controller</h2>
-<p>在SDN中很重要的两个实体是Switch跟Controller。Controller在网络中相当于上帝，可以知道网络中所有的消息，可以给交换机下发指令。Switch就是一个实现Controller指令的实体，只不过这个交换机跟传统的交换机不一样，他的转发规则由流表指定，而流表由控制器发送。</p>
-<h3>switch组成与传统交换机的差异</h3>
-<h4>switch组成</h4>
-<p>switch由一个Secure Channel和一个flow table组成，of1.3之后table变成多级流表，有256级。而of1.0中table只在table0中。</p>
-<ul>
-<li>Secure Channel是与控制器通信的模块，switch和controller之间的连接时通过socket连接实现。</li>
-<li>Flow table里面存放这数据的转发规则，是switch的交换转发模块。数据进入switch之后，在table中寻找对应的flow进行匹配，并执行相应的action，若无匹配的flow则产生packet_in（后面有讲）</li>
-</ul>
-<h4>of中sw与传统交换机的差异</h4>
-<ul>
-<li>匹配层次高达4层，可以匹配到端口，而传统交换机只是2层的设备。</li>
-<li>运行of协议，实现许多路由器的功能，比如组播。</li>
-<li>求补充！！（如果你知道，请告诉我，非常感谢！）</li>
-</ul>
-<h4>OpenFlow的switch可以从以下方式获得</h4>
-<ul>
-<li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html"><h2>【原创】SDN下的分布式广播风暴解决方案</h2></a>
-        <div class= "well small"> 2013-12-07
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>这是很久以前的成果了，那时候我才大三上。为了学习sdn,openflow等知识，北邮科研楼628的一群哥们儿，想着各种新奇的东西去解决已有的问题。</p>
-<p>有一天，我们遇到了网络风暴，但是我们觉得STP有点复杂，而且，确实也不愿意去学。那么，就自己写一个解决方案吧。于是，下面的小代码产生了。</p>
-<h3>核心思想</h3>
-<p>其实特别简单，一句话：<strong>不让同一个数据包从第二个端口进入，即仅允许数据包从第一个进来的端口进入。</strong></p>
-<p>也就是说，我确保了，同一个数据包，不会从别的交换机从非第一次的in_port进入本交换机，那就不会有环路，也就解决了风暴，而且，同一个端口允许进入，不影响主机继续发送广播包。</p>
-<h3>具体实现</h3>
-<p>这个就需要我们建立一个macToport的表，在python里面数据结构字典来实现。使用src_mac作为key，记录值为[dstip,port,time]</p>
-<div class="highlight"><pre><span class="n">self</span><span class="o">.</span><span class="n">macToPort</span> <span class="o">=</span> <span class="p">{</span><span class="n">srcMAC:</span><span class="p">[</span><span class="n">dst_ip</span><span class="p">,</span><span class="n">in_port</span><span class="p">,</span><span class="nb">time</span><span class="p">]}</span>
-</pre></div>
-
-
-<p>这个字典记录了用数据包的mac地址记录了数据包的目标ip,入口端口，到达时间三个信息，其实如果为了更好的对应，我们应该使用上xid,让 ...</p> <a class="btn btn-info xsmall" href="../pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
         <a href="../pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html"><h2>［原］poxdesk实现拓扑显示</h2></a>
         <div class= "well small"> 2013-11-29
 
@@ -189,14 +122,22 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 				
 <div class="pagination">
 <ul>
-    <li class="prev"><a href="../tag/sdn5.html">&larr; Previous</a></li>
+    <li class="prev"><a href="../category/tech13.html">&larr; Previous</a></li>
 
-    <li class=""><a href="../tag/sdn.html">1</a></li>
-    <li class=""><a href="../tag/sdn2.html">2</a></li>
-    <li class=""><a href="../tag/sdn3.html">3</a></li>
-    <li class=""><a href="../tag/sdn4.html">4</a></li>
-    <li class=""><a href="../tag/sdn5.html">5</a></li>
-    <li class="active"><a href="../tag/sdn6.html">6</a></li>
+    <li class=""><a href="../category/tech.html">1</a></li>
+    <li class=""><a href="../category/tech2.html">2</a></li>
+    <li class=""><a href="../category/tech3.html">3</a></li>
+    <li class=""><a href="../category/tech4.html">4</a></li>
+    <li class=""><a href="../category/tech5.html">5</a></li>
+    <li class=""><a href="../category/tech6.html">6</a></li>
+    <li class=""><a href="../category/tech7.html">7</a></li>
+    <li class=""><a href="../category/tech8.html">8</a></li>
+    <li class=""><a href="../category/tech9.html">9</a></li>
+    <li class=""><a href="../category/tech10.html">10</a></li>
+    <li class=""><a href="../category/tech11.html">11</a></li>
+    <li class=""><a href="../category/tech12.html">12</a></li>
+    <li class=""><a href="../category/tech13.html">13</a></li>
+    <li class="active"><a href="../category/tech14.html">14</a></li>
 
     <li class="next disabled"><a href="#">&rarr; Next</a></li>
 

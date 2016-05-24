@@ -62,6 +62,76 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html"><h2>[C语言]两个栈实现队列</h2></a>
+        <div class= "well small"> 2014-04-15
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>这是学习c语言的第一个训练题。刚开始写得真的非常差！！后来在大男哥的知道下学会了如何写c语言。本篇教程是：如何使用两个栈实现队列的功能。基本上这个代码也是他手把手教的。</p>
+<h3>算法</h3>
+<p>如何使用两个栈实现队列？
+大家都能想到需要在pop的时候从一个栈到另一个栈倒一下，再pop，这样就有做到先入先出了。但是如何判别哪一个是目前正在使用的，而哪一个又是用来接收第一个栈pop数据的呢？</p>
+<p>其实有一个好办法就是，指定一个是专门用于入栈的栈in_stack，所有数据入栈的时候必须入到这个栈中，而出栈的时候，需要将数据pop到另一个栈中，然后再从另一个栈中出栈。第二次出栈的时候直接从out_stack。直到out_stack的数据为空，则将in_stack的数据pop到out_stack中。这样就能保证出栈的顺序是FIFO了。</p>
+<p>同时，in_stack的深度就是队列的最小深度。</p>
+<p>最大深度是len(in_stack+out_stack).当且仅当第一次push时，全部push到满，然后pop数据，之后继续push直到满。严格意义上来说应该是len(in_stack+out_stack)-1，因为有一个pop掉了。</p>
+<h3>实现</h3>
+<h4>stack的实现</h4>
+<p>首先我们要实现stack。以下是stack.h</p>
+<div class="highlight"><pre><span class="o">/*</span>
+<span class="c1">##################</span>
+<span class="n">Author:</span> <span class="n">muzi</span>
+<span class="n">Date:2014</span><span class="sr">/4/</span><span class="mi">10</span>
+<span class="n">TODO ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html"><h2>The study notes of East-west Bridge for SDN Network Peering</h2></a>
+        <div class= "well small"> 2014-04-10
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>这是一篇学习笔记，是在阅读了林萍萍女士的论文"East-West Bridge for SDN Network Peering  "之后的总结与思考。</p>
+<p>东西向接口通信中交换的数据是一个域中的数据。</p>
+<h3>控制器之间的发现</h3>
+<p>最简单的方式就是直接指定,但是这明显不是一个合理的方法。比较好的做法是让所有的控制器在开启的时候向一个注册服务器注册自己的信息，然后再获取所有控制器的信息，如IP,PORT,用于建立控制器之间的连接。另有更智能的方法是通过lldp去发现邻居。即LLDP报文中携带本域中控制器的信息。
+即有如下三种方式：</p>
+<ul>
+<li>通过配置信息设置</li>
+<li>访问注册服务器获取</li>
+<li>通过LLDP去发现邻居 </li>
+</ul>
+<p>我认为，第一种方法最简单，但是需要手动配置。第二种方法最易于设计。第三种方法最智能。我觉得使用LLDP去发现邻居是一种不错的方式。每一次接入网络都需要探测自己的邻居，然后发送自己的拓扑信息给邻居，同时当拓扑发生变化时也需要给邻居同步，此处的拓扑发生变化可以包含如下两点：</p>
+<ul>
+<li>域内拓扑发生变化，如link down</li>
+<li>邻居C拓扑变化传送过来导致本地存储拓扑变化，从而需要更新拓扑，并通知其他邻居。</li>
+</ul>
+<h3>网络信息的存储</h3>
+<ul>
+<li>分布式存储在每一个控制器，每一个控制器只保存自己的视图，需要全局数据时再发送请求从别的控制器获取。此方式为主动请求方式，能减少拓扑信息传递的数量。但是耗时大。</li>
+<li>分布式存储在每一个控制器，每一个控制器都有全网视图 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/03/26/poxmessenger-component-getting-started.html"><h2>[POX]messenger component getting started</h2></a>
         <div class= "well small"> 2014-03-26
 
@@ -131,55 +201,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>北邮学弟学妹做这个课设的可以联系628中某学长。</p> <a class="btn btn-info xsmall" href="../pages/2014/03/13/sdnshi-xian-httpwang-luo-jia-su-shi-yan.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html"><h2>【原】基于mininet的OpenFlow拓展性拓扑搭建</h2></a>
-        <div class= "well small"> 2014-03-11
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>我们普遍情况下，都是单一控制器去控制一个网络。但是如果多控制器呢？我们如何实现多控制情况下的通信要求呢？</p>
-<p>这有点难度！需要一些东西向的协议来实现控制器之间的数据共享与交换。不是我一个人一两天能搞定的事情。且不同控制器对拓扑信息等存储方式不一样，需要一个统一的标准就显得比较困难。我们先不去想太多。首先，我们需要完成的第一项工作就是数据平面上，不同控制器之间的网络可以相互通信。</p>
-<p>最简单的通信莫过于ping了！</p>
-<h2>实验目的</h2>
-<p>使用mininet搭建两个独立的网络，分别属于不同的控制器。同时，底层数据平面可以相互ping通。这就是我们这个实验的目的。</p>
-<h2>拓扑搭建</h2>
-<p>底层拓扑搭建我们使用mininet2.0，因为mininet1.0版本好像没有link文件，也没有intf类。也许是我没有找到吧。</p>
-<p>以下的代码的作用在于创建一个OVS的网络，并使虚拟机的某个（无ip）网卡连接到这个网中。</p>
-<p>直接上代码：</p>
-<div class="highlight"><pre><span class="o">\</span><span class="c1">#!/usr/bin/python</span>
-<span class="s">&quot;&quot;&quot;</span>
-<span class="s">    This is a topu of our test. It shows that how to add an ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html"><h2>SDN的初步认识</h2></a>
-        <div class= "well small"> 2013-12-24
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>（习惯性乱扯两句，可跳过）一年之前第一次接触SDN的时候，我甚至连pox的发音都发不对。第一次看OF1.0spec的时候，更是不懂secure channel到底是什么概念，Datapath一样是云里雾里。我不知道流是一个什么概念，不知道SDN如何DN，我只是觉得，我可能会比较喜欢IP这一方面的东西，具体哪一方面我也不知道。但是无所谓啊，我还年轻，我有选择的机会。抱着试一试的态度，去学习了SDN的一些知识，慢慢地就喜欢上了。不仅仅是因为知识本身，更是因为当我获得成功时刻的成就感与自豪感，让我觉得我愿意去做这件事情！一年之后，我写过Openflow协议通信流程的教程，画过所有Openflow协议的数据结构，写完自己的一个控制器，还写了一边关于如何编写控制器的教程，懂得怎么使用mininet搭建自定义的拓扑，懂得使用spirent testcenter去打流测试，懂得pox是如何运作的，等等。我甚至可以去教一些新手一些关于SDN的技术，但是，当我想要写点东西的时候，我却突然发现，我不知道什么是SDN！我并不清楚SDN是从何而来，不知道SDN发展历程，不知道SDN目前面临的问题，不明白SDN的现状到底什么状态，不知道SDN的未来有什么前景。我只知道一些具体的技术细节，也许对于一个本科生已经不错了。但是这也正是我们本科生的弱点所在吧。缺少大局观，目光不够长远，对知识的掌握更倾向于操作而非原理 ...</p> <a class="btn btn-info xsmall" href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../category/tech10.html">&larr; Previous</a></li>
@@ -197,6 +218,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class="active"><a href="../category/tech11.html">11</a></li>
     <li class=""><a href="../category/tech12.html">12</a></li>
     <li class=""><a href="../category/tech13.html">13</a></li>
+    <li class=""><a href="../category/tech14.html">14</a></li>
 
     <li class="next"><a href="../category/tech12.html">Next &rarr;</a></li>
 

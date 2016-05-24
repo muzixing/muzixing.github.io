@@ -62,6 +62,79 @@
  
 
     <div class='article'>
+        <a href="./pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html"><h2>基于tornado的简单socket通信建立</h2></a>
+        <div class= "well small"> 2013-11-29
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>配图版请查看：http://user.qzone.qq.com/350959853/blog/1375093527</p>
+<h3>安装tornado</h3>
+<p>这里有比较全的介绍，写得非常好。http://sebug.net/paper/books/tornado/</p>
+<h3>hello world</h3>
+<p>首先，下载安装好tornado之后，我们就可以去使用tornado里面的库了。
+照着官网的简单的例子抄了一遍，写了一个hello world!</p>
+<p><img alt="hello" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=1382f91cba99a9013f355b332dae7b46/e824b899a9014c0862b40dad087b02087bf4f42e.jpg?referer=77791a7ef01fbe094549f72434e4&amp;x=.jpg" /></p>
+<p>显示效果如下：</p>
+<p><img alt="res" src="http://e.hiphotos.bdimg.com/album/s%3D550%3Bq%3D90%3Bc%3Dxiangce%2C100%2C100/sign=0683c331b1de9c82a265f98a5cbaf137/d009b3de9c82d15858647eb9820a19d8bd3e42d7.jpg?referer=68d8807dd488d43fa9bea5c2aecd&amp;x=.jpg" /></p>
+<h3>基于tornado的简单的socket连接通信实现</h3>
+<p>代码如下：</p>
+<div class="highlight"><pre><span class="nb">import</span> <span class="n">errno</span>
+<span class="nb">import</span> <span class="n">functools</span>
+<span class="n">from</span> <span class="n">tornado</span><span class="o">.</span><span class="n">ioloop</span> <span class="nb">import</span> <span class="n">IOLoop</span>
+<span class="nb">import</span> <span class="nb">socket</span>
+<span class="nb">import</span> <span class="nb">time</span>
+<span class="nb">import</span> <span class="n">Queue</span>
+
+<span class="n">sock</span> <span class="o">=</span> <span class="nb">socket</span><span class="o">.</span><span class="nb">socket</span>    <span class="p">(</span><span class="nb">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span><span class="nb">socket ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="./pages/2013/11/29/nge-zheng-shu-qiu-qi-zhong-ren-yi-n-1ge-shu-de-cheng-ji-zhong-de-zui-da-de-ge-jin-yong-chu-fa.html"><h2>N个整数，求其中任意N-1个数的乘积中的最大的一个(禁用除法)</h2></a>
+        <div class= "well small"> 2013-11-29
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>刚才看程序员面试宝典的时候看到这个有趣的题目，也是google2007年的笔试题目。<strong>只能用乘法，不能用除法。</strong></p>
+<p>看了网上一些扯到不行算法之后，我决定把我自己的想法写一下，不一定对。</p>
+<p>PS：好久没写C++,语法都忘了，跟python语法混乱了……哎。。</p>
+<h3>整个问题只会有一下3种情况</h3>
+<ul>
+<li>
+<p>有两个0，最大必为0。</p>
+</li>
+<li>
+<p>数组全非负，最好办，在没有两个及以上的0的情况下，把最小的剔除即可。</p>
+</li>
+<li>
+<p>数组有正有负，有0，最困难。</p>
+</li>
+</ul>
+<p>具体代码如下：</p>
+<div class="highlight"><pre><span class="sr">//</span><span class="err">数组</span><span class="n">a</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+<span class="sr">//</span><span class="err">——————————————————————————————————————————————</span>
+<span class="nb">int</span> <span class="n">min1</span> <span class="o">=</span> <span class="o">-</span><span class="mi">65534</span><span class="p">,</span><span class="n">min2</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">No</span><span class="p">,</span><span class="n">No_1</span><span class="p">,</span><span class="n">No_2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span><span class="n">total</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">z_num</span><span class="o">=-</span><span class="mi">1</span><span class="p">;</span><span class="sr">//</span><span class="err">初始化参数；</span>
+<span class="k">for</span><span class="p">(</span><span class="nb">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;(</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">)</span><span class="o">||</span><span class="p">(</span><span class="n">j</span><span class="o">&lt;</span><span class="mi">1 ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/11/29/nge-zheng-shu-qiu-qi-zhong-ren-yi-n-1ge-shu-de-cheng-ji-zhong-de-zui-da-de-ge-jin-yong-chu-fa.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2013/11/29/yuan-chuang-scapyjian-dan-jiao-cheng.html"><h2>【原创】scapy简单教程</h2></a>
         <div class= "well small"> 2013-11-29
 
