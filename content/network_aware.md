@@ -7,31 +7,26 @@ category:Tech
 
 ###网络资源感知
 
-网络资源感知模块用于感知网络资源的实时变化，包括拓扑信息以及主机信息的变化。任何网络应用，可达性都是最基本的要求。SDN网络的集中控制，使得控制器可以根据全局的信息作出最佳决策而无需在交换节点上采用分布式的路由算法。所以感知网络资源是SDN应用最基础的一项服务。网络资源感知模块源码链接：[network_aware](https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_aware.py).
+网络资源感知模块用于感知网络资源的实时变化，包括拓扑信息以及主机信息的变化。任何网络应用，可达性都是最基本的要求。SDN网络的集中控制，使得控制器可以根据全局的信息作出最佳决策而无需在交换节点上采用分布式的路由算法。所以感知网络资源是SDN应用最基础的一项服务。网络资源感知模块源码链接：[Network_Awareness](https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_awareness.py).
 
-实现该模块的类为Network\_Aware类，该类描述如下：
+实现该模块的类为NetworkAwareness类，该类描述如下：
 
 ```python
 
-class Network_Aware(app_manager.RyuApp):
+class NetworkAwareness(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-    _NAME = 'network_aware'
+    SLEEP_PERIOD = 10
+    IS_UPDATE = True
 
     def __init__(self, *args, **kwargs):
-        super(Network_Aware, self).__init__(*args, **kwargs)
-        self.name = "Network_Aware"
+        super(NetworkAwareness, self).__init__(*args, **kwargs)
         self.topology_api_app = self
-
-        # links_to_port:(src_dpid,dst_dpid)->(src_port,dst_port)
-        self.link_to_port = {}
-        # access_table:{(sw,port) :[host1_ip]}
-        self.access_table = {}
-        # switch_port_table:dpip->port_num
-        self.switch_port_table = {}
-        # access_port:dpid->port_num
-        self.access_ports = {}
-        # interior_ports: dpid->port_num
-        self.interior_ports = {}
+        self.name = "awareness"
+        self.link_to_port = {}       # (src_dpid,dst_dpid)->(src_port,dst_port)
+        self.access_table = {}       # {(sw,port) :[host1_ip]}
+        self.switch_port_table = {}  # dpip->port_num
+        self.access_ports = {}       # dpid->port_num
+        self.interior_ports = {}     # dpid->port_num
 
         self.graph = nx.DiGraph()
         self.pre_graph = nx.DiGraph()
@@ -58,31 +53,30 @@ class Network_Aware(app_manager.RyuApp):
 
 Note that:可以通过置位IS_UPDATE来控制是否输出信息。此外，若拓扑信息不发生变化，将不打印，即仅打印拓扑一次，直至拓扑更新。可以将判断中的and 修改为or,即可每次都打印。
 
-<center>![network info](http://ww2.sinaimg.cn/mw690/7f593341jw1etvgswsahwj20k30ddtcl.jpg)</center>
+<center>![network info](http://ww1.sinaimg.cn/mw690/7f593341jw1f48kxj1gewj20hk0c7jub.jpg)</center>
 <center>图1.网络资源信息</center>
 
 ###网络流量监控
 
-网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：[Network_Monitor](https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/network_monitor.py)
+网络的信息除了物理资源信息以外，还包括逻辑链路等信息；获取流表信息可获得对应的逻辑连接信息。此外，获取网络的数据流量的统计情况对防止网络故障，合理优化网络等方面起到了重要的作用。网络流量监控模块实现了对端口流量和流表项流量的监控。应用可周期获取到流量信息，并在终端中输出展示。源码链接：[Network_Monitor](https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_monitor.py)
 
 实现网络流量监控的类为：Network_Monitor,具体描述如下：
 
 ```python
-    class Network_Monitor(app_manager.RyuApp):
+    class NetworkMonitor(app_manager.RyuApp):
         OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-        _NAME = 'Network_Monitor'
+        SLEEP_PERIOD = 10
     
         def __init__(self, *args, **kwargs):
-            super(Network_Monitor, self).__init__(*args, **kwargs)
-    
+            super(NetworkMonitor, self).__init__(*args, **kwargs)
+            self.name = 'monitor'
             self.datapaths = {}
             self.port_stats = {}
             self.port_speed = {}
             self.flow_stats = {}
             self.flow_speed = {}
-            # {"port":{dpid:{port:body,..},..},"flow":{dpid:body,..}
             self.stats = {}
-            self.port_link = {}  # {dpid:{port_no:(config,state,cur),..},..}
+            self.port_link = {}
             self.monitor_thread = hub.spawn(self._monitor)
 ```
 
@@ -108,7 +102,7 @@ Note that:可以通过置位IS_UPDATE来控制是否输出信息。此外，若�
 
 ###基于网络资源的最短路径
 
-基于以上的网络资源感知模块与网络流量监控模块提供的数据，我们可以做很多事情，比如负载均衡等流量调度应用，有比如安全接入等安全应用。本小节介绍基于网络资源的最短路径应用。衡量最短路径的参考系是跳数，稍加修改可以变为剩余带宽，延时或者多参考系加权的方案。源代码链接：[shortest_forwarding](https://github.com/muzixing/ryu/blob/master/ryu/app/network_aware/shortest_forwarding.py)
+基于以上的网络资源感知模块与网络流量监控模块提供的数据，我们可以做很多事情，比如负载均衡等流量调度应用，有比如安全接入等安全应用。本小节介绍基于网络资源的最短路径应用。衡量最短路径的参考系是跳数，稍加修改可以变为剩余带宽，延时或者多参考系加权的方案。源代码链接：[shortest_forwarding](https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/shortest_forwarding.py)
 
 最短路径应用流程图如下：
 <center>![shortest path](http://ww3.sinaimg.cn/mw690/7f593341jw1etvhwx97yjj20870dxq31.jpg)</center>
@@ -126,7 +120,7 @@ Note that:可以通过置位IS_UPDATE来控制是否输出信息。此外，若�
 **Note that**:本应用假设主机发起通信时需先发起ARP，不可通过其他途径获取到ARP的信息，否则控制器无法获得目的端主机接入信息，则无法完成路由。对于域外的主机，只需在找不到目的端时，将其送给出口网关即可。此时需使用到子网掩码，网段，路由等概念。本应用仅针对简单局域网计算路径。
 
 <center>![shortest path](http://ww3.sinaimg.cn/mw690/7f593341jw1etvgsxenqtj20gy0cradi.jpg)</center>
-<center>图6. 流表项流量统计信息</center>
+<center>图6. 最短路径转发</center>
 
 ###总结
 
@@ -135,7 +129,6 @@ Note that:可以通过置位IS_UPDATE来控制是否输出信息。此外，若�
 ### 更新
 
 由于之前的设计不够好，都是自己造的一些轮子，不够优美。所以在2016年4月13日将这份代码重构了。更多详情请关注github。
-
 
 
 
