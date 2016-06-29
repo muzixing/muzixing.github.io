@@ -62,6 +62,38 @@
  
 
     <div class='article'>
+        <a href="./pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html"><h2>【原创】mininet搭建自定义网络拓扑 by muzi</h2></a>
+        <div class= "well small"> 2013-12-06
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>你知道的mininet</h3>
+<p>相信很多研究SDN的朋友都知道mininet，也是用过mininet。但是恐怕大多数人都只是局限于workthough的水平.链接：http://mininet.org/walkthrough/</p>
+<p>搭建更多的，灵活的拓扑还是有一定的难度。</p>
+<p>上一次实验的时候，看了一下spirent testceter的一套测试拓扑，从中受益，学了一点。现在写出来分享一下。</p>
+<p>如果你想快速建立拓扑，请直接拉到最后一个标题</p>
+<h3>教你搭建你自己的任意拓扑</h3>
+<p>首先把需要用到的相关模块import进来。</p>
+<div class="highlight"><pre><span class="sr">/#!/</span><span class="n">usr</span><span class="sr">/bin/</span><span class="n">python</span>
+
+<span class="nb">import</span> <span class="n">re</span>
+<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">cli</span> <span class="nb">import</span> <span class="n">CLI</span>
+<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">log</span> <span class="nb">import</span> <span class="n">setLogLevel</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span><span class="n">error</span>
+<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="n">net</span> <span class="nb">import</span> <span class="n">Mininet</span>
+<span class="n">from</span> <span class="n">mininet</span><span class="o">.</span><span class="nb">link</span> <span class="nb">import</span> <span class="n">Intf</span>
+<span class="n">from</span> <span class="n">mininet ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/12/06/yuan-chuang-mininetda-jian-zi-ding-yi-wang-luo-tuo-bu-by-muzi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2013/11/29/ji-yu-tornadode-jian-dan-sockettong-xin-jian-li.html"><h2>基于tornado的简单socket通信建立</h2></a>
         <div class= "well small"> 2013-11-29
 
@@ -200,43 +232,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <span class="n">unzip</span> <span class="n">qooxdoo</span><span class="o">-</span><span class="mf">2.0.2</span><span class="o">-</span><span class="n">sdk ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2013/11/29/yuan-poxdeskshi-xian-tuo-bu-xian-shi.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/11/28/yuan-chuang-poxyun-xing-ji-zhi-byli-cheng.html"><h2>【原创】POX运行机制 　　by李呈</h2></a>
-        <div class= "well small"> 2013-11-28
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>Pox以及组件的启动</h3>
-<p>配图版请浏览：http://user.qzone.qq.com/350959853/blog/1376471361</p>
-<p>SDNAP链接： http://www.sdnap.com/sdnap-post/2058.html </p>
-<h5>1：启动pox.py。</h5>
-<div class="highlight"><pre><span class="n">python</span> <span class="n">pox</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-
-
-<p>Pox.py 里面除了一堆的注释以外，真正有用的只有几句会运行的：</p>
-<div class="highlight"><pre><span class="n">from</span> <span class="n">pox</span><span class="o">.</span><span class="n">boot</span> <span class="nb">import</span> <span class="n">boot</span>
-    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-        <span class="n">boot</span><span class="p">()</span>
-</pre></div>
-
-
-<p>boot()函数在pox.boot里，有什么内容呢？</p>
-<h6>1：把pox和ext两个文件夹的路径加入系统path中。</h6>
-<h6>2：由_do_ import添加各个模块</h6>
-<h6>3：_do_launch去启动各个模块，启动pox</h6>
-<h6>4 ...</h6> <a class="btn btn-info xsmall" href="./pages/2013/11/28/yuan-chuang-poxyun-xing-ji-zhi-byli-cheng.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="./index14.html">&larr; Previous</a></li>
@@ -256,8 +251,9 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     <li class=""><a href="./index13.html">13</a></li>
     <li class=""><a href="./index14.html">14</a></li>
     <li class="active"><a href="./index15.html">15</a></li>
+    <li class=""><a href="./index16.html">16</a></li>
 
-    <li class="next disabled"><a href="#">&rarr; Next</a></li>
+    <li class="next"><a href="./index16.html">Next &rarr;</a></li>
 
 </ul>
 </div>
