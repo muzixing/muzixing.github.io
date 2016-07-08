@@ -1,5 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feed/all.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 28 Jun 2016 00:00:00 +0800</lastBuildDate><item><title>SDN最新研究进展</title><link>http://www.muzixing.com/pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html</link><description>&lt;p&gt;自SDN出现以来，关于SDN的研究一直没有停止，只是不同的阶段关于SDN的研究的重点不同。比如最开始的时候，探讨最多的是SDN的可行性，以及如何将SDN应用到对应的网络场景中。本文是笔者在最近阅读2015年至今的若干SDN论文后总结的SDN最新研究进展，希望对读者提供一些帮助。&lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feed/all.rss.xml" rel="self"></atom:link><lastBuildDate>Fri, 08 Jul 2016 00:00:00 +0800</lastBuildDate><item><title>基于跳数\时延\带宽的最短/优路径和负载均衡</title><link>http://www.muzixing.com/pages/2016/07/08/ji-yu-tiao-shu-shi-yan-dai-kuan-de-zui-duan-you-lu-jing-he-fu-zai-jun-heng.html</link><description>&lt;p&gt;对于SDN初学者而言，最短路径转发应用和负载均衡应用是最常见，也是最适合学习的经典应用。根据链路权重参数的不同，主要有基于跳数、时延和带宽的几种最短\最优路径转发应用。根据链路可用带宽实现的最优路径转发本质上也是一种网络流量负载均衡的简单实现。本文将介绍笔者在学习过程中开发的网络感知模块以及基于跳数、时延和带宽三种最优路径转发应用。&lt;/p&gt;
+&lt;h3&gt;基于跳数的最短路径转发&lt;/h3&gt;
+&lt;p&gt;基于跳数的最短路径转发是最简单的最优路径转发应用。我们通过&lt;a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_awareness.py"&gt;network_awareness&lt;/a&gt;应用来实现网络拓扑资源的感知并计算最短路径。首先控制器通过下发LLDP报文来获取网络链路信息，然后再利用网络信息，生成网络拓扑图。网络感知应用使用networkx的有向图数据结构存储拓扑信息，使用networkx提供的&lt;a href="http://networkx.readthedocs.io/en/stable/reference/generated/networkx.algorithms.simple_paths.shortest_simple_paths.html"&gt;shortest_simple_paths&lt;/a&gt;函数来计算最短路径。shortest_simple_paths函数支持在图上找出源交换机到目的交换机的K条最短路径，其函数参数信息如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;shortest_simple_paths&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;G&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;source&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;target&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;weight&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在给定图G，源交换机source，目的交换机target以及链路权重类型weight的情况下，会返回一个路径生成器。通过K次调用生成器可以生成K条最短路径。&lt;/p&gt;
+&lt;p&gt;获得最短路径之后，&lt;a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/shortest_forwarding.py"&gt;shortest_forwarding&lt;/a&gt;应用将完成流表下发等工作，实现基于跳数的最短路径转发应用。&lt;/p&gt;
+&lt;h3&gt;基于时延的最优路径转发&lt;/h3&gt;
+&lt;p&gt;基于时延的最优路径转发应用原理和基于跳数的最短路径转发应用类似，只是链路权重类型变成了时延。关于计算链路时延的原理，读者可以阅读&lt;a href="http://www.muzixing.com/pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html"&gt;Ryu:网络时延探测应用&lt;/a&gt;。&lt;a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_delay_detector.py"&gt;Network_Delay_Detector&lt;/a&gt;是一个网络时延探测应用，其在获取到链路时延之后，将时延数据存储到Networkx的图数据结构中，以供其他模块使用。&lt;/p&gt;
+&lt;p&gt;通过设置链路权重参数，Shortest_forwarding应用可以基于时延数据计算最优的转发路径。&lt;/p&gt;
+&lt;h3&gt;基于带宽的最优路径转发/负载均衡&lt;/h3&gt;
+&lt;p&gt;基于带宽的最优路径相比以上两种应用相对要复杂一些。为了降低计算复杂度，我们采用先计算基于跳数的K条最短路径，再从中选取可用带宽最大的那条路径最为最优解。链路可用带宽的数据由&lt;a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_monitor.py"&gt;nework_monitor&lt;/a&gt;应用提供。该应用周期地获取链路的剩余带宽，并将带宽数据存储到networkx的图结构中，提供给其他模块使用。此外，network_monitor模块还实现了基于链路可用带宽的最优转发路径的计算，为其他模块提供最优路径信息。&lt;/p&gt;
+&lt;p&gt;通过设置链路权重参数，Shortest_forwarding应用可以基于带宽数据计算最优的转发路径。本质上，network_monitor基于当前流量，为新数据流选择最佳转发路径，也是一种网络流量负载均衡的实现，只是其调度算法相对简单。&lt;/p&gt;
+&lt;h3&gt;使用方法&lt;/h3&gt;
+&lt;p&gt;为解析权重和最短K路径的参数，还需要在Ryu中注册全局的启动参数。注册参数的方法十分简单，只需要在Ryu顶级目录下的flags.py文件中添加如下的代码即可：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="n"&gt;CONF&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;register_cli_opts&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;
+        &lt;span class="c"&gt;# k_shortest_forwarding&lt;/span&gt;
+        &lt;span class="n"&gt;cfg&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;IntOpt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;k-paths&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;default&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;help&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;number for k shortest paths&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;cfg&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;StrOpt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;weight&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;default&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;hop&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="n"&gt;help&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;type of computing shortest path.&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;完成以上修改后，将&lt;a href="https://github.com/muzixing/ryu/tree/master/ryu/app/network_awareness"&gt;Github仓库&lt;/a&gt;中的代码下载到本地，然后放置到Ryu目录下合适的位置，比如Ryu/app目录下。&lt;/p&gt;
+&lt;p&gt;最后还需要重新安装Ryu：进入到ryu/的根目录，运行setup.py文件，并添加install参数。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;python&lt;/span&gt; &lt;span class="n"&gt;setup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;重新安装完成之后，启动shortest_forwarding应用，并添加observe-links，链路权重和最短路径条数等重要参数,示例如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;manager&lt;/span&gt; &lt;span class="n"&gt;ryu&lt;/span&gt;&lt;span class="sr"&gt;/app/&lt;/span&gt;&lt;span class="n"&gt;network_awareness&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;shortest_forwarding&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;observe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;links&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;paths&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;weight&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;bw&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;启动Ryu之后，启动任意的SDN网络，如Mininet模拟的网络，并连接到Ryu控制器。最后可以在Mininet输入框中输入pingall进行测试。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;mn&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;controller&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;remote&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;topo&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;tree&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;mac&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;为了方便使用，读者可以通过修改&lt;a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/setting.py"&gt;setting.py&lt;/a&gt;中的信息来修改应用的重要参数，比如获取链路信息的周期，是否打印网络信息等等。setting信息具体如下所示：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;DISCOVERY_PERIOD&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;
+&lt;span class="n"&gt;MONITOR_PERIOD&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;
+&lt;span class="n"&gt;DELAY_DETECTING_PERIOD&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;
+
+&lt;span class="n"&gt;TOSHOW&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;True&lt;/span&gt;
+&lt;span class="n"&gt;MAX_CAPACITY&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;281474976710655&lt;/span&gt;&lt;span class="n"&gt;L&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;读者可以通过修改对应的周期数值，来修改对应模块获取信息的周期，其单位为秒。TOSHOW是一个布尔值，用于设置是否在终端打印网络信息。MAX_CAPACITY值为链路最大可用带宽值，可根据实际情况进行修改。&lt;/p&gt;
+&lt;h3&gt;总结&lt;/h3&gt;
+&lt;p&gt;本文介绍了基于跳数、时延和带宽三种权重类型的最优转发应用，同时，基于带宽的最优转发也是一种简单的网络流量负载均衡应用。以上的代码其实在很久以前就已经写出来了，其是OXP（Open eXchange Protocol）应用的基础，但是由于某些原因，一直无法公开发布。前段时间在博客上发布了时延应用的原理，并没有把代码公布。但后来有若干读者发邮件询问代码，所以就趁着6月份的尾巴，把压在箱底的陈年应用发表出来，希望给大家带来一些帮助。在使用过程中建议读者先仔细阅读本文或README。如果遇到问题，可以通过电子邮件的方式和我沟通，我会很快把BUG修改好，不影响程序的使用体验。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 08 Jul 2016 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2016-07-08:pages/2016/07/08/ji-yu-tiao-shu-shi-yan-dai-kuan-de-zui-duan-you-lu-jing-he-fu-zai-jun-heng.html</guid><category>shortest_forwarding</category><category>load_balance</category></item><item><title>SDN最新研究进展</title><link>http://www.muzixing.com/pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html</link><description>&lt;p&gt;自SDN出现以来，关于SDN的研究一直没有停止，只是不同的阶段关于SDN的研究的重点不同。比如最开始的时候，探讨最多的是SDN的可行性，以及如何将SDN应用到对应的网络场景中。本文是笔者在最近阅读2015年至今的若干SDN论文后总结的SDN最新研究进展，希望对读者提供一些帮助。&lt;/p&gt;
 &lt;h3&gt;SDN/NFV&lt;/h3&gt;
 &lt;p&gt;SDN和NFV都是当下网络界研究的热点，而如何将两者整合部署，也是研究的热点之一。设计SDN/NFV整合部署框架的研究是这个研究方向的主要研究切入点之一，比如参考文献[1]中就提出了一个SDN/NFV的整体架构。框架中的NFV协调器可以和云管理平台配合使用，SDN控制器也支持与云平台结合。由于此类方案是SDN与其他技术/框架的集合，本身没有太多创新性，论文中也仅仅介绍了其实现方案，所以此处不加赘述。&lt;/p&gt;
 &lt;p&gt;SDN/NFV结合还可以部署在很多场景，比如WiFi场景。OpenSDWN[2]就是一种软件定义的家庭/企业WiFi架构框架。 将SDN与其他技术结合并应用在特定网络场景是一种主要的研究方向之一。&lt;/p&gt;

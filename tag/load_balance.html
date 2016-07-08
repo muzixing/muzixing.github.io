@@ -129,126 +129,13 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         <hr />
     </div>
 		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html"><h2>SDN最新研究进展</h2></a>
-        <div class= "well small"> 2016-06-28
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>自SDN出现以来，关于SDN的研究一直没有停止，只是不同的阶段关于SDN的研究的重点不同。比如最开始的时候，探讨最多的是SDN的可行性，以及如何将SDN应用到对应的网络场景中。本文是笔者在最近阅读2015年至今的若干SDN论文后总结的SDN最新研究进展，希望对读者提供一些帮助。</p>
-<h3>SDN/NFV</h3>
-<p>SDN和NFV都是当下网络界研究的热点，而如何将两者整合部署，也是研究的热点之一。设计SDN/NFV整合部署框架的研究是这个研究方向的主要研究切入点之一，比如参考文献[1]中就提出了一个SDN/NFV的整体架构。框架中的NFV协调器可以和云管理平台配合使用，SDN控制器也支持与云平台结合。由于此类方案是SDN与其他技术/框架的集合，本身没有太多创新性，论文中也仅仅介绍了其实现方案，所以此处不加赘述。</p>
-<p>SDN/NFV结合还可以部署在很多场景，比如WiFi场景。OpenSDWN[2]就是一种软件定义的家庭/企业WiFi架构框架。 将SDN与其他技术结合并应用在特定网络场景是一种主要的研究方向之一。</p>
-<h3>流表优化</h3>
-<p>OpenFlow所支持的细粒度流管理是SDN最大的优势之一，但是细粒度的管理是需要付出代价的。为满足细粒度的管理，则需要更粒度的流表项。但是像OpenFlow协议这种细粒度的管理会带来一定的时延，对于时延敏感的短流业务而言，这个时延带来的影响是不可忽视的，这很可能会抵消了SDN带来的好处。所以如何通过流表来匹配流，从而减少流表项下发次数，是降低时延影响的有利手段。</p>
-<p>此外，当网络流数目过多时，交换机的流表空间就无法满足需求。当流表满时 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html"><h2>Ryu:网络时延探测应用</h2></a>
-        <div class= "well small"> 2016-05-24
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>之前，笔者已经发布了网络感知应用和基于跳数的最短路径转发应用。本文将介绍笔者开发的网络时延探测应用。该应用通过LLDP数据包的时延和Echo数据包的时延计算得出链路的时延数据，从而实现网络链路时延的感知。详细原理和实现步骤将在文章中详细介绍。</p>
-<h3>测试原理</h3>
-<p>网络时延探测应用利用了Ryu自带的Switches模块的数据，获取到了LLDP数据发送时的时间戳，然后和收到的时间戳进行相减，得到了LLDP数据包从控制器下发到交换机A，然后从交换机A到交换机B，再上报给控制器的时延T1，示例见图1的蓝色箭头。同理反向的时延T2由绿色的箭头组成。此外，控制器到交换机的往返时延由一个蓝色箭头和一个绿色箭头组成，此部分时延由echo报文测试，分别为Ta，Tb。最后链路的前向后向平均时延T=（T1+T2-Ta-Tb）/2。</p>
-<p><center><img alt="link delay" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f40i7d39ouj20fr09lgm6.jpg" /></center>
-<center>图1. 测量链路时延原理图</center></p>
-<h3>获取LLDP时延</h3>
-<p>获取T1和T2的逻辑一样，均需要使用到Switches模块的数据。计算LLDP时延的处理逻辑如下代码所示。首先从Packet_in中解析LLDP数据包，获得源DPID，源端口。然后根据发送端口的数据获取到portdata中的发送时间戳数据，并用当下的系统时间减去发送时间戳，得到时延，最后将其保存到graph数据中。</p>
-<div class="highlight"><pre>    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">src_dpid ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/05/20/ryuru-he-zai-lldpzhong-tian-jia-zi-ding-yi-lldpdu.html"><h2>Ryu:如何在LLDP中添加自定义LLDPDU</h2></a>
-        <div class= "well small"> 2016-05-20
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><hr />
-<p>在许多实验场景中，都需要使用链路发现协议（LLDP）来发现链路，从而构建网络拓扑。然而LLDP协议不仅仅可以用来发现拓扑，也可以用于时延检测等业务。LLDP通过添加对应的TLV格式的LLDPDU（LLDP数据单元）来携带对应的信息，从而为上层业务提供信息支撑。为实现LLDP数据单元的拓展，本文将以Ryu控制器为例，介绍如何添加自定义的LLDPDU，从而满足多种业务的需求。</p>
-<p>添加自定义LLDPDU其实只需修改ryu/lib/packet/lldp.py即可，但是由于该文件仅定义了LLDP的相关类，如何使用还需要其他文件去调用，所以还需要其他的修改步骤。具体步骤将在文章后续介绍。</p>
-<h3>修改lldp.py文件</h3>
-<p>ryu/lib/packet/lldp.py文件是Ryu控制器中关于LLDP协议数据类的描述，其中定义了如LLDPBasicTLV类等重要的报文类。 以添加发送时间戳的TLV为例，我们需要完成TLV类型号的声明，以及TLV类的定义。</p>
-<p>在文件开头处有关于LLDP TLV类型的声明，所以首先我们需要添加一个新的类型：LLDP_TLV_SEND_TIME，其类型号为11。</p>
-<div class="highlight"><pre>    <span class="c"># LLDP TLV type</span>
-    <span class="n">LLDP_TLV_END</span> <span class="o">=</span> <span class="mi">0</span>                        <span class="c"># End of LLDPDU</span>
-    <span class="n">LLDP_TLV_CHASSIS_ID</span> <span class="o">=</span> <span class="mi">1 ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2016/05/20/ryuru-he-zai-lldpzhong-tian-jia-zi-ding-yi-lldpdu.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/05/03/wo-shi-ge-sdnjiao-huan-ji.html"><h2>我是一个SDN交换机</h2></a>
-        <div class= "well small"> 2016-05-03
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>我叫阿飞，是大柳树村的快递小哥。阿飞是大家给我起的名字，因为我送货很快。</p>
-<p>我做着普通的工作，拿着普通的工资，没有房子，一直单身，但我知道，只要努力，就能出人头地。要知道，在因特奈特国，识字的人并不是很多。幸亏我还认得一些字，才能成为一名光荣的快递员。很多时候，人们叫我交换机，因为我每天都像机器一样交换着包裹。其他快递元也和我一样机械地交换货物，但我知道：我和外地的快递员不一样。我一直知道。</p>
-<p>我和其他的金银岛上的快递员们都学过OpenFlow等软件定义网络（SDN）方向的语言，拿的是SDN专业方向的文凭，但那些岛外的快递员前辈们都是传统的快递员，没有学过方面的知识。那时候没有SDN专业方向，所以他们都需要学OSPF、IS-IS等多种传统语言。而我们只需要学会OpenFlow语言基本就可以上岗了。虽然我们学习的内容减少了，但是我们却需要SDN控制器来指挥快递的转发。</p>
-<p>之所以现在出现SDN方向是因为传统的工作模式已经固化，难以应付更多的新业务。一方面，快递员要学习的知识太多，需要学习好多语言才能成为一名光荣的传统快递员，所以学习压力很大，而且学费也太贵。另一方面是传统的语言并没有办法沟通出全局的物流信息，导致有时候快递转发效率太低了。但是在SDN的专业方向里面，快递主管拥有全局的物流信息，通过快递主管管理快递员，告诉我们怎么收发，就可以做到全局的掌控，优化传输效率 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/05/03/wo-shi-ge-sdnjiao-huan-ji.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
 
-    <li class="active"><a href="../category/tech.html">1</a></li>
-    <li class=""><a href="../category/tech2.html">2</a></li>
-    <li class=""><a href="../category/tech3.html">3</a></li>
-    <li class=""><a href="../category/tech4.html">4</a></li>
-    <li class=""><a href="../category/tech5.html">5</a></li>
-    <li class=""><a href="../category/tech6.html">6</a></li>
-    <li class=""><a href="../category/tech7.html">7</a></li>
-    <li class=""><a href="../category/tech8.html">8</a></li>
-    <li class=""><a href="../category/tech9.html">9</a></li>
-    <li class=""><a href="../category/tech10.html">10</a></li>
-    <li class=""><a href="../category/tech11.html">11</a></li>
-    <li class=""><a href="../category/tech12.html">12</a></li>
-    <li class=""><a href="../category/tech13.html">13</a></li>
-    <li class=""><a href="../category/tech14.html">14</a></li>
+    <li class="active"><a href="../tag/load_balance.html">1</a></li>
 
-    <li class="next"><a href="../category/tech2.html">Next &rarr;</a></li>
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
 
 </ul>
 </div>

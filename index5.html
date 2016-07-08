@@ -62,6 +62,40 @@
  
 
     <div class='article'>
+        <a href="./pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html"><h2>Ryu:模块间通信机制分析</h2></a>
+        <div class= "well small"> 2015-09-08
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>Ryu是一款非常轻便的SDN控制器，在科研方面得到了广泛的应用。相比其他控制器，受益于Python语言，在Ryu上开发SDN应用的效率要远高于其他控制器。为了解决复杂的业务，有时需要在Ryu上开发多模块来协同工作，从而共同完成复杂的业务。本文将介绍Ryu模块之间通信的包括Context等方式的多种通信方式。</p>
+<h3>_CONTEXTS</h3>
+<p>在RyuApp类中有一个属性是_CONTEXTS。_CONTEXTS中的内容将作为当前模块的服务在模块初始化时得到加载。示例如下：</p>
+<div class="highlight"><pre>    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&quot;Network_Aware&quot;</span><span class="p">:</span> <span class="n">network_aware</span><span class="o">.</span><span class="n">Network_Aware</span><span class="p">,</span>
+        <span class="s">&quot;Network_Monitor&quot;</span><span class="p">:</span> <span class="n">network_monitor</span><span class="o">.</span><span class="n">Network_Monitor</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Shortest_forwarding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;shortest_forwarding&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network_aware</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;Network_Aware&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network_monitor</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;Network_Monitor&quot;</span><span class="p">]</span>
+</pre></div>
+
+
+<p>在模块启动时，首先会将_CONTEXTS中的模块先启动，在模块的初始化函数中可以通过self.network_aware = kwargs["Network_Aware"]的形式获得该服务模块的实例，从而获取到该模块的数据 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/09/08/ryumo-kuai-jian-tong-xin-ji-zhi-fen-xi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2015/08/30/sdnkong-zhi-ping-mian-fa-zhan-li-shi-ji-qu-shi.html"><h2>SDN控制平面发展历史及趋势</h2></a>
         <div class= "well small"> 2015-08-30
 
@@ -155,28 +189,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">NetworkAwareness</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">topology_api_app ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/07/08/sdnwang-luo-gan-zhi-fu-wu-yu-zui-duan-lu-jing-ying-yong.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html"><h2>初学者的SDN学习之路</h2></a>
-        <div class= "well small"> 2015-06-22
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Software Defined Network顾名思义软件定义网络，可以简单地分为网络和软件两个部分：软件和网络。此外，通过使用OpenFlow协议来实现SDN是一种较为普遍的方式，
-所以本篇将从软件和网络以及OpenFlow三个方面进行介绍。在研究SDN的研究者之中，有相当大比例的网络工程师，他们了解网络，精通网络，然而却并不了解软件开发。除此之外，还有很大比例的研究者是软件工程师，他们软件开发能力出色，然而并不了解网络运作的机制，在接触SDN之前，他们的范围仅仅只是应用层，底层的东西交给全交给主机的协议栈了。还有一部分同学是像我这样，通信工程出身，学的是物理层的编码解码，误码率，电磁波。不像计算机专业那些学生一样，学习各种语言，操弄各种编译器，混迹于github这种全球最大的男性交友网站。剩下最后一种就是又懂网络，又懂编程。这种人，我一般称之为老师，是用来请教问题的，比如地球-某某老师。一般的,他们不屑于看到这种文章，太low。</p>
-<p>本篇主要的目标用户是对网络和软件开发都不太了解，或者网络和编程开发只擅长一种的研究者。由于我也是一个初学者，所以仅当做经验分享吧。如有表达不对的地方，敬请指出，万分感谢。</p>
-<h2>网络</h2>
-<p>软件定义网络，如果不了解网络，那如何去定义一个你不了解的东西？如果不知道网络中存在的问题 ...</p> <a class="btn btn-info xsmall" href="./pages/2015/06/22/chu-xue-zhe-de-sdnxue-xi-zhi-lu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
