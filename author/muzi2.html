@@ -62,6 +62,27 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/05/03/wo-shi-ge-sdnjiao-huan-ji.html"><h2>我是一个SDN交换机</h2></a>
+        <div class= "well small"> 2016-05-03
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>我叫阿飞，是大柳树村的快递小哥。阿飞是大家给我起的名字，因为我送货很快。</p>
+<p>我做着普通的工作，拿着普通的工资，没有房子，一直单身，但我知道，只要努力，就能出人头地。要知道，在因特奈特国，识字的人并不是很多。幸亏我还认得一些字，才能成为一名光荣的快递员。很多时候，人们叫我交换机，因为我每天都像机器一样交换着包裹。其他快递元也和我一样机械地交换货物，但我知道：我和外地的快递员不一样。我一直知道。</p>
+<p>我和其他的金银岛上的快递员们都学过OpenFlow等软件定义网络（SDN）方向的语言，拿的是SDN专业方向的文凭，但那些岛外的快递员前辈们都是传统的快递员，没有学过方面的知识。那时候没有SDN专业方向，所以他们都需要学OSPF、IS-IS等多种传统语言。而我们只需要学会OpenFlow语言基本就可以上岗了。虽然我们学习的内容减少了，但是我们却需要SDN控制器来指挥快递的转发。</p>
+<p>之所以现在出现SDN方向是因为传统的工作模式已经固化，难以应付更多的新业务。一方面，快递员要学习的知识太多，需要学习好多语言才能成为一名光荣的传统快递员，所以学习压力很大，而且学费也太贵。另一方面是传统的语言并没有办法沟通出全局的物流信息，导致有时候快递转发效率太低了。但是在SDN的专业方向里面，快递主管拥有全局的物流信息，通过快递主管管理快递员，告诉我们怎么收发，就可以做到全局的掌控，优化传输效率 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/05/03/wo-shi-ge-sdnjiao-huan-ji.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/04/18/wo-shi-ge-sdnkong-zhi-qi.html"><h2>我是一个SDN控制器</h2></a>
         <div class= "well small"> 2016-04-18
 
@@ -142,32 +163,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>原理</h3>
 <p>读者可能会有疑问：OpenFlow所实现的SDN目前不是发展挺好的吗，POF相比OpenFlow有什么优点呢？</p>
 <p>在OpenFlow1.0版本推出时，普遍被认为只有12个匹配域无法适应多网络场景的需求。但随着OpenFlow版本的推进，发展到OpenFlow1.3版本时已经有了40个匹配域，已经可以支持大部分的协议字段匹配。然而始终还会有更多的协议需要支持，所以这个增长趋势不会停止。不断增多的匹配域 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/12/pofgeng-li-xiang-de-sdn.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/03/03/openflowde-ban-lu-xie-yi-of-config.html"><h2>OpenFlow的伴侣协议：OF-CONFIG</h2></a>
-        <div class= "well small"> 2016-03-03
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>本文将简要介绍OpenFlow协议的伴侣协议即补充协议OF-CONFIG，主要内容包括OF-CONFIG的简介、原理以及发展趋势。希望能让读者对OF-CONFIG有一个初步的认识。</p>
-<h3>简介</h3>
-<p>在OpenFlow协议的规范中，控制器需要和已配置的交换机进行通信。而交换机在正常工作之前需要对其特性以及资源进行配置才能正常工作。而这些配置超出了OpenFlow协议规范的范围，理应由其他的配置协议来完成。OF-Config（OpenFlow Management and Configuration Protocol）协议就是一种OpenFlow交换机配置协议。OF-CONFIG由ONF于2012年1月提出，目前已经演化到1.2版本。OF-CONFIG协议与OpenFlow协议的关系如图1所示。</p>
-<p>作为一种交换机配置协议，OF-CONFIG的主要功能包括配置交换机连接的多个控制器信息、端口和队列等资源的配置以及端口等资源的状态修改等内容。此外，作为一个配置协议，OF-CONFIG也要求链接必须是安全可靠的。为满足实际网络运维要求，OF-CONFIG支持通过配置点对多个交换机进行配置，也支持多个配置点对同一个交换机进行配置。</p>
-<p>为了满足OpenFlow版本更新的需求以及协议的可拓展要求，OF-CONFIG采用XML来描述其数据结构。此外，在OF-CONFIG的初始规范中也规定了采用NETCONF协议作为其传输协议。由于OF-Config协议没有和数据交换和路由等模块直接相关，所以相比于对实时性要求高的OpenFlow等南向协议而言，OF-CONFIG协议对实时性要求并不高。</p>
-<p><center><img alt="of-config and openflow" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f1f92gb9fij209k09e3yz.jpg" /></center>
-<center>图1. OF-CONFIG 与OpenFlow以及OpenFlow Switch之间的关系图</center></p>
-<h3>原理</h3>
-<p>OF-Config协议主要分为Server和Client两部分，其中Server运行在OpenFlow交换机端，而Client运行在OpenFlow配置点上。本质上，OpenFlow配置点就是一个普通的通信节点，其可以是独立的服务器，也可以是部署了控制器的服务器。通过OpenFlow ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/03/openflowde-ban-lu-xie-yi-of-config.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
