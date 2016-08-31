@@ -116,6 +116,7 @@ Because the CLI is a JavaScript shell, so you can execute code with it. For exam
     test
 ```
 
+
 #### Create database
 You can enter 'use database_name' to create a new database, if the database name is not existed.
 
@@ -131,6 +132,7 @@ Only when you add some documents into dababase's collection, can you see the dat
 ```sh
     show collections
 ```
+
 
 #### Create collection
 You can use createCollection method to create a collection for databse.
@@ -149,6 +151,7 @@ You can use createCollection method to create a collection for databse.
 ```sh
     db.collection_name.drop()
 ```
+
 
 #### Add document into collection
 You can insert data by insert method:
@@ -245,6 +248,7 @@ For more info of learning MongoDB for Chinese, see [MongoDB tutorial. ](http://w
 
 For English speaker, see [MongoDB Docs.](https://docs.mongodb.com/)and [tutorialspoint-MongoDB](http://www.tutorialspoint.com/mongodb/index.htm)
 
+
 ### Pymongo
 
 Actually, people always use some coding language libs to use MongoDB instead of CLI. After learning MongoDB and CLI usage, it is completely easy to understand how to use pymongo to manipulate MongoDB[7]. 
@@ -300,6 +304,7 @@ Example shows below:
 **Note that**
 
 * This is Python3 code.
+
 * Some code is Non-idempotent, such as insert data and remove data, so different results will generate when run code in different round.
 
 More info of pymongo, see [Mongo API Doc](http://api.mongodb.com/python/current/tutorial.html).

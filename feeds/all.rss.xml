@@ -261,8 +261,12 @@
 
 &lt;p&gt;&lt;strong&gt;Note that&lt;/strong&gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;This is Python3 code.&lt;/li&gt;
-&lt;li&gt;Some code is Non-idempotent, such as insert data and remove data, so different results will generate when run code in different round.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;This is Python3 code.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Some code is Non-idempotent, such as insert data and remove data, so different results will generate when run code in different round.&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;More info of pymongo, see &lt;a href="http://api.mongodb.com/python/current/tutorial.html"&gt;Mongo API Doc&lt;/a&gt;.&lt;/p&gt;
 &lt;h3&gt;References&lt;/h3&gt;
