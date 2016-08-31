@@ -308,10 +308,15 @@ More info of pymongo, see [Mongo API Doc](http://api.mongodb.com/python/current/
 ### References
 
 [1]https://www.mongodb.com
+
 [2]https://www.mongodb.com/cn
+
 [3]http://www.runoob.com/mongodb/mongodb-databases-documents-collections.html
+
 [4]https://docs.mongodb.com/manual/installation/
+
 [5]http://www.runoob.com/mongodb/mongodb-linux-install.html
+
 [7]http://wiki.jikexueyuan.com/project/start-learning-python/232.html
 
 
