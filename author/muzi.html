@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2016/08/26/pi-yan-yuan-he-hao-yan-yuan.html"><h1>坏演员和好演员</h1></a>
-2016-08-26
+            <a href="../pages/2016/08/30/getting-started-of-mongodb.html"><h1>Getting Started of MongoDB</h1></a>
+2016-08-30
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,40 +72,306 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>空荡荡的房间，只剩下一盏昏黄的灯和我。门外的灯光，从门口探了进来，却慢慢消失在地毯上。就剩我一个人。</p>
+        <div><h3>What is MongoDB</h3>
+<p>MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]</p>
+<p>MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。</p>
+<p>MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]</p>
+<h3>About MongoDB</h3>
+<p>MongoDB is a No-SQL database. MongoDB server can maintain some databases, each database can maintain many collections. Collection is a concept like table in SQL database. Each Collection contain many documents. Each Document is a Json style object, which has many 'key':'value' pairs. For easy under stand, a table refered from [3] shows below.</p>
+<table class="table-bordered table-striped table-condensed">
+<tbody><tr>
+<th>SQL Term/Concept</th>
+<th>MongoDB Term/Concept</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>database</td>
+<td>database</td>
+<td>数据库</td>
+</tr>
+<tr>
+<td>table</td>
+<td>collection</td>
+<td>数据库表/集合</td>
+</tr>
+<tr>
+<td>row</td>
+<td>document</td>
+<td>数据记录行/文档</td>
+</tr>
+<tr>
+<td>column</td>
+<td>field</td>
+<td>数据字段/域</td>
+</tr>
+<tr>
+<td>index</td>
+<td>index</td>
+<td>索引</td>
+</tr>
+<tr>
+<td>table joins</td>
+<td>&nbsp;</td>
+<td>表连接,MongoDB不支持</td>
+</tr>
+<tr>
+<td>primary key</td>
+<td>primary key</td>
+<td>主键,MongoDB自动将_id字段设置为主键</td>
+</tr>
+</tbody></table>
+
+<h3>Install MongoDB</h3>
+<p>For Mac OS, MongoDB can be installed by using command[4]:</p>
+<div class="highlight"><pre>    <span class="n">brew</span> <span class="n">install</span> <span class="n">mongodb</span>
+</pre></div>
+
+
+<p>if you want to install MongoDB with supporting TSL/SSL:</p>
+<div class="highlight"><pre>    <span class="n">brew</span> <span class="n">install</span> <span class="n">mongodb</span> <span class="o">--</span><span class="n">with</span><span class="o">-</span><span class="n">openssl</span>
+</pre></div>
+
+
+<h3>Install Pymongo</h3>
+<p>To use MongDB by Python, you still need to install pymongo</p>
+<div class="highlight"><pre>    <span class="n">pip</span> <span class="n">install</span> <span class="n">pymongo</span>
+</pre></div>
+
+
+<p>if you use Python3, please use pip3 to install pymongo</p>
+<h3>Use MongoDB by CLI</h3>
+<p>After installing MonogoDB, you can start MongoDB by[5]:</p>
+<div class="highlight"><pre>    ./mongo
+</pre></div>
+
+
+<p>Because the CLI is a JavaScript shell, so you can execute code with it. For example, you can do some easy calculation.</p>
+<div class="highlight"><pre>    &gt;1+2
+    &gt;3
+</pre></div>
+
+
+<h4>List database</h4>
+<div class="highlight"><pre>    &gt; show dbs
+    <span class="nb">local  </span>0.000GB
+    <span class="nb">test   </span>0.000GB
+</pre></div>
+
+
+<h4>Use database</h4>
+<div class="highlight"><pre>    &gt; use <span class="nb">test</span>
+<span class="nb">    </span>switched to db <span class="nb">test</span>    
+</pre></div>
+
+
+<h4>Show database name of which is using</h4>
+<div class="highlight"><pre>    &gt;db
+    <span class="nb">test</span>
+</pre></div>
+
+
+<h4>Create database</h4>
+<p>You can enter 'use database_name' to create a new database, if the database name is not existed.</p>
+<div class="highlight"><pre>    &gt; use milestone
+    switched to db milestone
+</pre></div>
+
+
+<p>Only when you add some documents into dababase's collection, can you see the database name by using 'show dbs'. However you can use 'db' to show the using database.</p>
+<h4>List collections</h4>
+<div class="highlight"><pre>    show collections
+</pre></div>
+
+
+<h4>Create collection</h4>
+<p>You can use createCollection method to create a collection for databse.</p>
+<div class="highlight"><pre>    &gt; show collections
+    &gt; db.createCollection<span class="o">(</span><span class="s2">&quot;muzixing&quot;</span>,<span class="o">{</span>size:100000<span class="o">})</span>
+    <span class="o">{</span> <span class="s2">&quot;ok&quot;</span> : 1 <span class="o">}</span>
+    &gt; show collections
+    muzixing
+    &gt; 
+</pre></div>
+
+
+<h4>Remove collection</h4>
+<div class="highlight"><pre>    db.collection_name.drop<span class="o">()</span>
+</pre></div>
+
+
+<h4>Add document into collection</h4>
+<p>You can insert data by insert method:</p>
+<div class="highlight"><pre>    &gt; db.muzixing.insert<span class="o">({</span><span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;www.muzixing.com&quot;</span><span class="o">})</span>
+    WriteResult<span class="o">({</span> <span class="s2">&quot;nInserted&quot;</span> : 1 <span class="o">})</span>
+    &gt;
+</pre></div>
+
+
+<h4>Search document</h4>
+<p>Use find() method to find all documents or fill parameter to select documents.</p>
+<div class="highlight"><pre>    &gt; db.muzixing.find<span class="o">()</span>
+    <span class="o">{</span> <span class="s2">&quot;_id&quot;</span> : ObjectId<span class="o">(</span><span class="s2">&quot;57c6102b4366cfc975563b94&quot;</span><span class="o">)</span>, <span class="s2">&quot;name&quot;</span> : <span class="s2">&quot;www.muzixing.com&quot;</span> <span class="o">}</span>
+    <span class="o">{</span> <span class="s2">&quot;_id&quot;</span> : ObjectId<span class="o">(</span><span class="s2">&quot;57c611d24366cfc975563b95&quot;</span><span class="o">)</span>, <span class="s2">&quot;name&quot;</span> : <span class="s2">&quot;chengli&quot;</span> <span class="o">}</span>
+    <span class="o">{</span> <span class="s2">&quot;_id&quot;</span> : ObjectId<span class="o">(</span><span class="s2">&quot;57c611d94366cfc975563b96&quot;</span><span class="o">)</span>, <span class="s2">&quot;name&quot;</span> : <span class="s2">&quot;milestone&quot;</span> <span class="o">}</span>
+    &gt; 
+    &gt; db.muzixing.find<span class="o">({</span><span class="s1">&#39;name&#39;</span>:<span class="s1">&#39;www.muzixing.com&#39;</span><span class="o">})</span>
+    <span class="o">{</span> <span class="s2">&quot;_id&quot;</span> : ObjectId<span class="o">(</span><span class="s2">&quot;57c6102b4366cfc975563b94&quot;</span><span class="o">)</span>, <span class="s2">&quot;name&quot;</span> : <span class="s2">&quot;www.muzixing.com&quot;</span> <span class="o">}</span>
+    &gt; 
+</pre></div>
+
+
+<p>Also, findOne method can be use to get one document.</p>
+<div class="highlight"><pre>    &gt; db.muzixing.findOne<span class="o">()</span>
+    <span class="o">{</span> <span class="s2">&quot;_id&quot;</span> : ObjectId<span class="o">(</span><span class="s2">&quot;57c6102b4366cfc975563b94&quot;</span><span class="o">)</span>, <span class="s2">&quot;name&quot;</span> : <span class="s2">&quot;www.muzixing.com&quot;</span> <span class="o">}</span>
+    &gt; db.muzixing.find<span class="o">()</span>
+    <span class="o">{</span> <span class="s2">&quot;_id&quot;</span> : ObjectId<span class="o">(</span><span class="s2">&quot;57c6102b4366cfc975563b94&quot;</span><span class="o">)</span>, <span class="s2">&quot;name&quot;</span> : <span class="s2">&quot;www.muzixing.com&quot;</span> <span class="o">}</span>
+    <span class="o">{</span> <span class="s2">&quot;_id&quot;</span> : ObjectId<span class="o">(</span><span class="s2">&quot;57c611d24366cfc975563b95&quot;</span><span class="o">)</span>, <span class="s2">&quot;name&quot;</span> : <span class="s2">&quot;chengli&quot;</span> <span class="o">}</span>
+    <span class="o">{</span> <span class="s2">&quot;_id&quot;</span> : ObjectId<span class="o">(</span><span class="s2">&quot;57c611d94366cfc975563b96&quot;</span><span class="o">)</span>, <span class="s2">&quot;name&quot;</span> : <span class="s2">&quot;milestone&quot;</span> <span class="o">}</span>
+    &gt; 
+</pre></div>
+
+
+<h4>Update document</h4>
+<p>Update command's syntax shows below:</p>
+<div class="highlight"><pre>    db.collection.update<span class="o">(</span>
+       &lt;query&gt;,
+       &lt;update&gt;,
+       <span class="o">{</span>
+         upsert: &lt;boolean&gt;,
+         multi: &lt;boolean&gt;,
+         writeConcern: &lt;document&gt;
+       <span class="o">}</span>
+    <span class="o">)</span>
+</pre></div>
+
+
+<p>For example:</p>
+<div class="highlight"><pre>    &gt; db.muzixing.update<span class="o">({</span><span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;licheng&quot;</span><span class="o">}</span>,<span class="o">{</span><span class="nv">$set</span>:<span class="o">{</span><span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;chengli&quot;</span><span class="o">}})</span>
+    WriteResult<span class="o">({</span> <span class="s2">&quot;nMatched&quot;</span> : 0, <span class="s2">&quot;nUpserted&quot;</span> : 0, <span class="s2">&quot;nModified&quot;</span> : 0 <span class="o">})</span>
+
+    &gt; db.muzixing.find<span class="o">()</span>
+    <span class="o">{</span> <span class="s2">&quot;_id&quot;</span> : ObjectId<span class="o">(</span><span class="s2">&quot;57c615564366cfc975563b97&quot;</span><span class="o">)</span>, <span class="s2">&quot;name&quot;</span> : <span class="s2">&quot;chengli&quot;</span>, <span class="s2">&quot;face&quot;</span> : <span class="s2">&quot;handsome&quot;</span> <span class="o">}</span>
+
+    &gt; db.muzixing.update<span class="o">({</span><span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;chengli&quot;</span><span class="o">}</span>,<span class="o">{</span><span class="nv">$set</span>:<span class="o">{</span><span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;licheng&quot;</span><span class="o">}})</span>
+    WriteResult<span class="o">({</span> <span class="s2">&quot;nMatched&quot;</span> : 1, <span class="s2">&quot;nUpserted&quot;</span> : 0, <span class="s2">&quot;nModified&quot;</span> : 1 <span class="o">})</span>
+
+    &gt; db.muzixing.find<span class="o">()</span>
+    <span class="o">{</span> <span class="s2">&quot;_id&quot;</span> : ObjectId<span class="o">(</span><span class="s2">&quot;57c615564366cfc975563b97&quot;</span><span class="o">)</span>, <span class="s2">&quot;name&quot;</span> : <span class="s2">&quot;licheng&quot;</span>, <span class="s2">&quot;face&quot;</span> : <span class="s2">&quot;handsome&quot;</span> <span class="o">}</span>
+    &gt; 
+</pre></div>
+
+
+<h3>Remove document</h3>
+<p>Syntax shows below</p>
+<div class="highlight"><pre>    db.collection.remove<span class="o">(</span>
+       &lt;query&gt;,
+       &lt;justOne&gt;
+    <span class="o">)</span>
+</pre></div>
+
+
+<p>For example:</p>
+<div class="highlight"><pre>    <span class="o">&gt;</span> <span class="n">db</span><span class="o">.</span><span class="n">muzixing</span><span class="o">.</span><span class="n">find</span><span class="p">()</span>
+    <span class="p">{</span> <span class="s">&quot;_id&quot;</span> <span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="s">&quot;57c615564366cfc975563b97&quot;</span><span class="p">),</span> <span class="s">&quot;name&quot;</span> <span class="p">:</span> <span class="s">&quot;licheng&quot;</span><span class="p">,</span> <span class="s">&quot;face&quot;</span> <span class="p">:</span> <span class="s">&quot;handsome&quot;</span> <span class="p">}</span>
+    <span class="p">{</span> <span class="s">&quot;_id&quot;</span> <span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="s">&quot;57c617694366cfc975563b98&quot;</span><span class="p">),</span> <span class="s">&quot;name&quot;</span> <span class="p">:</span> <span class="s">&quot;girl friend&quot;</span><span class="p">,</span> <span class="s">&quot;face&quot;</span> <span class="p">:</span> <span class="s">&quot;beautiful&quot;</span> <span class="p">}</span>
+    <span class="o">&gt;</span> <span class="n">db</span><span class="o">.</span><span class="n">muzixing</span><span class="o">.</span><span class="n">remove</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="s">&quot;licheng&quot;</span><span class="p">})</span>
+    <span class="n">WriteResult</span><span class="p">({</span> <span class="s">&quot;nRemoved&quot;</span> <span class="p">:</span> <span class="mi">1</span> <span class="p">})</span>
+    <span class="o">&gt;</span> <span class="n">db</span><span class="o">.</span><span class="n">muzixing</span><span class="o">.</span><span class="n">find</span><span class="p">()</span>
+    <span class="p">{</span> <span class="s">&quot;_id&quot;</span> <span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="s">&quot;57c617694366cfc975563b98&quot;</span><span class="p">),</span> <span class="s">&quot;name&quot;</span> <span class="p">:</span> <span class="s">&quot;girl friend&quot;</span><span class="p">,</span> <span class="s">&quot;face&quot;</span> <span class="p">:</span> <span class="s">&quot;beautiful&quot;</span> <span class="p">}</span>
+    <span class="o">&gt;</span> 
+</pre></div>
+
+
+<p>For more info of learning MongoDB for Chinese, see <a href="http://www.runoob.com/mongodb/mongodb-tutorial.html">MongoDB tutorial. </a></p>
+<p>For English speaker, see <a href="https://docs.mongodb.com/">MongoDB Docs.</a>and <a href="http://www.tutorialspoint.com/mongodb/index.htm">tutorialspoint-MongoDB</a></p>
+<h3>Pymongo</h3>
+<p>Actually, people always use some coding language libs to use MongoDB instead of CLI. After learning MongoDB and CLI usage, it is completely easy to understand how to use pymongo to manipulate MongoDB[7]. </p>
+<p>First of all, you should start a MongoDB server, such as we can start MongoDB at localhost, the default port of MongoDB is 27017.</p>
+<p>Example shows below:</p>
+<div class="highlight"><pre>    <span class="kn">import</span> <span class="nn">pymongo</span>
+    <span class="kn">from</span> <span class="nn">pymongo</span> <span class="kn">import</span> <span class="n">MongoClient</span>
+
+
+    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+        <span class="c"># get client</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">MongoClient</span><span class="p">(</span><span class="s">&#39;mongodb://localhost:27017/&#39;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;client&quot;</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>
+
+        <span class="c"># get database, if the database has existed.Otherwise, create it</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">test</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;db:&quot;</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+
+        <span class="c"># get collection, if it has existed, otherwise, create it.</span>
+        <span class="n">collection</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">chengli</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;collection name&quot;</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">collection_names</span><span class="p">())</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;collection: &quot;</span><span class="p">,</span> <span class="n">collection</span><span class="p">)</span>
+
+        <span class="c"># get document</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;find one: &#39;</span><span class="p">,</span> <span class="n">collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">())</span>
+
+        <span class="c"># post data item</span>
+        <span class="n">new_man</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;age&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;oo&#39;</span><span class="p">,</span> <span class="s">&#39;sex&#39;</span><span class="p">:</span> <span class="s">&#39;male&#39;</span><span class="p">,</span> <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">new_man</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">collection</span><span class="o">.</span><span class="n">find</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">())</span>
+
+        <span class="c"># get multi items</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">collection</span><span class="o">.</span><span class="n">find</span><span class="p">():</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="c"># find data</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="s">&quot;chengli&quot;</span><span class="p">})</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+
+        <span class="c"># update data</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="s">&#39;haha&#39;</span><span class="p">},{</span><span class="s">&#39;$set&#39;</span><span class="p">:{</span><span class="s">&#39;title&#39;</span><span class="p">:</span><span class="s">&#39;employee&#39;</span><span class="p">}})</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">remove</span><span class="p">({</span><span class="s">&#39;title&#39;</span><span class="p">:</span><span class="s">&#39;employee&#39;</span><span class="p">})</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">create_index</span><span class="p">([(</span><span class="s">&#39;age&#39;</span><span class="p">,</span><span class="n">pymongo</span><span class="o">.</span><span class="n">ASCENDING</span><span class="p">),])</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">collection</span><span class="o">.</span><span class="n">find</span><span class="p">()</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s">&#39;age&#39;</span><span class="p">,</span> <span class="n">pymongo</span><span class="o">.</span><span class="n">ASCENDING</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>Note that</strong></p>
+<ul>
+<li>This is Python3 code.</li>
+<li>Some code is Non-idempotent, such as insert data and remove data, so different results will generate when run code in different round.</li>
+</ul>
+<p>More info of pymongo, see <a href="http://api.mongodb.com/python/current/tutorial.html">Mongo API Doc</a>.</p>
+<h3>References</h3>
+<p>[1]https://www.mongodb.com
+[2]https://www.mongodb.com/cn
+[3]http://www.runoob.com/mongodb/mongodb-databases-documents-collections.html
+[4]https://docs.mongodb.com/manual/installation/
+[5]http://www.runoob.com/mongodb/mongodb-linux-install.html
+[7]http://wiki.jikexueyuan.com/project/start-learning-python/232.html</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2016/08/26/pi-yan-yuan-he-hao-yan-yuan.html"><h2>坏演员和好演员</h2></a>
+        <div class= "well small"> 2016-08-26
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>空荡荡的房间，只剩下一盏昏黄的灯和我。门外的灯光，从门口探了进来，却慢慢消失在地毯上。就剩我一个人。</p>
 <h3>坏演员</h3>
 <p>心里突然有些不安，多了一些慌张，想起了遥远的地方，遥远的她。</p>
 <p>不能说是错，不能说是过，也许我还没有醒来，也许我不会醒来，也许心里还有期待，也许我只是寂寞难耐。</p>
 <p>“如果从来，我不会说我们试试看，我希望我没有去兼职，没有去玉渊潭，没有认识你”，这是她发给我的最后一句话。</p>
 <p>多么可爱的姑娘，你曾经让我幸福，也曾让我牵挂。我们憧憬过美好的未来，说过可以浪迹天涯。我们都曾努力会适应对方，相互妥协，去成全对方的梦想。但一切都过去了，就算有时候忍不住会努力寻找你的消息，努力假装忘记。</p>
-<p>曾几何时，我一直很挣扎，很纠结，很抓狂，很沮丧。岁月悄悄抹去了爱恋，困难慢慢爬上了心头，我思虑，我怀疑，我坚定，我失望，但我不曾背叛。相爱总是简单，相处最难。从曾经紧紧相拥，到后来同床异梦，希望渐渐淡出来我的眼眶。我们曾试过沟通，我们曾试过妥协，我们都试过。你依然是个天真可爱的姑娘，但我却有了一个现实而残忍的模样。</p>
-<p>她是个好姑娘，值得更好的人好好爱她，让她觉得自己很好，很幸福，这是我做不到的。</p>
-<p>在想提出分手的那些日子，我每天都像一个演员一样，很痛苦、很累地扮演着很开心的自己。我内心的压抑和需求，我想告诉她，但是没有用。但人不能一直口是心非，自欺欺人，带着面具生活。</p>
-<p>第一次提分手的晚上，我不应该去她，因为我知道我肯定会失败，因为我怎么都想不出来我会这么残忍地去伤害一个无辜的姑娘。我去见她了，我失败了。</p>
-<p>离开前的一段日子，我想着，打算着，自责着，放弃着，坚持着，自我伤害着。还好我回到了小岛，一个没有她的地方。我可以安静地思考，我到底要什么样的未来。她说过，最残忍的事情就是：你爱他，但是他的未来没有你。可是我怎么也假想出我们未来的模样。</p>
-<p>我25岁生日前一天，她竟然在工作的时候主动给我打电话，我很吃惊。电话那头的她，小心翼翼地试探着我的态度，最终还是说出了要辞职的想法。不怪她，确实这份工作不适合她。她说怕我骂她，就像以前她换工作那样骂她，但是我没有。她很开心，因为只要我不骂你，她就已经没有什么压力了，工作可以再找。她总是那么可爱。我说：“怎么会，我这么善解人意的人，怎么会骂你，我能理解你”。但其实，我知道，当初我骂你，是因为我觉得她可以，但是她放弃了，我不甘。现在我不骂她，是因为我理解她，这份工作让她的生活特别难堪，不高的收入，频繁的加班，看不到的希望。我说没事，好好休息，再想想办法找新工作。她说想回郑州，那里是她的家乡。我说好，都可以试试。我知道北京不适合她，她也不适合北京。过了夜里12点，她并不记得我的生日到了，我可以理解，也不觉得忧伤。只希望她能过得好一些，再好一些。</p>
-<p>那天是我25岁生日，说来我已经好老了。陪着爸妈回去外婆家，一个真正的小山村。到了家里发现大伯家的女儿不太正常，别人都当她是智障，打她，骂她。我看着心疼，就试着接近她。她情绪容易激动，爱哭，爱笑，但是没有暴力倾向。她记得我，记得我们家所有的人，记得小学上学的时候谁家的孩子打过她，记得村里哪一个小孩欺负过她，记得她爸爸总是打她骂她，记得为什么她从福利学校逃出来。她老是问我：“哥哥，你不会打我吧？哥哥，你不会骂我吧？”我每一次都耐心地告诉她不会，但是过不了几分钟，她又回问我同样的问题。每一次都很心酸。我试着问题一些问题，测试她的逻辑反应能力怎么样，发现她的逻辑反应是正常的。而且她可以自己通过看电视学会唱歌，学会识别若干文字两个字，但是她没有受过教育，所以让她写字的时候，简直就是在画画。</p>
-<p>别人都在用语言暴力欺负她，凶她，骂她，她很怕。我想就算一条小狗，从小这么打骂，它也会怕人吧，何况一个可爱的小姑娘。我努力向亲戚们解释为什么她会这样，也许她没有太大的问题，吃点镇定剂什么的控制一下就会和正常人一样。我告诉亲戚们她是从小被吓到大，所以怕人，因为没有受过教育所以笨，因为妈妈有癫痫，她小时候还发过高烧，所以精神有些问题，所以吃点药，控制一下情绪就好了。大伯母是比较开明的人，她也心疼这个孩子，也试过送去福利学校，但是她自己跑出来。所以她想带她去做安宁医院做鉴定，可是没有钱。我说我带她去，你们不知道手续，我去尝试。就这么约好了下周带她去医院，也算不让良心受到谴责，也算是一份特殊的生日礼物吧。年纪大了，过生日什么的早就没激情了，反倒是为年龄增长而感到忧伤。</p>
-<p>在她办离职的那一天，也就是我生日的那天，我想着办法陪着她，一起聊天，聊以后，聊郑州。她回郑州去，压力会小一点，会有很多朋友，可以很快回家。我也跟她说了那个小姑娘的事情，说了我的打算。傍晚的时候，我们打了最后一通电话。</p>
-<p>不知为何，我觉得我自己特别残忍，特别贱，特别不负责任。我一只在暗示着她我想分手，一直在提起这件事，可是我从来不说，因为我根本说不出口，我没有勇气割舍，哪怕心里再多不满，也总有许多留恋。我怕我伤害她，我就这么挣扎着，但感情最怕的就是拖着。</p>
-<p>终于电话那头的她忍不住说出了分手，我笑着说别啊，但是心里已经接受，我很懦弱。但最终我还是勉强说了同意。分明是我想分手，到最后却弄得好像我很勉强接受一样，我恶心这样的自己。这也算一种生日礼物嘛？许多年之后，再回头看，也许算吧。一种回忆，不论好坏，它总会让我成长。</p>
-<p>我不是一个好演员，从来不会掩饰忧伤。</p>
-<h3>好演员</h3>
-<p>第一次坐十多个小时的飞机，是痛苦的。但一个没有她的地方，也许可以慢慢疗伤。幸运的是，新生活的开始，充斥着各种新的信息：新的朋友，新的语言，新的环境。我开始应接不暇，也好，正好可以慢慢放下。</p>
-<p>新的朋友都很酷，同事都很nice。住的地方很赞，工作也很忙，突然不用去思考过去的生活，全身心投入当下，很幸福。我来到了一个没有雾霾，环境优雅，却也人烟稀少的地方，孤独而不寂寞。</p>
-<p>一年的实习，就这么开始了。在google工作的好朋友见我的第一面就蛊惑我留下来。我知道他，知道他一个人的孤独。</p>
-<p>平时的生活都很好，肉很便宜，蔬菜有点贵，但总体而言，吃的都很便宜。微薄的实习工资虽然发不了大财，但是吃好玩好还是无压力的。工作上，逐步进入了正轨，来自俄罗斯的mentor是个天生的喜剧演员，和我很搭，虽然很多时候我听不太懂他的俄式英语，但也还是可以从颜艺上判断出大概意思。每个周都有party，中国的小伙伴明显就是比较保守拘谨的，所以一般也不参加。偶尔我会去参加一下不喝酒的party，练练口语，听听各种口音，认识一下朋友。</p>
-<p>每天下班回来和印度室友去健身房，然后回来自己做饭。周末生活比较丰富，刚来的第一周去了google参观，满足一下对google的崇拜。这周去爬了mission peak， 去斯坦福膜拜sdn开山鼻祖 nick教授的办公室，下周又要去redwoods park，一切都安排得很好，很紧凑，这才是新生活应该有的样子。</p>
-<p>实习之余，还会关注一下校招的事情，虽然极有可能我延期毕业，但是校招还是要参加一下的。不过比较幸运的是，投了几家公司反响还不错，期待后续的进展吧，渴望自己能拿到想要的offer。</p>
-<p>书的事已经拖了很久了，终于完成了签约，不管怎么样11月底之前都要出版了。幸好我的部分早已完成，就等前辈的了。哎，创业的人的时间真是难挤，希望一切顺利吧。论文发了，可以毕业了，了却心头大事。sdn大赛，没办法去答辩，失约了，也再也不会出现了，收获一张优胜奖。</p>
-<p>相比情感上的路人演技，在学习工作方面，我想我很好地扮演了自己的角色。也许是因为我是一个专业的业余即兴表演演员吧。</p>
-<h3>岁月静好</h3>
-<p>大伯家的小孩确诊为精神病加智商不育迟缓，得到诊断后，挣扎的年头也彻底断了。但这下她可以办一些手续，得到一些政府的帮助吧。</p>
-<p>我曾有一个梦想，要当一个导演，把自己的故事展现给别人看。然而生活中并不是所有人都可以很好地导演自己的生活，更多是妥协和隐藏。为了更好的生活，我更像一个演员。谁不爱粉墨登场，却不知暗自心伤。我总是把美好的东西展现出来，把黑暗，负面的信息自己消化，也曾想有个人，相互扶持，呵护对方。那个人应该还没有出现吧。虽然最近连续被一个男生和一个女生表示想睡我，但是也许，我还需要时间来疗伤。幸好有李健，支撑我走过高潮，低谷，灿烂与迷醉。</p>
-<p>繁花散尽，夜梦初醒，心中无羁绊。大幕落下，粉妆卸去，何处是人生。</p></div>
-        <hr />
-    </div>
-		
+<p>曾几何时，我一直很挣扎，很纠结，很抓狂，很沮丧。岁月悄悄抹去了爱恋，困难慢慢爬上了心头，我思虑，我怀疑，我坚定，我失望，但我不曾背叛。相爱总是简单，相处最难。从曾经紧紧相拥，到后来同床异梦 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/08/26/pi-yan-yuan-he-hao-yan-yuan.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -178,35 +444,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>流表优化</h3>
 <p>OpenFlow所支持的细粒度流管理是SDN最大的优势之一，但是细粒度的管理是需要付出代价的。为满足细粒度的管理，则需要更粒度的流表项。但是像OpenFlow协议这种细粒度的管理会带来一定的时延，对于时延敏感的短流业务而言，这个时延带来的影响是不可忽视的，这很可能会抵消了SDN带来的好处。所以如何通过流表来匹配流，从而减少流表项下发次数，是降低时延影响的有利手段。</p>
 <p>此外，当网络流数目过多时，交换机的流表空间就无法满足需求。当流表满时 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html"><h2>Ryu:网络时延探测应用</h2></a>
-        <div class= "well small"> 2016-05-24
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>之前，笔者已经发布了网络感知应用和基于跳数的最短路径转发应用。本文将介绍笔者开发的网络时延探测应用。该应用通过LLDP数据包的时延和Echo数据包的时延计算得出链路的时延数据，从而实现网络链路时延的感知。详细原理和实现步骤将在文章中详细介绍。</p>
-<h3>测试原理</h3>
-<p>网络时延探测应用利用了Ryu自带的Switches模块的数据，获取到了LLDP数据发送时的时间戳，然后和收到的时间戳进行相减，得到了LLDP数据包从控制器下发到交换机A，然后从交换机A到交换机B，再上报给控制器的时延T1，示例见图1的蓝色箭头。同理反向的时延T2由绿色的箭头组成。此外，控制器到交换机的往返时延由一个蓝色箭头和一个绿色箭头组成，此部分时延由echo报文测试，分别为Ta，Tb。最后链路的前向后向平均时延T=（T1+T2-Ta-Tb）/2。</p>
-<p><center><img alt="link delay" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f40i7d39ouj20fr09lgm6.jpg" /></center>
-<center>图1. 测量链路时延原理图</center></p>
-<h3>获取LLDP时延</h3>
-<p>获取T1和T2的逻辑一样，均需要使用到Switches模块的数据。计算LLDP时延的处理逻辑如下代码所示。首先从Packet_in中解析LLDP数据包，获得源DPID，源端口。然后根据发送端口的数据获取到portdata中的发送时间戳数据，并用当下的系统时间减去发送时间戳，得到时延，最后将其保存到graph数据中。</p>
-<div class="highlight"><pre>    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">src_dpid ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

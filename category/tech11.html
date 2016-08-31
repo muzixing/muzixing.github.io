@@ -62,6 +62,39 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html"><h2>[c]线程池的实现</h2></a>
+        <div class= "well small"> 2014-04-28
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
+<p>这是C语言培训的最后一题，线程池，今天看了看控制器的代码，看到了线程池的影子，然后发现应该赶紧写完这篇了。哎，文笔不行，写书写成屎了！希望再修改几次能不丢人吧。</p>
+<p>本篇主要介绍如何实现一个线程池模型，task是简单的打印，当然如果你想让线程池完成你的功能线程的管理，只需要将task换成你的线程就可以了。</p>
+<h3>线程池</h3>
+<p>（摘自百度百科）线程池是一种多线程处理形式，处理过程中将任务添加到队列，然后在创建线程后自动启动这些任务。线程池线程都是后台线程。</p>
+<p>组成：</p>
+<ul>
+<li>线程池管理器（ThreadPoolManager）:用于创建并管理线程池</li>
+<li>工作线程（WorkThread）: 线程池中线程</li>
+<li>任务接口（Task）:每个任务必须实现的接口，以供工作线程调度任务的执行。</li>
+<li>任务队列:用于存放没有处理的任务。提供一种缓冲机制。</li>
+</ul>
+<p>更多可访问：http://baike.baidu.com/link?url=caXqYSEEEDLS28VYuSzSxPbTM3dt_5WwXqF2-TUxR8ptJxggJaJHfTZ3_9Hs4urU#2</p>
+<h3>threadpool.h</h3>
+<p>threadpool.h的功能主要是定义工作线程的结构和线程池结构，声明相关的函数，如创建函数。</p>
+<div class="highlight"><pre><span class="c1">#ifndef ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/28/cxian-cheng-chi-de-shi-xian.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/04/19/csheng-chan-zhe-xiao-fei-zhe-mo-shi-shi-xian.html"><h2>[c]生产者消费者模式实现</h2></a>
         <div class= "well small"> 2014-04-19
 
@@ -207,43 +240,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <span class="n">TODO ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/04/15/cyu-yan-liang-ge-zhan-shi-xian-dui-lie.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html"><h2>The study notes of East-west Bridge for SDN Network Peering</h2></a>
-        <div class= "well small"> 2014-04-10
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>这是一篇学习笔记，是在阅读了林萍萍女士的论文"East-West Bridge for SDN Network Peering  "之后的总结与思考。</p>
-<p>东西向接口通信中交换的数据是一个域中的数据。</p>
-<h3>控制器之间的发现</h3>
-<p>最简单的方式就是直接指定,但是这明显不是一个合理的方法。比较好的做法是让所有的控制器在开启的时候向一个注册服务器注册自己的信息，然后再获取所有控制器的信息，如IP,PORT,用于建立控制器之间的连接。另有更智能的方法是通过lldp去发现邻居。即LLDP报文中携带本域中控制器的信息。
-即有如下三种方式：</p>
-<ul>
-<li>通过配置信息设置</li>
-<li>访问注册服务器获取</li>
-<li>通过LLDP去发现邻居 </li>
-</ul>
-<p>我认为，第一种方法最简单，但是需要手动配置。第二种方法最易于设计。第三种方法最智能。我觉得使用LLDP去发现邻居是一种不错的方式。每一次接入网络都需要探测自己的邻居，然后发送自己的拓扑信息给邻居，同时当拓扑发生变化时也需要给邻居同步，此处的拓扑发生变化可以包含如下两点：</p>
-<ul>
-<li>域内拓扑发生变化，如link down</li>
-<li>邻居C拓扑变化传送过来导致本地存储拓扑变化，从而需要更新拓扑，并通知其他邻居。</li>
-</ul>
-<h3>网络信息的存储</h3>
-<ul>
-<li>分布式存储在每一个控制器，每一个控制器只保存自己的视图，需要全局数据时再发送请求从别的控制器获取。此方式为主动请求方式，能减少拓扑信息传递的数量。但是耗时大。</li>
-<li>分布式存储在每一个控制器，每一个控制器都有全网视图 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2014/04/10/the-study-notes-of-east-west-bridge-for-sdn-network-peering.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../category/tech10.html">&larr; Previous</a></li>
@@ -262,6 +258,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../category/tech12.html">12</a></li>
     <li class=""><a href="../category/tech13.html">13</a></li>
     <li class=""><a href="../category/tech14.html">14</a></li>
+    <li class=""><a href="../category/tech15.html">15</a></li>
 
     <li class="next"><a href="../category/tech12.html">Next &rarr;</a></li>
 

@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2016-08-26T16:20:25-00:00</lastmod>
+<lastmod>2016-08-31T13:36:12-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2016-08-26T16:20:25-00:00</lastmod>
+<lastmod>2016-08-31T13:36:12-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2016-08-26T16:20:25-00:00</lastmod>
+<lastmod>2016-08-31T13:36:12-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2016-08-26T16:20:25-00:00</lastmod>
+<lastmod>2016-08-31T13:36:12-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2013-12-27T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/pages/2016/08/30/getting-started-of-mongodb.html</loc>
+<lastmod>2016-08-30T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -600,7 +607,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/category/tech.html</loc>
-<lastmod>2016-07-26T00:00:00-00:00</lastmod>
+<lastmod>2016-08-30T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -809,6 +816,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
+<loc>http://www.muzixing.com/tag/ryu-bandwidth.html</loc>
+<lastmod>2015-03-04T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
 <loc>http://www.muzixing.com/tag/ryu.html</loc>
 <lastmod>2016-05-24T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
@@ -865,8 +879,8 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/tag/ryu-bandwidth.html</loc>
-<lastmod>2015-03-04T00:00:00-00:00</lastmod>
+<loc>http://www.muzixing.com/tag/mongodb.html</loc>
+<lastmod>2016-08-30T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -937,6 +951,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>http://www.muzixing.com/tag/network_aware.html</loc>
 <lastmod>2015-07-08T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/tag/docker.html</loc>
+<lastmod>2014-12-03T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -1054,15 +1075,15 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/tag/docker.html</loc>
-<lastmod>2014-12-03T00:00:00-00:00</lastmod>
+<loc>http://www.muzixing.com/tag/pymongdb.html</loc>
+<lastmod>2016-08-30T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/author/muzi.html</loc>
-<lastmod>2016-08-26T00:00:00-00:00</lastmod>
+<lastmod>2016-08-30T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

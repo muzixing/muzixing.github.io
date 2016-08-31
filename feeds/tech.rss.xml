@@ -1,5 +1,277 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 26 Jul 2016 00:00:00 +0800</lastBuildDate><item><title>我是怎么丢掉饭碗的</title><link>http://www.muzixing.com/pages/2016/07/26/wo-shi-zen-yao-diu-diao-fan-wan-de.html</link><description>&lt;p&gt;我出门名门，骨骼精奇，身怀绝迹，独步武林多年，凭着祖传的无影手和行走江湖多年练就的一套安检基本法，我房霍强当上了桃花镇的城门护卫队的队长，也算不负家族期望。&lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 30 Aug 2016 00:00:00 +0800</lastBuildDate><item><title>Getting Started of MongoDB</title><link>http://www.muzixing.com/pages/2016/08/30/getting-started-of-mongodb.html</link><description>&lt;h3&gt;What is MongoDB&lt;/h3&gt;
+&lt;p&gt;MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]&lt;/p&gt;
+&lt;p&gt;MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。&lt;/p&gt;
+&lt;p&gt;MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]&lt;/p&gt;
+&lt;h3&gt;About MongoDB&lt;/h3&gt;
+&lt;p&gt;MongoDB is a No-SQL database. MongoDB server can maintain some databases, each database can maintain many collections. Collection is a concept like table in SQL database. Each Collection contain many documents. Each Document is a Json style object, which has many 'key':'value' pairs. For easy under stand, a table refered from [3] shows below.&lt;/p&gt;
+&lt;table class="table-bordered table-striped table-condensed"&gt;
+&lt;tbody&gt;&lt;tr&gt;
+&lt;th&gt;SQL Term/Concept&lt;/th&gt;
+&lt;th&gt;MongoDB Term/Concept&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;database&lt;/td&gt;
+&lt;td&gt;database&lt;/td&gt;
+&lt;td&gt;数据库&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;table&lt;/td&gt;
+&lt;td&gt;collection&lt;/td&gt;
+&lt;td&gt;数据库表/集合&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;row&lt;/td&gt;
+&lt;td&gt;document&lt;/td&gt;
+&lt;td&gt;数据记录行/文档&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;column&lt;/td&gt;
+&lt;td&gt;field&lt;/td&gt;
+&lt;td&gt;数据字段/域&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;索引&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;table joins&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;&lt;/td&gt;
+&lt;td&gt;表连接,MongoDB不支持&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;primary key&lt;/td&gt;
+&lt;td&gt;primary key&lt;/td&gt;
+&lt;td&gt;主键,MongoDB自动将_id字段设置为主键&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+
+&lt;h3&gt;Install MongoDB&lt;/h3&gt;
+&lt;p&gt;For Mac OS, MongoDB can be installed by using command[4]:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="n"&gt;brew&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;mongodb&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;if you want to install MongoDB with supporting TSL/SSL:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="n"&gt;brew&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;mongodb&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;with&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;openssl&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;Install Pymongo&lt;/h3&gt;
+&lt;p&gt;To use MongDB by Python, you still need to install pymongo&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="n"&gt;pip&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;pymongo&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;if you use Python3, please use pip3 to install pymongo&lt;/p&gt;
+&lt;h3&gt;Use MongoDB by CLI&lt;/h3&gt;
+&lt;p&gt;After installing MonogoDB, you can start MongoDB by[5]:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    ./mongo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Because the CLI is a JavaScript shell, so you can execute code with it. For example, you can do some easy calculation.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &amp;gt;1+2
+    &amp;gt;3
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;List database&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &amp;gt; show dbs
+    &lt;span class="nb"&gt;local  &lt;/span&gt;0.000GB
+    &lt;span class="nb"&gt;test   &lt;/span&gt;0.000GB
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Use database&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &amp;gt; use &lt;span class="nb"&gt;test&lt;/span&gt;
+&lt;span class="nb"&gt;    &lt;/span&gt;switched to db &lt;span class="nb"&gt;test&lt;/span&gt;    
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Show database name of which is using&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &amp;gt;db
+    &lt;span class="nb"&gt;test&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Create database&lt;/h4&gt;
+&lt;p&gt;You can enter 'use database_name' to create a new database, if the database name is not existed.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &amp;gt; use milestone
+    switched to db milestone
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Only when you add some documents into dababase's collection, can you see the database name by using 'show dbs'. However you can use 'db' to show the using database.&lt;/p&gt;
+&lt;h4&gt;List collections&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    show collections
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Create collection&lt;/h4&gt;
+&lt;p&gt;You can use createCollection method to create a collection for databse.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &amp;gt; show collections
+    &amp;gt; db.createCollection&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;muzixing&amp;quot;&lt;/span&gt;,&lt;span class="o"&gt;{&lt;/span&gt;size:100000&lt;span class="o"&gt;})&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;ok&amp;quot;&lt;/span&gt; : 1 &lt;span class="o"&gt;}&lt;/span&gt;
+    &amp;gt; show collections
+    muzixing
+    &amp;gt; 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Remove collection&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    db.collection_name.drop&lt;span class="o"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Add document into collection&lt;/h4&gt;
+&lt;p&gt;You can insert data by insert method:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &amp;gt; db.muzixing.insert&lt;span class="o"&gt;({&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt;:&lt;span class="s2"&gt;&amp;quot;www.muzixing.com&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;})&lt;/span&gt;
+    WriteResult&lt;span class="o"&gt;({&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;nInserted&amp;quot;&lt;/span&gt; : 1 &lt;span class="o"&gt;})&lt;/span&gt;
+    &amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Search document&lt;/h4&gt;
+&lt;p&gt;Use find() method to find all documents or fill parameter to select documents.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &amp;gt; db.muzixing.find&lt;span class="o"&gt;()&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; : ObjectId&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;57c6102b4366cfc975563b94&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;www.muzixing.com&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; : ObjectId&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;57c611d24366cfc975563b95&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;chengli&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; : ObjectId&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;57c611d94366cfc975563b96&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;milestone&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;}&lt;/span&gt;
+    &amp;gt; 
+    &amp;gt; db.muzixing.find&lt;span class="o"&gt;({&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;:&lt;span class="s1"&gt;&amp;#39;www.muzixing.com&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;})&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; : ObjectId&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;57c6102b4366cfc975563b94&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;www.muzixing.com&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;}&lt;/span&gt;
+    &amp;gt; 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Also, findOne method can be use to get one document.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &amp;gt; db.muzixing.findOne&lt;span class="o"&gt;()&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; : ObjectId&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;57c6102b4366cfc975563b94&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;www.muzixing.com&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;}&lt;/span&gt;
+    &amp;gt; db.muzixing.find&lt;span class="o"&gt;()&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; : ObjectId&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;57c6102b4366cfc975563b94&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;www.muzixing.com&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; : ObjectId&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;57c611d24366cfc975563b95&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;chengli&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; : ObjectId&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;57c611d94366cfc975563b96&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;milestone&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;}&lt;/span&gt;
+    &amp;gt; 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Update document&lt;/h4&gt;
+&lt;p&gt;Update command's syntax shows below:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    db.collection.update&lt;span class="o"&gt;(&lt;/span&gt;
+       &amp;lt;query&amp;gt;,
+       &amp;lt;update&amp;gt;,
+       &lt;span class="o"&gt;{&lt;/span&gt;
+         upsert: &amp;lt;boolean&amp;gt;,
+         multi: &amp;lt;boolean&amp;gt;,
+         writeConcern: &amp;lt;document&amp;gt;
+       &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;For example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &amp;gt; db.muzixing.update&lt;span class="o"&gt;({&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt;:&lt;span class="s2"&gt;&amp;quot;licheng&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;,&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="nv"&gt;$set&lt;/span&gt;:&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt;:&lt;span class="s2"&gt;&amp;quot;chengli&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}})&lt;/span&gt;
+    WriteResult&lt;span class="o"&gt;({&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;nMatched&amp;quot;&lt;/span&gt; : 0, &lt;span class="s2"&gt;&amp;quot;nUpserted&amp;quot;&lt;/span&gt; : 0, &lt;span class="s2"&gt;&amp;quot;nModified&amp;quot;&lt;/span&gt; : 0 &lt;span class="o"&gt;})&lt;/span&gt;
+
+    &amp;gt; db.muzixing.find&lt;span class="o"&gt;()&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; : ObjectId&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;57c615564366cfc975563b97&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;chengli&amp;quot;&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;face&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;handsome&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &amp;gt; db.muzixing.update&lt;span class="o"&gt;({&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt;:&lt;span class="s2"&gt;&amp;quot;chengli&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;,&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="nv"&gt;$set&lt;/span&gt;:&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt;:&lt;span class="s2"&gt;&amp;quot;licheng&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}})&lt;/span&gt;
+    WriteResult&lt;span class="o"&gt;({&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;nMatched&amp;quot;&lt;/span&gt; : 1, &lt;span class="s2"&gt;&amp;quot;nUpserted&amp;quot;&lt;/span&gt; : 0, &lt;span class="s2"&gt;&amp;quot;nModified&amp;quot;&lt;/span&gt; : 1 &lt;span class="o"&gt;})&lt;/span&gt;
+
+    &amp;gt; db.muzixing.find&lt;span class="o"&gt;()&lt;/span&gt;
+    &lt;span class="o"&gt;{&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; : ObjectId&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;57c615564366cfc975563b97&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;licheng&amp;quot;&lt;/span&gt;, &lt;span class="s2"&gt;&amp;quot;face&amp;quot;&lt;/span&gt; : &lt;span class="s2"&gt;&amp;quot;handsome&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;}&lt;/span&gt;
+    &amp;gt; 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;Remove document&lt;/h3&gt;
+&lt;p&gt;Syntax shows below&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    db.collection.remove&lt;span class="o"&gt;(&lt;/span&gt;
+       &amp;lt;query&amp;gt;,
+       &amp;lt;justOne&amp;gt;
+    &lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;For example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;muzixing&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;ObjectId&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;57c615564366cfc975563b97&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;licheng&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;face&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;handsome&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;ObjectId&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;57c617694366cfc975563b98&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;girl friend&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;face&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;beautiful&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;muzixing&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;remove&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;licheng&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+    &lt;span class="n"&gt;WriteResult&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;nRemoved&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="p"&gt;})&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;muzixing&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;_id&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;ObjectId&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;57c617694366cfc975563b98&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;name&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;girl friend&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;face&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;beautiful&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;For more info of learning MongoDB for Chinese, see &lt;a href="http://www.runoob.com/mongodb/mongodb-tutorial.html"&gt;MongoDB tutorial. &lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;For English speaker, see &lt;a href="https://docs.mongodb.com/"&gt;MongoDB Docs.&lt;/a&gt;and &lt;a href="http://www.tutorialspoint.com/mongodb/index.htm"&gt;tutorialspoint-MongoDB&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;Pymongo&lt;/h3&gt;
+&lt;p&gt;Actually, people always use some coding language libs to use MongoDB instead of CLI. After learning MongoDB and CLI usage, it is completely easy to understand how to use pymongo to manipulate MongoDB[7]. &lt;/p&gt;
+&lt;p&gt;First of all, you should start a MongoDB server, such as we can start MongoDB at localhost, the default port of MongoDB is 27017.&lt;/p&gt;
+&lt;p&gt;Example shows below:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pymongo&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pymongo&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;MongoClient&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;__main__&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c"&gt;# get client&lt;/span&gt;
+        &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MongoClient&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;mongodb://localhost:27017/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;client&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="c"&gt;# get database, if the database has existed.Otherwise, create it&lt;/span&gt;
+        &lt;span class="n"&gt;db&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;db:&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="c"&gt;# get collection, if it has existed, otherwise, create it.&lt;/span&gt;
+        &lt;span class="n"&gt;collection&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;chengli&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;collection name&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;collection_names&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;collection: &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;collection&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="c"&gt;# get document&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;find one: &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;collection&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find_one&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+        &lt;span class="c"&gt;# post data item&lt;/span&gt;
+        &lt;span class="n"&gt;new_man&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;age&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;oo&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;sex&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;male&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="n"&gt;collection&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;insert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;new_man&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;collection&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;count&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+        &lt;span class="c"&gt;# get multi items&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;collection&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="c"&gt;# find data&lt;/span&gt;
+        &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;collection&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find_one&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;chengli&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+        &lt;span class="c"&gt;# update data&lt;/span&gt;
+        &lt;span class="n"&gt;collection&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;update&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;haha&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;},{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;$set&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;employee&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}})&lt;/span&gt;
+        &lt;span class="n"&gt;collection&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;remove&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;employee&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+        &lt;span class="n"&gt;collection&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_index&lt;/span&gt;&lt;span class="p"&gt;([(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;age&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;pymongo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ASCENDING&lt;/span&gt;&lt;span class="p"&gt;),])&lt;/span&gt;
+
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;collection&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sort&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;age&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;pymongo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ASCENDING&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Note that&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This is Python3 code.&lt;/li&gt;
+&lt;li&gt;Some code is Non-idempotent, such as insert data and remove data, so different results will generate when run code in different round.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;More info of pymongo, see &lt;a href="http://api.mongodb.com/python/current/tutorial.html"&gt;Mongo API Doc&lt;/a&gt;.&lt;/p&gt;
+&lt;h3&gt;References&lt;/h3&gt;
+&lt;p&gt;[1]https://www.mongodb.com
+[2]https://www.mongodb.com/cn
+[3]http://www.runoob.com/mongodb/mongodb-databases-documents-collections.html
+[4]https://docs.mongodb.com/manual/installation/
+[5]http://www.runoob.com/mongodb/mongodb-linux-install.html
+[7]http://wiki.jikexueyuan.com/project/start-learning-python/232.html&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Tue, 30 Aug 2016 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2016-08-30:pages/2016/08/30/getting-started-of-mongodb.html</guid><category>MongoDB</category><category>pymongdb</category></item><item><title>我是怎么丢掉饭碗的</title><link>http://www.muzixing.com/pages/2016/07/26/wo-shi-zen-yao-diu-diao-fan-wan-de.html</link><description>&lt;p&gt;我出门名门，骨骼精奇，身怀绝迹，独步武林多年，凭着祖传的无影手和行走江湖多年练就的一套安检基本法，我房霍强当上了桃花镇的城门护卫队的队长，也算不负家族期望。&lt;/p&gt;
 &lt;p&gt;桃花镇自古以来就是兵家必争之地，又有许多桃花盛开，所以也是一个远近闻名的旅游胜地。为保证桃花镇的安全，又要保证桃花镇的游客流量，我房某人必须要快速地做好安检工作。多亏我祖传的无影手绝技和总结的安检基本法，我才能应对每天如此多的人流。&lt;/p&gt;
 &lt;p&gt;身居要位的我身价自然不会太低，多少也要个20W年薪吧。我要价高也是有道理的，自古以来，能做安检工作的都是像我这样骨骼精奇又身怀绝学的人，软硬实力俱佳啊。先说软实力，我行走江湖十余载，见过采花、毛贼、刺客少说上百，多了上千，早已掌握了一套基本法，练就了一副火眼金睛，一眼就能看出蹊跷。只要学会了这套安检基本法，就可以做到像我这样的火眼金睛。硬实力上，与普通骨架的人不同，我们家族的人骨骼精奇，手速极快，有无影手之称。无影手是我们家族的祖传技能，到我已经19代有余。即使软件方面其他人可以做到，但是别人做不到我的速度，所以我身价才这么高。&lt;/p&gt;
 &lt;p&gt;事业成功不算什么，我房霍强还是和镇长女儿慕容翠花定了亲的男人，那可是要迎娶白富美的节奏。&lt;/p&gt;

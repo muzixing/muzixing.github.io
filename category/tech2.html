@@ -62,6 +62,32 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/05/20/ryuru-he-zai-lldpzhong-tian-jia-zi-ding-yi-lldpdu.html"><h2>Ryu:如何在LLDP中添加自定义LLDPDU</h2></a>
+        <div class= "well small"> 2016-05-20
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><hr />
+<p>在许多实验场景中，都需要使用链路发现协议（LLDP）来发现链路，从而构建网络拓扑。然而LLDP协议不仅仅可以用来发现拓扑，也可以用于时延检测等业务。LLDP通过添加对应的TLV格式的LLDPDU（LLDP数据单元）来携带对应的信息，从而为上层业务提供信息支撑。为实现LLDP数据单元的拓展，本文将以Ryu控制器为例，介绍如何添加自定义的LLDPDU，从而满足多种业务的需求。</p>
+<p>添加自定义LLDPDU其实只需修改ryu/lib/packet/lldp.py即可，但是由于该文件仅定义了LLDP的相关类，如何使用还需要其他文件去调用，所以还需要其他的修改步骤。具体步骤将在文章后续介绍。</p>
+<h3>修改lldp.py文件</h3>
+<p>ryu/lib/packet/lldp.py文件是Ryu控制器中关于LLDP协议数据类的描述，其中定义了如LLDPBasicTLV类等重要的报文类。 以添加发送时间戳的TLV为例，我们需要完成TLV类型号的声明，以及TLV类的定义。</p>
+<p>在文件开头处有关于LLDP TLV类型的声明，所以首先我们需要添加一个新的类型：LLDP_TLV_SEND_TIME，其类型号为11。</p>
+<div class="highlight"><pre>    <span class="c"># LLDP TLV type</span>
+    <span class="n">LLDP_TLV_END</span> <span class="o">=</span> <span class="mi">0</span>                        <span class="c"># End of LLDPDU</span>
+    <span class="n">LLDP_TLV_CHASSIS_ID</span> <span class="o">=</span> <span class="mi">1 ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2016/05/20/ryuru-he-zai-lldpzhong-tian-jia-zi-ding-yi-lldpdu.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/05/03/wo-shi-ge-sdnjiao-huan-ji.html"><h2>我是一个SDN交换机</h2></a>
         <div class= "well small"> 2016-05-03
 
@@ -142,32 +168,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>在OpenFlow1.0版本推出时，普遍被认为只有12个匹配域无法适应多网络场景的需求。但随着OpenFlow版本的推进，发展到OpenFlow1.3版本时已经有了40个匹配域，已经可以支持大部分的协议字段匹配。然而始终还会有更多的协议需要支持，所以这个增长趋势不会停止。不断增多的匹配域 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/12/pofgeng-li-xiang-de-sdn.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/03/03/openflowde-ban-lu-xie-yi-of-config.html"><h2>OpenFlow的伴侣协议：OF-CONFIG</h2></a>
-        <div class= "well small"> 2016-03-03
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>本文将简要介绍OpenFlow协议的伴侣协议即补充协议OF-CONFIG，主要内容包括OF-CONFIG的简介、原理以及发展趋势。希望能让读者对OF-CONFIG有一个初步的认识。</p>
-<h3>简介</h3>
-<p>在OpenFlow协议的规范中，控制器需要和已配置的交换机进行通信。而交换机在正常工作之前需要对其特性以及资源进行配置才能正常工作。而这些配置超出了OpenFlow协议规范的范围，理应由其他的配置协议来完成。OF-Config（OpenFlow Management and Configuration Protocol）协议就是一种OpenFlow交换机配置协议。OF-CONFIG由ONF于2012年1月提出，目前已经演化到1.2版本。OF-CONFIG协议与OpenFlow协议的关系如图1所示。</p>
-<p>作为一种交换机配置协议，OF-CONFIG的主要功能包括配置交换机连接的多个控制器信息、端口和队列等资源的配置以及端口等资源的状态修改等内容。此外，作为一个配置协议，OF-CONFIG也要求链接必须是安全可靠的。为满足实际网络运维要求，OF-CONFIG支持通过配置点对多个交换机进行配置，也支持多个配置点对同一个交换机进行配置。</p>
-<p>为了满足OpenFlow版本更新的需求以及协议的可拓展要求，OF-CONFIG采用XML来描述其数据结构。此外，在OF-CONFIG的初始规范中也规定了采用NETCONF协议作为其传输协议。由于OF-Config协议没有和数据交换和路由等模块直接相关，所以相比于对实时性要求高的OpenFlow等南向协议而言，OF-CONFIG协议对实时性要求并不高。</p>
-<p><center><img alt="of-config and openflow" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f1f92gb9fij209k09e3yz.jpg" /></center>
-<center>图1. OF-CONFIG 与OpenFlow以及OpenFlow Switch之间的关系图</center></p>
-<h3>原理</h3>
-<p>OF-Config协议主要分为Server和Client两部分，其中Server运行在OpenFlow交换机端，而Client运行在OpenFlow配置点上。本质上，OpenFlow配置点就是一个普通的通信节点，其可以是独立的服务器，也可以是部署了控制器的服务器。通过OpenFlow ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/03/openflowde-ban-lu-xie-yi-of-config.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../category/tech.html">&larr; Previous</a></li>
@@ -186,6 +186,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../category/tech12.html">12</a></li>
     <li class=""><a href="../category/tech13.html">13</a></li>
     <li class=""><a href="../category/tech14.html">14</a></li>
+    <li class=""><a href="../category/tech15.html">15</a></li>
 
     <li class="next"><a href="../category/tech3.html">Next &rarr;</a></li>
 
