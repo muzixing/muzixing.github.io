@@ -1,5 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 30 Aug 2016 00:00:00 +0800</lastBuildDate><item><title>Getting Started of MongoDB</title><link>http://www.muzixing.com/pages/2016/08/30/getting-started-of-mongodb.html</link><description>&lt;h3&gt;What is MongoDB&lt;/h3&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Fri, 30 Sep 2016 00:00:00 +0800</lastBuildDate><item><title>监听OpenStack Notification</title><link>http://www.muzixing.com/pages/2016/09/30/jian-ting-openstack-notification.html</link><description>&lt;hr /&gt;
+&lt;p&gt;在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用&lt;a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation"&gt;kombu&lt;/a&gt;库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。&lt;/p&gt;
+&lt;h3&gt;Kombu, AMQP, RabbitMQ&lt;/h3&gt;
+&lt;p&gt;&lt;a href="https://github.com/celery/kombu"&gt;Kombu&lt;/a&gt;是Python的消息库，封装来许多消息的报文，支持包括&lt;a href="https://www.amqp.org/"&gt;AMQP&lt;/a&gt;等多种消息协议。而在OpenStack端，Notification的发布系统由&lt;a href="http://www.rabbitmq.com/"&gt;RabbitMQ&lt;/a&gt;实现。为了监听OpenStack发出的Notification, 我们需要在本地用Kombu库建立一个connection, 连接到OpenStack的消息发布系统。&lt;/p&gt;
+&lt;h3&gt;Terminology&lt;/h3&gt;
+&lt;p&gt;在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Producers
+消息生产者，产生消息，并发送到交换器。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Exchanges
+消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Queues
+队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Consumers
+消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Routing keys
+每一种消息都有路由键（routing_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing_key的解析过程不同。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Exchange type&lt;/h3&gt;
+&lt;p&gt;AMQP协议中主要定义了3种exchange type，包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Direct exchange&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;根据routing_key的值，将匹配成功的消息发送到指定的队列。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Fan-out exchange&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;将消息发送到所有队列，和交换机的flood操作类似。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Topic exchange&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;根据给定topic以及匹配规则来实现消息的路由。比如匹配的pattern为*.muzixing.#, 则hello.muzixing.info匹配成功，而muzixing.info匹配失败。&lt;/p&gt;
+&lt;p&gt;&lt;center&gt;&lt;img alt="topic" src="http://www.rabbitmq.com/img/tutorials/python-five.png" /&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;h3&gt;Kombu Example&lt;/h3&gt;
+&lt;p&gt;首先，需要先&lt;a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation"&gt;安装Kombu&lt;/a&gt;。安装之后，可以通过以下的示例代码来连接到OpenStack。注意需要将user，pwd，host和port修改成对应的OpenStack消息服务器的用户名，登陆密码，ip地址和传输层端口号。 完成之后，运行该python文件，即可监听OpenStack的通知。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;kombu&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Queue&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Exchange&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;kombu.log&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;get_logger&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;kombu.mixins&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;ConsumerMixin&lt;/span&gt;
+
+    &lt;span class="n"&gt;logger&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;get_logger&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;__name__&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Worker&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ConsumerMixin&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;event_queues&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+            &lt;span class="n"&gt;Queue&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;notification.nova&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                  &lt;span class="n"&gt;Exchange&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;nova&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;topic&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;durable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+                  &lt;span class="n"&gt;durable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;routing_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;#&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+            &lt;span class="n"&gt;Queue&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;notifications.neutron&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                  &lt;span class="n"&gt;Exchange&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;neutron&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;topic&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;durable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+                  &lt;span class="n"&gt;durable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;routing_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;#&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="p"&gt;]&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;connection&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connection&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;connection&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_consumers&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Consumer&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;channel&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Consumer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;queues&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;event_queues&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                             &lt;span class="n"&gt;accept&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;json&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+                             &lt;span class="n"&gt;callbacks&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;process_task&lt;/span&gt;&lt;span class="p"&gt;])]&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;process_task&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Receive message: &lt;/span&gt;&lt;span class="si"&gt;%r&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ack&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;kombu&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Connection&lt;/span&gt;
+        &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;kombu.utils.debug&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;setup_logging&lt;/span&gt;
+
+        &lt;span class="c"&gt;# setup root logger&lt;/span&gt;
+        &lt;span class="n"&gt;setup_logging&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;loglevel&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;DEBUG&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;loggers&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+        &lt;span class="n"&gt;connect_url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;amqp://&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;:&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;pwd&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;@&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;host&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;:&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;port&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;//&amp;#39;&lt;/span&gt;
+        &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;Connection&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;connect_url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;conn&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;conn&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                &lt;span class="n"&gt;worker&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Worker&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;conn&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                &lt;span class="n"&gt;worker&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+            &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="ne"&gt;KeyboardInterrupt&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Stopped&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;以上示例代码中有两个地方需要注意。首先是需要将用户名等信息修改正确，其次是Queue的定义。在Worker类中，定义了event_queues列表，列表中是对应的Queue，用来接收️Notification。为了接收nova的信息，需要构造一个Exchange instance作为Queue的参数，其中第一个参数‘nova’是exchange的名字，代表着这个队列将绑定到nova的消息exchange上。同样的，为了接受neutron的消息，我们还定义了另一个队列，队列绑定到了名字叫‘neutron’的exchange上。同理，若希望绑定到对应的exchange，继续添加Queue即可。Routing的参数类型这里设置为topic, durable参数表示消息数据的持久化特性。routing_key则是路由的键值。此处接受所有来自对应名称exchange的消息。event_queue将作为Consumer类初始化实例的参数，用于实例化消费者。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Worker&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ConsumerMixin&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;event_queues&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+            &lt;span class="n"&gt;Queue&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;notification.nova&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                  &lt;span class="n"&gt;Exchange&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;nova&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;topic&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;durable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+                  &lt;span class="n"&gt;durable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;routing_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;#&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+            &lt;span class="n"&gt;Queue&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;notifications.neutron&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                  &lt;span class="n"&gt;Exchange&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;neutron&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;topic&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;durable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+                  &lt;span class="n"&gt;durable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;routing_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;#&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;总结&lt;/h3&gt;
+&lt;p&gt;OpenStack目前在云环境中应用十分广泛，是非常值得喜欢云计算和SDN的同学去学习和研究的。作为一个大型的项目，OpenStack采用了AMQP来分发事件。作者在工作过程中需要使用OpenStack的事件，因此总结来这一篇文章。特别感谢谷歌给予的大力支持，没有谷歌我就查不到解决问题的正确姿势[1]。希望能给读者带来一些帮助。&lt;/p&gt;
+&lt;h2&gt;References&lt;/h2&gt;
+&lt;p&gt;[1] "Listen to OpenStack Neutron Messages from RabbitMQ using Kombu messaging library", http://thetaooftech.blogspot.com/2014/04/listen-to-openstack-neutron-messages.html&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 30 Sep 2016 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2016-09-30:pages/2016/09/30/jian-ting-openstack-notification.html</guid><category>OpenStack</category><category>kombu</category></item><item><title>Getting Started of MongoDB</title><link>http://www.muzixing.com/pages/2016/08/30/getting-started-of-mongodb.html</link><description>&lt;h3&gt;What is MongoDB&lt;/h3&gt;
 &lt;p&gt;MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]&lt;/p&gt;
 &lt;p&gt;MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。&lt;/p&gt;
 &lt;p&gt;MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]&lt;/p&gt;

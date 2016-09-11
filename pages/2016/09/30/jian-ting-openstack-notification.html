@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="../pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2016/09/30/jian-ting-openstack-notification.html"><h1>监听OpenStack Notification</h1></a>
+            <h1>监听OpenStack Notification</h1>
 2016-09-30
 
-by <a class="url fn" href="../author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><hr />
 <p>在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用<a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation">kombu</a>库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。</p>
 <h3>Kombu, AMQP, RabbitMQ</h3>
@@ -180,132 +174,23 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>OpenStack目前在云环境中应用十分广泛，是非常值得喜欢云计算和SDN的同学去学习和研究的。作为一个大型的项目，OpenStack采用了AMQP来分发事件。作者在工作过程中需要使用OpenStack的事件，因此总结来这一篇文章。特别感谢谷歌给予的大力支持，没有谷歌我就查不到解决问题的正确姿势[1]。希望能给读者带来一些帮助。</p>
 <h2>References</h2>
 <p>[1] "Listen to OpenStack Neutron Messages from RabbitMQ using Kombu messaging library", http://thetaooftech.blogspot.com/2014/04/listen-to-openstack-neutron-messages.html</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = '监听OpenStack Notification';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/08/30/getting-started-of-mongodb.html"><h2>Getting Started of MongoDB</h2></a>
-        <div class= "well small"> 2016-08-30
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>What is MongoDB</h3>
-<p>MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]</p>
-<p>MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。</p>
-<p>MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]</p>
-<h3>About MongoDB</h3>
-<p>MongoDB is ...</p> <a class="btn btn-info xsmall" href="../pages/2016/08/30/getting-started-of-mongodb.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/07/26/wo-shi-zen-yao-diu-diao-fan-wan-de.html"><h2>我是怎么丢掉饭碗的</h2></a>
-        <div class= "well small"> 2016-07-26
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>我出门名门，骨骼精奇，身怀绝迹，独步武林多年，凭着祖传的无影手和行走江湖多年练就的一套安检基本法，我房霍强当上了桃花镇的城门护卫队的队长，也算不负家族期望。</p>
-<p>桃花镇自古以来就是兵家必争之地，又有许多桃花盛开，所以也是一个远近闻名的旅游胜地。为保证桃花镇的安全，又要保证桃花镇的游客流量，我房某人必须要快速地做好安检工作。多亏我祖传的无影手绝技和总结的安检基本法，我才能应对每天如此多的人流。</p>
-<p>身居要位的我身价自然不会太低，多少也要个20W年薪吧。我要价高也是有道理的，自古以来，能做安检工作的都是像我这样骨骼精奇又身怀绝学的人，软硬实力俱佳啊。先说软实力，我行走江湖十余载，见过采花、毛贼、刺客少说上百，多了上千，早已掌握了一套基本法，练就了一副火眼金睛，一眼就能看出蹊跷。只要学会了这套安检基本法，就可以做到像我这样的火眼金睛。硬实力上，与普通骨架的人不同，我们家族的人骨骼精奇，手速极快，有无影手之称。无影手是我们家族的祖传技能，到我已经19代有余。即使软件方面其他人可以做到，但是别人做不到我的速度，所以我身价才这么高。</p>
-<p>事业成功不算什么，我房霍强还是和镇长女儿慕容翠花定了亲的男人，那可是要迎娶白富美的节奏。</p>
-<p>我的工作内容无非就是禁止一些黑名单上的人进城，限制人流等等，早已轻车熟路。我还可以防止DoS恶意攻击。比如有时会有同一拨人在不断假装去桃花庙上香 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/07/26/wo-shi-zen-yao-diu-diao-fan-wan-de.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/07/08/ji-yu-tiao-shu-shi-yan-dai-kuan-de-zui-duan-you-lu-jing-he-fu-zai-jun-heng.html"><h2>基于跳数\时延\带宽的最短/优路径和负载均衡</h2></a>
-        <div class= "well small"> 2016-07-08
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>对于SDN初学者而言，最短路径转发应用和负载均衡应用是最常见，也是最适合学习的经典应用。根据链路权重参数的不同，主要有基于跳数、时延和带宽的几种最短\最优路径转发应用。根据链路可用带宽实现的最优路径转发本质上也是一种网络流量负载均衡的简单实现。本文将介绍笔者在学习过程中开发的网络感知模块以及基于跳数、时延和带宽三种最优路径转发应用。</p>
-<h3>基于跳数的最短路径转发</h3>
-<p>基于跳数的最短路径转发是最简单的最优路径转发应用。我们通过<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_awareness.py">network_awareness</a>应用来实现网络拓扑资源的感知并计算最短路径。首先控制器通过下发LLDP报文来获取网络链路信息，然后再利用网络信息，生成网络拓扑图。网络感知应用使用networkx的有向图数据结构存储拓扑信息，使用networkx提供的<a href="http://networkx.readthedocs.io/en/stable/reference/generated/networkx.algorithms.simple_paths.shortest_simple_paths.html">shortest_simple_paths</a>函数来计算最短路径。shortest_simple_paths函数支持在图上找出源交换机到目的交换机的K条最短路径，其函数参数信息如下：</p>
-<div class="highlight"><pre><span class="n">shortest_simple_paths</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">None</span><span class="p">)</span>
-</pre></div>
-
-
-<p>在给定图G，源交换机source，目的交换机target以及链路权重类型weight的情况下，会返回一个路径生成器。通过K次调用生成器可以生成K条最短路径。</p>
-<p>获得最短路径之后，<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/shortest_forwarding.py">shortest_forwarding</a>应用将完成流表下发等工作，实现基于跳数的最短路径转发应用。</p>
-<h3>基于时延的最优路径转发</h3>
-<p>基于时延的最优路径转发应用原理和基于跳数的最短路径转发应用类似，只是链路权重类型变成了时延。关于计算链路时延的原理，读者可以阅读<a href="http://www.muzixing.com/pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html">Ryu:网络时延探测应用</a>。<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_delay_detector.py">Network_Delay_Detector</a>是一个网络时延探测应用，其在获取到链路时延之后，将时延数据存储到Networkx的图数据结构中 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/07/08/ji-yu-tiao-shu-shi-yan-dai-kuan-de-zui-duan-you-lu-jing-he-fu-zai-jun-heng.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html"><h2>SDN最新研究进展</h2></a>
-        <div class= "well small"> 2016-06-28
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>自SDN出现以来，关于SDN的研究一直没有停止，只是不同的阶段关于SDN的研究的重点不同。比如最开始的时候，探讨最多的是SDN的可行性，以及如何将SDN应用到对应的网络场景中。本文是笔者在最近阅读2015年至今的若干SDN论文后总结的SDN最新研究进展，希望对读者提供一些帮助。</p>
-<h3>SDN/NFV</h3>
-<p>SDN和NFV都是当下网络界研究的热点，而如何将两者整合部署，也是研究的热点之一。设计SDN/NFV整合部署框架的研究是这个研究方向的主要研究切入点之一，比如参考文献[1]中就提出了一个SDN/NFV的整体架构。框架中的NFV协调器可以和云管理平台配合使用，SDN控制器也支持与云平台结合。由于此类方案是SDN与其他技术/框架的集合，本身没有太多创新性，论文中也仅仅介绍了其实现方案，所以此处不加赘述。</p>
-<p>SDN/NFV结合还可以部署在很多场景，比如WiFi场景。OpenSDWN[2]就是一种软件定义的家庭/企业WiFi架构框架。 将SDN与其他技术结合并应用在特定网络场景是一种主要的研究方向之一。</p>
-<h3>流表优化</h3>
-<p>OpenFlow所支持的细粒度流管理是SDN最大的优势之一，但是细粒度的管理是需要付出代价的。为满足细粒度的管理，则需要更粒度的流表项。但是像OpenFlow协议这种细粒度的管理会带来一定的时延，对于时延敏感的短流业务而言，这个时延带来的影响是不可忽视的，这很可能会抵消了SDN带来的好处。所以如何通过流表来匹配流，从而减少流表项下发次数，是降低时延影响的有利手段。</p>
-<p>此外，当网络流数目过多时，交换机的流表空间就无法满足需求。当流表满时 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../category/tech.html">1</a></li>
-    <li class=""><a href="../category/tech2.html">2</a></li>
-    <li class=""><a href="../category/tech3.html">3</a></li>
-    <li class=""><a href="../category/tech4.html">4</a></li>
-    <li class=""><a href="../category/tech5.html">5</a></li>
-    <li class=""><a href="../category/tech6.html">6</a></li>
-    <li class=""><a href="../category/tech7.html">7</a></li>
-    <li class=""><a href="../category/tech8.html">8</a></li>
-    <li class=""><a href="../category/tech9.html">9</a></li>
-    <li class=""><a href="../category/tech10.html">10</a></li>
-    <li class=""><a href="../category/tech11.html">11</a></li>
-    <li class=""><a href="../category/tech12.html">12</a></li>
-    <li class=""><a href="../category/tech13.html">13</a></li>
-    <li class=""><a href="../category/tech14.html">14</a></li>
-    <li class=""><a href="../category/tech15.html">15</a></li>
-
-    <li class="next"><a href="../category/tech2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -316,8 +201,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
 		</li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
@@ -331,8 +216,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">Life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">Life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -372,7 +257,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->

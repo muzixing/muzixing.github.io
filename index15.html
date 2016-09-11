@@ -62,6 +62,36 @@
  
 
     <div class='article'>
+        <a href="./pages/2014/01/01/shu-yu-wo-de-2013he-2014.html"><h2>属于我的2013和2014</h2></a>
+        <div class= "well small"> 2014-01-01
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>过去的我，站在风中，微笑向现在的我招手</h2>
+<p>远去了，2013的那个我！</p>
+<h3>心变了，世界就变了</h3>
+<p>我不再像前三年一样，喜欢每一堂课都坐在前排，和老师交流。也许是因为大四的课已经不那么重要，也许是因为我对学习有了其他的认识。</p>
+<p>依然和每一个任课老师都关系很好，依然会被老师记住，只是那个忠实的听众已经不满足于课堂上的知识。</p>
+<p>当外面的世界，给你带来更多的冲击与进步的时候，你很容易就做出选择。</p>
+<p>走出校园，开始实习的生活让我懂得太多太多，那种心理变化，心理成长的过程不是三年在象牙塔里乖乖读书能得到的。</p>
+<p>我开始认识到生存的压力，我开始为自己自力更生而自豪！我开始迷恋上自己赚钱自己花的日子，我为伸手要钱而感到羞愧!</p>
+<p>我开始思考我想要的未来，我开始掂量自己到底几斤几两，我开始计划怎么提升自己，直到满意。</p>
+<h3>实习那些事</h3>
+<p>我一直都是幸运儿，我坚信这一点。当我第一次接触到SDN的时候，我不知道我会继续下去，我不知道这是我第几次尝试，那是大三刚开始的时候。</p>
+<p>大三的暑假到了，保研的事情还没有着落，回家并不是一种明智的选择，实习才是。</p>
+<p>可是我高估了自己的实力。第一次面试是腾讯后台，竞争对手是谁这些都不重要，重要的是自己真的很嫩，真的懂得太少。那是我的第一个面试官，很和蔼，很耐心。我们聊了半个多小时 ...</p> <a class="btn btn-info xsmall" href="./pages/2014/01/01/shu-yu-wo-de-2013he-2014.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2013/12/24/sdnde-chu-bu-ren-shi.html"><h2>SDN的初步认识</h2></a>
         <div class= "well small"> 2013-12-24
 
@@ -175,36 +205,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <h4>OpenFlow的switch可以从以下方式获得</h4>
 <ul>
 <li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html"><h2>【原创】SDN下的分布式广播风暴解决方案</h2></a>
-        <div class= "well small"> 2013-12-07
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>这是很久以前的成果了，那时候我才大三上。为了学习sdn,openflow等知识，北邮科研楼628的一群哥们儿，想着各种新奇的东西去解决已有的问题。</p>
-<p>有一天，我们遇到了网络风暴，但是我们觉得STP有点复杂，而且，确实也不愿意去学。那么，就自己写一个解决方案吧。于是，下面的小代码产生了。</p>
-<h3>核心思想</h3>
-<p>其实特别简单，一句话：<strong>不让同一个数据包从第二个端口进入，即仅允许数据包从第一个进来的端口进入。</strong></p>
-<p>也就是说，我确保了，同一个数据包，不会从别的交换机从非第一次的in_port进入本交换机，那就不会有环路，也就解决了风暴，而且，同一个端口允许进入，不影响主机继续发送广播包。</p>
-<h3>具体实现</h3>
-<p>这个就需要我们建立一个macToport的表，在python里面数据结构字典来实现。使用src_mac作为key，记录值为[dstip,port,time]</p>
-<div class="highlight"><pre><span class="n">self</span><span class="o">.</span><span class="n">macToPort</span> <span class="o">=</span> <span class="p">{</span><span class="n">srcMAC:</span><span class="p">[</span><span class="n">dst_ip</span><span class="p">,</span><span class="n">in_port</span><span class="p">,</span><span class="nb">time</span><span class="p">]}</span>
-</pre></div>
-
-
-<p>这个字典记录了用数据包的mac地址记录了数据包的目标ip,入口端口，到达时间三个信息，其实如果为了更好的对应，我们应该使用上xid,让 ...</p> <a class="btn btn-info xsmall" href="./pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
