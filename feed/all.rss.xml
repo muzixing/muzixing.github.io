@@ -1,32 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feed/all.rss.xml" rel="self"></atom:link><lastBuildDate>Fri, 30 Sep 2016 00:00:00 +0800</lastBuildDate><item><title>监听OpenStack Notification</title><link>http://www.muzixing.com/pages/2016/09/30/jian-ting-openstack-notification.html</link><description>&lt;hr /&gt;
-&lt;p&gt;在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用&lt;a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation"&gt;kombu&lt;/a&gt;库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。&lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feed/all.rss.xml" rel="self"></atom:link><lastBuildDate>Fri, 30 Sep 2016 00:00:00 +0800</lastBuildDate><item><title>Listen to OpenStack Notification</title><link>http://www.muzixing.com/pages/2016/09/30/listen-to-openstack-notification.html</link><description>&lt;p&gt;在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用&lt;a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation"&gt;kombu&lt;/a&gt;库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。&lt;/p&gt;
 &lt;h3&gt;Kombu, AMQP, RabbitMQ&lt;/h3&gt;
 &lt;p&gt;&lt;a href="https://github.com/celery/kombu"&gt;Kombu&lt;/a&gt;是Python的消息库，封装来许多消息的报文，支持包括&lt;a href="https://www.amqp.org/"&gt;AMQP&lt;/a&gt;等多种消息协议。而在OpenStack端，Notification的发布系统由&lt;a href="http://www.rabbitmq.com/"&gt;RabbitMQ&lt;/a&gt;实现。为了监听OpenStack发出的Notification, 我们需要在本地用Kombu库建立一个connection, 连接到OpenStack的消息发布系统。&lt;/p&gt;
 &lt;h3&gt;Terminology&lt;/h3&gt;
 &lt;p&gt;在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;Producers
-消息生产者，产生消息，并发送到交换器。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Exchanges
-消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Queues
-队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Consumers
-消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Routing keys
-每一种消息都有路由键（routing_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing_key的解析过程不同。&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;Producers&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;消息生产者，产生消息，并发送到交换器。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Exchanges&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Queues&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Consumers&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Routing keys&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;每一种消息都有路由键（routing_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing_key的解析过程不同。&lt;/p&gt;
 &lt;h3&gt;Exchange type&lt;/h3&gt;
 &lt;p&gt;AMQP协议中主要定义了3种exchange type，包括：&lt;/p&gt;
 &lt;ul&gt;
@@ -106,7 +103,7 @@
 &lt;h3&gt;总结&lt;/h3&gt;
 &lt;p&gt;OpenStack目前在云环境中应用十分广泛，是非常值得喜欢云计算和SDN的同学去学习和研究的。作为一个大型的项目，OpenStack采用了AMQP来分发事件。作者在工作过程中需要使用OpenStack的事件，因此总结来这一篇文章。特别感谢谷歌给予的大力支持，没有谷歌我就查不到解决问题的正确姿势[1]。希望能给读者带来一些帮助。&lt;/p&gt;
 &lt;h2&gt;References&lt;/h2&gt;
-&lt;p&gt;[1] "Listen to OpenStack Neutron Messages from RabbitMQ using Kombu messaging library", http://thetaooftech.blogspot.com/2014/04/listen-to-openstack-neutron-messages.html&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 30 Sep 2016 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2016-09-30:pages/2016/09/30/jian-ting-openstack-notification.html</guid><category>OpenStack</category><category>kombu</category></item><item><title>在barefoot拜访Nick McKeown教授</title><link>http://www.muzixing.com/pages/2016/09/13/zai-barefootbai-fang-nick-mckeownjiao-shou.html</link><description>&lt;p&gt;自学习SDN以来已经三年多了。虽然依然是没有实际的商业产品开发经验，学术水平也是渣渣，但是多少掌握了一些基础知识，学会了一些技术。在学习SDN的过程中，不得不提的就是Nick McKeown教授，他发表过很多著名的论文，比如OpenFlow、Mininet、P4的论文等。他也创建了ONF和ONRC等组织，推动SDN开源的发展，可谓是SDN届的领头羊，大师。所以作为一个学习SDN的学生，自然十分敬仰。&lt;/p&gt;
+&lt;p&gt;[1] "Listen to OpenStack Neutron Messages from RabbitMQ using Kombu messaging library", http://thetaooftech.blogspot.com/2014/04/listen-to-openstack-neutron-messages.html&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 30 Sep 2016 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2016-09-30:pages/2016/09/30/listen-to-openstack-notification.html</guid><category>OpenStack</category><category>kombu</category></item><item><title>在barefoot拜访Nick McKeown教授</title><link>http://www.muzixing.com/pages/2016/09/13/zai-barefootbai-fang-nick-mckeownjiao-shou.html</link><description>&lt;p&gt;自学习SDN以来已经三年多了。虽然依然是没有实际的商业产品开发经验，学术水平也是渣渣，但是多少掌握了一些基础知识，学会了一些技术。在学习SDN的过程中，不得不提的就是Nick McKeown教授，他发表过很多著名的论文，比如OpenFlow、Mininet、P4的论文等。他也创建了ONF和ONRC等组织，推动SDN开源的发展，可谓是SDN届的领头羊，大师。所以作为一个学习SDN的学生，自然十分敬仰。&lt;/p&gt;
 &lt;p&gt;很幸运地得到了CIIP一年的实习机会，可以在思科美国总部实习一年，终于有机会在硅谷探索一翻，自然不能放过那些在书中和新闻里报道的地点和人物。在游览了斯坦福，berkeley等名校之后，就开始里知名创业公司和大师的拜访之旅。&lt;/p&gt;
 &lt;p&gt;很高兴自己的博客被barefoot的ron前辈看到，然后我们就建立了联系。刚好他也回到里硅谷，微信一约就决定了时间去参观barefoot和拜访Nick教授，顺便一起吃个饭，聊一聊技术。&lt;/p&gt;
 &lt;p&gt;一大早特别开心，直接就不去上班，uber过去拜访。手机号刚过期，在没有手机的情况下，利用xfinity的Wi-Fi让司机成功找到了我，太感谢xfinity和uber。&lt;/p&gt;

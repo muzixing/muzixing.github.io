@@ -1,9 +1,7 @@
-﻿title:监听OpenStack Notification
+﻿title:Listen to OpenStack Notification
 date:2016/9/30
 tags:OpenStack, kombu
 category:Tech
-
----
 
 在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用[kombu](http://kombu.readthedocs.io/en/latest/introduction.html#installation)库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。
 
@@ -16,18 +14,23 @@ category:Tech
 在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：
 
 * Producers
+
 消息生产者，产生消息，并发送到交换器。
 
 * Exchanges
+
 消息交换器，接受生产者发送过来的消息，根据对应的routing\_key，来将消息路由到对应的队列。
 
 * Queues
+
 队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。
 
 * Consumers
+
 消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。
 
 * Routing keys
+
 每一种消息都有路由键（routing\_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing\_key的解析过程不同。
 
 ### Exchange type

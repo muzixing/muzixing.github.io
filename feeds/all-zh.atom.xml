@@ -1,32 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/all-zh.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2016-09-30T00:00:00+08:00</updated><entry><title>监听OpenStack Notification</title><link href="http://www.muzixing.com/pages/2016/09/30/jian-ting-openstack-notification.html" rel="alternate"></link><updated>2016-09-30T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2016-09-30:pages/2016/09/30/jian-ting-openstack-notification.html</id><summary type="html">&lt;hr /&gt;
-&lt;p&gt;在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用&lt;a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation"&gt;kombu&lt;/a&gt;库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/all-zh.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2016-09-30T00:00:00+08:00</updated><entry><title>Listen to OpenStack Notification</title><link href="http://www.muzixing.com/pages/2016/09/30/listen-to-openstack-notification.html" rel="alternate"></link><updated>2016-09-30T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2016-09-30:pages/2016/09/30/listen-to-openstack-notification.html</id><summary type="html">&lt;p&gt;在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用&lt;a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation"&gt;kombu&lt;/a&gt;库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。&lt;/p&gt;
 &lt;h3&gt;Kombu, AMQP, RabbitMQ&lt;/h3&gt;
 &lt;p&gt;&lt;a href="https://github.com/celery/kombu"&gt;Kombu&lt;/a&gt;是Python的消息库，封装来许多消息的报文，支持包括&lt;a href="https://www.amqp.org/"&gt;AMQP&lt;/a&gt;等多种消息协议。而在OpenStack端，Notification的发布系统由&lt;a href="http://www.rabbitmq.com/"&gt;RabbitMQ&lt;/a&gt;实现。为了监听OpenStack发出的Notification, 我们需要在本地用Kombu库建立一个connection, 连接到OpenStack的消息发布系统。&lt;/p&gt;
 &lt;h3&gt;Terminology&lt;/h3&gt;
 &lt;p&gt;在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;Producers
-消息生产者，产生消息，并发送到交换器。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Exchanges
-消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Queues
-队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Consumers
-消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Routing keys
-每一种消息都有路由键（routing_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing_key的解析过程不同。&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;Producers&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;消息生产者，产生消息，并发送到交换器。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Exchanges&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Queues&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Consumers&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Routing keys&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;每一种消息都有路由键（routing_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing_key的解析过程不同。&lt;/p&gt;
 &lt;h3&gt;Exchange type&lt;/h3&gt;
 &lt;p&gt;AMQP协议中主要定义了3种exchange type，包括：&lt;/p&gt;
 &lt;ul&gt;

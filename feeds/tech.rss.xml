@@ -1,32 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Fri, 30 Sep 2016 00:00:00 +0800</lastBuildDate><item><title>监听OpenStack Notification</title><link>http://www.muzixing.com/pages/2016/09/30/jian-ting-openstack-notification.html</link><description>&lt;hr /&gt;
-&lt;p&gt;在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用&lt;a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation"&gt;kombu&lt;/a&gt;库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。&lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Milestone</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/tech.rss.xml" rel="self"></atom:link><lastBuildDate>Fri, 30 Sep 2016 00:00:00 +0800</lastBuildDate><item><title>Listen to OpenStack Notification</title><link>http://www.muzixing.com/pages/2016/09/30/listen-to-openstack-notification.html</link><description>&lt;p&gt;在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用&lt;a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation"&gt;kombu&lt;/a&gt;库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。&lt;/p&gt;
 &lt;h3&gt;Kombu, AMQP, RabbitMQ&lt;/h3&gt;
 &lt;p&gt;&lt;a href="https://github.com/celery/kombu"&gt;Kombu&lt;/a&gt;是Python的消息库，封装来许多消息的报文，支持包括&lt;a href="https://www.amqp.org/"&gt;AMQP&lt;/a&gt;等多种消息协议。而在OpenStack端，Notification的发布系统由&lt;a href="http://www.rabbitmq.com/"&gt;RabbitMQ&lt;/a&gt;实现。为了监听OpenStack发出的Notification, 我们需要在本地用Kombu库建立一个connection, 连接到OpenStack的消息发布系统。&lt;/p&gt;
 &lt;h3&gt;Terminology&lt;/h3&gt;
 &lt;p&gt;在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;Producers
-消息生产者，产生消息，并发送到交换器。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Exchanges
-消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Queues
-队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Consumers
-消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Routing keys
-每一种消息都有路由键（routing_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing_key的解析过程不同。&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;Producers&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;消息生产者，产生消息，并发送到交换器。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Exchanges&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Queues&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Consumers&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Routing keys&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;每一种消息都有路由键（routing_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing_key的解析过程不同。&lt;/p&gt;
 &lt;h3&gt;Exchange type&lt;/h3&gt;
 &lt;p&gt;AMQP协议中主要定义了3种exchange type，包括：&lt;/p&gt;
 &lt;ul&gt;
@@ -106,7 +103,7 @@
 &lt;h3&gt;总结&lt;/h3&gt;
 &lt;p&gt;OpenStack目前在云环境中应用十分广泛，是非常值得喜欢云计算和SDN的同学去学习和研究的。作为一个大型的项目，OpenStack采用了AMQP来分发事件。作者在工作过程中需要使用OpenStack的事件，因此总结来这一篇文章。特别感谢谷歌给予的大力支持，没有谷歌我就查不到解决问题的正确姿势[1]。希望能给读者带来一些帮助。&lt;/p&gt;
 &lt;h2&gt;References&lt;/h2&gt;
-&lt;p&gt;[1] "Listen to OpenStack Neutron Messages from RabbitMQ using Kombu messaging library", http://thetaooftech.blogspot.com/2014/04/listen-to-openstack-neutron-messages.html&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 30 Sep 2016 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2016-09-30:pages/2016/09/30/jian-ting-openstack-notification.html</guid><category>OpenStack</category><category>kombu</category></item><item><title>Getting Started of MongoDB</title><link>http://www.muzixing.com/pages/2016/08/30/getting-started-of-mongodb.html</link><description>&lt;h3&gt;What is MongoDB&lt;/h3&gt;
+&lt;p&gt;[1] "Listen to OpenStack Neutron Messages from RabbitMQ using Kombu messaging library", http://thetaooftech.blogspot.com/2014/04/listen-to-openstack-neutron-messages.html&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Fri, 30 Sep 2016 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2016-09-30:pages/2016/09/30/listen-to-openstack-notification.html</guid><category>OpenStack</category><category>kombu</category></item><item><title>Getting Started of MongoDB</title><link>http://www.muzixing.com/pages/2016/08/30/getting-started-of-mongodb.html</link><description>&lt;h3&gt;What is MongoDB&lt;/h3&gt;
 &lt;p&gt;MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]&lt;/p&gt;
 &lt;p&gt;MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。&lt;/p&gt;
 &lt;p&gt;MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]&lt;/p&gt;

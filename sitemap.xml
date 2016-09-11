@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2016-09-11T15:30:23-00:00</lastmod>
+<lastmod>2016-09-11T15:35:04-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2016-09-11T15:30:23-00:00</lastmod>
+<lastmod>2016-09-11T15:35:04-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2016-09-11T15:30:23-00:00</lastmod>
+<lastmod>2016-09-11T15:35:04-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2016-09-11T15:30:23-00:00</lastmod>
+<lastmod>2016-09-11T15:35:04-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -39,7 +39,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/pages/2016/09/30/jian-ting-openstack-notification.html</loc>
+<loc>http://www.muzixing.com/pages/2016/09/30/listen-to-openstack-notification.html</loc>
 <lastmod>2016-09-30T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
