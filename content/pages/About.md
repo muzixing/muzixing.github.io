@@ -15,18 +15,29 @@ Email:licheng185408@gmail.com
 
 ## Education background
 
-* Beijing University of Posts and Telecommunications(2014-Present)
-	* M.E       Software Defined Networking                   
-* Beijing University of Posts and Telecommunications(2010-2014)
-	* B.E       Communication Engineering
+*   **Beijing University of Posts and Telecommunications(BUPT)**
+    *   M.E.   Software Defined Networking  (2014 - Present)
+    *   B.E.   Communication Engineering                                             GPA: 3.5/4 (2010 - 2014)
+
+## Publish
+
+* Book: “SDN Refactor Network: Architecture and Implementation”, Cheng Li, Zewei Yang (On typesetting)
+* Paper: “OXP: An Efficient Protocol for Scaling SDN-based Ad Hoc Network”  (Accepted by IJRA, SCI)
+* Patent: “A control system, method and apparatus for SDN ”  ( CN105245593A)
+
 
 ## Internship
 
+*   **Chief Technology and Architecture Office of CISCO——OSDNA (2016.8 - Present)**
+    *   Scan physical and virtual network elements in OpenStack environment including host, OVS and VM.
+    *   Store network topology data into MongoDB for visualizing and Troubleshooting.
+
+
 *   **China Academy of Telecommunication Research of MIIT(CATR)——OTN extension of OpenFlow1.0，Load Balancing Application. (2013.7 - 2014.1)**
-    *   Complete encapsulation of OpenFlow1.0 data structure, and add OTN extended byte
-    *   Develop an original Controller "Miracle" which supports IP and OTN
-    *   Test OTN extension via Miracle, Mininet, and Sprient Testcenter
-    *   Achieve Load balancing between IP and OTN demo
+    *   Complete encapsulation of OpenFlow1.0 data structure, and add OTN extended bytes
+    *   Develop an original Controller Miracle which supports IP and OTN
+    *   Achieve load balance between IP network and OTN on testbed built by Miracle, Mininet, and Sprient Testcenter
+
     
 *   **China Future Network Valley•Future Networks Innovation Institute —— Research of SDN Controller（2014.3 - 2014-9）**
     *   Complete the 16th chapter "Development of Micro-Controller:Miracle" of [《SDN Core Principles and Application Pratice》](http://www.ptpress.com.cn/Book.aspx?id=39373)
@@ -70,12 +81,13 @@ Email:licheng185408@gmail.com
 
 ## Skills
 
-*   Programming language: Python(90%), Java(10%)
-*   Familiar with TCP/IP, OpenFlow protocol, SDN
-*   System: Linux (Familiar with Ubuntu )
+*   Familiar with TCP/IP, OpenFlow (3 years), SDN (3 years), Docker (2 months)
+*   Programming language: Python (3 years), Java (6 months)
+*   System: Linux (Familiar with Ubuntu)
 *   Languages:
     *   Major: Chinese
-    *   Second: English
+    *   Second: English (CET-6)
+
 
 ## Additional Skills
 
@@ -125,9 +137,21 @@ Email:licheng185408@gmail.com
     
     北京邮电大学 信息与通信工程学院 通信工程
 
+
+## 发表作品
+
+*   书籍：《重构网络：SDN架构与实现》——李呈、杨泽卫（出版社编辑定稿过程中）
+*   论文：OXP: An Efficient Protocol for Scaling SDN-based Ad Hoc Network--IJRA（SCI检索，已录用）
+*   专利：一种软件定义网络SDN的控制系统、方法及装置（CN 105245593 A）
+
 ## 实习经历
 
-*   **工信部•电信研究院•通信标准所 ——OpenFlow的OTN扩展，负载均衡应用 (2013.7-2014.1)**
+*   **Cisco美国总部·Chief Technology and Architecture Office  ——OSDNA (2016.8 - 至今)**
+    *   探测发现OpenStack中虚拟网络的拓扑等信息，实现网络信息可视化
+    *   基于网络信息，对网络信息进行分析，提供OpenStack网络保障方案
+
+
+*   **工信部•电信研究院•通信标准所 ——OpenFlow的OTN扩展，负载均衡应用 (2013.7 - 2014.1)**
 
     *   完成Openflow1.0所有报文静态库封装，添加OTN扩展字段
     *   原创开发实现OTN与IP网络兼容的Ccontroller
@@ -168,14 +192,14 @@ Email:licheng185408@gmail.com
 ## 所获奖项
 
 *   美国大学生数学建模竞赛ICM ( The Interdisciplinary Contest in Modeling ) Honorable Mention(二等奖) (2013)
-*   “挑战杯”首都大学生课外学术作品竞赛二等奖(2013)
+*   “挑战杯”学术科技类•全国二等奖(2013)
 *   2012年度CCTV“希望之星”英语风采大赛（话剧类）北京赛区•总决赛二等奖第一名，最佳语言奖
 *   连续三年获得北京邮电大学•校级奖学金二等奖（三年综合: 47/593），保送工学研究生
 *   海南省“美在心灵”大学生支教志愿者协会（支教项目荣获第八届（2010）中国青年志愿者优秀项目奖）优秀管理者，优秀志愿者，香港交流志愿者(2011-2012)
 
 ## 个人技能
 
-*   编程语言：Python(90%),Java(10%)
+*   编程语言：Python(90%),Java(5%)，C/C++(5%)
 *   熟悉TCP/IP, OpenFlow协议，网络与交换理论知识扎实
 *   熟悉操作系统运行过程，熟悉Linux系统
 *   CET-6，英文文档阅读能力和演讲能力良好,口语流畅
@@ -195,3 +219,7 @@ Email:licheng185408@gmail.com
 ## 兴趣爱好
 
 编程、即兴表演、篮球、摄影、跳舞
+
+
+
+
