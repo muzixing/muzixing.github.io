@@ -14,24 +14,24 @@ category:Tech
 在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：
 
 * Producers
-
-消息生产者，产生消息，并发送到交换器。
+	
+	消息生产者，产生消息，并发送到交换器。
 
 * Exchanges
 
-消息交换器，接受生产者发送过来的消息，根据对应的routing\_key，来将消息路由到对应的队列。
+	消息交换器，接受生产者发送过来的消息，根据对应的routing\_key，来将消息路由到对应的队列。
 
 * Queues
 
-队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。
+	队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。
 
 * Consumers
 
-消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。
+	消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。
 
 * Routing keys
 
-每一种消息都有路由键（routing\_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing\_key的解析过程不同。
+	每一种消息都有路由键（routing\_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing\_key的解析过程不同。
 
 ### Exchange type
 
@@ -39,16 +39,16 @@ AMQP协议中主要定义了3种exchange type，包括：
 
 * Direct exchange
 
-根据routing\_key的值，将匹配成功的消息发送到指定的队列。
+	根据routing\_key的值，将匹配成功的消息发送到指定的队列。
 
 * Fan-out exchange
 
-将消息发送到所有队列，和交换机的flood操作类似。
+	将消息发送到所有队列，和交换机的flood操作类似。
 
 
 * Topic exchange
 
-根据给定topic以及匹配规则来实现消息的路由。比如匹配的pattern为*.muzixing.#, 则hello.muzixing.info匹配成功，而muzixing.info匹配失败。
+	根据给定topic以及匹配规则来实现消息的路由。比如匹配的pattern为*.muzixing.#, 则hello.muzixing.info匹配成功，而muzixing.info匹配失败。
 
 <center>![topic](http://www.rabbitmq.com/img/tutorials/python-five.png)</center>
 

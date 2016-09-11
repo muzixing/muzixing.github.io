@@ -78,39 +78,43 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <h3>Terminology</h3>
 <p>在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：</p>
 <ul>
-<li>Producers</li>
-</ul>
+<li>
+<p>Producers</p>
 <p>消息生产者，产生消息，并发送到交换器。</p>
-<ul>
-<li>Exchanges</li>
-</ul>
+</li>
+<li>
+<p>Exchanges</p>
 <p>消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。</p>
-<ul>
-<li>Queues</li>
-</ul>
+</li>
+<li>
+<p>Queues</p>
 <p>队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。</p>
-<ul>
-<li>Consumers</li>
-</ul>
+</li>
+<li>
+<p>Consumers</p>
 <p>消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。</p>
-<ul>
-<li>Routing keys</li>
-</ul>
+</li>
+<li>
+<p>Routing keys</p>
 <p>每一种消息都有路由键（routing_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing_key的解析过程不同。</p>
+</li>
+</ul>
 <h3>Exchange type</h3>
 <p>AMQP协议中主要定义了3种exchange type，包括：</p>
 <ul>
-<li>Direct exchange</li>
-</ul>
+<li>
+<p>Direct exchange</p>
 <p>根据routing_key的值，将匹配成功的消息发送到指定的队列。</p>
-<ul>
-<li>Fan-out exchange</li>
-</ul>
+</li>
+<li>
+<p>Fan-out exchange</p>
 <p>将消息发送到所有队列，和交换机的flood操作类似。</p>
-<ul>
-<li>Topic exchange</li>
-</ul>
+</li>
+<li>
+<p>Topic exchange</p>
 <p>根据给定topic以及匹配规则来实现消息的路由。比如匹配的pattern为*.muzixing.#, 则hello.muzixing.info匹配成功，而muzixing.info匹配失败。</p>
+</li>
+</ul>
 <p><center><img alt="topic" src="http://www.rabbitmq.com/img/tutorials/python-five.png" /></center></p>
 <h3>Kombu Example</h3>
 <p>首先，需要先<a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation">安装Kombu</a>。安装之后，可以通过以下的示例代码来连接到OpenStack。注意需要将user，pwd，host和port修改成对应的OpenStack消息服务器的用户名，登陆密码，ip地址和传输层端口号。 完成之后，运行该python文件，即可监听OpenStack的通知。</p>
