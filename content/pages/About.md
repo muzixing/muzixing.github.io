@@ -147,15 +147,15 @@ Email:licheng185408@gmail.com
 ## 实习经历
 
 *   **Cisco美国总部·Chief Technology and Architecture Office  ——OSDNA (2016.8 - 至今)**
+
     *   探测发现OpenStack中虚拟网络的拓扑等信息，实现网络信息可视化
     *   基于网络信息，对网络信息进行分析，提供OpenStack网络保障方案
-
 
 *   **工信部•电信研究院•通信标准所 ——OpenFlow的OTN扩展，负载均衡应用 (2013.7 - 2014.1)**
 
     *   完成Openflow1.0所有报文静态库封装，添加OTN扩展字段
-    *   原创开发实现OTN与IP网络兼容的Ccontroller
-    *   搭建Ccontroller+Mininet+Sprient Testcenter实验测试平台，测试并验证新协议的可行性
+    *   原创开发实现OTN与IP网络兼容的控制器[Miracle](https://github.com/muzixing/Miracle) 
+    *   搭建Miracle+Mininet+Sprient Testcenter实验测试平台，测试并验证新协议的可行性
     *   实现流量在IP网与OTN之间的负载均衡应用
     
 *   **中国无线谷（未来网络谷） ————控制器相关学习与研究（2014.3 - 2014-9）**
