@@ -1,4 +1,4 @@
-﻿title:探索西部世界：从2016走到2017
+title:探索西部世界：从2016走到2017
 date:2017/01/06
 tags:trip
 Category:Life
@@ -27,7 +27,7 @@ Category:Life
 <center>![](http://ww4.sinaimg.cn/mw690/7f593341gw1fbfr47whzrj21kw11x7wh.jpg)</center>
 <center>”真是树“公园</center>
 
-<center>![](http://ww2.sinaimg.cn/mw690/7f593341gw1fbfr3z3cntj21kw11x4qp.jpg)<center>
+<center>![](http://ww2.sinaimg.cn/mw690/7f593341gw1fbfr3z3cntj21kw11x4qp.jpg)</center>
 <center>3人行，和一个跟拍的“十八线导演“和“爬行级摄影师”</center>
 
 <center>![](http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr450hrpj21kw11x4jz.jpg)</center>
