@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="./theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="./theme/bootstrap.min.css" rel="stylesheet">
-    <link href="./theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="./theme/local.css" rel="stylesheet">
-    <link href="./theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href=".">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="./pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,7 +55,54 @@
     <div class="row">
 
         <div class="span9">
-    <h1>Authors on Milestone</h1>        <li><a href="./author/muzi.html">muzi</a> (83)</li>
+    <div class='article'>
+        <div class="content-title">
+            <h1>Solution: can not receive notification of OpenStack</h1>
+2016-12-21
+
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
+ 
+
+
+        </div>
+	
+        <div><p>If you set up a AMQP connection to listen to Rabbit message queue, and can not receive any notification when connection is correct. Stucking queue may be the reason of this problem. As I proposed in <a href="https://ask.openstack.org/en/question/100102/can-not-receive-neutron-notification-while-can-receive-nova-notification/">ask.openstack.org</a>, you can purge the queue to clear all the message in queue. In this way, the new message won't be stucked in the queue.</p>
+<p>the command is:</p>
+<div class="highlight"><pre><span class="n">rabiitmqctl</span> <span class="n">purge_queue</span> <span class="n">queue_name</span>
+</pre></div>
+
+
+<p>please use the specified queue name like 'notifications.nova' to replace the 'queue_name'.</p>
+<p>It is recommended to restart the services if purging queue does not help. Command example like,</p>
+<div class="highlight"><pre><span class="sr">/etc/i</span><span class="n">nit</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">neutron</span><span class="o">-</span><span class="n">service</span> <span class="n">restart</span>
+</pre></div>
+
+
+<p>the command patern is,</p>
+<div class="highlight"><pre><span class="sr">/etc/i</span><span class="n">nit</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">xxx</span> <span class="n">start</span>
+<span class="sr">/etc/i</span><span class="n">nit</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">xxx</span> <span class="n">stop</span>
+<span class="sr">/etc/i</span><span class="n">nit</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">xxx</span> <span class="n">restart</span>
+</pre></div>
+
+
+<p>Hope this blog can help you.</p></div>
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = 'Solution: can not receive notification of OpenStack';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
         </div>
         
         <div class="span3">
@@ -66,8 +113,8 @@
                 Site
                 </li>
             
-                <li><a href="./archives.html">Archives</a>
-                <li><a href="./tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
 		</li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
@@ -81,8 +128,8 @@
                 Categories
                 </li>
                 
-                <li><a href="./category/life.html">Life</a></li>
-                <li><a href="./category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">Life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -122,7 +169,7 @@
     </div>     </div> 
 <footer>
 <br />
-<p><a href=".">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->

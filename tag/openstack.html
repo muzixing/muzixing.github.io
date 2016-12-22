@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2016/09/30/listen-to-openstack-notification.html"><h1>Listen to OpenStack Notification</h1></a>
-2016-09-30
+            <a href="../pages/2016/12/21/solution-can-not-receive-notification-of-openstack.html"><h1>Solution: can not receive notification of OpenStack</h1></a>
+2016-12-21
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,45 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用<a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation">kombu</a>库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。</p>
+        <div><p>If you set up a AMQP connection to listen to Rabbit message queue, and can not receive any notification when connection is correct. Stucking queue may be the reason of this problem. As I proposed in <a href="https://ask.openstack.org/en/question/100102/can-not-receive-neutron-notification-while-can-receive-nova-notification/">ask.openstack.org</a>, you can purge the queue to clear all the message in queue. In this way, the new message won't be stucked in the queue.</p>
+<p>the command is:</p>
+<div class="highlight"><pre><span class="n">rabiitmqctl</span> <span class="n">purge_queue</span> <span class="n">queue_name</span>
+</pre></div>
+
+
+<p>please use the specified queue name like 'notifications.nova' to replace the 'queue_name'.</p>
+<p>It is recommended to restart the services if purging queue does not help. Command example like,</p>
+<div class="highlight"><pre><span class="sr">/etc/i</span><span class="n">nit</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">neutron</span><span class="o">-</span><span class="n">service</span> <span class="n">restart</span>
+</pre></div>
+
+
+<p>the command patern is,</p>
+<div class="highlight"><pre><span class="sr">/etc/i</span><span class="n">nit</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">xxx</span> <span class="n">start</span>
+<span class="sr">/etc/i</span><span class="n">nit</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">xxx</span> <span class="n">stop</span>
+<span class="sr">/etc/i</span><span class="n">nit</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">xxx</span> <span class="n">restart</span>
+</pre></div>
+
+
+<p>Hope this blog can help you.</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2016/09/30/listen-to-openstack-notification.html"><h2>Listen to OpenStack Notification</h2></a>
+        <div class= "well small"> 2016-09-30
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用<a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation">kombu</a>库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。</p>
 <h3>Kombu, AMQP, RabbitMQ</h3>
 <p><a href="https://github.com/celery/kombu">Kombu</a>是Python的消息库，封装来许多消息的报文，支持包括<a href="https://www.amqp.org/">AMQP</a>等多种消息协议。而在OpenStack端，Notification的发布系统由<a href="http://www.rabbitmq.com/">RabbitMQ</a>实现。为了监听OpenStack发出的Notification, 我们需要在本地用Kombu库建立一个connection, 连接到OpenStack的消息发布系统。</p>
 <h3>Terminology</h3>
@@ -95,95 +133,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。</p>
 </li>
 <li>
-<p>Routing keys</p>
-<p>每一种消息都有路由键（routing_key）,可以被exchange用来判定如何路由消息到对应的队列。根据交换的类型不用，routing_key的解析过程不同。</p>
-</li>
-</ul>
-<h3>Exchange type</h3>
-<p>AMQP协议中主要定义了3种exchange type，包括：</p>
-<ul>
-<li>
-<p>Direct exchange</p>
-<p>根据routing_key的值，将匹配成功的消息发送到指定的队列。</p>
-</li>
-<li>
-<p>Fan-out exchange</p>
-<p>将消息发送到所有队列，和交换机的flood操作类似。</p>
-</li>
-<li>
-<p>Topic exchange</p>
-<p>根据给定topic以及匹配规则来实现消息的路由。比如匹配的pattern为*.muzixing.#, 则hello.muzixing.info匹配成功，而muzixing.info匹配失败。</p>
-</li>
-</ul>
-<p><center><img alt="topic" src="http://www.rabbitmq.com/img/tutorials/python-five.png" /></center></p>
-<h3>Kombu Example</h3>
-<p>首先，需要先<a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation">安装Kombu</a>。安装之后，可以通过以下的示例代码来连接到OpenStack。注意需要将user，pwd，host和port修改成对应的OpenStack消息服务器的用户名，登陆密码，ip地址和传输层端口号。 完成之后，运行该python文件，即可监听OpenStack的通知。</p>
-<div class="highlight"><pre>    <span class="kn">from</span> <span class="nn">kombu</span> <span class="kn">import</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Exchange</span>
-    <span class="kn">from</span> <span class="nn">kombu.log</span> <span class="kn">import</span> <span class="n">get_logger</span>
-    <span class="kn">from</span> <span class="nn">kombu.mixins</span> <span class="kn">import</span> <span class="n">ConsumerMixin</span>
-
-    <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
-
-
-    <span class="k">class</span> <span class="nc">Worker</span><span class="p">(</span><span class="n">ConsumerMixin</span><span class="p">):</span>
-        <span class="n">event_queues</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">Queue</span><span class="p">(</span><span class="s">&#39;notification.nova&#39;</span><span class="p">,</span>
-                  <span class="n">Exchange</span><span class="p">(</span><span class="s">&#39;nova&#39;</span><span class="p">,</span> <span class="s">&#39;topic&#39;</span><span class="p">,</span> <span class="n">durable</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
-                  <span class="n">durable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s">&#39;#&#39;</span><span class="p">),</span>
-            <span class="n">Queue</span><span class="p">(</span><span class="s">&#39;notifications.neutron&#39;</span><span class="p">,</span>
-                  <span class="n">Exchange</span><span class="p">(</span><span class="s">&#39;neutron&#39;</span><span class="p">,</span> <span class="s">&#39;topic&#39;</span><span class="p">,</span> <span class="n">durable</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
-                  <span class="n">durable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s">&#39;#&#39;</span><span class="p">)</span>
-        <span class="p">]</span>
-
-        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">connection</span>
-
-        <span class="k">def</span> <span class="nf">get_consumers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Consumer</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">Consumer</span><span class="p">(</span><span class="n">queues</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_queues</span><span class="p">,</span>
-                             <span class="n">accept</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;json&#39;</span><span class="p">],</span>
-                             <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">process_task</span><span class="p">])]</span>
-
-        <span class="k">def</span> <span class="nf">process_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
-            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Receive message: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="p">))</span>
-            <span class="n">message</span><span class="o">.</span><span class="n">ack</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">kombu</span> <span class="kn">import</span> <span class="n">Connection</span>
-        <span class="kn">from</span> <span class="nn">kombu.utils.debug</span> <span class="kn">import</span> <span class="n">setup_logging</span>
-
-        <span class="c"># setup root logger</span>
-        <span class="n">setup_logging</span><span class="p">(</span><span class="n">loglevel</span><span class="o">=</span><span class="s">&#39;DEBUG&#39;</span><span class="p">,</span> <span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">])</span>
-        <span class="n">connect_url</span> <span class="o">=</span> <span class="s">&#39;amqp://&#39;</span> <span class="o">+</span> <span class="n">user</span> <span class="o">+</span> <span class="s">&#39;:&#39;</span> <span class="o">+</span> <span class="n">pwd</span> <span class="o">+</span> <span class="s">&#39;@&#39;</span> <span class="o">+</span> <span class="n">host</span> <span class="o">+</span> <span class="s">&#39;:&#39;</span> <span class="o">+</span> <span class="n">port</span> <span class="o">+</span> <span class="s">&#39;//&#39;</span>
-        <span class="k">with</span> <span class="n">Connection</span><span class="p">(</span><span class="n">connect_url</span><span class="p">)</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">print</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
-                <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
-                <span class="n">worker</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-                <span class="k">print</span><span class="p">(</span><span class="s">&#39;Stopped&#39;</span><span class="p">)</span>
-</pre></div>
-
-
-<p>以上示例代码中有两个地方需要注意。首先是需要将用户名等信息修改正确，其次是Queue的定义。在Worker类中，定义了event_queues列表，列表中是对应的Queue，用来接收️Notification。为了接收nova的信息，需要构造一个Exchange instance作为Queue的参数，其中第一个参数‘nova’是exchange的名字，代表着这个队列将绑定到nova的消息exchange上。同样的，为了接受neutron的消息，我们还定义了另一个队列，队列绑定到了名字叫‘neutron’的exchange上。同理，若希望绑定到对应的exchange，继续添加Queue即可。Routing的参数类型这里设置为topic, durable参数表示消息数据的持久化特性。routing_key则是路由的键值。此处接受所有来自对应名称exchange的消息。event_queue将作为Consumer类初始化实例的参数，用于实例化消费者。</p>
-<div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Worker</span><span class="p">(</span><span class="n">ConsumerMixin</span><span class="p">):</span>
-        <span class="n">event_queues</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">Queue</span><span class="p">(</span><span class="s">&#39;notification.nova&#39;</span><span class="p">,</span>
-                  <span class="n">Exchange</span><span class="p">(</span><span class="s">&#39;nova&#39;</span><span class="p">,</span> <span class="s">&#39;topic&#39;</span><span class="p">,</span> <span class="n">durable</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
-                  <span class="n">durable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s">&#39;#&#39;</span><span class="p">),</span>
-            <span class="n">Queue</span><span class="p">(</span><span class="s">&#39;notifications.neutron&#39;</span><span class="p">,</span>
-                  <span class="n">Exchange</span><span class="p">(</span><span class="s">&#39;neutron&#39;</span><span class="p">,</span> <span class="s">&#39;topic&#39;</span><span class="p">,</span> <span class="n">durable</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
-                  <span class="n">durable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s">&#39;#&#39;</span><span class="p">)</span>
-        <span class="p">]</span>
-</pre></div>
-
-
-<h3>总结</h3>
-<p>OpenStack目前在云环境中应用十分广泛，是非常值得喜欢云计算和SDN的同学去学习和研究的。作为一个大型的项目，OpenStack采用了AMQP来分发事件。作者在工作过程中需要使用OpenStack的事件，因此总结来这一篇文章。特别感谢谷歌给予的大力支持，没有谷歌我就查不到解决问题的正确姿势[1]。希望能给读者带来一些帮助。</p>
-<h2>References</h2>
-<p>[1] "Listen to OpenStack Neutron Messages from RabbitMQ using Kombu messaging library", http://thetaooftech.blogspot.com/2014/04/listen-to-openstack-neutron-messages.html</p></div>
-        <hr />
-    </div>
-		
+<p>Routing ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2016/09/30/listen-to-openstack-notification.html">read more</a></div>
+    </div>	
+				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>

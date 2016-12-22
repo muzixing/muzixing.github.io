@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/all-zh.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2016-09-30T00:00:00+08:00</updated><entry><title>Listen to OpenStack Notification</title><link href="http://www.muzixing.com/pages/2016/09/30/listen-to-openstack-notification.html" rel="alternate"></link><updated>2016-09-30T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2016-09-30:pages/2016/09/30/listen-to-openstack-notification.html</id><summary type="html">&lt;p&gt;在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用&lt;a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation"&gt;kombu&lt;/a&gt;库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Milestone</title><link href="http://www.muzixing.com/" rel="alternate"></link><link href="http://www.muzixing.com/feeds/all-zh.atom.xml" rel="self"></link><id>http://www.muzixing.com/</id><updated>2016-12-21T00:00:00+08:00</updated><entry><title>Solution: can not receive notification of OpenStack</title><link href="http://www.muzixing.com/pages/2016/12/21/solution-can-not-receive-notification-of-openstack.html" rel="alternate"></link><updated>2016-12-21T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2016-12-21:pages/2016/12/21/solution-can-not-receive-notification-of-openstack.html</id><summary type="html">&lt;p&gt;If you set up a AMQP connection to listen to Rabbit message queue, and can not receive any notification when connection is correct. Stucking queue may be the reason of this problem. As I proposed in &lt;a href="https://ask.openstack.org/en/question/100102/can-not-receive-neutron-notification-while-can-receive-nova-notification/"&gt;ask.openstack.org&lt;/a&gt;, you can purge the queue to clear all the message in queue. In this way, the new message won't be stucked in the queue.&lt;/p&gt;
+&lt;p&gt;the command is:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;rabiitmqctl&lt;/span&gt; &lt;span class="n"&gt;purge_queue&lt;/span&gt; &lt;span class="n"&gt;queue_name&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;please use the specified queue name like 'notifications.nova' to replace the 'queue_name'.&lt;/p&gt;
+&lt;p&gt;It is recommended to restart the services if purging queue does not help. Command example like,&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="sr"&gt;/etc/i&lt;/span&gt;&lt;span class="n"&gt;nit&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;neutron&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;service&lt;/span&gt; &lt;span class="n"&gt;restart&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;the command patern is,&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="sr"&gt;/etc/i&lt;/span&gt;&lt;span class="n"&gt;nit&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;xxx&lt;/span&gt; &lt;span class="n"&gt;start&lt;/span&gt;
+&lt;span class="sr"&gt;/etc/i&lt;/span&gt;&lt;span class="n"&gt;nit&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;xxx&lt;/span&gt; &lt;span class="n"&gt;stop&lt;/span&gt;
+&lt;span class="sr"&gt;/etc/i&lt;/span&gt;&lt;span class="n"&gt;nit&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;xxx&lt;/span&gt; &lt;span class="n"&gt;restart&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Hope this blog can help you.&lt;/p&gt;</summary><category term="Openstack"></category><category term="neutron"></category><category term="notification"></category></entry><entry><title>Listen to OpenStack Notification</title><link href="http://www.muzixing.com/pages/2016/09/30/listen-to-openstack-notification.html" rel="alternate"></link><updated>2016-09-30T00:00:00+08:00</updated><author><name>muzi</name></author><id>tag:www.muzixing.com,2016-09-30:pages/2016/09/30/listen-to-openstack-notification.html</id><summary type="html">&lt;p&gt;在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用&lt;a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation"&gt;kombu&lt;/a&gt;库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。&lt;/p&gt;
 &lt;h3&gt;Kombu, AMQP, RabbitMQ&lt;/h3&gt;
 &lt;p&gt;&lt;a href="https://github.com/celery/kombu"&gt;Kombu&lt;/a&gt;是Python的消息库，封装来许多消息的报文，支持包括&lt;a href="https://www.amqp.org/"&gt;AMQP&lt;/a&gt;等多种消息协议。而在OpenStack端，Notification的发布系统由&lt;a href="http://www.rabbitmq.com/"&gt;RabbitMQ&lt;/a&gt;实现。为了监听OpenStack发出的Notification, 我们需要在本地用Kombu库建立一个connection, 连接到OpenStack的消息发布系统。&lt;/p&gt;
 &lt;h3&gt;Terminology&lt;/h3&gt;
