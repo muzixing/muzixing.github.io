@@ -62,6 +62,30 @@
  
 
     <div class='article'>
+        <a href="./pages/2016/08/26/pi-yan-yuan-he-hao-yan-yuan.html"><h2>坏演员和好演员</h2></a>
+        <div class= "well small"> 2016-08-26
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>空荡荡的房间，只剩下一盏昏黄的灯和我。门外的灯光，从门口探了进来，却慢慢消失在地毯上。就剩我一个人。</p>
+<h3>坏演员</h3>
+<p>心里突然有些不安，多了一些慌张，想起了遥远的地方，遥远的她。</p>
+<p>不能说是错，不能说是过，也许我还没有醒来，也许我不会醒来，也许心里还有期待，也许我只是寂寞难耐。</p>
+<p>“如果从来，我不会说我们试试看，我希望我没有去兼职，没有去玉渊潭，没有认识你”，这是她发给我的最后一句话。</p>
+<p>多么可爱的姑娘，你曾经让我幸福，也曾让我牵挂。我们憧憬过美好的未来，说过可以浪迹天涯。我们都曾努力会适应对方，相互妥协，去成全对方的梦想。但一切都过去了，就算有时候忍不住会努力寻找你的消息，努力假装忘记。</p>
+<p>曾几何时，我一直很挣扎，很纠结，很抓狂，很沮丧。岁月悄悄抹去了爱恋，困难慢慢爬上了心头，我思虑，我怀疑，我坚定，我失望，但我不曾背叛。相爱总是简单，相处最难。从曾经紧紧相拥，到后来同床异梦 ...</p> <a class="btn btn-info xsmall" href="./pages/2016/08/26/pi-yan-yuan-he-hao-yan-yuan.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2016/07/26/wo-shi-zen-yao-diu-diao-fan-wan-de.html"><h2>我是怎么丢掉饭碗的</h2></a>
         <div class= "well small"> 2016-07-26
 
@@ -156,32 +180,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
         <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">src_dpid ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2016/05/20/ryuru-he-zai-lldpzhong-tian-jia-zi-ding-yi-lldpdu.html"><h2>Ryu:如何在LLDP中添加自定义LLDPDU</h2></a>
-        <div class= "well small"> 2016-05-20
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><hr />
-<p>在许多实验场景中，都需要使用链路发现协议（LLDP）来发现链路，从而构建网络拓扑。然而LLDP协议不仅仅可以用来发现拓扑，也可以用于时延检测等业务。LLDP通过添加对应的TLV格式的LLDPDU（LLDP数据单元）来携带对应的信息，从而为上层业务提供信息支撑。为实现LLDP数据单元的拓展，本文将以Ryu控制器为例，介绍如何添加自定义的LLDPDU，从而满足多种业务的需求。</p>
-<p>添加自定义LLDPDU其实只需修改ryu/lib/packet/lldp.py即可，但是由于该文件仅定义了LLDP的相关类，如何使用还需要其他文件去调用，所以还需要其他的修改步骤。具体步骤将在文章后续介绍。</p>
-<h3>修改lldp.py文件</h3>
-<p>ryu/lib/packet/lldp.py文件是Ryu控制器中关于LLDP协议数据类的描述，其中定义了如LLDPBasicTLV类等重要的报文类。 以添加发送时间戳的TLV为例，我们需要完成TLV类型号的声明，以及TLV类的定义。</p>
-<p>在文件开头处有关于LLDP TLV类型的声明，所以首先我们需要添加一个新的类型：LLDP_TLV_SEND_TIME，其类型号为11。</p>
-<div class="highlight"><pre>    <span class="c"># LLDP TLV type</span>
-    <span class="n">LLDP_TLV_END</span> <span class="o">=</span> <span class="mi">0</span>                        <span class="c"># End of LLDPDU</span>
-    <span class="n">LLDP_TLV_CHASSIS_ID</span> <span class="o">=</span> <span class="mi">1 ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2016/05/20/ryuru-he-zai-lldpzhong-tian-jia-zi-ding-yi-lldpdu.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

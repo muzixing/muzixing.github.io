@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="../pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2017/01/06/tan-suo-xi-bu-shi-jie-cong-2016zou-dao-2017.html"><h1>探索西部世界：从2016走到2017</h1></a>
+            <h1>探索西部世界：从2016走到2017</h1>
 2017-01-06
 
-by <a class="url fn" href="../author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><p>一转眼，来硅谷实习已经快半年了。半年来，都在不停地探索西部世界，但是除了优胜美地国家公园还不错以外，其他的都没有感觉太兴奋。。也许是因为我是一个岛民吧，对加州的阳光，沙滩，大海没有特别兴奋。</p>
 <p>终于等到圣诞节，公司shut down10天之久，不出去转一圈就太浪费时光了。所以在放假之前，就招齐了人马，做好了计划，万事具备，只欠放假。我们甚至还要拍一个视频。作为一个梦想当导演的码农，终于找到机会好好实践一把，分镜本写起来。</p>
 <p><center><img alt="分镜本" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbfquqgi73j20zq13gqej.jpg" /></center>
@@ -178,142 +172,23 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>我还会去很多美好的，壮观的，可怕的地方，去感受，去探索这个星球。这也是人生的意义之一。</p>
 <p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr5cycgvj21kw11xtsn.jpg" /></center>
 <center>Run,Forrest run! Go, Distance go!</center></p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = '探索西部世界：从2016走到2017';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/12/21/solution-can-not-receive-notification-of-openstack.html"><h2>Solution: can not receive notification of OpenStack</h2></a>
-        <div class= "well small"> 2016-12-21
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>If you set up a AMQP connection to listen to Rabbit message queue, and can not receive any notification when connection is correct. Stucking queue may be the reason of this problem. As I proposed in <a href="https://ask.openstack.org/en/question/100102/can-not-receive-neutron-notification-while-can-receive-nova-notification/">ask.openstack.org</a>, you can purge the queue to clear all the message in ...</p> <a class="btn btn-info xsmall" href="../pages/2016/12/21/solution-can-not-receive-notification-of-openstack.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/09/30/listen-to-openstack-notification.html"><h2>Listen to OpenStack Notification</h2></a>
-        <div class= "well small"> 2016-09-30
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用<a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation">kombu</a>库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。</p>
-<h3>Kombu, AMQP, RabbitMQ</h3>
-<p><a href="https://github.com/celery/kombu">Kombu</a>是Python的消息库，封装来许多消息的报文，支持包括<a href="https://www.amqp.org/">AMQP</a>等多种消息协议。而在OpenStack端，Notification的发布系统由<a href="http://www.rabbitmq.com/">RabbitMQ</a>实现。为了监听OpenStack发出的Notification, 我们需要在本地用Kombu库建立一个connection, 连接到OpenStack的消息发布系统。</p>
-<h3>Terminology</h3>
-<p>在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：</p>
-<ul>
-<li>
-<p>Producers</p>
-<p>消息生产者，产生消息，并发送到交换器。</p>
-</li>
-<li>
-<p>Exchanges</p>
-<p>消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。</p>
-</li>
-<li>
-<p>Queues</p>
-<p>队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。</p>
-</li>
-<li>
-<p>Consumers</p>
-<p>消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。</p>
-</li>
-<li>
-<p>Routing ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2016/09/30/listen-to-openstack-notification.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/09/13/zai-barefootbai-fang-nick-mckeownjiao-shou.html"><h2>在barefoot拜访Nick McKeown教授</h2></a>
-        <div class= "well small"> 2016-09-13
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>自学习SDN以来已经三年多了。虽然依然是没有实际的商业产品开发经验，学术水平也是渣渣，但是多少掌握了一些基础知识，学会了一些技术。在学习SDN的过程中，不得不提的就是Nick McKeown教授，他发表过很多著名的论文，比如OpenFlow、Mininet、P4的论文等。他也创建了ONF和ONRC等组织，推动SDN开源的发展，可谓是SDN届的领头羊，大师。所以作为一个学习SDN的学生，自然十分敬仰。</p>
-<p>很幸运地得到了CIIP一年的实习机会，可以在思科美国总部实习一年，终于有机会在硅谷探索一翻，自然不能放过那些在书中和新闻里报道的地点和人物。在游览了斯坦福，berkeley等名校之后，就开始里知名创业公司和大师的拜访之旅。</p>
-<p>很高兴自己的博客被barefoot的ron前辈看到，然后我们就建立了联系。刚好他也回到里硅谷，微信一约就决定了时间去参观barefoot和拜访Nick教授，顺便一起吃个饭，聊一聊技术。</p>
-<p>一大早特别开心，直接就不去上班，uber过去拜访。手机号刚过期，在没有手机的情况下，利用xfinity的Wi-Fi让司机成功找到了我，太感谢xfinity和uber。</p>
-<p>终于来到了位于PALO ALTO的barefoot，它就在斯坦福校园边上。和ron前辈碰头之后，他就领着去见了偶像Nick教授。</p>
-<p>打开Nick教授的办公室门就看到了他，没想到他这么年轻，这么和善。没有那种官僚气息，更多的是一种工程师的感觉。见到偶像简直太开心了。我很高兴地自我介绍 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/09/13/zai-barefootbai-fang-nick-mckeownjiao-shou.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/08/30/getting-started-of-mongodb.html"><h2>Getting Started of MongoDB</h2></a>
-        <div class= "well small"> 2016-08-30
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>What is MongoDB</h3>
-<p>MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]</p>
-<p>MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。</p>
-<p>MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]</p>
-<h3>About MongoDB</h3>
-<p>MongoDB is ...</p> <a class="btn btn-info xsmall" href="../pages/2016/08/30/getting-started-of-mongodb.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../author/muzi.html">1</a></li>
-    <li class=""><a href="../author/muzi2.html">2</a></li>
-    <li class=""><a href="../author/muzi3.html">3</a></li>
-    <li class=""><a href="../author/muzi4.html">4</a></li>
-    <li class=""><a href="../author/muzi5.html">5</a></li>
-    <li class=""><a href="../author/muzi6.html">6</a></li>
-    <li class=""><a href="../author/muzi7.html">7</a></li>
-    <li class=""><a href="../author/muzi8.html">8</a></li>
-    <li class=""><a href="../author/muzi9.html">9</a></li>
-    <li class=""><a href="../author/muzi10.html">10</a></li>
-    <li class=""><a href="../author/muzi11.html">11</a></li>
-    <li class=""><a href="../author/muzi12.html">12</a></li>
-    <li class=""><a href="../author/muzi13.html">13</a></li>
-    <li class=""><a href="../author/muzi14.html">14</a></li>
-    <li class=""><a href="../author/muzi15.html">15</a></li>
-    <li class=""><a href="../author/muzi16.html">16</a></li>
-    <li class=""><a href="../author/muzi17.html">17</a></li>
-
-    <li class="next"><a href="../author/muzi2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -324,8 +199,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
 		</li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
@@ -339,8 +214,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">Life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">Life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -380,7 +255,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
