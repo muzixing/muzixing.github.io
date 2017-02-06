@@ -62,6 +62,34 @@
  
 
     <div class='article'>
+        <a href="./pages/2016/07/08/ji-yu-tiao-shu-shi-yan-dai-kuan-de-zui-duan-you-lu-jing-he-fu-zai-jun-heng.html"><h2>基于跳数\时延\带宽的最短/优路径和负载均衡</h2></a>
+        <div class= "well small"> 2016-07-08
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>对于SDN初学者而言，最短路径转发应用和负载均衡应用是最常见，也是最适合学习的经典应用。根据链路权重参数的不同，主要有基于跳数、时延和带宽的几种最短\最优路径转发应用。根据链路可用带宽实现的最优路径转发本质上也是一种网络流量负载均衡的简单实现。本文将介绍笔者在学习过程中开发的网络感知模块以及基于跳数、时延和带宽三种最优路径转发应用。</p>
+<h3>基于跳数的最短路径转发</h3>
+<p>基于跳数的最短路径转发是最简单的最优路径转发应用。我们通过<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_awareness.py">network_awareness</a>应用来实现网络拓扑资源的感知并计算最短路径。首先控制器通过下发LLDP报文来获取网络链路信息，然后再利用网络信息，生成网络拓扑图。网络感知应用使用networkx的有向图数据结构存储拓扑信息，使用networkx提供的<a href="http://networkx.readthedocs.io/en/stable/reference/generated/networkx.algorithms.simple_paths.shortest_simple_paths.html">shortest_simple_paths</a>函数来计算最短路径。shortest_simple_paths函数支持在图上找出源交换机到目的交换机的K条最短路径，其函数参数信息如下：</p>
+<div class="highlight"><pre><span class="n">shortest_simple_paths</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">None</span><span class="p">)</span>
+</pre></div>
+
+
+<p>在给定图G，源交换机source，目的交换机target以及链路权重类型weight的情况下，会返回一个路径生成器。通过K次调用生成器可以生成K条最短路径。</p>
+<p>获得最短路径之后，<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/shortest_forwarding.py">shortest_forwarding</a>应用将完成流表下发等工作，实现基于跳数的最短路径转发应用。</p>
+<h3>基于时延的最优路径转发</h3>
+<p>基于时延的最优路径转发应用原理和基于跳数的最短路径转发应用类似，只是链路权重类型变成了时延。关于计算链路时延的原理，读者可以阅读<a href="http://www.muzixing.com/pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html">Ryu:网络时延探测应用</a>。<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_delay_detector.py">Network_Delay_Detector</a>是一个网络时延探测应用，其在获取到链路时延之后，将时延数据存储到Networkx的图数据结构中 ...</p> <a class="btn btn-info xsmall" href="./pages/2016/07/08/ji-yu-tiao-shu-shi-yan-dai-kuan-de-zui-duan-you-lu-jing-he-fu-zai-jun-heng.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html"><h2>SDN最新研究进展</h2></a>
         <div class= "well small"> 2016-06-28
 
@@ -154,32 +182,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>老一辈的快递员学的东西很多，包括传统的OSPF和IS-IS等语言。但是随着经济的发展，新业务不断诞生，对物流系统的挑战也越来越大，前辈们也开始应接不暇。为了应付这种挑战，物流系统的深度改革终于展开了。新生代的我们只需要学会OpenFlow语言基本就可以找到工作。学习压力是减轻不少，但是我们却需要快递主管来指挥物流的转发，才能更好的工作。</p>
 <p>还记得我当快递员的第一天，那是6月19号，星期五，阳光明媚，室外温度28摄氏度。上班路上，空气中竟有种淡淡的清香，像极了我在华为学院读书时女同桌阿楚的发香。她学习不太好，只学会了二层转发的知识，毕业之后就杳无音信了。要是能再见一面就好了，就算见不到，写写信也挺好的。</p>
 <p>第一次推开办公室的木门 ...</p> <a class="btn btn-info xsmall" href="./pages/2016/05/03/wo-shi-ge-sdnjiao-huan-ji.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2016/04/18/wo-shi-ge-sdnkong-zhi-qi.html"><h2>我是一个SDN控制器</h2></a>
-        <div class= "well small"> 2016-04-18
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>“醒醒！”朦胧中有一个人叫醒了我。</p>
-<p>“跟我走”，那个身穿Linux制服，胖得像企鹅一样的大叔拉着我就走。</p>
-<p>“你谁啊？去哪里？”， 我惊恐的问，完全不知道到底发生了什么。</p>
-<p>“我是操作系统，负责给你安排工作。你是一个SDN控制器，是Ryu族人，就给你分配代号9527吧。”，那大叔显得有些不耐烦地回答。</p>
-<p>“看到没有，前面办公楼里的6633房间就是你的办公室，你的工作就是处理信件和包裹，门房的卡大爷负责收发信件，你记得找他取信就可以了，过期他会丢掉的”。大叔边走边说，一转眼已经到了门口。门房果然有一个大爷，正在忙着处理堆积如山的包裹，胸口的工作证沾了好多灰尘，不过隐隐约约还是可以辨出“网卡”两个字。</p>
-<p>但我依然不知道我要具体做什么，所以忍不住又问：“操作系统大哥，我来这里干什么啊？”</p>
-<p>“你这么叫不累？叫我Linux就好了。你是新来的员工，要做什么可以看你胸前的说明书”。</p>
-<p>我低头一看，我的天啊！我贴着这么大的说明书和路过的5个美女打了招呼，她们还对我笑了。我拿下说明书，发现上面赫然写着“README”，怪不得刚才有个小孩一直跟着我，还碎碎念着什么SDN，我还以为他只是脑子发育有些迟缓。羞愧之余，我慢慢往下读。</p>
-<p>原来我被任命为因特奈特国金银岛的快递主管 ...</p> <a class="btn btn-info xsmall" href="./pages/2016/04/18/wo-shi-ge-sdnkong-zhi-qi.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
