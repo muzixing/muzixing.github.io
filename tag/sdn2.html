@@ -62,6 +62,28 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html"><h2>P4:真正的SDN还遥远吗</h2></a>
+        <div class= "well small"> 2016-03-23
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>OpenFlow协议作为SDN最流行的南向协议，得到了很多的关注，目前发展也良好，但OpenFlow并不完美，OpeFlow交换机还不能提供更好的可编程能力。P4作为新的网络编程语言很好的弥补这个缺陷。P4会改变网络吗？是否能带来具有完全可编程能力的SDN？还是仅仅是学术界的宠儿？本文将介绍协议独立数据包处理编程语言P4，其中包括其简介、原理和发展趋势，希望笔者能带来一些有意思的观点。</p>
+<h3>简介</h3>
+<p>P4(Programming protocol-independent packet processors)[1]是由Pat Bosshart等人提出来的高级“协议独立数据包处理编程语言”，如OpenFlow一样是一种南向协议，但是其范围要比OpenFlow要大。不仅可以指导数据流进行转发，还可以对交换机等转发设备的数据处理流程进行软件编程定义，是真正意义上的完全SDN。值得注意的是，P4论文作者中还有斯坦福大学的Nick McKeown教授和普林斯顿大学的Jennifer Rexford教授两位业界大牛的名字。Nick教授是SDN的提出者之一，一直是SDN学术领域顶尖的存在；而后者Jennifer教授也发表了4D[2]等诸多重要的SDN相关论文，更提出了网络编程语言Frenetic[3]，同样是业界的先驱。两位教授也是P4组织的主要推动者之一。目前，P4语言作为一种潜在的OpenFlow2.0的发展方向在努力发展。</p>
+<h3>原理</h3>
+<p>与POF提出的目的类似，P4提出的目的也是为了解决OpenFlow编程能力不足以及其设计本身所带来的可拓展性差的难题。自OpenFlow1.0发布以来，其版本目前已经演进到1 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/03/12/pofgeng-li-xiang-de-sdn.html"><h2>POF:更理想的SDN?</h2></a>
         <div class= "well small"> 2016-03-12
 
@@ -175,30 +197,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <li>使用Networkx的函数all_simple_paths(G, source ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2015/11/30/ji-yu-liu-liang-de-sdnzui-duan-lu-jing-zhuan-fa-ying-yong.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html"><h2>SDN东西向现状简介</h2></a>
-        <div class= "well small"> 2015-10-29
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>What is SDN West-East Interface</h3>
-<p>在SDN架构中，控制平面掌控全局网络的资源，控制数据平面的转发等功能，尤其重要，所以控制平面的性能对整体网络的性能有直接的影响。以前控制平面多以单例控制器为主，控制平面能力欠缺成为SDN网络规模受限的最大原因之一。 后来OpenDayLight，ONOS等控制器的出现，使用了集群技术，使得SDN控制平面性能得到了提升，是当下解决SDN控制平面性能不足的主要解决方案之一。</p>
-<p>然而，这样的解决方案只能用于同一控制器之间的性能扩展，无法完成异构控制器之间的协同工作。此外，某些场景对于安全，隐私方面的考虑，需要隐藏网络内部的细节，所以还需要有SDN域的概念。如何完成跨域之间的流量处理，实现多异构控制器之间的协同工作是未来研究的方向之一，笔者将其归类为SDN控制平面的东西向接口。SDN控制平面的南向接口面对数据平面，北向接口面向应用，容易理解，控制器之间的接口称之为东西向接口，用于完成控制器之间的通信。</p>
-<p><center><img alt="West-East" src="http://ww2.sinaimg.cn/mw690/7f593341jw1exixzvkpi6j20og0d2gml.jpg" /></center>
-<center>Figure1. West-East Interface of SDN</center></p>
-<h3>Why SDN need West-East Interface</h3>
-<p>SDN东西向接口是定义控制器之间通信的接口。由于单控制器能力有限，为满足大规模和可拓展性要求，东西向接口的研究成为下一个SDN研究领域。目前对于SDN东西向接口的研究还处于初级阶段，还缺少行业标准。标准的SDN东西向接口应与SDN控制器解耦 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/10/29/sdndong-xi-xiang-xian-zhuang-jian-jie.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../tag/sdn.html">&larr; Previous</a></li>
@@ -209,6 +207,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../tag/sdn4.html">4</a></li>
     <li class=""><a href="../tag/sdn5.html">5</a></li>
     <li class=""><a href="../tag/sdn6.html">6</a></li>
+    <li class=""><a href="../tag/sdn7.html">7</a></li>
 
     <li class="next"><a href="../tag/sdn3.html">Next &rarr;</a></li>
 

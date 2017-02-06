@@ -62,6 +62,29 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/09/13/zai-barefootbai-fang-nick-mckeownjiao-shou.html"><h2>在barefoot拜访Nick McKeown教授</h2></a>
+        <div class= "well small"> 2016-09-13
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>自学习SDN以来已经三年多了。虽然依然是没有实际的商业产品开发经验，学术水平也是渣渣，但是多少掌握了一些基础知识，学会了一些技术。在学习SDN的过程中，不得不提的就是Nick McKeown教授，他发表过很多著名的论文，比如OpenFlow、Mininet、P4的论文等。他也创建了ONF和ONRC等组织，推动SDN开源的发展，可谓是SDN届的领头羊，大师。所以作为一个学习SDN的学生，自然十分敬仰。</p>
+<p>很幸运地得到了CIIP一年的实习机会，可以在思科美国总部实习一年，终于有机会在硅谷探索一翻，自然不能放过那些在书中和新闻里报道的地点和人物。在游览了斯坦福，berkeley等名校之后，就开始里知名创业公司和大师的拜访之旅。</p>
+<p>很高兴自己的博客被barefoot的ron前辈看到，然后我们就建立了联系。刚好他也回到里硅谷，微信一约就决定了时间去参观barefoot和拜访Nick教授，顺便一起吃个饭，聊一聊技术。</p>
+<p>一大早特别开心，直接就不去上班，uber过去拜访。手机号刚过期，在没有手机的情况下，利用xfinity的Wi-Fi让司机成功找到了我，太感谢xfinity和uber。</p>
+<p>终于来到了位于PALO ALTO的barefoot，它就在斯坦福校园边上。和ron前辈碰头之后，他就领着去见了偶像Nick教授。</p>
+<p>打开Nick教授的办公室门就看到了他，没想到他这么年轻，这么和善。没有那种官僚气息，更多的是一种工程师的感觉。见到偶像简直太开心了。我很高兴地自我介绍 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/09/13/zai-barefootbai-fang-nick-mckeownjiao-shou.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/08/30/getting-started-of-mongodb.html"><h2>Getting Started of MongoDB</h2></a>
         <div class= "well small"> 2016-08-30
 
@@ -152,30 +175,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>基于时延的最优路径转发应用原理和基于跳数的最短路径转发应用类似，只是链路权重类型变成了时延。关于计算链路时延的原理，读者可以阅读<a href="http://www.muzixing.com/pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html">Ryu:网络时延探测应用</a>。<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_delay_detector.py">Network_Delay_Detector</a>是一个网络时延探测应用，其在获取到链路时延之后，将时延数据存储到Networkx的图数据结构中 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/07/08/ji-yu-tiao-shu-shi-yan-dai-kuan-de-zui-duan-you-lu-jing-he-fu-zai-jun-heng.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html"><h2>SDN最新研究进展</h2></a>
-        <div class= "well small"> 2016-06-28
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>自SDN出现以来，关于SDN的研究一直没有停止，只是不同的阶段关于SDN的研究的重点不同。比如最开始的时候，探讨最多的是SDN的可行性，以及如何将SDN应用到对应的网络场景中。本文是笔者在最近阅读2015年至今的若干SDN论文后总结的SDN最新研究进展，希望对读者提供一些帮助。</p>
-<h3>SDN/NFV</h3>
-<p>SDN和NFV都是当下网络界研究的热点，而如何将两者整合部署，也是研究的热点之一。设计SDN/NFV整合部署框架的研究是这个研究方向的主要研究切入点之一，比如参考文献[1]中就提出了一个SDN/NFV的整体架构。框架中的NFV协调器可以和云管理平台配合使用，SDN控制器也支持与云平台结合。由于此类方案是SDN与其他技术/框架的集合，本身没有太多创新性，论文中也仅仅介绍了其实现方案，所以此处不加赘述。</p>
-<p>SDN/NFV结合还可以部署在很多场景，比如WiFi场景。OpenSDWN[2]就是一种软件定义的家庭/企业WiFi架构框架。 将SDN与其他技术结合并应用在特定网络场景是一种主要的研究方向之一。</p>
-<h3>流表优化</h3>
-<p>OpenFlow所支持的细粒度流管理是SDN最大的优势之一，但是细粒度的管理是需要付出代价的。为满足细粒度的管理，则需要更粒度的流表项。但是像OpenFlow协议这种细粒度的管理会带来一定的时延，对于时延敏感的短流业务而言，这个时延带来的影响是不可忽视的，这很可能会抵消了SDN带来的好处。所以如何通过流表来匹配流，从而减少流表项下发次数，是降低时延影响的有利手段。</p>
-<p>此外，当网络流数目过多时，交换机的流表空间就无法满足需求。当流表满时 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../author/muzi.html">&larr; Previous</a></li>
@@ -197,6 +196,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../author/muzi15.html">15</a></li>
     <li class=""><a href="../author/muzi16.html">16</a></li>
     <li class=""><a href="../author/muzi17.html">17</a></li>
+    <li class=""><a href="../author/muzi18.html">18</a></li>
 
     <li class="next"><a href="../author/muzi3.html">Next &rarr;</a></li>
 

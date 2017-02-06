@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="../theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="../theme/bootstrap.min.css" rel="stylesheet">
-    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="../theme/local.css" rel="stylesheet">
-    <link href="../theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href="..">Milestone</a>
+        <a class="brand" href="../../../..">Milestone</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="../pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2017/03/24/zhong-gou-wang-luo-sdnjia-gou-yu-shi-xian-zhong-yu-chu-ban-la.html"><h1>《重构网络：SDN架构与实现》终于出版啦！</h1></a>
+            <h1>《重构网络：SDN架构与实现》终于出版啦！</h1>
 2017-03-24
 
-by <a class="url fn" href="../author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><p>技术的海洋，波涛汹涌，暗流窜动，谁不想顺着洋流去远方。</p>
 <p>我是幸运的，跟随着SDN的发展大潮成长了多年，也有幸能有机会和杨泽卫前辈一起完成这本出自SDN学习者的书：<a href="http://item.jd.com/12160066.html">《重构网络：SDN架构与实现》</a>。</p>
 <p><center><img alt="重构网络：SDN架构与实现" src="http://wx3.sinaimg.cn/mw690/7f593341gy1fdyit3wty0j20ct0gvk8u.jpg" /></center></p>
@@ -99,143 +93,23 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>SDN技术发展多年，对网络影响巨大，内涵也更加广泛。本书对于SDN技术和解决方案进行了全面系统地介绍，同时提供了基于开源的SDN实例操作，这对于全面学习和掌握SDN是非常有帮助的，也是非常及时的一本参考书。  ——李振斌 华为SDN控制器首席架构师</p>
 <p>毫无疑问，SDN在近年来已经成为了推动网络发展的重要动力。此书在讲述SDN基本原理的基础上，着力从实践和应用案例方面展现了SDN的魅力。在介绍技术的同时，作者也在书中表达了对于技术的理解和感悟。文字表达方面行文老练，是一本适合SDN初学者和实战进阶学习者的读物。  ——胡成臣 西安交通大学
 　　</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = '《重构网络：SDN架构与实现》终于出版啦！';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2017/02/05/fluentdru-men-jiao-cheng.html"><h2>Fluentd入门教程</h2></a>
-        <div class= "well small"> 2017-02-05
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>最近发生了一些不可描述的故事，艰难之中换到了现在的组，主要的工作内容是数据挖掘。也终于有机会学习新的知识：Ruby和Fluentd。本文将总结开源软件Fluentd的入门知识，包括如何安装，配置文件语法，插件简介等内容。Fluentd的<a href="http://docs.fluentd.org/v0.12/articles/quickstart">官网</a>内容非常详尽，内容的组织也尤其清晰，所以网络上关于Fluentd的文档很少。本文主要用于学习记录，也希望能帮助到英语不好的读者。</p>
-<h3>Overview</h3>
-<p>Fluentd是一个完全开源免费的log信息收集软件，支持超过125个系统的log信息收集。其架构图如图1所示。 </p>
-<p><center><img alt="fluentd" src="http://docs.fluentd.org/images/fluentd-architecture.png" /></center></p>
-<p><center>图1. Fluentd架构图</center></p>
-<p>本质上，Fluentd可以分为客户端和服务端两种模块。客户端为安装在被采集系统中的程序，用于读取log文件等信息，并发送到Fluentd的服务端。服务端则是一个收集器。在Fluentd服务端，我们可以进行相应的配置，使其可以对收集到的数据进行过滤和处理，并最终路由到下一跳。下一跳可以是用于存储的数据库，如MongoDB, Amazon S3, 也可以是其他的数据处理平台，比如Hadoop。</p>
-<h3>Install</h3>
-<p>由于Fluentd的安装较为麻烦，所以业界流行的稳定安装版本其实是有Treasure Data公司提供的td-agent。本文将介绍的也是td-agent的安装和使用。</p>
-<p>官网<a href="http://docs.fluentd.org/v0.12/articles/install-by-deb">安装文档</a>介绍了针对不同系统的安装办法。本文介绍“Ubuntu 14.04 ...</p> <a class="btn btn-info xsmall" href="../pages/2017/02/05/fluentdru-men-jiao-cheng.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/12/21/solution-can-not-receive-notification-of-openstack.html"><h2>Solution: can not receive notification of OpenStack</h2></a>
-        <div class= "well small"> 2016-12-21
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>If you set up a AMQP connection to listen to Rabbit message queue, and can not receive any notification when connection is correct. Stucking queue may be the reason of this problem. As I proposed in <a href="https://ask.openstack.org/en/question/100102/can-not-receive-neutron-notification-while-can-receive-nova-notification/">ask.openstack.org</a>, you can purge the queue to clear all the message in ...</p> <a class="btn btn-info xsmall" href="../pages/2016/12/21/solution-can-not-receive-notification-of-openstack.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/09/30/listen-to-openstack-notification.html"><h2>Listen to OpenStack Notification</h2></a>
-        <div class= "well small"> 2016-09-30
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用<a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation">kombu</a>库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。</p>
-<h3>Kombu, AMQP, RabbitMQ</h3>
-<p><a href="https://github.com/celery/kombu">Kombu</a>是Python的消息库，封装来许多消息的报文，支持包括<a href="https://www.amqp.org/">AMQP</a>等多种消息协议。而在OpenStack端，Notification的发布系统由<a href="http://www.rabbitmq.com/">RabbitMQ</a>实现。为了监听OpenStack发出的Notification, 我们需要在本地用Kombu库建立一个connection, 连接到OpenStack的消息发布系统。</p>
-<h3>Terminology</h3>
-<p>在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：</p>
-<ul>
-<li>
-<p>Producers</p>
-<p>消息生产者，产生消息，并发送到交换器。</p>
-</li>
-<li>
-<p>Exchanges</p>
-<p>消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。</p>
-</li>
-<li>
-<p>Queues</p>
-<p>队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。</p>
-</li>
-<li>
-<p>Consumers</p>
-<p>消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。</p>
-</li>
-<li>
-<p>Routing ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2016/09/30/listen-to-openstack-notification.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/08/30/getting-started-of-mongodb.html"><h2>Getting Started of MongoDB</h2></a>
-        <div class= "well small"> 2016-08-30
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>What is MongoDB</h3>
-<p>MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]</p>
-<p>MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。</p>
-<p>MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]</p>
-<h3>About MongoDB</h3>
-<p>MongoDB is ...</p> <a class="btn btn-info xsmall" href="../pages/2016/08/30/getting-started-of-mongodb.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="../category/tech.html">1</a></li>
-    <li class=""><a href="../category/tech2.html">2</a></li>
-    <li class=""><a href="../category/tech3.html">3</a></li>
-    <li class=""><a href="../category/tech4.html">4</a></li>
-    <li class=""><a href="../category/tech5.html">5</a></li>
-    <li class=""><a href="../category/tech6.html">6</a></li>
-    <li class=""><a href="../category/tech7.html">7</a></li>
-    <li class=""><a href="../category/tech8.html">8</a></li>
-    <li class=""><a href="../category/tech9.html">9</a></li>
-    <li class=""><a href="../category/tech10.html">10</a></li>
-    <li class=""><a href="../category/tech11.html">11</a></li>
-    <li class=""><a href="../category/tech12.html">12</a></li>
-    <li class=""><a href="../category/tech13.html">13</a></li>
-    <li class=""><a href="../category/tech14.html">14</a></li>
-    <li class=""><a href="../category/tech15.html">15</a></li>
-
-    <li class="next"><a href="../category/tech2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -246,8 +120,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="../archives.html">Archives</a>
-                <li><a href="../tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
 		</li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
@@ -261,8 +135,8 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="../category/life.html">Life</a></li>
-                <li><a href="../category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">Life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -302,7 +176,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href="..">Milestone</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Milestone</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
