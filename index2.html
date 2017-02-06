@@ -62,6 +62,29 @@
  
 
     <div class='article'>
+        <a href="./pages/2016/08/30/getting-started-of-mongodb.html"><h2>Getting Started of MongoDB</h2></a>
+        <div class= "well small"> 2016-08-30
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>What is MongoDB</h3>
+<p>MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]</p>
+<p>MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。</p>
+<p>MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]</p>
+<h3>About MongoDB</h3>
+<p>MongoDB is ...</p> <a class="btn btn-info xsmall" href="./pages/2016/08/30/getting-started-of-mongodb.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2016/08/26/pi-yan-yuan-he-hao-yan-yuan.html"><h2>坏演员和好演员</h2></a>
         <div class= "well small"> 2016-08-26
 
@@ -151,35 +174,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <h3>流表优化</h3>
 <p>OpenFlow所支持的细粒度流管理是SDN最大的优势之一，但是细粒度的管理是需要付出代价的。为满足细粒度的管理，则需要更粒度的流表项。但是像OpenFlow协议这种细粒度的管理会带来一定的时延，对于时延敏感的短流业务而言，这个时延带来的影响是不可忽视的，这很可能会抵消了SDN带来的好处。所以如何通过流表来匹配流，从而减少流表项下发次数，是降低时延影响的有利手段。</p>
 <p>此外，当网络流数目过多时，交换机的流表空间就无法满足需求。当流表满时 ...</p> <a class="btn btn-info xsmall" href="./pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html"><h2>Ryu:网络时延探测应用</h2></a>
-        <div class= "well small"> 2016-05-24
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>之前，笔者已经发布了网络感知应用和基于跳数的最短路径转发应用。本文将介绍笔者开发的网络时延探测应用。该应用通过LLDP数据包的时延和Echo数据包的时延计算得出链路的时延数据，从而实现网络链路时延的感知。详细原理和实现步骤将在文章中详细介绍。</p>
-<h3>测试原理</h3>
-<p>网络时延探测应用利用了Ryu自带的Switches模块的数据，获取到了LLDP数据发送时的时间戳，然后和收到的时间戳进行相减，得到了LLDP数据包从控制器下发到交换机A，然后从交换机A到交换机B，再上报给控制器的时延T1，示例见图1的蓝色箭头。同理反向的时延T2由绿色的箭头组成。此外，控制器到交换机的往返时延由一个蓝色箭头和一个绿色箭头组成，此部分时延由echo报文测试，分别为Ta，Tb。最后链路的前向后向平均时延T=（T1+T2-Ta-Tb）/2。</p>
-<p><center><img alt="link delay" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f40i7d39ouj20fr09lgm6.jpg" /></center>
-<center>图1. 测量链路时延原理图</center></p>
-<h3>获取LLDP时延</h3>
-<p>获取T1和T2的逻辑一样，均需要使用到Switches模块的数据。计算LLDP时延的处理逻辑如下代码所示。首先从Packet_in中解析LLDP数据包，获得源DPID，源端口。然后根据发送端口的数据获取到portdata中的发送时间戳数据，并用当下的系统时间减去发送时间戳，得到时延，最后将其保存到graph数据中。</p>
-<div class="highlight"><pre>    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">src_dpid ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

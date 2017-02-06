@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2017/01/06/tan-suo-xi-bu-shi-jie-cong-2016zou-dao-2017.html"><h1>探索西部世界：从2016走到2017</h1></a>
-2017-01-06
+            <a href="../pages/2017/02/05/fluentdru-men-jiao-cheng.html"><h1>Fluentd入门教程</h1></a>
+2017-02-05
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -72,7 +72,211 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
  
         </div>
         
-        <div><p>一转眼，来硅谷实习已经快半年了。半年来，都在不停地探索西部世界，但是除了优胜美地国家公园还不错以外，其他的都没有感觉太兴奋。。也许是因为我是一个岛民吧，对加州的阳光，沙滩，大海没有特别兴奋。</p>
+        <div><p>最近发生了一些不可描述的故事，艰难之中换到了现在的组，主要的工作内容是数据挖掘。也终于有机会学习新的知识：Ruby和Fluentd。本文将总结开源软件Fluentd的入门知识，包括如何安装，配置文件语法，插件简介等内容。Fluentd的<a href="http://docs.fluentd.org/v0.12/articles/quickstart">官网</a>内容非常详尽，内容的组织也尤其清晰，所以网络上关于Fluentd的文档很少。本文主要用于学习记录，也希望能帮助到英语不好的读者。</p>
+<h3>Overview</h3>
+<p>Fluentd是一个完全开源免费的log信息收集软件，支持超过125个系统的log信息收集。其架构图如图1所示。 </p>
+<p><center><img alt="fluentd" src="http://docs.fluentd.org/images/fluentd-architecture.png" /></center></p>
+<p><center>图1. Fluentd架构图</center></p>
+<p>本质上，Fluentd可以分为客户端和服务端两种模块。客户端为安装在被采集系统中的程序，用于读取log文件等信息，并发送到Fluentd的服务端。服务端则是一个收集器。在Fluentd服务端，我们可以进行相应的配置，使其可以对收集到的数据进行过滤和处理，并最终路由到下一跳。下一跳可以是用于存储的数据库，如MongoDB, Amazon S3, 也可以是其他的数据处理平台，比如Hadoop。</p>
+<h3>Install</h3>
+<p>由于Fluentd的安装较为麻烦，所以业界流行的稳定安装版本其实是有Treasure Data公司提供的td-agent。本文将介绍的也是td-agent的安装和使用。</p>
+<p>官网<a href="http://docs.fluentd.org/v0.12/articles/install-by-deb">安装文档</a>介绍了针对不同系统的安装办法。本文介绍“Ubuntu 14.04 LTS / Trusty 64bit/32bit“系统的安装：</p>
+<div class="highlight"><pre><span class="n">curl</span> <span class="o">-</span><span class="n">L</span> <span class="n">https:</span><span class="sr">//</span><span class="n">toolbelt</span><span class="o">.</span><span class="n">treasuredata</span><span class="o">.</span><span class="n">com</span><span class="sr">/sh/i</span><span class="n">nstall</span><span class="o">-</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">trusty</span><span class="o">-</span><span class="n">td</span><span class="o">-</span><span class="n">agent2</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">sh</span>
+</pre></div>
+
+
+<p>安装完成之后，可运行以下的命令来启动Fluentd服务：</p>
+<div class="highlight"><pre><span class="nv">$</span> <span class="err">/</span><span class="nv">etc</span><span class="sr">/init.d/</span><span class="n">td</span><span class="o">-</span><span class="n">agent</span> <span class="n">restart</span>
+
+<span class="nv">$</span> <span class="err">/</span><span class="nv">etc</span><span class="sr">/init.d/</span><span class="n">td</span><span class="o">-</span><span class="n">agent</span> <span class="n">status</span>
+<span class="n">td</span><span class="o">-</span><span class="n">agent</span> <span class="p">(</span><span class="n">pid</span>  <span class="mi">21678</span><span class="p">)</span> <span class="n">is</span> <span class="n">running</span><span class="o">...</span>
+</pre></div>
+
+
+<p>通过start, stop, restart等命令可以启动、关闭和重启Fluentd服务。此时默认的Fluentd配置文件的目录是/etc/td-agent/td-agent.conf文件。</p>
+<h3>Post Sample Logs via HTTP</h3>
+<p>默认情况下，/etc/td-agent/td-agent.conf文件已经对td-agent进行了基本的配置。可以接收通过HTTP Post的数据，并将其路由、写入到/var/log/td-agent/td-agent.log中。</p>
+<p>可尝试通过以下curl命令来尝试post数据。</p>
+<div class="highlight"><pre><span class="nv">$</span> <span class="nv">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="o">-</span><span class="n">d</span> <span class="s">&#39;json={&quot;json&quot;:&quot;message&quot;}&#39;</span> <span class="n">http:</span><span class="sr">//</span><span class="n">localhost:8888</span><span class="o">/</span><span class="n">debug</span><span class="o">.</span><span class="n">test</span>
+</pre></div>
+
+
+<p>执行之后，可在输出log的最后一行找到我们输入的测试数据。</p>
+<h3>Syntax of Config</h3>
+<p>在Fluentd中，配置文件非常重要，它定义了Fluentd应该执行的操作。其语法很简单，详细内容可点击<a href="http://docs.fluentd.org/v0.12/articles/config-file">配置语法</a>。</p>
+<p>打开/etc/td-agent/td-agent.conf文件，可以看到配置文件的具体内容。配置文件中基本会出现的配置分为以下几种：</p>
+<ul>
+<li>source： 定义输入</li>
+<li>match：定义输出的目标，如写入文件，或者发送到指定地点。 </li>
+<li>filter：过滤，也即事件处理流水线，可在输入和输出之间运行。 </li>
+<li>system：系统级别的设置。</li>
+<li>label：定义一组操作，从而实现复用和内部路由。</li>
+<li>@include：引入其他文件，和Java、python的import类似。</li>
+</ul>
+<h3>source</h3>
+<p>Fluentd支持多输入。每一个输入配置必须包含类型／type，比如tcp数据输入，或者http类型输入。type将指定使用的input plugin。以下的示例中就定义了两个输入源，一个是从24224端口进入的tcp数据流，另一个是从9880端口进入的http数据。</p>
+<div class="highlight"><pre># Receive events from 24224/tcp
+# This is used by log forwarding and the fluent-cat command
+<span class="nt">&lt;source&gt;</span>
+  @type forward
+  port 24224
+<span class="nt">&lt;/source&gt;</span>
+
+# http://this.host:9880/myapp.access?json={&quot;event&quot;:&quot;data&quot;}
+<span class="nt">&lt;source&gt;</span>
+  @type http
+  port 9880
+<span class="nt">&lt;/source&gt;</span>
+</pre></div>
+
+
+<p>Source指定的input插件将带有{tag, time,record} 三个属性的事件／event提交给Fluentd的引擎，完成数据的输入。</p>
+<h3>match</h3>
+<p>Match配置了数据流的匹配规则和匹配成功后所需执行的动作，和路由表项类似。比如以下的配置中就对匹配myapp.access标签成功的数据包执行file类型动作，将数据写入到路径为/var/log/fluent/access的文件中。</p>
+<div class="highlight"><pre># Match events tagged with &quot;myapp.access&quot; and
+# store them to /var/log/fluent/access.%Y-%m-%d
+# Of course, you can control how you partition your data
+# with the time_slice_format option.
+<span class="nt">&lt;match</span> <span class="err">myapp.access</span><span class="nt">&gt;</span>
+  @type file
+  path /var/log/fluent/access
+<span class="nt">&lt;/match&gt;</span>
+</pre></div>
+
+
+<p>标准的动作有file和forward等。File表明写入文件，而forward表明转发到下一跳。</p>
+<p>Match Pattern的设计与正常的正则匹配没有区别，具体的分类如下：</p>
+<div class="highlight"><pre><span class="o">*</span><span class="p">:</span> <span class="err">匹配</span><span class="n">tag</span><span class="err">的某一部分，比如</span> <span class="n">a</span><span class="o">.*</span> <span class="err">可以匹配</span> <span class="n">a</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="err">但</span><span class="n">a</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">c</span><span class="err">无法匹配成功。</span>
+
+<span class="o">**</span><span class="p">:</span> <span class="err">匹配</span><span class="mi">0</span><span class="err">个或者多个</span><span class="n">tag</span><span class="err">部分。比如</span> <span class="n">a</span><span class="o">.**</span> <span class="err">可以匹配</span><span class="n">a</span><span class="o">.</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">c</span>
+
+<span class="p">{</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">,</span><span class="n">Z</span><span class="p">}</span><span class="err">：匹配</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="ow">or</span> <span class="n">Z</span><span class="p">,</span><span class="err">或关系。</span>
+</pre></div>
+
+
+<p>此外，他们还可以混用，比如a.{b,c,d}.*等等。当<match>标签内，有多个匹配模式时，将支持或逻辑的匹配，即只要匹配成功人一个都执行对应的操作。比如：</p>
+<div class="highlight"><pre><span class="o">&lt;</span><span class="n">match</span> <span class="n">a</span> <span class="n">b</span><span class="o">&gt;</span> <span class="err">匹配</span><span class="n">a</span><span class="err">和</span><span class="n">b</span><span class="o">.</span>
+<span class="o">&lt;</span><span class="n">match</span> <span class="n">a</span><span class="o">.**</span> <span class="n">b</span><span class="o">.*&gt;</span> <span class="err">匹配</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">c</span>
+</pre></div>
+
+
+<h3>Logging</h3>
+<p>Fluentd支持两种类型的logging 配置，一种是全局的，另一种是针对插件的。</p>
+<ul>
+<li>global</li>
+<li>Plugin</li>
+</ul>
+<p>支持的log的输出级别有如下几种：</p>
+<ul>
+<li>fatal</li>
+<li>error</li>
+<li>warn</li>
+<li>info</li>
+<li>debug</li>
+<li>trace</li>
+</ul>
+<p>介绍完Config file的语法之后，我们还需要了解config file配置的对象Fluentd的Plugin/插件。</p>
+<h3>Plugin</h3>
+<p>Fluentd有5种类型的插件，分别是：</p>
+<ul>
+<li>Input：完成输入数据的读取，由source部分配置</li>
+<li>Parser：解析插件</li>
+<li>Output：完成输出数据的操作，由match部分配置</li>
+<li>Formatter：消息格式化的插件，属于filter类型</li>
+<li>Buffer：缓存插件，用于缓存数据</li>
+</ul>
+<p>每一个类型都包含着多种的插件，比如input类型就包含了以下几种插件：</p>
+<ul>
+<li>in_forward</li>
+<li>in_http</li>
+<li>in_tail</li>
+<li>in_exec</li>
+<li>in_syslog</li>
+<li>in_scribe</li>
+</ul>
+<p>由于篇幅限制，本文将不会对插件进行展开介绍，读者可以自行阅读<a href="http://docs.fluentd.org/v0.12/articles/input-plugin-overview">官方文档</a>。</p>
+<h3>Route</h3>
+<p>Route指的是数据在Fluentd中的处理流水线，一般的流程为</p>
+<ul>
+<li>input  -&gt; filter  -&gt;  output</li>
+<li>input  -&gt; filter  -&gt;  output with label</li>
+</ul>
+<p>即由输入插件获取数据，然后交给filter做处理，然后交给output插件去转发。同时，也支持数据包／事件的重新提交，比如修改tag之后重新路由等等。</p>
+<ul>
+<li>reroute event by tags</li>
+<li>reroute event by record content</li>
+<li>reroute event to other label</li>
+</ul>
+<h3>Use case</h3>
+<p>此处将选择一个最简单的使用案例来介绍Fluentd的使用。<a href="http://docs.fluentd.org/v0.12/articles/docker-logging">Fluentd收集Docker的登陆信息</a>案例。</p>
+<p>首先创建一个config file, 用于配置Fluentd的行为，可命名为”in_docker.conf“。</p>
+<div class="highlight"><pre><span class="nt">&lt;source&gt;</span>
+  type forward
+  port 24224
+  bind 0.0.0.0
+<span class="nt">&lt;/source&gt;</span>
+
+<span class="nt">&lt;match</span> <span class="err">*.*</span><span class="nt">&gt;</span>
+  type stdout
+<span class="nt">&lt;/match&gt;</span>
+</pre></div>
+
+
+<p>然后保存文件。使用以下命令运行Fluentd。</p>
+<div class="highlight"><pre><span class="nv">$</span> <span class="nv">fluentd</span> <span class="o">-</span><span class="n">c</span> <span class="n">in_docker</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+
+
+<p>若运行成功则可见输出信息如下所示：</p>
+<div class="highlight"><pre>$ fluentd -c in_docker.conf
+2015-09-01 15:07:12 -0600 [info]: reading config file path=&quot;in_docker.conf&quot;
+2015-09-01 15:07:12 -0600 [info]: starting fluentd-0.12.15
+2015-09-01 15:07:12 -0600 [info]: gem &#39;fluent-plugin-mongo&#39; version &#39;0.7.10&#39;
+2015-09-01 15:07:12 -0600 [info]: gem &#39;fluentd&#39; version &#39;0.12.15&#39;
+2015-09-01 15:07:12 -0600 [info]: adding match pattern=&quot;*.*&quot; type=&quot;stdout&quot;
+2015-09-01 15:07:12 -0600 [info]: adding source type=&quot;forward&quot;
+2015-09-01 15:07:12 -0600 [info]: using configuration file: <span class="nt">&lt;ROOT&gt;</span>
+  <span class="nt">&lt;source&gt;</span>
+    @type forward
+    port 24224
+    bind 0.0.0.0
+  <span class="nt">&lt;/source&gt;</span>
+  <span class="nt">&lt;match</span> <span class="err">docker.*</span><span class="nt">&gt;</span>
+    @type stdout
+  <span class="nt">&lt;/match&gt;</span>
+<span class="nt">&lt;/ROOT&gt;</span>
+2015-09-01 15:07:12 -0600 [info]: listening fluent socket on 0.0.0.0:24224
+</pre></div>
+
+
+<p>然后启动docker containner。如果之前没有安装过docker engine，请读者自行安装。由于docker 本身支持Fluentd收集信息，所以可以通过启动命令来启动Fluentd的client／客户端。</p>
+<div class="highlight"><pre><span class="nv">$</span> <span class="nv">docker</span> <span class="n">run</span> <span class="o">--</span><span class="nb">log</span><span class="o">-</span><span class="n">driver</span><span class="o">=</span><span class="n">fluentd</span> <span class="n">ubuntu</span> <span class="n">echo</span> <span class="s">&quot;Hello Fluentd!&quot;</span>
+<span class="n">Hello</span> <span class="n">Fluentd</span><span class="o">!</span>
+</pre></div>
+
+
+<p>以上命令中的ubuntu为一个镜像，如果本地没有，docker engine会自动下载，并在此镜像上创建容器。启动容器后，查看默认的输出信息文件:/var/log/td-agent/td-agent.log,可在最后一行查看到输出的信息。</p>
+<h3>总结</h3>
+<p>Fluentd是一个优秀的log信息收集的开源免费软件，目前以支持超过125种系统的log信息获取。Fluentd结合其他数据处理平台的使用，可以搭建大数据收集和处理平台，搭建商业化的解决方案。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2017/01/06/tan-suo-xi-bu-shi-jie-cong-2016zou-dao-2017.html"><h2>探索西部世界：从2016走到2017</h2></a>
+        <div class= "well small"> 2017-01-06
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>一转眼，来硅谷实习已经快半年了。半年来，都在不停地探索西部世界，但是除了优胜美地国家公园还不错以外，其他的都没有感觉太兴奋。。也许是因为我是一个岛民吧，对加州的阳光，沙滩，大海没有特别兴奋。</p>
 <p>终于等到圣诞节，公司shut down10天之久，不出去转一圈就太浪费时光了。所以在放假之前，就招齐了人马，做好了计划，万事具备，只欠放假。我们甚至还要拍一个视频。作为一个梦想当导演的码农，终于找到机会好好实践一把，分镜本写起来。</p>
 <p><center><img alt="分镜本" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbfquqgi73j20zq13gqej.jpg" /></center>
 <center>分镜本</center></p>
@@ -83,104 +287,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p><center><img alt="雪地行车" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbfr3wkl2mj21kw11x4jt.jpg" /></center>
 <center>开，往城市边缘开，你就会看到雪地</center></p>
 <p>第一个住处是一间沙漠里的小房子。虽然房子在沙漠里，但是竟然有热水！有网络！还有暖气！再一次感叹美帝农村的发达。</p>
-<p>旅行第一站是Joshua Tree国家公园。本以为树公园都是那些普通的树，没什么好看的。结果到了才发现，真的是树公园。但是树却是沙漠里面的树，长相很奇怪。在树公园里面基本上就是看树和石头了。傍晚的时候还去看了日落，简直冻成狗。比较印象深刻的是我在这里丢了我的银行卡。</p>
-<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbfr47whzrj21kw11x7wh.jpg" /></center>
-<center>”真是树“公园</center></p>
-<p><center><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341gw1fbfr3z3cntj21kw11x4qp.jpg" /></center>
-<center>3人行，和一个跟拍的“十八线导演“和“爬行级摄影师”</center></p>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr450hrpj21kw11x4jz.jpg" /></center>
-<center>别低头，皇冠会掉，而且随时会错过一张壁纸</center></p>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbgzawiv8hj216o1kw4qp.jpg" /></center>
-<center>本想忍住，但是我控制不住自己啊！人物照一张的</center></p>
-<p>看完日落之后，还需要开车5个小时到下一个住的地方，Arizona的一个小镇。在精疲力尽之后，我们终于抵达了第二个住的地方，也就是我丢洗面奶的地方。Arizona雪非常大，快二十厘米厚的积雪踩起来好舒服。所以，我们从沙漠来到了雪原。</p>
-<p><center><img alt="ARIZONA" src="http://ww3.sinaimg.cn/mw690/7f593341gw1fbgvxwulgwj21kw16oe81.jpg" /></center>
-<center>Arizona小镇，雪的世界</center></p>
-<p>第二个景点是大峡谷(The Grand Canyon),那个我丢书包，又找回来的地方。大峡谷雪很大，很冷，值得看的东西也不多，基本上就是在山上看地球母亲的伤疤。真的蛮惨的一道伤疤。</p>
-<p><center><img alt="grand canyon" src="http://ww3.sinaimg.cn/mw690/7f593341gw1fbfr4dw5rjj21kw2dc1ky.jpg" /></center>
-<center>The grand canyon，地球的伤疤</center></p>
-<p>看得忘乎所以的时候，也会幻想自己是蜘蛛侠，刺客，青蛙侠之类的，于是拍了一张信仰之跳。</p>
-<p><center><img alt="grand canyon" src="http://ww2.sinaimg.cn/mw690/7f593341gw1fbgzayty8bj21kw16odx7.jpg" /></center>
-<center>信仰之跳</center></p>
-<p>不满足的我们继续在公园里面瞎逛，踩着很厚的积雪，感觉到了东北一样。也是蛮新奇的。印象最深的事是我失而复得的书包和近距离遇见的野生鹿。</p>
-<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbfr3r8hxuj21kw0w07rx.jpg" /></center>
-<center>雪与铁路更配哦</center></p>
-<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbfr4jw0u5j21kw11x7wh.jpg" /></center>
-<center>雪和车也配哦，总感觉帮车做广告了</center></p>
-<p>当天，我们又开始了长途跋涉，开车到第三个地点：Page，也就是马蹄湾。</p>
-<p><center><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341gw1fbfr5z9urdj21kw16ob29.jpg" /></center>
-<center>鱼眼中的马蹄湾</center></p>
-<p><center><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341gw1fbgw6bsh2wj21kw149ng6.jpg" /></center>
-<center>我眼中的马蹄湾</center></p>
-<p>相比上面中规中矩的照片，我还是喜欢不经意间发现的美好。马蹄湾下面飘荡的游艇，船上有一对情侣在钓鱼。好惬意。</p>
-<p><center><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341gw1fbfr4rohhrj21kw11xqq1.jpg" /></center>
-<center>画上开船</center></p>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr4uavnkj21kw11xawh.jpg" /></center>
-<center>追寻光明</center></p>
-<p><center><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341gw1fbfr623r7yj21kw16o4jn.jpg" /></center>
-<center>舞者，和拍摄她的朋友，以及看她朋友拍她的另一个朋友</center></p>
-<p>在不断尝试各种机（ti）位之后，发现用鱼眼镜头，以双腿为框架会找到一个很奇妙的世界。朋友圈最佳评论是“活在裆下”。</p>
-<p>在前往羚羊谷的路上，看到了三根烟囱。同样是烟囱，同样是开车（注意看图左上的方向盘），为什么人家的天空是蓝色的呢？我特别喜欢那三根烟囱。后来发现他们是可口可乐公司的，冒的是水蒸气。</p>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr3oewt5j21kw11xqjr.jpg" /></center>
-<center>汽车与烟囱</center></p>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr4xdlx7j21kw11x000.jpg" /></center>
-<center>西部世界</center></p>
-<p>不过我们没有预约羚羊谷，所以只能参加最后一趟。最后排队等了好久，太阳都快下山了才进去下羚羊谷，体验不够好。大家要去的话一定要记得预约，趁早。另外，不是摄影团是不能用三脚架的，可怜我拿了一路的三脚架，撑开当拐杖用了。这块地盘是印第安人的保留地，所以由他们管。导游就是一名印第安人。</p>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr5wc0ohj21kw11x7pk.jpg" /></center>
-<center>和你讲很多遍了，我虽然是chief，但是我也是普通人，你这样看我，我会乱想的</center></p>
-<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbfr53umtyj21kw2dckjl.jpg" /></center>
-<center>时间漏斗</center></p>
-<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbfr570zm2j21kw2dc7wh.jpg" /></center>
-<center>总说时间如白驹过隙，却也曾真切地留下痕迹</center></p>
-<p>第四个地点是Zion国家公园，相比其他的，这个地方不算特别特殊。有雪，有峡谷，有沙漠，但是都不算特别典型。本想去看Zion Narrow的，结果时间不够就放弃了。留下印象的是在那里看到了好多只野生的羊或者鹿什么的。这也就是为什么特别喜欢下面那张照片的原因，因为我自己也不知道到底有多少只，有人说7只，那就7只吧。</p>
-<p><center><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341gw1fbgwmc2ex2j20xc1e0hdt.jpg" /></center>
-<center>白天也数羊，只是要睁眼数</center></p>
-<p><center><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341gw1fbfr64lxgaj211x1kw4qp.jpg" /></center>
-<center>惊讶的瞎子：“为什么我看不到我的鼻子？”</center></p>
-<p><center><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341gw1fbfr5a0zvgj21kw11x7wh.jpg" /></center>
-<center>孤独的树和消失的雪</center></p>
-<p>第五站是Las Vegas。经历5天之后，我们终于从农村回到了城市，也是我们旅程中唯一一个城市。赌城、罪恶之城就是不一样，现代化程度，热闹程度远不是洛杉矶，圣地亚哥，旧金山能比的。</p>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr5nw79qj21kw11x18q.jpg" /></center>
-<center>夜色不撩人</center></p>
-<p>我们住在Flamingo街上的PALMS酒店。只要不是周末，四星级酒店的价格比Airbnb上租的城镇的房子还便宜，简直不敢相信。到处都是Casino(赌场)，每家大酒店门前都有非常独特的景观，室内都会有很酷炫的赌场。不过除了需要庄家主持的赌桌有点高大上以外，其他自己玩的游戏机看起来非常弱智，简直就是一个电玩城，还是只有弱智游戏的电玩城。</p>
-<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbgwsu2sqbj24002o0npo.jpg" /></center>
-<center>赌城的夜，多希望你能在我身边，这样就可以赢你的钱了</center></p>
-<p><center><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341gw1fbfr5qqxh2j21kw11x1kx.jpg" /></center>
-<center>停车场，孤单的停车场，没有人停。</center></p>
-<p>如果来游玩的话，建议晚上去The Strip大街。街道很长，需要很长时间才能看完，但是风景很美。BELLAGIO酒店的音乐喷泉非常赞。另外，如果有时间，有闲钱的话，来这里还是可以去赌场玩个20刀的。当然，Strip Club也是非常赞的选择。累了还可以去做做massage, 不过相比之下massage挺贵的。全身按摩一小时需要50刀，加Tip10刀就60刀了。但是这才是感受城市的正确方式。</p>
-<p>夜晚的Strip Street和我国大城市的夜市没有太大差别。我们还看到了基督教和伊斯兰教徒在街上开撕。在这里，你可以很安全的看到发达国家的浪荡。不像LA，晚上过Downtown都不敢停车，满大街的homeless。</p>
-<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbfr67u6tnj21kw2dckjl.jpg" /></center>
-<center>婚纱时刻</center></p>
-<p>第六站还是在LV，不过我们选择去看Hoover dam(胡佛大坝)。胡佛就是美国历史上大萧条时期的总统。说实话，这个大坝是我们一路上看的最没有意思的地方了。婴儿版三峡大坝。稍微有意思的是那座桥和不同时区的两个钟。图没有，太丑了！</p>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr6fxou0j21kw1107wh.jpg" /></center>
-<center>胡佛大坝</center></p>
-<p>第七站是Death Valley，顾名思义就是死亡谷。当天走的晚，就看了一个小小地方，感觉不错的是拍到了几张“寂寞照”。本想开车去山顶看风景，结果4点多天就黑了，我们开到一半觉得不太安全就回来了。夜里的死亡谷，有一种特殊的感觉，更恐怖，更冷。这也是别开生面的一种旅行方式吧。下车施肥之后，我们就打道回府了。这是2016年最后一天，我们在死亡谷的山路上，谨慎地前行着。</p>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr6isxsbj21kw11x7wh.jpg" /></center>
-<center>最寂寞的不是一个人旅行，而是一人一狗</center></p>
-<p>在最后一个住的地方遇了The Best Host。一个典型的美国乡村家庭。一对中年夫妇，大过年的没有什么宴席，在火炉前看动画片，女儿和她的男朋友住在镇上不远处，有一个小女儿，他们还没结婚。还有一只超级可爱超级聪明的小小狗！女主人尤其健谈，对我们也超级好。不过精疲力尽的我们并没有嗨，只是默默洗澡上床睡觉。</p>
-<p><center><img alt="" src="http://ww3.sinaimg.cn/mw690/7f593341gw1fbgxg5b4k4j20zk0qpq6p.jpg" /></center>
-<center>单身与狗</center></p>
-<p><center><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341gw1fbgxg6jhnkj20zk0qo40r.jpg" /></center>
-<center>不喜欢他摸我，你看得出来的，抱我走！</center></p>
-<p>十二点的时候，躺在床上的我们竟然听到了烟花，爆竹的声音，颇有点家乡的感觉，然而打开朋友圈，元旦的氛围早就过去了。</p>
-<p>本打算去看湖的我们又打算重返死亡谷。后来证明我们的选择是正确的。</p>
-<p>2017年第一天，我们又回到了死亡谷。</p>
-<p>第一个景点是有流沙的沙漠，一块不大不小的真正的沙漠。行走在沙漠里，感受炎热的太阳，也算一种奇特的体验。</p>
-<p><center><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341gw1fbfr5iohaxj21kw11zkjl.jpg" /></center>
-<center>假装拍到一个很大很大的沙丘</center></p>
-<p>另一个叫“Bad water basin”，可以叫恶水谷吧。那里其实没什么水，全是盐碱化的石块和土地，是地壳运动导致的。走在那里感觉像是走在干涸的海底，脚底都是珊瑚礁状物体，能很明显看出是某些盐碱。</p>
-<p><center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341gw1fbgyez4cwmj20zk0k0ad3.jpg" /></center>
-<center>好像走在天上一般，云和地面一样低。只不过白色的都是盐碱物，其实黑色的也是</center></p>
-<p>最后一个景点叫“Devil's golf course”，恶魔的高尔夫球场。这个地方值得一看，非常震撼的画面，满地的礁石，延绵不绝。就像高尔夫球场上一株株草一样。来死亡谷，感受寸草不生的绝望，比沙漠还要悲惨，令人印象深刻。</p>
-<p><center><img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341gw1fbgyjoiiqqj21kw11x1kx.jpg" /></center>
-<center>恶魔的高尔夫球场-死亡谷</center></p>
-<p>经历了荒漠，雪地，峡谷，沙丘等多种地理环境以及城市之后，我们终于开始踏上归途。历经7个小时的长途行车，我们终于在夜里2点多，回到了圣何塞，回到了舒服的公寓。</p>
-<p>总结起来，这次road trip还是非常不错的。走过很多地方，感受过许多风景，也用手机和相机记录下了很多珍贵的素材。虽然在写分镜的时候就知道关于风景的部分必然会拍脱，但是能坚持拍完着实已经不容易了。期待第一个自导自演的视频。</p>
-<p>我还会去很多美好的，壮观的，可怕的地方，去感受，去探索这个星球。这也是人生的意义之一。</p>
-<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1fbfr5cycgvj21kw11xtsn.jpg" /></center>
-<center>Run,Forrest run! Go, Distance go!</center></p></div>
-        <hr />
-    </div>
-		
+<p>旅行第一站是Joshua ...</p> <a class="btn btn-info xsmall" href="../pages/2017/01/06/tan-suo-xi-bu-shi-jie-cong-2016zou-dao-2017.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -261,29 +370,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>一大早特别开心，直接就不去上班，uber过去拜访。手机号刚过期，在没有手机的情况下，利用xfinity的Wi-Fi让司机成功找到了我，太感谢xfinity和uber。</p>
 <p>终于来到了位于PALO ALTO的barefoot，它就在斯坦福校园边上。和ron前辈碰头之后，他就领着去见了偶像Nick教授。</p>
 <p>打开Nick教授的办公室门就看到了他，没想到他这么年轻，这么和善。没有那种官僚气息，更多的是一种工程师的感觉。见到偶像简直太开心了。我很高兴地自我介绍 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/09/13/zai-barefootbai-fang-nick-mckeownjiao-shou.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/08/30/getting-started-of-mongodb.html"><h2>Getting Started of MongoDB</h2></a>
-        <div class= "well small"> 2016-08-30
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>What is MongoDB</h3>
-<p>MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]</p>
-<p>MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。</p>
-<p>MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]</p>
-<h3>About MongoDB</h3>
-<p>MongoDB is ...</p> <a class="btn btn-info xsmall" href="../pages/2016/08/30/getting-started-of-mongodb.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
