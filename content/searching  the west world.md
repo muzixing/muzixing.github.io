@@ -10,6 +10,8 @@ Category:Life
 <center>![分镜本](http://ww4.sinaimg.cn/mw690/7f593341gw1fbfquqgi73j20zq13gqej.jpg)</center>
 <center>分镜本</center>
 
+<center>video: <iframe frameborder="0" width="640" height="498" src="https://v.qq.com/iframe/player.html?vid=z0381az2cdi&tiny=0&auto=0" allowfullscreen></iframe></center>
+
 每一次我们都租车自驾旅行，因为在美国租车实在是太便宜了！
 
 从San Jose往南开，一路从阳光绿地，开到雪地，再到荒漠处，8小时后，终于到达第一个住处。路上还撞了一次车，还好只是轻轻亲了一下前车，没大碍就继续前行了。
