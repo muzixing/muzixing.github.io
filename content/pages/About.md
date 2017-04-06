@@ -1,6 +1,6 @@
-date:2013-12-27
+date:2017-4-6
 title:About me
-category:life
+category:Life
 tags:about me
 
 # Cheng Li
@@ -16,19 +16,18 @@ Email:licheng185408@gmail.com
 ## Education background
 
 *   **Beijing University of Posts and Telecommunications(BUPT)**
-    *   M.E.   Software Defined Networking  (2014 - Present)
+    *   M.E.   Software Defined Networking  (2014 - 2017)
     *   B.E.   Communication Engineering                                             GPA: 3.5/4 (2010 - 2014)
 
 ## Publish
 
 * Book: [“Refactoring Network: Architecture and Implementation of SDN”](http://item.jd.com/12160066.html), Cheng Li, Zewei Yang
 * Paper: “OXP: An Efficient Protocol for Scaling SDN-based Ad Hoc Network”  (IJRA, SCI)
-* Patent: “A control system, method and apparatus for SDN ”  ( CN105245593A)
 
 
 ## Internship
 
-*   **Chief Technology and Architecture Office of CISCO——OSDNA (2016.8 - Present)**
+*   **Chief Technology and Architecture Office of CISCO——OSDNA (2016.8 - 2017.2)**
     *   Scan physical and virtual network elements in OpenStack environment including host, OVS and VM.
     *   Store network topology data into MongoDB for visualizing and Troubleshooting.
 
@@ -60,7 +59,7 @@ Email:licheng185408@gmail.com
 
 *   **Load Balance Based on Multipath(2014.9 - 2014.10)**
 
-    *   Implement [ARP proxy](https://github.com/muzixing/ryu/blob/master/ryu/app/arp_proxy_13.py) to avoid storm
+    *   Implement ARP proxy to avoid storm
     *   Implement QoS via queue to provide customized service
     *   Achieve load balancing application based on multipath by select group table
     
@@ -82,8 +81,8 @@ Email:licheng185408@gmail.com
 ## Skills
 
 *   Familiar with TCP/IP, OpenFlow (3 years), SDN (3 years), Docker (2 months)
-*   Programming language: Python (3 years), Java (6 months)
-*   System: Linux (Familiar with Ubuntu)
+*   Programming language: Python (3 years), Java (6 months), Golang(3 months)
+*   System: Linux (Familiar with Ubuntu), Mac OS
 *   Languages:
     *   Major: Chinese
     *   Second: English (CET-6)
@@ -133,7 +132,7 @@ Email:licheng185408@gmail.com
 
 ## 教育经历
 
-*   大学本科 （2010.9~2014.6）& 硕士研究生（2014.9至今）
+*   大学本科 （2010.9~2014.6）& 硕士研究生（2014.9~2017.3）
     
     北京邮电大学 信息与通信工程学院 通信工程
 
@@ -142,11 +141,10 @@ Email:licheng185408@gmail.com
 
 *   书籍：[《重构网络：SDN架构与实现》](http://item.jd.com/12160066.html)——李呈、杨泽卫
 *   论文：OXP: An Efficient Protocol for Scaling SDN-based Ad Hoc Network--IJRA（SCI检索）
-*   专利：一种软件定义网络SDN的控制系统、方法及装置（CN 105245593 A）
 
 ## 实习经历
 
-*   **Cisco美国总部·Chief Technology and Architecture Office  ——OSDNA (2016.8 - 至今)**
+*   **Cisco美国总部·Chief Technology and Architecture Office  ——OSDNA (2016.8 - 2017.2)**
 
     *   探测发现OpenStack中虚拟网络的拓扑等信息，实现网络信息可视化
     *   基于网络信息，对网络信息进行分析，提供OpenStack网络保障方案
@@ -180,7 +178,7 @@ Email:licheng185408@gmail.com
     
 *   **基于Group Table实现负载均衡(2014.9 - 2014.10)**
 
-    *   部署[ARP代理](https://github.com/muzixing/ryu/blob/master/ryu/app/arp_proxy_13.py)回复ARP请求，并解除环路ARP广播风暴
+    *   部署ARP Agent回复ARP请求，并解除环路ARP广播风暴
     *   使用队列实现带宽QoS，根据策略提供差异化网络业务
     *   基于select类型group table完成多径传输，实现流量负载均衡
 
@@ -199,7 +197,7 @@ Email:licheng185408@gmail.com
 
 ## 个人技能
 
-*   编程语言：Python(90%),Java(5%)，C/C++(5%)
+*   编程语言：Python(80%),Java(10%), Golang(10%)
 *   熟悉TCP/IP, OpenFlow协议，网络与交换理论知识扎实
 *   熟悉操作系统运行过程，熟悉Linux系统
 *   CET-6，英文文档阅读能力和演讲能力良好,口语流畅
