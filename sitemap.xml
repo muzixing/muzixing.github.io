@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2017-02-06T09:39:17-00:00</lastmod>
+<lastmod>2017-04-07T02:46:44-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2017-02-06T09:39:17-00:00</lastmod>
+<lastmod>2017-04-07T02:46:44-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2017-02-06T09:39:17-00:00</lastmod>
+<lastmod>2017-04-07T02:46:44-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2017-02-06T09:39:17-00:00</lastmod>
+<lastmod>2017-04-07T02:46:44-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -39,15 +39,15 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/pages/2017/03/25/2016zong-jie-sha-si-na-ge-tian-zhen-de-zi-ji.html</loc>
-<lastmod>2017-03-25T00:00:00-00:00</lastmod>
+<loc>http://www.muzixing.com/pages/2017/04/05/zhong-gou-wang-luo-sdnjia-gou-yu-shi-xian-zhong-yu-chu-ban-la.html</loc>
+<lastmod>2017-04-05T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
 
 <url>
-<loc>http://www.muzixing.com/pages/2017/03/24/zhong-gou-wang-luo-sdnjia-gou-yu-shi-xian-zhong-yu-chu-ban-la.html</loc>
-<lastmod>2017-03-24T00:00:00-00:00</lastmod>
+<loc>http://www.muzixing.com/pages/2017/03/25/2016zong-jie-sha-si-na-ge-tian-zhen-de-zi-ji.html</loc>
+<lastmod>2017-03-25T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -656,7 +656,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/category/tech.html</loc>
-<lastmod>2017-03-24T00:00:00-00:00</lastmod>
+<lastmod>2017-04-05T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -1020,7 +1020,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/tag/sdn.html</loc>
-<lastmod>2017-03-24T00:00:00-00:00</lastmod>
+<lastmod>2017-04-05T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -1188,7 +1188,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/author/muzi.html</loc>
-<lastmod>2017-03-25T00:00:00-00:00</lastmod>
+<lastmod>2017-04-05T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
