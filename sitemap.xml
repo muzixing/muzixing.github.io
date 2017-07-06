@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2017-04-07T03:07:12-00:00</lastmod>
+<lastmod>2017-07-06T22:15:29-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2017-04-07T03:07:12-00:00</lastmod>
+<lastmod>2017-07-06T22:15:29-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2017-04-07T03:07:12-00:00</lastmod>
+<lastmod>2017-07-06T22:15:29-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2017-04-07T03:07:12-00:00</lastmod>
+<lastmod>2017-07-06T22:15:29-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2017-04-06T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/pages/2017/08/06/jian-li-zhuan-ye-er-mei-de-zhu-yu-dao.html</loc>
+<lastmod>2017-08-06T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -656,7 +663,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/category/tech.html</loc>
-<lastmod>2017-04-05T00:00:00-00:00</lastmod>
+<lastmod>2017-08-06T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -830,8 +837,8 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/tag/oslo.html</loc>
-<lastmod>2014-12-19T00:00:00-00:00</lastmod>
+<loc>http://www.muzixing.com/tag/jian-li.html</loc>
+<lastmod>2017-08-06T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -1103,6 +1110,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
+<loc>http://www.muzixing.com/tag/neutron.html</loc>
+<lastmod>2016-12-21T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
 <loc>http://www.muzixing.com/tag/load-balance.html</loc>
 <lastmod>2014-11-07T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
@@ -1166,8 +1180,8 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/tag/neutron.html</loc>
-<lastmod>2016-12-21T00:00:00-00:00</lastmod>
+<loc>http://www.muzixing.com/tag/oslo.html</loc>
+<lastmod>2014-12-19T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -1188,7 +1202,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/author/muzi.html</loc>
-<lastmod>2017-04-05T00:00:00-00:00</lastmod>
+<lastmod>2017-08-06T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

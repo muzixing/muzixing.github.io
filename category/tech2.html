@@ -62,6 +62,29 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/08/30/getting-started-of-mongodb.html"><h2>Getting Started of MongoDB</h2></a>
+        <div class= "well small"> 2016-08-30
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>What is MongoDB</h3>
+<p>MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]</p>
+<p>MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。</p>
+<p>MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]</p>
+<h3>About MongoDB</h3>
+<p>MongoDB is ...</p> <a class="btn btn-info xsmall" href="../pages/2016/08/30/getting-started-of-mongodb.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/07/26/wo-shi-zen-yao-diu-diao-fan-wan-de.html"><h2>我是怎么丢掉饭碗的</h2></a>
         <div class= "well small"> 2016-07-26
 
@@ -158,32 +181,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
             <span class="n">src_dpid ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/05/20/ryuru-he-zai-lldpzhong-tian-jia-zi-ding-yi-lldpdu.html"><h2>Ryu:如何在LLDP中添加自定义LLDPDU</h2></a>
-        <div class= "well small"> 2016-05-20
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><hr />
-<p>在许多实验场景中，都需要使用链路发现协议（LLDP）来发现链路，从而构建网络拓扑。然而LLDP协议不仅仅可以用来发现拓扑，也可以用于时延检测等业务。LLDP通过添加对应的TLV格式的LLDPDU（LLDP数据单元）来携带对应的信息，从而为上层业务提供信息支撑。为实现LLDP数据单元的拓展，本文将以Ryu控制器为例，介绍如何添加自定义的LLDPDU，从而满足多种业务的需求。</p>
-<p>添加自定义LLDPDU其实只需修改ryu/lib/packet/lldp.py即可，但是由于该文件仅定义了LLDP的相关类，如何使用还需要其他文件去调用，所以还需要其他的修改步骤。具体步骤将在文章后续介绍。</p>
-<h3>修改lldp.py文件</h3>
-<p>ryu/lib/packet/lldp.py文件是Ryu控制器中关于LLDP协议数据类的描述，其中定义了如LLDPBasicTLV类等重要的报文类。 以添加发送时间戳的TLV为例，我们需要完成TLV类型号的声明，以及TLV类的定义。</p>
-<p>在文件开头处有关于LLDP TLV类型的声明，所以首先我们需要添加一个新的类型：LLDP_TLV_SEND_TIME，其类型号为11。</p>
-<div class="highlight"><pre>    <span class="c"># LLDP TLV type</span>
-    <span class="n">LLDP_TLV_END</span> <span class="o">=</span> <span class="mi">0</span>                        <span class="c"># End of LLDPDU</span>
-    <span class="n">LLDP_TLV_CHASSIS_ID</span> <span class="o">=</span> <span class="mi">1 ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2016/05/20/ryuru-he-zai-lldpzhong-tian-jia-zi-ding-yi-lldpdu.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../category/tech.html">&larr; Previous</a></li>
@@ -203,6 +200,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../category/tech13.html">13</a></li>
     <li class=""><a href="../category/tech14.html">14</a></li>
     <li class=""><a href="../category/tech15.html">15</a></li>
+    <li class=""><a href="../category/tech16.html">16</a></li>
 
     <li class="next"><a href="../category/tech3.html">Next &rarr;</a></li>
 

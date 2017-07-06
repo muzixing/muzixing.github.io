@@ -62,6 +62,30 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html"><h2>OpenVirteX文档详解（一）——Overview and Components</h2></a>
+        <div class= "well small"> 2014-10-23
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>本篇博文将按照OpenVirteX Documentation的顺序详细介绍OpenVirteX的相关内容。完整翻译版，请查看@北邮-张歌 翻译的文章。转载请声明出处。</p>
+<h2>Overview</h2>
+<p>OpenVirteX(以下简称OVX)是onlab开发的一个网络虚拟化平台，可以实现多租户的网络虚拟化。对于租户而言，需要在OVX上注册，申请资源，配置自己的网络，指定自己的控制器。剩下的工作就由OVX完成了。OVX可以根据租户的需求，将租户的网络拓扑映射到具体的物理拓扑上，完成网络的联通。对于租户而言，看到的是一个虚拟的网络，无法看到真实的物理拓扑，也不需要关心，即租户“认为”得到了一个属于自己的真实网络。而OVX的位置相当于一个介于租户控制器和交换机之间的转换平台。面对租户，OVX就是一个物理的网络，而面对交换机，OVX就是控制器。（这种转换平台的角色可以实现很多功能，不仅仅是网络虚拟化，还可以模拟许多信息，比如在某个项目中我们将OVS模拟成一个OTN的交换机，验证了一些想法）</p>
+<h3>网络虚拟化</h3>
+<p>网络虚拟化允许多租户占用同一个网络基础设施，同时允许租户对其网络的控制能力，对于租户而言，感觉上是自己控制了整个网络。OVX通过使租户能够获取到自己的虚拟拓扑和全网的地址空间来实现网络虚拟化。前者可以允许租户自定义网络拓扑，后者则是用于隔离不同租户的流量，防止冲突。</p>
+<p>与flowspace的切分slice，使租户使用网络的一部分不一样的是 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/10/23/openvirtexwen-dang-xiang-jie-overview-and-components.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2014/10/19/ji-yu-sdnde-ryuying-yong-arp_proxy.html"><h2>基于SDN的RYU应用——ARP_PROXY</h2></a>
         <div class= "well small"> 2014-10-19
 
@@ -214,48 +238,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>为SAL中，request routing可用于消费者的请求路由，从而寻找到对应的生产者。当一个plugin注册之后，就会在routing table中有对应记录，consumer向SAL发起RPC应用申请的时候 ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/13/opendaylightzhong-md-salxue-xi-bi-ji.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html"><h2>OpenFlow1.3学习笔记</h2></a>
-        <div class= "well small"> 2014-08-10
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>OpenFlow1.3比1.0版本复杂太多了。由于交换机和控制器没有太多支持，所以关于OpenFlow的应用大多是基于1.0版本的，但是1.3版本相当经典，其中许多内容都是值得学习的。今天翻看了一下1.3版本的OF协议，觉得收获颇多，将学习笔记写下来加深印象，也给后人学习提供一点帮助吧。笔记不是协议翻译，只总结一些疑难点。</p>
-<h2>OpenFlow端口</h2>
-<p>OF端口是OF处理流程和网络其他部分进行转发数据包的网络接口。
-OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必须支持的端口类型为</p>
-<ul>
-<li>物理端口</li>
-<li>逻辑端口</li>
-<li>保留端口</li>
-</ul>
-<p>逻辑端口和物理端口的不同在于，逻辑端口比物理端口更高一级，是对物理端口的虚拟化，提高可复用性，逻辑端口的数据包需要有tunnel_id，而物理端口没有。    </p>
-<p>保留端口中又分为：</p>
-<ul>
-<li>ALL</li>
-<li>CONTROLLER</li>
-<li>TABLE</li>
-<li>IN_PORT</li>
-<li>ANY</li>
-<li>LOCAL</li>
-<li>NORMAL</li>
-<li>FLOOD</li>
-</ul>
-<p>其中所有OF交换机都要支持ALL,CONTROLLER,TABLE,IN_PORT,ANY类型端口，OF_ONLY不要求支持LOCAL,NORMAL,FLOOD端口。</p>
-<h2>OpenFlow Table</h2>
-<p>OpenFlow ...</p> <a class="btn btn-info xsmall" href="../pages/2014/08/10/openflow13xue-xi-bi-ji.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="../category/tech9.html">&larr; Previous</a></li>
@@ -275,6 +257,7 @@ OF交换机通过OF接口和其他交换机建立逻辑连接。OF交换机必�
     <li class=""><a href="../category/tech13.html">13</a></li>
     <li class=""><a href="../category/tech14.html">14</a></li>
     <li class=""><a href="../category/tech15.html">15</a></li>
+    <li class=""><a href="../category/tech16.html">16</a></li>
 
     <li class="next"><a href="../category/tech11.html">Next &rarr;</a></li>
 
