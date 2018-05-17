@@ -5,7 +5,7 @@ tags:about me
 
 # Cheng Li
 
-Email:licheng185408@gmail.com
+Email:licheng185408@qq.com
 
 [Github:https://github.com/muzixing](https://github.com/muzixing)
 
@@ -122,7 +122,7 @@ Email:licheng185408@gmail.com
 
 北京邮电大学•信息与通信工程学院•通信工程
 
-Email:licheng185408@gmail.com
+Email:licheng185408@qq.com
 
 [Github:https://github.com/muzixing](https://github.com/muzixing)
 
