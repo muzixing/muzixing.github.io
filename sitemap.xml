@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2017-09-23T21:41:03-00:00</lastmod>
+<lastmod>2018-05-18T00:52:10-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2017-09-23T21:41:03-00:00</lastmod>
+<lastmod>2018-05-18T00:52:10-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2017-09-23T21:41:03-00:00</lastmod>
+<lastmod>2018-05-18T00:52:10-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2017-09-23T21:41:03-00:00</lastmod>
+<lastmod>2018-05-18T00:52:10-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2017-04-06T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/pages/2018/06/03/chi-dao-de-2017zong-jie-qi-feng-liao-li-ming.html</loc>
+<lastmod>2018-06-03T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -656,7 +663,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/category/life.html</loc>
-<lastmod>2017-03-25T00:00:00-00:00</lastmod>
+<lastmod>2018-06-03T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -1202,7 +1209,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/author/muzi.html</loc>
-<lastmod>2017-08-06T00:00:00-00:00</lastmod>
+<lastmod>2018-06-03T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

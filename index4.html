@@ -62,6 +62,32 @@
  
 
     <div class='article'>
+        <a href="./pages/2016/05/20/ryuru-he-zai-lldpzhong-tian-jia-zi-ding-yi-lldpdu.html"><h2>Ryu:如何在LLDP中添加自定义LLDPDU</h2></a>
+        <div class= "well small"> 2016-05-20
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><hr />
+<p>在许多实验场景中，都需要使用链路发现协议（LLDP）来发现链路，从而构建网络拓扑。然而LLDP协议不仅仅可以用来发现拓扑，也可以用于时延检测等业务。LLDP通过添加对应的TLV格式的LLDPDU（LLDP数据单元）来携带对应的信息，从而为上层业务提供信息支撑。为实现LLDP数据单元的拓展，本文将以Ryu控制器为例，介绍如何添加自定义的LLDPDU，从而满足多种业务的需求。</p>
+<p>添加自定义LLDPDU其实只需修改ryu/lib/packet/lldp.py即可，但是由于该文件仅定义了LLDP的相关类，如何使用还需要其他文件去调用，所以还需要其他的修改步骤。具体步骤将在文章后续介绍。</p>
+<h3>修改lldp.py文件</h3>
+<p>ryu/lib/packet/lldp.py文件是Ryu控制器中关于LLDP协议数据类的描述，其中定义了如LLDPBasicTLV类等重要的报文类。 以添加发送时间戳的TLV为例，我们需要完成TLV类型号的声明，以及TLV类的定义。</p>
+<p>在文件开头处有关于LLDP TLV类型的声明，所以首先我们需要添加一个新的类型：LLDP_TLV_SEND_TIME，其类型号为11。</p>
+<div class="highlight"><pre>    <span class="c"># LLDP TLV type</span>
+    <span class="n">LLDP_TLV_END</span> <span class="o">=</span> <span class="mi">0</span>                        <span class="c"># End of LLDPDU</span>
+    <span class="n">LLDP_TLV_CHASSIS_ID</span> <span class="o">=</span> <span class="mi">1 ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2016/05/20/ryuru-he-zai-lldpzhong-tian-jia-zi-ding-yi-lldpdu.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2016/05/03/wo-shi-ge-sdnjiao-huan-ji.html"><h2>我是一个SDN交换机</h2></a>
         <div class= "well small"> 2016-05-03
 
@@ -146,29 +172,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p>P4(Programming protocol-independent packet processors)[1]是由Pat Bosshart等人提出来的高级“协议独立数据包处理编程语言”，如OpenFlow一样是一种南向协议，但是其范围要比OpenFlow要大。不仅可以指导数据流进行转发，还可以对交换机等转发设备的数据处理流程进行软件编程定义，是真正意义上的完全SDN。值得注意的是，P4论文作者中还有斯坦福大学的Nick McKeown教授和普林斯顿大学的Jennifer Rexford教授两位业界大牛的名字。Nick教授是SDN的提出者之一，一直是SDN学术领域顶尖的存在；而后者Jennifer教授也发表了4D[2]等诸多重要的SDN相关论文，更提出了网络编程语言Frenetic[3]，同样是业界的先驱。两位教授也是P4组织的主要推动者之一。目前，P4语言作为一种潜在的OpenFlow2.0的发展方向在努力发展。</p>
 <h3>原理</h3>
 <p>与POF提出的目的类似，P4提出的目的也是为了解决OpenFlow编程能力不足以及其设计本身所带来的可拓展性差的难题。自OpenFlow1.0发布以来，其版本目前已经演进到1 ...</p> <a class="btn btn-info xsmall" href="./pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2016/03/12/pofgeng-li-xiang-de-sdn.html"><h2>POF:更理想的SDN?</h2></a>
-        <div class= "well small"> 2016-03-12
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>OpenFlow协议实现的SDN目前已经得到了应用和推广，但OpenFlow并不完美，OpeFlow交换机还不能提供更好的可编程能力。POF作为一种新的南向协议，是OpenFlow的未来方向？还是只是一个乌托邦？本文将介绍由华为提出的协议无关转发POF，其中包括其简介、原理、原型和应用场景以及最后的发展趋势，希望能带来一些有意思的想法。</p>
-<h3>简介</h3>
-<p>POF(Protocol Oblivious Forwarding)[1]是由华为提出的SDN南向协议，是一种SDN实现方式，中文意思为协议无关转发。与OpenFlow相似，在POF定义的架构中分为控制平面的POF控制器和和数据平面POF转发元件(Forwarding Element)。在POF架构中，POF交换机并没有协议的概念，它仅在POF控制器的指导下通过{offset, length}来定位数据、匹配并执行对应的操作，从而完成数据处理。此举使得交换机可以在不关心协议的情况下完成数据的处理，使得在支持新协议时无需对交换机进行升级或购买新设备，仅需通过控制器下发对应流表项即可，大大加快了网络创新的进程。</p>
-<h3>原理</h3>
-<p>读者可能会有疑问：OpenFlow所实现的SDN目前不是发展挺好的吗，POF相比OpenFlow有什么优点呢？</p>
-<p>在OpenFlow1.0版本推出时，普遍被认为只有12个匹配域无法适应多网络场景的需求。但随着OpenFlow版本的推进，发展到OpenFlow1.3版本时已经有了40个匹配域，已经可以支持大部分的协议字段匹配。然而始终还会有更多的协议需要支持，所以这个增长趋势不会停止。不断增多的匹配域 ...</p> <a class="btn btn-info xsmall" href="./pages/2016/03/12/pofgeng-li-xiang-de-sdn.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
