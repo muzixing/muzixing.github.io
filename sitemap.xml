@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2018-05-18T00:55:14-00:00</lastmod>
+<lastmod>2018-05-18T01:31:29-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2018-05-18T00:55:14-00:00</lastmod>
+<lastmod>2018-05-18T01:31:29-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2018-05-18T00:55:14-00:00</lastmod>
+<lastmod>2018-05-18T01:31:29-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2018-05-18T00:55:14-00:00</lastmod>
+<lastmod>2018-05-18T01:31:29-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2017-04-06T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/pages/2018/08/09/segment-routingxi-lie-wen-zhang-to-write-list.html</loc>
+<lastmod>2018-08-09T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -670,7 +677,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/category/tech.html</loc>
-<lastmod>2017-08-06T00:00:00-00:00</lastmod>
+<lastmod>2018-08-09T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -704,6 +711,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
+<loc>http://www.muzixing.com/tag/neutron.html</loc>
+<lastmod>2016-12-21T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
 <loc>http://www.muzixing.com/tag/delay.html</loc>
 <lastmod>2016-05-24T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
@@ -713,6 +727,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>http://www.muzixing.com/tag/communication.html</loc>
 <lastmod>2015-11-14T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/tag/srv6.html</loc>
+<lastmod>2018-08-09T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -748,6 +769,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>http://www.muzixing.com/tag/control-platform.html</loc>
 <lastmod>2015-08-30T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/tag/sr-mpls.html</loc>
+<lastmod>2018-08-09T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -998,6 +1026,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
+<loc>http://www.muzixing.com/tag/segment-routing.html</loc>
+<lastmod>2018-08-09T00:00:00-00:00</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
 <loc>http://www.muzixing.com/tag/controller.html</loc>
 <lastmod>2014-11-26T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
@@ -1117,8 +1152,8 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/tag/neutron.html</loc>
-<lastmod>2016-12-21T00:00:00-00:00</lastmod>
+<loc>http://www.muzixing.com/tag/sr.html</loc>
+<lastmod>2018-08-09T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -1209,7 +1244,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/author/muzi.html</loc>
-<lastmod>2018-06-03T00:00:00-00:00</lastmod>
+<lastmod>2018-08-09T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

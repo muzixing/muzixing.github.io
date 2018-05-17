@@ -62,6 +62,47 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/09/30/listen-to-openstack-notification.html"><h2>Listen to OpenStack Notification</h2></a>
+        <div class= "well small"> 2016-09-30
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用<a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation">kombu</a>库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。</p>
+<h3>Kombu, AMQP, RabbitMQ</h3>
+<p><a href="https://github.com/celery/kombu">Kombu</a>是Python的消息库，封装来许多消息的报文，支持包括<a href="https://www.amqp.org/">AMQP</a>等多种消息协议。而在OpenStack端，Notification的发布系统由<a href="http://www.rabbitmq.com/">RabbitMQ</a>实现。为了监听OpenStack发出的Notification, 我们需要在本地用Kombu库建立一个connection, 连接到OpenStack的消息发布系统。</p>
+<h3>Terminology</h3>
+<p>在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：</p>
+<ul>
+<li>
+<p>Producers</p>
+<p>消息生产者，产生消息，并发送到交换器。</p>
+</li>
+<li>
+<p>Exchanges</p>
+<p>消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。</p>
+</li>
+<li>
+<p>Queues</p>
+<p>队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。</p>
+</li>
+<li>
+<p>Consumers</p>
+<p>消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。</p>
+</li>
+<li>
+<p>Routing ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2016/09/30/listen-to-openstack-notification.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/08/30/getting-started-of-mongodb.html"><h2>Getting Started of MongoDB</h2></a>
         <div class= "well small"> 2016-08-30
 
@@ -150,35 +191,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>流表优化</h3>
 <p>OpenFlow所支持的细粒度流管理是SDN最大的优势之一，但是细粒度的管理是需要付出代价的。为满足细粒度的管理，则需要更粒度的流表项。但是像OpenFlow协议这种细粒度的管理会带来一定的时延，对于时延敏感的短流业务而言，这个时延带来的影响是不可忽视的，这很可能会抵消了SDN带来的好处。所以如何通过流表来匹配流，从而减少流表项下发次数，是降低时延影响的有利手段。</p>
 <p>此外，当网络流数目过多时，交换机的流表空间就无法满足需求。当流表满时 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html"><h2>Ryu:网络时延探测应用</h2></a>
-        <div class= "well small"> 2016-05-24
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>之前，笔者已经发布了网络感知应用和基于跳数的最短路径转发应用。本文将介绍笔者开发的网络时延探测应用。该应用通过LLDP数据包的时延和Echo数据包的时延计算得出链路的时延数据，从而实现网络链路时延的感知。详细原理和实现步骤将在文章中详细介绍。</p>
-<h3>测试原理</h3>
-<p>网络时延探测应用利用了Ryu自带的Switches模块的数据，获取到了LLDP数据发送时的时间戳，然后和收到的时间戳进行相减，得到了LLDP数据包从控制器下发到交换机A，然后从交换机A到交换机B，再上报给控制器的时延T1，示例见图1的蓝色箭头。同理反向的时延T2由绿色的箭头组成。此外，控制器到交换机的往返时延由一个蓝色箭头和一个绿色箭头组成，此部分时延由echo报文测试，分别为Ta，Tb。最后链路的前向后向平均时延T=（T1+T2-Ta-Tb）/2。</p>
-<p><center><img alt="link delay" src="http://ww1.sinaimg.cn/mw690/7f593341jw1f40i7d39ouj20fr09lgm6.jpg" /></center>
-<center>图1. 测量链路时延原理图</center></p>
-<h3>获取LLDP时延</h3>
-<p>获取T1和T2的逻辑一样，均需要使用到Switches模块的数据。计算LLDP时延的处理逻辑如下代码所示。首先从Packet_in中解析LLDP数据包，获得源DPID，源端口。然后根据发送端口的数据获取到portdata中的发送时间戳数据，并用当下的系统时间减去发送时间戳，得到时延，最后将其保存到graph数据中。</p>
-<div class="highlight"><pre>    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">src_dpid ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

@@ -62,6 +62,29 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/03/12/pofgeng-li-xiang-de-sdn.html"><h2>POF:更理想的SDN?</h2></a>
+        <div class= "well small"> 2016-03-12
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>OpenFlow协议实现的SDN目前已经得到了应用和推广，但OpenFlow并不完美，OpeFlow交换机还不能提供更好的可编程能力。POF作为一种新的南向协议，是OpenFlow的未来方向？还是只是一个乌托邦？本文将介绍由华为提出的协议无关转发POF，其中包括其简介、原理、原型和应用场景以及最后的发展趋势，希望能带来一些有意思的想法。</p>
+<h3>简介</h3>
+<p>POF(Protocol Oblivious Forwarding)[1]是由华为提出的SDN南向协议，是一种SDN实现方式，中文意思为协议无关转发。与OpenFlow相似，在POF定义的架构中分为控制平面的POF控制器和和数据平面POF转发元件(Forwarding Element)。在POF架构中，POF交换机并没有协议的概念，它仅在POF控制器的指导下通过{offset, length}来定位数据、匹配并执行对应的操作，从而完成数据处理。此举使得交换机可以在不关心协议的情况下完成数据的处理，使得在支持新协议时无需对交换机进行升级或购买新设备，仅需通过控制器下发对应流表项即可，大大加快了网络创新的进程。</p>
+<h3>原理</h3>
+<p>读者可能会有疑问：OpenFlow所实现的SDN目前不是发展挺好的吗，POF相比OpenFlow有什么优点呢？</p>
+<p>在OpenFlow1.0版本推出时，普遍被认为只有12个匹配域无法适应多网络场景的需求。但随着OpenFlow版本的推进，发展到OpenFlow1.3版本时已经有了40个匹配域，已经可以支持大部分的协议字段匹配。然而始终还会有更多的协议需要支持，所以这个增长趋势不会停止。不断增多的匹配域 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/12/pofgeng-li-xiang-de-sdn.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/03/03/openflowde-ban-lu-xie-yi-of-config.html"><h2>OpenFlow的伴侣协议：OF-CONFIG</h2></a>
         <div class= "well small"> 2016-03-03
 
@@ -170,27 +193,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>DIFANE[1]是DIstributed Flow Architecture for Networked Enterprises的缩写。 在DIFANE架构中，其数据平面的所有数据均由数据平面完成，而控制器仅负责策略的计算，而不会直接响应Packet_in。其通过减轻控制平面的负载的方式，从而增强了SDN的可拓展性。</p>
 <p><center><img alt="difane" src="http://ww4.sinaimg.cn/mw690/7f593341jw1f03rkwo1qsj20r80g6djx.jpg" /></center>
 <center>图1.DIFANE ...</center></p> <a class="btn btn-info xsmall" href="../pages/2016/01/20/ru-he-ti-sheng-sdnke-tuo-zhan-xing.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2015/12/29/sdnyu-wang-luo-xu-ni-hua.html"><h2>SDN与网络虚拟化</h2></a>
-        <div class= "well small"> 2015-12-29
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>网络虚拟化是一种重要的网络技术，该技术可在物理网络上虚拟多个相互隔离的虚拟网络，从而使得不同用户之间使用独立的网络资源切片，从而提高网络资源利用率，实现弹性的网络。SDN的出现使得网络虚拟化的实现更加灵活和高效，同时网络虚拟化也成为SDN应用中的重量级应用。本文将介绍SDN与网络虚拟化的关系以及通过SDN实现网络虚拟化的方法，其中第二部分内容将从虚拟化平台，网络资源虚拟化和网络隔离三个方面介绍。</p>
-<h2>SDN与网络虚拟化</h2>
-<p>由于早期成功的的SDN方案中网络虚拟化案例较多，有的读者可能会认为SDN和网络虚拟化是同一个层面的，然而这是一个错误的说法。SDN不是网络虚拟化，网络虚拟化也不是SDN。SDN是一种集中控制的网络架构，可将网络划分为数据层面和控制层面。而网络虚拟化是一种网络技术，可以在物理拓扑上创建虚拟网络。传统的网络虚拟化部署需要手动逐跳部署，其效率低下，人力成本很高。而在数据中心等场景中，为实现快速部署和动态调整，必须使用自动化的业务部署。SDN的出现给网络虚拟化业务部署提供了新的解决方案。通过集中控制的方式，网络管理员可以通过控制器的API来编写程序，从而实现自动化的业务部署，大大缩短业务部署周期，同时也实现随需动态调整。</p>
-<p>随着IaaS的发展，数据中心网络对网络虚拟化技术的需求将会越来越强烈。SDN出现不久后，SDN初创公司Nicira就开发了网络虚拟化产品NVP(Network Virtualization Platform)。Nicira被VMware收购之后，VMware结合NVP和自己的产品vCloud Networking and Security (vCNS)，推出了VMware的网络虚拟化和安全产品NSX。NSX可以为数据中心提供软件定义化的网络虚拟化服务。由于网络虚拟化是SDN早期少数几个可以落地的应用，所以大众很容易将网络虚拟化和SDN弄混淆。正如前面所说 ...</p> <a class="btn btn-info xsmall" href="../pages/2015/12/29/sdnyu-wang-luo-xu-ni-hua.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

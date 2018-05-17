@@ -62,6 +62,32 @@
  
 
     <div class='article'>
+        <a href="../pages/2017/02/05/fluentdru-men-jiao-cheng.html"><h2>Fluentd入门教程</h2></a>
+        <div class= "well small"> 2017-02-05
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>最近发生了一些不可描述的故事，艰难之中换到了现在的组，主要的工作内容是数据挖掘。也终于有机会学习新的知识：Ruby和Fluentd。本文将总结开源软件Fluentd的入门知识，包括如何安装，配置文件语法，插件简介等内容。Fluentd的<a href="http://docs.fluentd.org/v0.12/articles/quickstart">官网</a>内容非常详尽，内容的组织也尤其清晰，所以网络上关于Fluentd的文档很少。本文主要用于学习记录，也希望能帮助到英语不好的读者。</p>
+<h3>Overview</h3>
+<p>Fluentd是一个完全开源免费的log信息收集软件，支持超过125个系统的log信息收集。其架构图如图1所示。 </p>
+<p><center><img alt="fluentd" src="http://docs.fluentd.org/images/fluentd-architecture.png" /></center></p>
+<p><center>图1. Fluentd架构图</center></p>
+<p>本质上，Fluentd可以分为客户端和服务端两种模块。客户端为安装在被采集系统中的程序，用于读取log文件等信息，并发送到Fluentd的服务端。服务端则是一个收集器。在Fluentd服务端，我们可以进行相应的配置，使其可以对收集到的数据进行过滤和处理，并最终路由到下一跳。下一跳可以是用于存储的数据库，如MongoDB, Amazon S3, 也可以是其他的数据处理平台，比如Hadoop。</p>
+<h3>Install</h3>
+<p>由于Fluentd的安装较为麻烦，所以业界流行的稳定安装版本其实是有Treasure Data公司提供的td-agent。本文将介绍的也是td-agent的安装和使用。</p>
+<p>官网<a href="http://docs.fluentd.org/v0.12/articles/install-by-deb">安装文档</a>介绍了针对不同系统的安装办法。本文介绍“Ubuntu 14.04 ...</p> <a class="btn btn-info xsmall" href="../pages/2017/02/05/fluentdru-men-jiao-cheng.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2017/01/06/tan-suo-xi-bu-shi-jie-cong-2016zou-dao-2017.html"><h2>探索西部世界：从2016走到2017</h2></a>
         <div class= "well small"> 2017-01-06
 
@@ -164,29 +190,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>一大早特别开心，直接就不去上班，uber过去拜访。手机号刚过期，在没有手机的情况下，利用xfinity的Wi-Fi让司机成功找到了我，太感谢xfinity和uber。</p>
 <p>终于来到了位于PALO ALTO的barefoot，它就在斯坦福校园边上。和ron前辈碰头之后，他就领着去见了偶像Nick教授。</p>
 <p>打开Nick教授的办公室门就看到了他，没想到他这么年轻，这么和善。没有那种官僚气息，更多的是一种工程师的感觉。见到偶像简直太开心了。我很高兴地自我介绍 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/09/13/zai-barefootbai-fang-nick-mckeownjiao-shou.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/08/30/getting-started-of-mongodb.html"><h2>Getting Started of MongoDB</h2></a>
-        <div class= "well small"> 2016-08-30
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>What is MongoDB</h3>
-<p>MongoDB is an open-source document database that provides high performance, high availability, and automatic scaling.[1]</p>
-<p>MongoDB（来自于英文单词“Humongous”，中文含义为“庞大”）是可以应用于各种规模的企业、各个行业以及各类应用程序的开源数据库。作为一个适用于敏捷开发的数据库，MongoDB的数据模式可以随着应用程序的发展而灵活地更新。与此同时，它也为开发人员 提供了传统数据库的功能：二级索引，完整的查询系统以及严格一致性等等。 MongoDB能够使企业更加具有敏捷性和可扩展性，各种规模的企业都可以通过使用MongoDB来创建新的应用，提高与客户之间的工作效率，加快产品上市时间，以及降低企业成本。</p>
-<p>MongoDB是专为可扩展性，高性能和高可用性而设计的数据库。它可以从单服务器部署扩展到大型、复杂的多数据中心架构。利用内存计算的优势，MongoDB能够提供高性能的数据读写操作。 MongoDB的本地复制和自动故障转移功能使您的应用程序具有企业级的可靠性和操作灵活性。[2]</p>
-<h3>About MongoDB</h3>
-<p>MongoDB is ...</p> <a class="btn btn-info xsmall" href="../pages/2016/08/30/getting-started-of-mongodb.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

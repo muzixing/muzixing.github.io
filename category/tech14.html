@@ -62,6 +62,36 @@
  
 
     <div class='article'>
+        <a href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html"><h2>【原】基于mininet的OpenFlow拓展性拓扑搭建</h2></a>
+        <div class= "well small"> 2014-03-11
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h2>前言</h2>
+<p>我们普遍情况下，都是单一控制器去控制一个网络。但是如果多控制器呢？我们如何实现多控制情况下的通信要求呢？</p>
+<p>这有点难度！需要一些东西向的协议来实现控制器之间的数据共享与交换。不是我一个人一两天能搞定的事情。且不同控制器对拓扑信息等存储方式不一样，需要一个统一的标准就显得比较困难。我们先不去想太多。首先，我们需要完成的第一项工作就是数据平面上，不同控制器之间的网络可以相互通信。</p>
+<p>最简单的通信莫过于ping了！</p>
+<h2>实验目的</h2>
+<p>使用mininet搭建两个独立的网络，分别属于不同的控制器。同时，底层数据平面可以相互ping通。这就是我们这个实验的目的。</p>
+<h2>拓扑搭建</h2>
+<p>底层拓扑搭建我们使用mininet2.0，因为mininet1.0版本好像没有link文件，也没有intf类。也许是我没有找到吧。</p>
+<p>以下的代码的作用在于创建一个OVS的网络，并使虚拟机的某个（无ip）网卡连接到这个网中。</p>
+<p>直接上代码：</p>
+<div class="highlight"><pre><span class="o">\</span><span class="c1">#!/usr/bin/python</span>
+<span class="s">&quot;&quot;&quot;</span>
+<span class="s">    This is a topu of our test. It shows that how to add an ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/03/11/yuan-ji-yu-mininetde-openflowtuo-zhan-xing-tuo-bu-da-jian.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2013/12/24/sdnde-chu-bu-ren-shi.html"><h2>SDN的初步认识</h2></a>
         <div class= "well small"> 2013-12-24
 
@@ -175,36 +205,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h4>OpenFlow的switch可以从以下方式获得</h4>
 <ul>
 <li>实体of交换机，目前市场上有一些厂商已经制造出of交换机 ...</li></ul> <a class="btn btn-info xsmall" href="../pages/2013/12/12/yuan-chuang-openflowtong-xin-liu-cheng-jie-du.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html"><h2>【原创】SDN下的分布式广播风暴解决方案</h2></a>
-        <div class= "well small"> 2013-12-07
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<p>这是很久以前的成果了，那时候我才大三上。为了学习sdn,openflow等知识，北邮科研楼628的一群哥们儿，想着各种新奇的东西去解决已有的问题。</p>
-<p>有一天，我们遇到了网络风暴，但是我们觉得STP有点复杂，而且，确实也不愿意去学。那么，就自己写一个解决方案吧。于是，下面的小代码产生了。</p>
-<h3>核心思想</h3>
-<p>其实特别简单，一句话：<strong>不让同一个数据包从第二个端口进入，即仅允许数据包从第一个进来的端口进入。</strong></p>
-<p>也就是说，我确保了，同一个数据包，不会从别的交换机从非第一次的in_port进入本交换机，那就不会有环路，也就解决了风暴，而且，同一个端口允许进入，不影响主机继续发送广播包。</p>
-<h3>具体实现</h3>
-<p>这个就需要我们建立一个macToport的表，在python里面数据结构字典来实现。使用src_mac作为key，记录值为[dstip,port,time]</p>
-<div class="highlight"><pre><span class="n">self</span><span class="o">.</span><span class="n">macToPort</span> <span class="o">=</span> <span class="p">{</span><span class="n">srcMAC:</span><span class="p">[</span><span class="n">dst_ip</span><span class="p">,</span><span class="n">in_port</span><span class="p">,</span><span class="nb">time</span><span class="p">]}</span>
-</pre></div>
-
-
-<p>这个字典记录了用数据包的mac地址记录了数据包的目标ip,入口端口，到达时间三个信息，其实如果为了更好的对应，我们应该使用上xid,让 ...</p> <a class="btn btn-info xsmall" href="../pages/2013/12/07/yuan-chuang-sdnxia-de-fen-bu-shi-yan-bo-feng-bao-jie-jue-fang-an.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

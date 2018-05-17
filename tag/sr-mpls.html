@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>Muzixing</title>
+    <meta name="description" content="">
+    <meta name="author" content="muzi">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="../theme/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../theme/local.css" rel="stylesheet">
+    <link href="../theme/pygments.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="navbar-inner">
+    <div class="container">
+
+         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+             <span class="icon-bar"></span>
+         </a>
+
+        <a class="brand" href="..">Muzixing</a>
+
+        <div class="nav-collapse">
+
+        <ul class="nav">
+            
+            <li><a href="../pages/about-me.html">About me</a></li>
+        </ul>
+	<form class="navbar-search pull-right" action="/search.html">
+    	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
+</form>
+
+        </div>
+        
+    </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+    <div class="row">
+
+        <div class="span9">
+        
+
+        
+
+
+    <div class='article'>
+        <div class="content-title">
+            <a href="../pages/2018/08/09/segment-routingxi-lie-wen-zhang-to-write-list.html"><h1>Segment Routing系列文章：To Write List</h1></a>
+2018-08-09
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ 
+        </div>
+        
+        <div><h3>前言</h3>
+<p>人啊，总是懒惰的。</p>
+<p>一懒惰，就是两年。</p>
+<p>总是有太多理由，总是有太多借口。</p>
+<p>但终究，还是无法再骗过自己了。</p>
+<p>问过了领导，答复写互联网公开的，开源的内容没有问题。那就从我平时研究的Segment Routing开始写吧。为避免踩信息安全红线，还是要很郑重地声明：</p>
+<p><strong>所有文章内容均为互联网公开资料和个人技术理解，不涉及任何商业机密。</strong></p>
+<h3>什么是SR</h3>
+<p>Segment Routing， 中文翻译为段路由，是一种源路由架构，其支持在Ingress node(源节点)制定数据包的转发路径。</p>
+<p>Segment Routing的诞生背景和SDN紧密相关。在SDN出现早期，SDN几乎和OpenFlow密不可分。但最近OpenFlow却并没有如前两年那样如火如荼，已经开始慢慢冷却，推出人们的视线。</p>
+<p>原因很多。从商业上，极具革命性的OpenFlow容易打破网络行业的布局，影响了行业巨头的利益，所以很难被传统设备商所接受。在技术上，OpenFlow网络中每个节点都要维持网络状态，当网络规模变大，业务变多，网络管理和运维就变得复杂，网络的可扩展性就受到了限制。而此时，一个更容易演进，又提供了足够的网络变成能力的网络架构Segment Routing被提了出来。Segment Routing(SR)是一种可以在ingress节点指明数据包转发路径的源路有机制。</p>
+<h3>后续文章计划</h3>
+<p>更多的内容将会在如下的文章中被介绍，主要包括SR的原理，协议扩展等内容：</p>
+<ul>
+<li>《Segment Routing架构基础：SR-MPLS和SRv6》—— 待完成</li>
+<li>《SR-MPLS：RSVP-TE的退场与SR-MPLS的崛起》—— 待完成</li>
+<li>《SRv6：SDN的未来？》—— 待完成<ul>
+<li>《SRH简介》—— 待完成</li>
+<li>《SRv6 Network Programming》—— 待完成</li>
+<li>《IS-IS extensions for SRv6》—— 待完成</li>
+</ul>
+</li>
+<li>《SR for SFC》—— 待完成<ul>
+<li>《SFC：PBR vs NSH vs SR》—— 待完成</li>
+</ul>
+</li>
+</ul>
+<p>计划都放出来了，难道要反悔？不可能的!</p>
+<p>成长的速度太慢了，要追不上梦想了，要努力哦。</p></div>
+        <hr />
+    </div>
+		
+<div class="pagination">
+<ul>
+    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
+
+    <li class="active"><a href="../tag/sr-mpls.html">1</a></li>
+
+    <li class="next disabled"><a href="#">&rarr; Next</a></li>
+
+</ul>
+</div>
+ 
+  
+        </div>
+        
+        <div class="span3">
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Site
+                </li>
+            
+                <li><a href="../archives.html">Archives</a>
+                <li><a href="../tags.html">Tags</a>
+                <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
+		</li>
+                <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Categories
+                </li>
+                
+                <li><a href="../category/life.html">Life</a></li>
+                <li><a href="../category/tech.html">Tech</a></li>
+                   
+            </ul>
+            </div>
+
+
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Links
+                </li>
+            
+                <li><a href="http://www.sdnlab.com/">SDNLAB</a></li>
+                <li><a href="http://ikimi.net/">Kimi Yang</a></li>
+                <li><a href="http://milestones.lofter.com/">Milestones</a></li>
+            </ul>
+            </div>
+
+
+            <div class="social">
+            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
+            <ul class="nav nav-list">
+                <li class="nav-header"> 
+                Social
+                </li>
+           
+                <li><a href="https://github.com/muzixing">Github</a></li>
+                <li><a href="http://weibo.com/u/2136552257">Weibo</a></li>
+                <li><a href="https://www.linkedin.com/in/cheng-li-0b612394">Linkedin</a></li>
+                <li><a href="http://350959853.qzone.qq.com">Qzone</a></li>
+            </ul>
+            </div>
+            </div>
+
+        </div>  
+    </div>     </div> 
+<footer>
+<br />
+<p><a href="..">Muzixing</a> &copy; muzi 2012</p>
+</footer>
+
+</div> <!-- /container -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+<script>var _gaq=[['_setAccount','UA-45955656-1'],['_trackPageview']];(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.src='//www.google-analytics.com/ga.js';s.parentNode.insertBefore(g,s)}(document,'script'))</script>
+ 
+</body>
+</html>
