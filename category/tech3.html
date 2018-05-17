@@ -62,6 +62,30 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html"><h2>SDN最新研究进展</h2></a>
+        <div class= "well small"> 2016-06-28
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>自SDN出现以来，关于SDN的研究一直没有停止，只是不同的阶段关于SDN的研究的重点不同。比如最开始的时候，探讨最多的是SDN的可行性，以及如何将SDN应用到对应的网络场景中。本文是笔者在最近阅读2015年至今的若干SDN论文后总结的SDN最新研究进展，希望对读者提供一些帮助。</p>
+<h3>SDN/NFV</h3>
+<p>SDN和NFV都是当下网络界研究的热点，而如何将两者整合部署，也是研究的热点之一。设计SDN/NFV整合部署框架的研究是这个研究方向的主要研究切入点之一，比如参考文献[1]中就提出了一个SDN/NFV的整体架构。框架中的NFV协调器可以和云管理平台配合使用，SDN控制器也支持与云平台结合。由于此类方案是SDN与其他技术/框架的集合，本身没有太多创新性，论文中也仅仅介绍了其实现方案，所以此处不加赘述。</p>
+<p>SDN/NFV结合还可以部署在很多场景，比如WiFi场景。OpenSDWN[2]就是一种软件定义的家庭/企业WiFi架构框架。 将SDN与其他技术结合并应用在特定网络场景是一种主要的研究方向之一。</p>
+<h3>流表优化</h3>
+<p>OpenFlow所支持的细粒度流管理是SDN最大的优势之一，但是细粒度的管理是需要付出代价的。为满足细粒度的管理，则需要更粒度的流表项。但是像OpenFlow协议这种细粒度的管理会带来一定的时延，对于时延敏感的短流业务而言，这个时延带来的影响是不可忽视的，这很可能会抵消了SDN带来的好处。所以如何通过流表来匹配流，从而减少流表项下发次数，是降低时延影响的有利手段。</p>
+<p>此外，当网络流数目过多时，交换机的流表空间就无法满足需求。当流表满时 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/06/28/sdnzui-xin-yan-jiu-jin-zhan.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html"><h2>Ryu:网络时延探测应用</h2></a>
         <div class= "well small"> 2016-05-24
 
@@ -156,28 +180,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>“你这么叫不累？叫我Linux就好了。你是新来的员工，要做什么可以看你胸前的说明书”。</p>
 <p>我低头一看，我的天啊！我贴着这么大的说明书和路过的5个美女打了招呼，她们还对我笑了。我拿下说明书，发现上面赫然写着“README”，怪不得刚才有个小孩一直跟着我，还碎碎念着什么SDN，我还以为他只是脑子发育有些迟缓。羞愧之余，我慢慢往下读。</p>
 <p>原来我被任命为因特奈特国金银岛的快递主管 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/04/18/wo-shi-ge-sdnkong-zhi-qi.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html"><h2>P4:真正的SDN还遥远吗</h2></a>
-        <div class= "well small"> 2016-03-23
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>OpenFlow协议作为SDN最流行的南向协议，得到了很多的关注，目前发展也良好，但OpenFlow并不完美，OpeFlow交换机还不能提供更好的可编程能力。P4作为新的网络编程语言很好的弥补这个缺陷。P4会改变网络吗？是否能带来具有完全可编程能力的SDN？还是仅仅是学术界的宠儿？本文将介绍协议独立数据包处理编程语言P4，其中包括其简介、原理和发展趋势，希望笔者能带来一些有意思的观点。</p>
-<h3>简介</h3>
-<p>P4(Programming protocol-independent packet processors)[1]是由Pat Bosshart等人提出来的高级“协议独立数据包处理编程语言”，如OpenFlow一样是一种南向协议，但是其范围要比OpenFlow要大。不仅可以指导数据流进行转发，还可以对交换机等转发设备的数据处理流程进行软件编程定义，是真正意义上的完全SDN。值得注意的是，P4论文作者中还有斯坦福大学的Nick McKeown教授和普林斯顿大学的Jennifer Rexford教授两位业界大牛的名字。Nick教授是SDN的提出者之一，一直是SDN学术领域顶尖的存在；而后者Jennifer教授也发表了4D[2]等诸多重要的SDN相关论文，更提出了网络编程语言Frenetic[3]，同样是业界的先驱。两位教授也是P4组织的主要推动者之一。目前，P4语言作为一种潜在的OpenFlow2.0的发展方向在努力发展。</p>
-<h3>原理</h3>
-<p>与POF提出的目的类似，P4提出的目的也是为了解决OpenFlow编程能力不足以及其设计本身所带来的可拓展性差的难题。自OpenFlow1.0发布以来，其版本目前已经演进到1 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

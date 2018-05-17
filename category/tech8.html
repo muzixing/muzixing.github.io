@@ -62,6 +62,52 @@
  
 
     <div class='article'>
+        <a href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html"><h2>RYU3.16 GUI安装与Topology模块分析</h2></a>
+        <div class= "well small"> 2015-04-21
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>最近很多SDN研究人员问起如何安装RYU的GUI，网上也有一些教程。但是由于RYU版本问题，导致安装没有成功。本片博文将介绍RYU3.16版本下如何安装GUI，以及对RYU拓扑模块进行简单分析。</p>
+<h3>安装GUI</h3>
+<p><a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/">Linton的博客</a>已经有详细介绍，我在这里将一些可能出现问题的地方再提醒一次。</p>
+<h4>第一步：依赖安装及修改代码</h4>
+<p>建议查看<a href="http://linton.tw/2014/02/11/note-how-to-set-up-ryu-controller-with-gui-component/">Linton的博客</a>，比较简单，不赘述。</p>
+<h4>第二步：运行相关组建</h4>
+<ul>
+<li>
+<p><strong>运行RYU相关APP</strong></p>
+<div class="highlight"><pre><span class="n">ryu</span><span class="o">-</span><span class="n">manager</span> <span class="o">--</span><span class="n">verbose</span> <span class="o">--</span><span class="n">observe</span><span class="o">-</span><span class="n">links</span> <span class="n">app</span><span class="o">/</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">py</span> <span class="n">ryu</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">switches</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_topology</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">ofctl_rest</span>
+</pre></div>
+
+
+<p><img alt="运行截图" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi3oujndj20k60co75c.jpg" /></p>
+<p>运行截图如下：
+<img alt="" src="http://ww2.sinaimg.cn/mw690/7f593341jw1erdi90ztcij20jx0cqqa0.jpg" /></p>
+</li>
+<li>
+<p><strong>运行controller.py文件</strong></p>
+<p>进入到gui目录，运行controller.py文件。</p>
+<div class="highlight"><pre><span class="n">python</span> <span class="n">controller</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+
+
+<p><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341jw1erdi91ct7ej20mh0im12r.jpg" /></p>
+</li>
+<li>
+<p><strong>访问页面</strong></p>
+<p>打开浏览器，访问http://127 ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2015/04/21/ryu316-guian-zhuang-yu-topologymo-kuai-fen-xi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2015/03/04/traffic-monitor-in-ryu.html"><h2>Traffic monitor in RYU</h2></a>
         <div class= "well small"> 2015-03-04
 
@@ -140,36 +186,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>如果要快速学习某一个知识，最好的办法就是把它用起来。所以首先我会介绍一个入门的教程。如果你没有看懂，可以去看原始的<a href="http://www.giantflyingsaucer.com/blog/?p=4822">教程</a>。</p>
 <p>首先安装<a href="https://virtualenv.pypa.io/en/latest/virtualenv.html">python-virtualenv</a>，此python库可以用于创建一个虚拟的，与外界隔离的运行环境，听起来和docker好像有点像。</p>
 <div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/19/ryuxue-xi-oslo.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2014/12/10/ryuxue-xi-eventlet.html"><h2>RYU学习:eventlet</h2></a>
-        <div class= "well small"> 2014-12-10
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h2>前言</h2>
-<p>从OpenDaylight转到RYU以来一直都没有机会好好学习RYU的源码,只学会了编写简单的Application。但是如果要熟悉一个控制器，就要熟悉它的运行原理，熟悉它数据结构，熟悉它的设计模式等等。最近终于有时间好好看RYU的代码，但在看代码的过程中却发现RYU并不简单，其编码风格也非常优雅，非常值得学习。本篇博文主要讲述RYU中使用到的eventlet。</p>
-<h2>从RYU开始</h2>
-<p>运行ryu的时候，命令是：ryu-manager app.py。第一个要找到就是ryu-manager到底会触发什么程序。在/cmd中没有找到之后，在/bin中找到了两个可执行文件：ryu和ryu-manager。打开ryu-manager，显示如下：</p>
-<div class="highlight"><pre><span class="n">from</span> <span class="n">ryu</span><span class="o">.</span><span class="n">cmd</span><span class="o">.</span><span class="n">manager</span> <span class="nb">import</span> <span class="n">main</span>
-<span class="n">main</span><span class="p">()</span>
-</pre></div>
-
-
-<p>找到/ryu/cmd/manager.py，发现这个文件中的main()函数是整个ryu的入口函数。</p>
-<div class="highlight"><pre><span class="n">def</span> <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">None</span><span class="p">):</span>
-    <span class="n">try:</span>
-        <span class="n">CONF</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args ...</span></pre></div> <a class="btn btn-info xsmall" href="../pages/2014/12/10/ryuxue-xi-eventlet.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

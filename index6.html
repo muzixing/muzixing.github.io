@@ -62,6 +62,44 @@
  
 
     <div class='article'>
+        <a href="./pages/2016/02/14/sdnzu-wang-xiang-guan-jie-jue-fang-an.html"><h2>SDN组网相关解决方案</h2></a>
+        <div class= "well small"> 2016-02-14
+
+by <a class="url fn" href="./author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>SDN作为一种新的网络架构，正被应用到越来越多的网络场景中。而网络的关键在于通信，如何使得SDN网络正常运行，并且能够和传统网络相互通信是SDN组网需要解决的基本问题。本文将介绍SDN组网相关解决方案中的数据平面到控制平面的组网解决方案、多SDN域组网解决方案和SDN网络与传统网络组网通信的解决方案。</p>
+<h3>SDN数据平面到控制平面组网</h3>
+<p>目前为止，在数据层面到控制到控制平面之间的组网方案主要有两大类：带外组网和带内(in-band)组网。</p>
+<ul>
+<li>
+<p>带外（out-band）组网: </p>
+<p>数据平面到控制平面的控制数据通过专门的控制网络，而不经过数据平面转发，从而将数据平面的数据和控制平面数据隔离运行在两张独立的网络中。在带外组网方案中，每个交换机都有连接到控制平面的专属线路，而无需通过其他数据平面交换机转发。带外组网可以减少组网的难度和运维的难度。缺点是交换机多时，链路数量较多。</p>
+</li>
+</ul>
+<p><center><img alt="" src="http://ww1.sinaimg.cn/mw690/7f593341gw1f0ywymcw76j20b807s74v.jpg" /></center>
+<center>图1. out-band组网方案</center>   </p>
+<ul>
+<li>
+<p>带内（in-band）组网</p>
+<p>带内组网指的是控制数据和数据平面数据可以共享一个物理链路。即数据平面的有些交换机直连控制器，而其他的交换机的需要经过数据平面的链路才能到达控制器。非直交换机的控制数据需要通过数据平面的链路进行转发，并通过直连交换机转发到控制器。此种组网方式可以减少许多交换机到控制器的链路数量，但是配置带内组网比较麻烦，可靠性较低，维护成本也相对要高。
+<center><img alt="" src="http://ww4.sinaimg.cn/mw690/7f593341gw1f0ywykadhmj20ay0763z2.jpg" /></center>
+<center>图2. in-band组网方案</center></p>
+</li>
+</ul>
+<h3>多SDN域组网方案</h3>
+<p>当网络规模过大时，需要部署多域的组网方案。其中每个SDN域都由各自的控制平面控制。多域组网方案有水平架构和垂直架构两种。水平架构形式的多域组网方案中，域控制平面之间的关系是对等的。而在垂直架构中，则划分为域控制器层和超级控制器层 ...</p> <a class="btn btn-info xsmall" href="./pages/2016/02/14/sdnzu-wang-xiang-guan-jie-jue-fang-an.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="./pages/2016/01/27/ji-yu-sdnde-wang-luo-zhuang-tai-ce-liang.html"><h2>基于SDN的网络状态测量</h2></a>
         <div class= "well small"> 2016-01-27
 
@@ -159,31 +197,6 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <li>使用Networkx的函数all_simple_paths(G, source ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2015/11/30/ji-yu-liu-liang-de-sdnzui-duan-lu-jing-zhuan-fa-ying-yong.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html"><h2>基于Ryu打造自定义控制器</h2></a>
-        <div class= "well small"> 2015-11-20
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>控制器是SDN网络中最重要的组成部分。在开发SDN应用时，需要基于某一个控制器开发，而大部分开源控制器都是一个框架或者平台，更多个性化的设置和应用需要开发者自己完成。对于开发者而言，一个自定义的控制器可以让控制器更加适配开发场景，发挥控制器最大的作用，提高开发效率。本篇文章将以Ryu为例，介绍如何修改Ryu源码，打造属于自己风格的自定义控制器。其内容包括自定义参数，事件，启动顺序，报文，协议和底层服务。</p>
-<h3>自定义参数</h3>
-<p>很多应用都会涉及相关参数的输入才能运行， 如OpenFlow协议的启动需要配置监听端口。在编写新应用时，需要获取相关参数的值来运行应用，所以需要开发应用时注册参数。目前已有的参数可以通过ryu-manager -h查看。而不同的应用注册的参数很可能名字一样，这就有可能发生冲突。为解决这个问题，Ryu采用了OpenStack的Oslo库，支持全局的命令注册和解析。Oslo支持全局的命令注册和解析，成功解除了命令冲突的难题，也大大降低了参数注册和解析的难度。注册新参数的方法很简单，只需要新建一个文件，然后按照如下案例完成注册，最后再在cmd/manager.py中import即可。</p>
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu</span> <span class="kn">import</span> <span class="n">cfg</span>
-
-<span class="n">CONF</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CONF</span>
-<span class="n">CONF</span><span class="o">.</span><span class="n">register_cli_opts</span><span class="p">([</span>
-    <span class="n">cfg</span><span class="o">.</span><span class="n">StrOpt ...</span></pre></div> <a class="btn btn-info xsmall" href="./pages/2015/11/20/ji-yu-ryuda-zao-zi-ding-yi-kong-zhi-qi.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev"><a href="./index5.html">&larr; Previous</a></li>
@@ -206,6 +219,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     <li class=""><a href="./index16.html">16</a></li>
     <li class=""><a href="./index17.html">17</a></li>
     <li class=""><a href="./index18.html">18</a></li>
+    <li class=""><a href="./index19.html">19</a></li>
 
     <li class="next"><a href="./index7.html">Next &rarr;</a></li>
 

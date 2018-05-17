@@ -62,8 +62,8 @@
 
     <div class='article'>
         <div class="content-title">
-            <a href="../pages/2018/08/09/segment-routingxi-lie-wen-zhang-to-write-list.html"><h1>Segment Routing系列文章：To Write List</h1></a>
-2018-08-09
+            <a href="../pages/2018/08/15/segment-routingjia-gou-jie-shao.html"><h1>Segment Routing架构介绍</h1></a>
+2018-08-15
 
 by <a class="url fn" href="../author/muzi.html">muzi</a>
  
@@ -73,6 +73,76 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
         </div>
         
         <div><h3>前言</h3>
+<p>从第一次接触到Segment Routing（SR），到现在专注与Segment Routing的研究和标准化，了解越来越深入，也越来越清楚SR将成为网络的发展趋势。在SR架构文稿成为<a href="https://tools.ietf.org/html/rfc8402">RFC8402</a>的这一刻，没有什么比写一篇介绍SR架构的文章更好的选择了。</p>
+<h3>Segment Routing Architecture</h3>
+<p>Segment Routing (SR)是一种源路由机制。SR支持在源节点往数据报文中插入一组有序的操作指令来显示地指定数据包的转发路径和处理流程。这个操作指令称之为“Segment”。一个Segment可以是具有拓扑意义的，比如代表一个节点或者一条链路，也可以是基于服务的，比如描述一个service。 </p>
+<p>一个segment可以是本地意义的，也可以是全局意义的。比如描述一个指向一个邻接的链路，或者描述一个全局的节点或者网段。 </p>
+<p>基于SR，可以实现数据流的显示路径转发，而且只需在Ingress节点维持per-flow的状态而无需在中间节点或尾节点来维持per-flow的状态。相比RSVP-TE MPLS需要在所有节点维持per-flow的状态，SR大大节省了网络的状态维护难度，从而简化了网络，也提升了网络的可扩展性。</p>
+<p>当下的SR架构可以部署在两种数据平面上：</p>
+<p><strong>MPLS</strong>：</p>
+<p>部署在MPLS数据平面上的SR，标准上习惯称之为SR-MPLS，当然也有人喜欢叫MPLS-SR。其可以直接基于现有的MPLS数据平面部署，无需对数据平面进行任何改动。这意味着，从RSVP-TE MPLS到SR-MPLS的改动只需对控制平面进行升级，使得网络可以更平滑地存量演进。在SR-MPLS中，一个Segment表现为一个MPLS label（标签）。</p>
+<p>一组有序的Segment，称之为Segment list呈现为一个MPLS标签栈。需要被处理的标签为栈顶的标签。被处理完的标签，将会被弹出。所以随着数据包在MPLS网络中转发，标签栈中的标签会不断弹出，直到最后弹完。数据包的转发动作，则有标签指定，其转发行为同RSVP-TE MPLS网络。</p>
+<p><strong>SRv6</strong></p>
+<p>SR架构也可以应用在IPv6网络中，只是还需要扩展一个IPv6 Routing Header: Segment Routing Header(SRH). 一个Segment表现为一个128 bit的IPv6地址。一个Segment list就表现为插入在SRH中的一组有序的IPv6列表。Active Segment就是IPv6地址中的目的地址对应的值（上一个被更新到DA的SID）。</p>
+<p>Segment Routing的诞生背景和SDN紧密相关。在SDN出现早起，SDN几乎和OpenFlow密不可分。但在商业上，OpenFlow这样极具革命性创新的新协议很难被传统设备商所接受，也影响了巨头们的利益。在技术上，OpenFlow网络中每个节点都要维持网络状态，当网络规模变大，业务变多，网络管理和运维就变得复杂，网络的可扩展性就受到了限制。为了面对OpenFlow的挑战，Cisco提出了Segment Routing(SR),一种可以在ingress节点指明数据包转发路径的源路有机制。</p>
+<p>SR典型图（TBD）</p>
+<p>总体来看，SR主要有如下的特征（包括但不限于）</p>
+<ul>
+<li>支持源路由，支持在源节点显示指定转发路径</li>
+<li>SR只在Ingress节点保持Per-flow的状态，中间网络节点无需维护Per-flow的网络状态，只需无状态转发即可，因此SR具有很好的可扩展性。</li>
+<li>SR无需在节点之间采用任何信令协议，不要求增加任何新的网络协议，减少网络信令协议的使用。</li>
+<li>SR可以部署在MPLS和IPv6两种数据平面。</li>
+</ul>
+<h3>Link-State IGP Segments</h3>
+<p>描述Segment的ID称为Segment ID，缩写为SID。在不同的数据平面，SID的表现形式不同。在MPLS数据平面，SID表现为一个MPLS标签，而在IPv6数据平面里，SID表现为一个128bit的值，其可以是节点的一个接口地址，也可以不是。</p>
+<p>SR的控制平面在Ingress节点根据SR policy给数据包插入Segment list，显示指定数据包的转发路径(松散路径或者严格路径，后面介绍)，以及在指定节点的操作。节点需要根据数据包中的指令来处理和转发数据包。</p>
+<p>SR控制平面可以是分布式的，也可以是集中式的。在分布式的情况下，需要通过扩展IGP（IS-IS／OSPF）来支持SR，</p>
+<h3>IGP</h3>
+<h4>node-SID</h4>
+<p>TBD</p>
+<h4>Prefix-SID</h4>
+<p>TBD</p>
+<h4>Adjacency-SID</h4>
+<p>TBD</p>
+<h4>Binding-SID</h4>
+<p>TBD</p>
+<h3>SR-MPLS</h3>
+<h4>四种sid的对应，mpls的介绍</h4>
+<p>SR-MPLS的文稿结构</p>
+<h3>SRv6</h3>
+<h4>SRv6的介绍</h4>
+<p>SRH</p>
+<h4>SRv6 NP</h4>
+<p>SID，functions</p>
+<h4>SRv6的流程</h4>
+<p>Locator 路由，SID发布，</p>
+<h3>an</h3>
+<h3>SR的潜力</h3>
+<p>SR TE SR BE
+SRv6，端到端解决方案，未来的网络架构</p>
+<h3>SR use case</h3>
+<p>SFC，SR TE，网络编程。</p>
+<h3>总结</h3>
+<p>PS：本文章为个人学习总结，不涉及任何商业信息。</p></div>
+        <hr />
+    </div>
+		
+
+ 
+        
+
+ 
+
+    <div class='article'>
+        <a href="../pages/2018/08/09/segment-routingxi-lie-wen-zhang-to-write-list.html"><h2>Segment Routing系列文章：To Write List</h2></a>
+        <div class= "well small"> 2018-08-09
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><h3>前言</h3>
 <hr />
 <p>人啊，总是懒惰的。</p>
 <p>一懒惰，就是两年。</p>
@@ -83,28 +153,9 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <h3>什么是SR</h3>
 <p>Segment Routing， 中文翻译为段路由，是一种源路由架构，其支持在Ingress node(源节点)指定数据包的转发路径。</p>
 <p>Segment Routing的诞生背景和SDN紧密相关。在SDN出现早期，SDN几乎和OpenFlow密不可分。但现在OpenFlow却并没有像前两年那样如火如荼，已经开始慢慢冷却，慢慢退出人们的视野。</p>
-<p>OpenFlow冷却的原因很多。从商业上，极具革命性的OpenFlow可能会打破网络行业的格局，影响了行业巨头的利益，所以很难被传统设备商所接受。在技术上，OpenFlow网络中的每个节点都要维持per-flow的网络状态，当网络规模变大，业务变复杂，网络管理和运维就变得复杂，网络的可扩展性就成了问题。就在此时，一个更容易平滑演进，又具有足够的网络编程能力的网络架构Segment Routing被提了出来。Segment Routing (SR) 是一种可以在源节点指明数据包转发路径的源路由网络架构。</p>
-<h3>后续文章计划</h3>
-<p>更多的内容将会在如下的文章中被介绍，主要包括SR的原理，协议扩展等内容：</p>
-<ul>
-<li>《Segment Routing架构基础：SR-MPLS和SRv6》—— 待完成</li>
-<li>《SR-MPLS：RSVP-TE的退场与SR-MPLS的崛起》—— 待完成</li>
-<li>《SRv6：SDN的未来？》—— 待完成<ul>
-<li>《SRH简介》—— 待完成</li>
-<li>《SRv6 Network Programming》—— 待完成</li>
-<li>《IS-IS extensions for SRv6》—— 待完成</li>
-</ul>
-</li>
-<li>《SR for SFC》—— 待完成<ul>
-<li>《SFC：PBR vs NSH vs SR》—— 待完成</li>
-</ul>
-</li>
-</ul>
-<p>计划都放出来了，难道要反悔？不可能的!</p>
-<p>成长的速度太慢了，要追不上梦想了，要努力哦。</p></div>
-        <hr />
-    </div>
-		
+<p>OpenFlow冷却的原因很多。从商业上，极具革命性的OpenFlow可能会打破网络行业的格局，影响了行业巨头的利益，所以很难被传统设备商所接受。在技术上，OpenFlow网络中的每个节点都要维持per-flow的网络状态，当网络规模变大，业务变复杂，网络管理和运维就变得复杂，网络的可扩展性就成了问题。就在此时，一个更容易平滑演进，又具有足够的网络编程能力的网络架构Segment Routing被提了出来 ...</p> <a class="btn btn-info xsmall" href="../pages/2018/08/09/segment-routingxi-lie-wen-zhang-to-write-list.html">read more</a></div>
+    </div>	
+				
 
  
         
@@ -215,30 +266,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>身处SDN发展浪潮 ...</p> <a class="btn btn-info xsmall" href="../pages/2017/04/05/zhong-gou-wang-luo-sdnjia-gou-yu-shi-xian-zhong-yu-chu-ban-la.html">read more</a></div>
     </div>	
 				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2017/03/25/2016zong-jie-sha-si-na-ge-tian-zhen-de-zi-ji.html"><h2>2016总结：杀死那个天真的自己</h2></a>
-        <div class= "well small"> 2017-03-25
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>在大家都在发年终总结的那几天里，我还在美国西部的雪地、峡谷和沙漠里不断穿行。由于很多事情还没有做完，所以我也不打算以时间为节点写什么总结，只发了一条朋友圈：“2016年终总结：很多事情没完成，不总结”，就算应付过去了。</p>
-<p>一眨眼，就快四月了，很多事情尘埃落定之后，不由自主地想要写一篇总结向上一个阶段告别。</p>
-<h3>X计划</h3>
-<p>当KkBLuE前辈给我推荐北大光华的X计划的时候，我突然就发现了新天地。于是写申请，填材料，要推荐信。一切都很顺利，提交申请之后，不久就收到了获取参加体验营的通知，而MBA面试就在活动结束的时候。</p>
-<p>4月份，第一次租了正装去参加活动。报道的时候，发现60人里面绝大部分是经管类专业的，剩下的就是计算机相关专业的了，而其中很大一部分的学生来自对外经贸大学，剩下的基本来自中财，清华，北大等学校，而北邮的就我一个。更让我意外的是，我发现我真的已经好老了，因为来的人基本都是大三的学生，研究生基本没有。这是一种很糟糕的信号：我已经老了。</p>
-<p>三天活动非常的充实，参加体验营的小伙伴们都非常优秀。</p>
-<p>最后面试的时候，和我一样报社会公益方向MBA的人只有3个，我知道我基本上已经没戏了。我是所有人里面最后一个面试的。面试的前半部分还蛮正常，直到一个老师提出了一个非常尖锐的问题：“你们北邮的研究生出来工作工资是非常高的，你愿意放弃你的工作 ...</p> <a class="btn btn-info xsmall" href="../pages/2017/03/25/2016zong-jie-sha-si-na-ge-tian-zhen-de-zi-ji.html">read more</a></div>
-    </div>	
-				
 <div class="pagination">
 <ul>
     <li class="prev disabled"><a href="#">&larr; Previous</a></li>
@@ -261,6 +288,7 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
     <li class=""><a href="../author/muzi16.html">16</a></li>
     <li class=""><a href="../author/muzi17.html">17</a></li>
     <li class=""><a href="../author/muzi18.html">18</a></li>
+    <li class=""><a href="../author/muzi19.html">19</a></li>
 
     <li class="next"><a href="../author/muzi2.html">Next &rarr;</a></li>
 

@@ -62,6 +62,28 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html"><h2>P4:真正的SDN还遥远吗</h2></a>
+        <div class= "well small"> 2016-03-23
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>OpenFlow协议作为SDN最流行的南向协议，得到了很多的关注，目前发展也良好，但OpenFlow并不完美，OpeFlow交换机还不能提供更好的可编程能力。P4作为新的网络编程语言很好的弥补这个缺陷。P4会改变网络吗？是否能带来具有完全可编程能力的SDN？还是仅仅是学术界的宠儿？本文将介绍协议独立数据包处理编程语言P4，其中包括其简介、原理和发展趋势，希望笔者能带来一些有意思的观点。</p>
+<h3>简介</h3>
+<p>P4(Programming protocol-independent packet processors)[1]是由Pat Bosshart等人提出来的高级“协议独立数据包处理编程语言”，如OpenFlow一样是一种南向协议，但是其范围要比OpenFlow要大。不仅可以指导数据流进行转发，还可以对交换机等转发设备的数据处理流程进行软件编程定义，是真正意义上的完全SDN。值得注意的是，P4论文作者中还有斯坦福大学的Nick McKeown教授和普林斯顿大学的Jennifer Rexford教授两位业界大牛的名字。Nick教授是SDN的提出者之一，一直是SDN学术领域顶尖的存在；而后者Jennifer教授也发表了4D[2]等诸多重要的SDN相关论文，更提出了网络编程语言Frenetic[3]，同样是业界的先驱。两位教授也是P4组织的主要推动者之一。目前，P4语言作为一种潜在的OpenFlow2.0的发展方向在努力发展。</p>
+<h3>原理</h3>
+<p>与POF提出的目的类似，P4提出的目的也是为了解决OpenFlow编程能力不足以及其设计本身所带来的可拓展性差的难题。自OpenFlow1.0发布以来，其版本目前已经演进到1 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/03/12/pofgeng-li-xiang-de-sdn.html"><h2>POF:更理想的SDN?</h2></a>
         <div class= "well small"> 2016-03-12
 
@@ -164,35 +186,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>（2）交换机B收到了交换机A发送过来的数据包，无法匹配对应流表项，从而packet_in到控制器。控制器接收到这个数据包之后，和当下时间相减，得到时间差T1。其时间差约等于数据包从控制器到交换机A + 交换机A到交换机B + 交换机B到控制器的时延。</p>
 <p>（3）同理，控制器向交换机B发送一个类似的报文。然后控制器从交换机A收到Packet_in报文，记录下时间差T2。所以T1+T2=控制器到交换机A的RTT+控制器到交换机B的RTT+交换机A到交换机B的时延RTT。</p>
 <p>（4）控制器向交换机A和交换机B分别发送带有时间戳的Echo request。交换机收到之后即刻回复携带echo request时间戳的echo reply消息。所以控制器可以通过Echo reply的时间戳减去Echo reply携带的时间，从而得到对应交换机和控制器之间的RTT ...</p> <a class="btn btn-info xsmall" href="../pages/2016/01/27/ji-yu-sdnde-wang-luo-zhuang-tai-ce-liang.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/01/20/ru-he-ti-sheng-sdnke-tuo-zhan-xing.html"><h2>如何提升SDN可拓展性</h2></a>
-        <div class= "well small"> 2016-01-20
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>Software Defined Networking是一种控制平面和数据平面分离的可编程的网络架构，目前已经有许多商业落地案例。在部署SDN时，往往会因SDN控制器性能不足而限制了SDN的可拓展性。因此SDN网络的规模往往不大。针对此问题，笔者在研究相关文献之后，总结了相关的解决方案，并通过本文来记录和分享。</p>
-<h2>解决方案</h2>
-<p>SDN分离了网络的控制平面和数据平面，而控制平面是SDN的大脑，其能力极大地影响着SDN网络的可拓展性。所以基本上，解决方案都是围绕如何给控制平面减压或者提升控制平面的能力来实现。根据控制器数目的不同，解决方案可以分为如下两类：</p>
-<ul>
-<li>单控制器节点的性能拓展</li>
-<li>部署多控制器系统</li>
-</ul>
-<h2>单控制器节点的性能拓展</h2>
-<p>单控制器节点的性能拓展是最常见的方式之一，包括控制器采用多线程，负载下放等解决方案。多线程等解决方案属于软件开发范畴，不属于本文讨论范围。通过负载下放（offload）等方式可以降低网络对控制平面的依赖，减少控制平面的负载和压力，从而可以管理更多的交换机，进而提升SDN网络的可拓展性。DIFANE和DoveFlow就是典型的代表。</p>
-<p>DIFANE[1]是DIstributed Flow Architecture for Networked Enterprises的缩写。 在DIFANE架构中，其数据平面的所有数据均由数据平面完成，而控制器仅负责策略的计算，而不会直接响应Packet_in。其通过减轻控制平面的负载的方式，从而增强了SDN的可拓展性。</p>
-<p><center><img alt="difane" src="http://ww4.sinaimg.cn/mw690/7f593341jw1f03rkwo1qsj20r80g6djx.jpg" /></center>
-<center>图1.DIFANE ...</center></p> <a class="btn btn-info xsmall" href="../pages/2016/01/20/ru-he-ti-sheng-sdnke-tuo-zhan-xing.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
