@@ -22,7 +22,7 @@ Email:licheng185408@qq.com
 ## Publish
 
 * Book: [“Refactoring Network: Architecture and Implementation of SDN”](http://item.jd.com/12160066.html), Zewei Yang, Cheng Li
-* IETF drafts: [SRv6/SR-MPLS, PCEP/PCECC, BGP, IGP, MPLS, SFC, IOAM, OAM](http:datatracker.ietf.org/person/cheng%20li)
+* IETF drafts: [SRv6/SR-MPLS, PCEP/PCECC, BGP, IGP, MPLS, SFC, IOAM, OAM](https:datatracker.ietf.org/person/cheng%20li)
 * IETF 103 T-shirt: [T-shirt Designs](https://github.com/muzixing/ietf103-tshirt)
 
 ## Work
