@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/index.html</loc>
-<lastmod>2018-08-17T00:01:05-00:00</lastmod>
+<lastmod>2018-08-17T00:46:52-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/archives.html</loc>
-<lastmod>2018-08-17T00:01:05-00:00</lastmod>
+<lastmod>2018-08-17T00:46:52-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/tags.html</loc>
-<lastmod>2018-08-17T00:01:05-00:00</lastmod>
+<lastmod>2018-08-17T00:46:52-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>http://www.muzixing.com/categories.html</loc>
-<lastmod>2018-08-17T00:01:05-00:00</lastmod>
+<lastmod>2018-08-17T00:46:52-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -36,6 +36,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <lastmod>2019-02-12T00:00:00-00:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://www.muzixing.com/pages/2019/08/06/cheng-li-in-ietf.html</loc>
+<lastmod>2019-08-06T00:00:00-00:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
 </url>
 
 <url>
@@ -684,7 +691,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/category/tech.html</loc>
-<lastmod>2018-10-26T00:00:00-00:00</lastmod>
+<lastmod>2019-08-06T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -739,8 +746,8 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/tag/srv6.html</loc>
-<lastmod>2018-10-26T00:00:00-00:00</lastmod>
+<loc>http://www.muzixing.com/tag/measure.html</loc>
+<lastmod>2016-01-27T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -782,7 +789,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/tag/sr-mpls.html</loc>
-<lastmod>2018-10-26T00:00:00-00:00</lastmod>
+<lastmod>2019-08-06T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -802,8 +809,8 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>http://www.muzixing.com/tag/measure.html</loc>
-<lastmod>2016-01-27T00:00:00-00:00</lastmod>
+<loc>http://www.muzixing.com/tag/srv6.html</loc>
+<lastmod>2019-08-06T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -1034,7 +1041,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/tag/segment-routing.html</loc>
-<lastmod>2018-10-26T00:00:00-00:00</lastmod>
+<lastmod>2019-08-06T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -1160,7 +1167,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/tag/sr.html</loc>
-<lastmod>2018-10-26T00:00:00-00:00</lastmod>
+<lastmod>2019-08-06T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -1251,7 +1258,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>http://www.muzixing.com/author/muzi.html</loc>
-<lastmod>2018-10-26T00:00:00-00:00</lastmod>
+<lastmod>2019-08-06T00:00:00-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

@@ -62,6 +62,32 @@
  
 
     <div class='article'>
+        <a href="../pages/2016/04/18/wo-shi-ge-sdnkong-zhi-qi.html"><h2>我是一个SDN控制器</h2></a>
+        <div class= "well small"> 2016-04-18
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>“醒醒！”朦胧中有一个人叫醒了我。</p>
+<p>“跟我走”，那个身穿Linux制服，胖得像企鹅一样的大叔拉着我就走。</p>
+<p>“你谁啊？去哪里？”， 我惊恐的问，完全不知道到底发生了什么。</p>
+<p>“我是操作系统，负责给你安排工作。你是一个SDN控制器，是Ryu族人，就给你分配代号9527吧。”，那大叔显得有些不耐烦地回答。</p>
+<p>“看到没有，前面办公楼里的6633房间就是你的办公室，你的工作就是处理信件和包裹，门房的卡大爷负责收发信件，你记得找他取信就可以了，过期他会丢掉的”。大叔边走边说，一转眼已经到了门口。门房果然有一个大爷，正在忙着处理堆积如山的包裹，胸口的工作证沾了好多灰尘，不过隐隐约约还是可以辨出“网卡”两个字。</p>
+<p>但我依然不知道我要具体做什么，所以忍不住又问：“操作系统大哥，我来这里干什么啊？”</p>
+<p>“你这么叫不累？叫我Linux就好了。你是新来的员工，要做什么可以看你胸前的说明书”。</p>
+<p>我低头一看，我的天啊！我贴着这么大的说明书和路过的5个美女打了招呼，她们还对我笑了。我拿下说明书，发现上面赫然写着“README”，怪不得刚才有个小孩一直跟着我，还碎碎念着什么SDN，我还以为他只是脑子发育有些迟缓。羞愧之余，我慢慢往下读。</p>
+<p>原来我被任命为因特奈特国金银岛的快递主管 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/04/18/wo-shi-ge-sdnkong-zhi-qi.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/03/23/p4zhen-zheng-de-sdnhuan-yao-yuan-ma.html"><h2>P4:真正的SDN还遥远吗</h2></a>
         <div class= "well small"> 2016-03-23
 
@@ -162,30 +188,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 </ul>
 <h3>多SDN域组网方案</h3>
 <p>当网络规模过大时，需要部署多域的组网方案。其中每个SDN域都由各自的控制平面控制。多域组网方案有水平架构和垂直架构两种。水平架构形式的多域组网方案中，域控制平面之间的关系是对等的。而在垂直架构中，则划分为域控制器层和超级控制器层 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/02/14/sdnzu-wang-xiang-guan-jie-jue-fang-an.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/01/27/ji-yu-sdnde-wang-luo-zhuang-tai-ce-liang.html"><h2>基于SDN的网络状态测量</h2></a>
-        <div class= "well small"> 2016-01-27
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>为了更好地管理和运行网络，非常有必要收集网络资源及其状态信息。在很多网络场景中，SDN控制器的决策都取决时延，带宽和拓扑等网络状态。在开发SDN应用的过程中，笔者总结了一些有用的网络状态测量的解决方案，可以为初学者在解决网络问题时提供一些启发。本文将主要介绍如何通过SDN控制器和OpenFlow协议来测量和收集网络中的时延、带宽以及拓扑状态等信息。</p>
-<h3>时延</h3>
-<p>时延的测试在终端会显得很容易，但是在交换机节点上测试时延就比较麻烦。在SDN中，可以通过一下步骤实现交换机之间链路的时延。</p>
-<p>（1）控制器向交换机A下发一个Packet_out报文。报文的数据段携带了任意一个约定好的协议报文，其报文的数据段携带了控制器下发报文时的时间戳。Packet_out报文的动作指示交换机将其泛洪或者转发到某端口。</p>
-<p>（2）交换机B收到了交换机A发送过来的数据包，无法匹配对应流表项，从而packet_in到控制器。控制器接收到这个数据包之后，和当下时间相减，得到时间差T1。其时间差约等于数据包从控制器到交换机A + 交换机A到交换机B + 交换机B到控制器的时延。</p>
-<p>（3）同理，控制器向交换机B发送一个类似的报文。然后控制器从交换机A收到Packet_in报文，记录下时间差T2。所以T1+T2=控制器到交换机A的RTT+控制器到交换机B的RTT+交换机A到交换机B的时延RTT。</p>
-<p>（4）控制器向交换机A和交换机B分别发送带有时间戳的Echo request。交换机收到之后即刻回复携带echo request时间戳的echo reply消息。所以控制器可以通过Echo reply的时间戳减去Echo reply携带的时间，从而得到对应交换机和控制器之间的RTT ...</p> <a class="btn btn-info xsmall" href="../pages/2016/01/27/ji-yu-sdnde-wang-luo-zhuang-tai-ce-liang.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

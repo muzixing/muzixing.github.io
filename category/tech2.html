@@ -62,6 +62,32 @@
  
 
     <div class='article'>
+        <a href="../pages/2017/02/05/fluentdru-men-jiao-cheng.html"><h2>Fluentd入门教程</h2></a>
+        <div class= "well small"> 2017-02-05
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>最近发生了一些不可描述的故事，艰难之中换到了现在的组，主要的工作内容是数据挖掘。也终于有机会学习新的知识：Ruby和Fluentd。本文将总结开源软件Fluentd的入门知识，包括如何安装，配置文件语法，插件简介等内容。Fluentd的<a href="http://docs.fluentd.org/v0.12/articles/quickstart">官网</a>内容非常详尽，内容的组织也尤其清晰，所以网络上关于Fluentd的文档很少。本文主要用于学习记录，也希望能帮助到英语不好的读者。</p>
+<h3>Overview</h3>
+<p>Fluentd是一个完全开源免费的log信息收集软件，支持超过125个系统的log信息收集。其架构图如图1所示。 </p>
+<p><center><img alt="fluentd" src="http://docs.fluentd.org/images/fluentd-architecture.png" /></center></p>
+<p><center>图1. Fluentd架构图</center></p>
+<p>本质上，Fluentd可以分为客户端和服务端两种模块。客户端为安装在被采集系统中的程序，用于读取log文件等信息，并发送到Fluentd的服务端。服务端则是一个收集器。在Fluentd服务端，我们可以进行相应的配置，使其可以对收集到的数据进行过滤和处理，并最终路由到下一跳。下一跳可以是用于存储的数据库，如MongoDB, Amazon S3, 也可以是其他的数据处理平台，比如Hadoop。</p>
+<h3>Install</h3>
+<p>由于Fluentd的安装较为麻烦，所以业界流行的稳定安装版本其实是有Treasure Data公司提供的td-agent。本文将介绍的也是td-agent的安装和使用。</p>
+<p>官网<a href="http://docs.fluentd.org/v0.12/articles/install-by-deb">安装文档</a>介绍了针对不同系统的安装办法。本文介绍“Ubuntu 14.04 ...</p> <a class="btn btn-info xsmall" href="../pages/2017/02/05/fluentdru-men-jiao-cheng.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2016/12/21/solution-can-not-receive-notification-of-openstack.html"><h2>Solution: can not receive notification of OpenStack</h2></a>
         <div class= "well small"> 2016-12-21
 
@@ -157,34 +183,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 <p>身居要位的我身价自然不会太低，多少也要个20W年薪吧。我要价高也是有道理的，自古以来，能做安检工作的都是像我这样骨骼精奇又身怀绝学的人，软硬实力俱佳啊。先说软实力，我行走江湖十余载，见过采花、毛贼、刺客少说上百，多了上千，早已掌握了一套基本法，练就了一副火眼金睛，一眼就能看出蹊跷。只要学会了这套安检基本法，就可以做到像我这样的火眼金睛。硬实力上，与普通骨架的人不同，我们家族的人骨骼精奇，手速极快，有无影手之称。无影手是我们家族的祖传技能，到我已经19代有余。即使软件方面其他人可以做到，但是别人做不到我的速度，所以我身价才这么高。</p>
 <p>事业成功不算什么，我房霍强还是和镇长女儿慕容翠花定了亲的男人，那可是要迎娶白富美的节奏。</p>
 <p>我的工作内容无非就是禁止一些黑名单上的人进城，限制人流等等，早已轻车熟路。我还可以防止DoS恶意攻击。比如有时会有同一拨人在不断假装去桃花庙上香 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/07/26/wo-shi-zen-yao-diu-diao-fan-wan-de.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/07/08/ji-yu-tiao-shu-shi-yan-dai-kuan-de-zui-duan-you-lu-jing-he-fu-zai-jun-heng.html"><h2>基于跳数\时延\带宽的最短/优路径和负载均衡</h2></a>
-        <div class= "well small"> 2016-07-08
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>对于SDN初学者而言，最短路径转发应用和负载均衡应用是最常见，也是最适合学习的经典应用。根据链路权重参数的不同，主要有基于跳数、时延和带宽的几种最短\最优路径转发应用。根据链路可用带宽实现的最优路径转发本质上也是一种网络流量负载均衡的简单实现。本文将介绍笔者在学习过程中开发的网络感知模块以及基于跳数、时延和带宽三种最优路径转发应用。</p>
-<h3>基于跳数的最短路径转发</h3>
-<p>基于跳数的最短路径转发是最简单的最优路径转发应用。我们通过<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_awareness.py">network_awareness</a>应用来实现网络拓扑资源的感知并计算最短路径。首先控制器通过下发LLDP报文来获取网络链路信息，然后再利用网络信息，生成网络拓扑图。网络感知应用使用networkx的有向图数据结构存储拓扑信息，使用networkx提供的<a href="http://networkx.readthedocs.io/en/stable/reference/generated/networkx.algorithms.simple_paths.shortest_simple_paths.html">shortest_simple_paths</a>函数来计算最短路径。shortest_simple_paths函数支持在图上找出源交换机到目的交换机的K条最短路径，其函数参数信息如下：</p>
-<div class="highlight"><pre><span class="n">shortest_simple_paths</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">None</span><span class="p">)</span>
-</pre></div>
-
-
-<p>在给定图G，源交换机source，目的交换机target以及链路权重类型weight的情况下，会返回一个路径生成器。通过K次调用生成器可以生成K条最短路径。</p>
-<p>获得最短路径之后，<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/shortest_forwarding.py">shortest_forwarding</a>应用将完成流表下发等工作，实现基于跳数的最短路径转发应用。</p>
-<h3>基于时延的最优路径转发</h3>
-<p>基于时延的最优路径转发应用原理和基于跳数的最短路径转发应用类似，只是链路权重类型变成了时延。关于计算链路时延的原理，读者可以阅读<a href="http://www.muzixing.com/pages/2016/05/24/ryuwang-luo-shi-yan-tan-ce-ying-yong.html">Ryu:网络时延探测应用</a>。<a href="https://github.com/muzixing/ryu/blob/master/ryu/app/network_awareness/network_delay_detector.py">Network_Delay_Detector</a>是一个网络时延探测应用，其在获取到链路时延之后，将时延数据存储到Networkx的图数据结构中 ...</p> <a class="btn btn-info xsmall" href="../pages/2016/07/08/ji-yu-tiao-shu-shi-yan-dai-kuan-de-zui-duan-you-lu-jing-he-fu-zai-jun-heng.html">read more</a></div>
     </div>	
 				
 <div class="pagination">

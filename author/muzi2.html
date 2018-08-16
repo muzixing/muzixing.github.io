@@ -62,6 +62,37 @@
  
 
     <div class='article'>
+        <a href="../pages/2017/04/05/zhong-gou-wang-luo-sdnjia-gou-yu-shi-xian-zhong-yu-chu-ban-la.html"><h2>《重构网络：SDN架构与实现》终于出版啦！</h2></a>
+        <div class= "well small"> 2017-04-05
+
+by <a class="url fn" href="../author/muzi.html">muzi</a>
+ 
+
+
+ </div>
+        <div class="summary"><p>技术的海洋，波涛汹涌，暗流窜动，谁不想顺着洋流去远方。</p>
+<p>我是幸运的，跟随着SDN的发展大潮成长了多年，也有幸能有机会和杨泽卫前辈一起完成这本出自SDN学习者的书：<a href="http://item.jd.com/12160066.html">《重构网络：SDN架构与实现》</a>。</p>
+<p><center><img alt="重构网络：SDN架构与实现" src="http://wx3.sinaimg.cn/mw690/7f593341gy1fdyit3wty0j20ct0gvk8u.jpg" /></center></p>
+<p>无思辨不足以明理；无案例不足以求真；无细节不足以知端详。</p>
+<p>我们力争在历史的轨迹中翻找出积满灰尘的事件，打磨、分析并得出我们的结论；我们也努力抽象实践所需的技能，绞尽脑汁地尝试通过最简单、清晰的案例来帮助读者更好地实践。</p>
+<p>而我，总算没有撒谎，我真的还是一个在读研究生啊。</p>
+<p>最后，走过路过不要错过SDNLAB（全球最大的SDN中文网站，没有之一。 ——以上都是我自己说的）的<a href="http://www.sdnlab.com/18761.html">试读活动</a>。</p>
+<h3>编辑推荐</h3>
+<p>久立潮头的先行者，携数年磨砺与反思，为SDN大时代领航、解惑；</p>
+<p>业务突破迎来网络重构的重大契机，用架构思想谋篇，用实现技术布局；</p>
+<p>架构深度与产业广度完美聚合，技能、思路、视野、境界尽收囊中；</p>
+<p>本书《重构网络：SDN架构与实现》宗旨：无思辨不足以明理|无案例不足以求真|无细节不足以知端详</p>
+<h3>内容简介</h3>
+<p>身处SDN发展浪潮 ...</p> <a class="btn btn-info xsmall" href="../pages/2017/04/05/zhong-gou-wang-luo-sdnjia-gou-yu-shi-xian-zhong-yu-chu-ban-la.html">read more</a></div>
+    </div>	
+				
+
+ 
+        
+
+ 
+
+    <div class='article'>
         <a href="../pages/2017/03/25/2016zong-jie-sha-si-na-ge-tian-zhen-de-zi-ji.html"><h2>2016总结：杀死那个天真的自己</h2></a>
         <div class= "well small"> 2017-03-25
 
@@ -150,47 +181,6 @@ by <a class="url fn" href="../author/muzi.html">muzi</a>
 
  </div>
         <div class="summary"><p>If you set up a AMQP connection to listen to Rabbit message queue, and can not receive any notification when connection is correct. Stucking queue may be the reason of this problem. As I proposed in <a href="https://ask.openstack.org/en/question/100102/can-not-receive-neutron-notification-while-can-receive-nova-notification/">ask.openstack.org</a>, you can purge the queue to clear all the message in ...</p> <a class="btn btn-info xsmall" href="../pages/2016/12/21/solution-can-not-receive-notification-of-openstack.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="../pages/2016/09/30/listen-to-openstack-notification.html"><h2>Listen to OpenStack Notification</h2></a>
-        <div class= "well small"> 2016-09-30
-
-by <a class="url fn" href="../author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>在许多应用场景下，需要监听OpenStack的消息来做一些操作，从而实现事件驱动／消息驱动的业务。本文将介绍如何使用<a href="http://kombu.readthedocs.io/en/latest/introduction.html#installation">kombu</a>库来监听OpenStack的消息，包括neutron，nova等相关类型的notification。</p>
-<h3>Kombu, AMQP, RabbitMQ</h3>
-<p><a href="https://github.com/celery/kombu">Kombu</a>是Python的消息库，封装来许多消息的报文，支持包括<a href="https://www.amqp.org/">AMQP</a>等多种消息协议。而在OpenStack端，Notification的发布系统由<a href="http://www.rabbitmq.com/">RabbitMQ</a>实现。为了监听OpenStack发出的Notification, 我们需要在本地用Kombu库建立一个connection, 连接到OpenStack的消息发布系统。</p>
-<h3>Terminology</h3>
-<p>在学习过程中，会遇到Exchange, Queue等术语，此处将简要介绍这些概念：</p>
-<ul>
-<li>
-<p>Producers</p>
-<p>消息生产者，产生消息，并发送到交换器。</p>
-</li>
-<li>
-<p>Exchanges</p>
-<p>消息交换器，接受生产者发送过来的消息，根据对应的routing_key，来将消息路由到对应的队列。</p>
-</li>
-<li>
-<p>Queues</p>
-<p>队列接收来自交换器发来的消息，队列由消费者定义，自然也为消费者使用，用于存储消息。</p>
-</li>
-<li>
-<p>Consumers</p>
-<p>消费者从队列中读取消息，并进行处理。消费者声明和定义队列，并将队列绑定到对应的exchange上。</p>
-</li>
-<li>
-<p>Routing ...</p></li></ul> <a class="btn btn-info xsmall" href="../pages/2016/09/30/listen-to-openstack-notification.html">read more</a></div>
     </div>	
 				
 <div class="pagination">
