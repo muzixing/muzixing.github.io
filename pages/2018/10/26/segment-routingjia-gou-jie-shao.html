@@ -9,14 +9,14 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
-    <script src="./theme/html5.js"></script>
+    <script src="../../../../theme/html5.js"></script>
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="./theme/bootstrap.min.css" rel="stylesheet">
-    <link href="./theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="./theme/local.css" rel="stylesheet">
-    <link href="./theme/pygments.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../../theme/bootstrap.min.responsive.css" rel="stylesheet">
+    <link href="../../../../theme/local.css" rel="stylesheet">
+    <link href="../../../../theme/pygments.css" rel="stylesheet">
 
 </head>
 
@@ -32,13 +32,13 @@
              <span class="icon-bar"></span>
          </a>
 
-        <a class="brand" href=".">Muzixing</a>
+        <a class="brand" href="../../../..">Muzixing</a>
 
         <div class="nav-collapse">
 
         <ul class="nav">
             
-            <li><a href="./pages/about-me.html">About me</a></li>
+            <li><a href="../../../../pages/about-me.html">About me</a></li>
         </ul>
 	<form class="navbar-search pull-right" action="/search.html">
     	<input type="text" class="search-query" placeholder="Search" name="q" id="s">
@@ -55,23 +55,17 @@
     <div class="row">
 
         <div class="span9">
-        
-
-        
-
-
     <div class='article'>
         <div class="content-title">
-            <a href="./pages/2018/10/26/segment-routingjia-gou-jie-shao.html"><h1>Segment Routing架构介绍</h1></a>
+            <h1>Segment Routing架构介绍</h1>
 2018-10-26
 
-by <a class="url fn" href="./author/muzi.html">muzi</a>
+by <a class="url fn" href="../../../../author/muzi.html">muzi</a>
  
 
 
- 
         </div>
-        
+	
         <div><h3>前言</h3>
 <p>从第一次接触到Segment Routing（SR），到现在专注与Segment Routing的研究和标准化，了解越来越深入，也越来越清楚SR将成为网络的发展趋势。在SR架构文稿成为<a href="https://tools.ietf.org/html/rfc8402">RFC8402</a>的这一刻，没有什么比写一篇介绍SR架构的文章更好的选择了。</p>
 <h3>背景</h3>
@@ -146,178 +140,23 @@ SRv6: 发布成SID的某一个IPv6地址，比如A::C6。</p>
 <h3>总结</h3>
 <p>关于Segment Routing的更多学习，后续会有更多文章介绍。读者可前往<a href="https://tools.ietf.org/wg/spring">SPRING WG</a>阅读进一步内容。也可以下载<a href="http://support.huawei.com/enterprise/zh/doc/DOC1000173014?section=j004">华为的技术文档</a>或者<a href="http://e.huawei.com/enterprisesearch/?lang=zh#keyword=segment+routing&amp;lang=zh&amp;site=1&amp;type=ALL">搜索华为技术文档</a>。</p>
 <p>PS：本文章为个人学习总结，不涉及任何商业信息。</p></div>
-        <hr />
+	
+        <hr>
+    	   
+        <h2>Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'muzixinggithubio'; 
+    var disqus_title = 'Segment Routing架构介绍';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2018/08/09/segment-routingxi-lie-wen-zhang-to-write-list.html"><h2>Segment Routing系列文章：To Write List</h2></a>
-        <div class= "well small"> 2018-08-09
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><h3>前言</h3>
-<hr />
-<p>人啊，总是懒惰的。</p>
-<p>一懒惰，就是两年。</p>
-<p>总是有太多理由，总是有太多借口。</p>
-<p>但终究，还是无法再骗过自己了。</p>
-<p>问过了领导，领导答复：“写互联网公开的，开源的内容没有问题”。那就从我平时研究的Segment Routing开始写吧。为避免踩信息安全红线，还是要很郑重地声明：</p>
-<p><strong>所有文章内容均为互联网公开资料和个人技术理解，不涉及任何商业机密。</strong></p>
-<h3>什么是SR</h3>
-<p>Segment Routing， 中文翻译为段路由，是一种源路由架构，其支持在Ingress node(源节点)指定数据包的转发路径。</p>
-<p>Segment Routing的诞生背景和SDN紧密相关。在SDN出现早期，SDN几乎和OpenFlow密不可分。但现在OpenFlow却并没有像前两年那样如火如荼，已经开始慢慢冷却，慢慢退出人们的视野。</p>
-<p>OpenFlow冷却的原因很多。从商业上，极具革命性的OpenFlow可能会打破网络行业的格局，影响了行业巨头的利益，所以很难被传统设备商所接受。在技术上，OpenFlow网络中的每个节点都要维持per-flow的网络状态，当网络规模变大，业务变复杂，网络管理和运维就变得复杂，网络的可扩展性就成了问题。就在此时，一个更容易平滑演进，又具有足够的网络编程能力的网络架构Segment Routing被提了出来 ...</p> <a class="btn btn-info xsmall" href="./pages/2018/08/09/segment-routingxi-lie-wen-zhang-to-write-list.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2018/06/03/chi-dao-de-2017zong-jie-qi-feng-liao-li-ming.html"><h2>迟到的2017总结：《起风了，黎明》</h2></a>
-        <div class= "well small"> 2018-06-03
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>终于办完了美国退税支票的托收，走出中国银行的时候，觉得如释重负。</p>
-<p>这一年多，过得太不容易。</p>
-<h3>硅谷故事</h3>
-<p>"It's not a big deal."</p>
-<p>"It is a big deal!"</p>
-<p>"All right, it is a big deal!"，我还是承认了我遇到了一件很大的事，即使我还不愿意承认。</p>
-<p>2017年1月27号，星期五，农历大年三十，除夕。美国硅谷圣何塞郊区的Milpitas，一如以往的平静和安详，没有一丝节日的气息。</p>
-<p>一晚上没睡好的我，在9点多的早晨，与实习生外包公司的人力主管R发生了以上的对话：项目没钱了，希望我收拾好物品，回家。他问我什么时候走合适 ，好给我定回去的机票。今晚就要搬出公寓。</p>
-<p>几个月之前确实有人给我暗示过，如果项目没有预算了，就要回国。但后来项目经理给我保证我的预算没问题，所以我放心了。没想到再次提起预算的时候，竟然实在春节之际。</p>
-<p>“为什么让我走 ...</p> <a class="btn btn-info xsmall" href="./pages/2018/06/03/chi-dao-de-2017zong-jie-qi-feng-liao-li-ming.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2017/08/06/jian-li-zhuan-ye-er-mei-de-zhu-yu-dao.html"><h2>简历：专业而美的“术”与“道”</h2></a>
-        <div class= "well small"> 2017-08-06
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>“我什么都不会”，“我什么都没干”，“这个项目很水”，这是我在帮别人修改简历时听到的最多的几句话。难道你真的什么都不会吗？真的什么都没干吗？真的很水吗？其实很多情况下，是这样的。</p>
-<p>但是很水就放弃治疗了吗？不会的。放下无谓的抱怨和遗憾，好好梳理自己，认真编写简历才能解决问题。然而，写简历却是一个大学问。</p>
-<p>最近帮朋友改了几封简历，反馈不错，转念一想，为什么不把自己的小技能写成一篇文章呢。所以我决定写一篇长文来记录自己的心得，也给别人提供一些帮助。</p>
-<p>本文将介绍如何写好一份技术类简历，尤其指计算机方面的技术简历。读者可以按照文章介绍的技巧去修改自己的简历，相信会有不错的效果。文章的主要内容包括：</p>
-<ul>
-<li>简历的重要性</li>
-<li>如何写好简历<ul>
-<li>格式</li>
-<li>内容书写<ul>
-<li>基本信息</li>
-<li>实习／项目</li>
-<li>所获奖项</li>
-<li>个人技能</li>
-<li>其他技能／社会实践</li>
-</ul>
-</li>
-<li>内容编排<ul>
-<li>排序</li>
-<li>针对性</li>
-<li>锦上添花or画蛇添足？</li>
-</ul>
-</li>
-<li>简历之道<ul>
-<li>作品化思维</li>
-<li>索引理论</li>
-<li>工匠精神</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>Cover letter<ul>
-<li>发简历的黄金时间</li>
-</ul>
-</li>
-<li>总结 ...</li></ul> <a class="btn btn-info xsmall" href="./pages/2017/08/06/jian-li-zhuan-ye-er-mei-de-zhu-yu-dao.html">read more</a></div>
-    </div>	
-				
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="./pages/2017/04/05/zhong-gou-wang-luo-sdnjia-gou-yu-shi-xian-zhong-yu-chu-ban-la.html"><h2>《重构网络：SDN架构与实现》终于出版啦！</h2></a>
-        <div class= "well small"> 2017-04-05
-
-by <a class="url fn" href="./author/muzi.html">muzi</a>
- 
-
-
- </div>
-        <div class="summary"><p>技术的海洋，波涛汹涌，暗流窜动，谁不想顺着洋流去远方。</p>
-<p>我是幸运的，跟随着SDN的发展大潮成长了多年，也有幸能有机会和杨泽卫前辈一起完成这本出自SDN学习者的书：<a href="http://item.jd.com/12160066.html">《重构网络：SDN架构与实现》</a>。</p>
-<p><center><img alt="重构网络：SDN架构与实现" src="http://wx3.sinaimg.cn/mw690/7f593341gy1fdyit3wty0j20ct0gvk8u.jpg" /></center></p>
-<p>无思辨不足以明理；无案例不足以求真；无细节不足以知端详。</p>
-<p>我们力争在历史的轨迹中翻找出积满灰尘的事件，打磨、分析并得出我们的结论；我们也努力抽象实践所需的技能，绞尽脑汁地尝试通过最简单、清晰的案例来帮助读者更好地实践。</p>
-<p>而我，总算没有撒谎，我真的还是一个在读研究生啊。</p>
-<p>最后，走过路过不要错过SDNLAB（全球最大的SDN中文网站，没有之一。 ——以上都是我自己说的）的<a href="http://www.sdnlab.com/18761.html">试读活动</a>。</p>
-<h3>编辑推荐</h3>
-<p>久立潮头的先行者，携数年磨砺与反思，为SDN大时代领航、解惑；</p>
-<p>业务突破迎来网络重构的重大契机，用架构思想谋篇，用实现技术布局；</p>
-<p>架构深度与产业广度完美聚合，技能、思路、视野、境界尽收囊中；</p>
-<p>本书《重构网络：SDN架构与实现》宗旨：无思辨不足以明理|无案例不足以求真|无细节不足以知端详</p>
-<h3>内容简介</h3>
-<p>身处SDN发展浪潮 ...</p> <a class="btn btn-info xsmall" href="./pages/2017/04/05/zhong-gou-wang-luo-sdnjia-gou-yu-shi-xian-zhong-yu-chu-ban-la.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="./index.html">1</a></li>
-    <li class=""><a href="./index2.html">2</a></li>
-    <li class=""><a href="./index3.html">3</a></li>
-    <li class=""><a href="./index4.html">4</a></li>
-    <li class=""><a href="./index5.html">5</a></li>
-    <li class=""><a href="./index6.html">6</a></li>
-    <li class=""><a href="./index7.html">7</a></li>
-    <li class=""><a href="./index8.html">8</a></li>
-    <li class=""><a href="./index9.html">9</a></li>
-    <li class=""><a href="./index10.html">10</a></li>
-    <li class=""><a href="./index11.html">11</a></li>
-    <li class=""><a href="./index12.html">12</a></li>
-    <li class=""><a href="./index13.html">13</a></li>
-    <li class=""><a href="./index14.html">14</a></li>
-    <li class=""><a href="./index15.html">15</a></li>
-    <li class=""><a href="./index16.html">16</a></li>
-    <li class=""><a href="./index17.html">17</a></li>
-    <li class=""><a href="./index18.html">18</a></li>
-    <li class=""><a href="./index19.html">19</a></li>
-
-    <li class="next"><a href="./index2.html">Next &rarr;</a></li>
-
-</ul>
-</div>
- 
-  
         </div>
         
         <div class="span3">
@@ -328,8 +167,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Site
                 </li>
             
-                <li><a href="./archives.html">Archives</a>
-                <li><a href="./tags.html">Tags</a>
+                <li><a href="../../../../archives.html">Archives</a>
+                <li><a href="../../../../tags.html">Tags</a>
                 <!-- <li><a href="http://www.muzixing.com/" rel="alternate">Atom feed</a> -->
 		</li>
                 <li><a href="http://www.muzixing.com/feeds/all.rss.xml" rel="alternate">RSS feed</a></li>
@@ -343,8 +182,8 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
                 Categories
                 </li>
                 
-                <li><a href="./category/life.html">Life</a></li>
-                <li><a href="./category/tech.html">Tech</a></li>
+                <li><a href="../../../../category/life.html">Life</a></li>
+                <li><a href="../../../../category/tech.html">Tech</a></li>
                    
             </ul>
             </div>
@@ -382,7 +221,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
     </div>     </div> 
 <footer>
 <br />
-<p><a href=".">Muzixing</a> &copy; muzi 2012</p>
+<p><a href="../../../..">Muzixing</a> &copy; muzi 2012</p>
 </footer>
 
 </div> <!-- /container -->
