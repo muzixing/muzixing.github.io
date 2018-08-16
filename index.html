@@ -91,7 +91,7 @@ by <a class="url fn" href="./author/muzi.html">muzi</a>
 <p><strong>MPLS</strong>：</p>
 <p>部署在MPLS数据平面上的SR，标准上习惯称之为SR-MPLS，当然也有人喜欢叫MPLS-SR。其可以直接基于现有的MPLS数据平面部署，无需对数据平面进行任何改动。这意味着，从RSVP-TE MPLS到SR-MPLS的改动只需对控制平面进行升级，使得网络可以更平滑地存量演进。在SR-MPLS中，一个Segment表现为一个MPLS Label（标签）。</p>
 <p><img alt="SR-MPLS" src="http://wx3.sinaimg.cn/mw690/7f593341ly1fwlyjl3qa1j21kw0ttdnf.jpg" /></p>
-<p><a href="http://support.huawei.com/enterprise/zh/doc/DOC1000173014?section=j004">Ref:Huawei Document:IPv4 Segment Routing</a></p>
+<p><a href="http://support.huawei.com/enterprise/zh/doc/DOC1000173014?section=j004">Ref:Huawei Document:IPv6 Segment Routing</a></p>
 <p>Segment／Label可能是具有全局意义的，也可能是具有本地意义的。在SR-MPLS中，每一个节点会配置对应本地标签块SRLB（Segment Routing Local Block）和SRGB（Segment Routing Global Block)。从SRLB中的标签值具有本地意义，从SRGB中的标签值具有全局意义。</p>
 <p>为了满足MPLS标签资源本地化，同时又要满足SR全局标签的需求，SRGB是节点的配置信息，不强制全网统一，但在实际部署时，为方便起见，一般是统一的。</p>
 <p>比如节点A的SRGB为1000-2000，节点B的SRGB为3000-4000。节点A的Node-SID为1，B的Node-SID为2，那么节点A在发布自己的节点SID时，可以选择发布绝对值1001，也可以发布index为1。其他节点会依据节点A发布的SRGB（1000-2000）来计算转发到该节点时，应该使用标签1001。而一个全网路由的Node-SID 1在转发到B节点时，标签值就是其SRGB下限3000+1=3001。从而保证了标签均为本地意义，但同时又提供了全局路由的能力。</p>

@@ -33,7 +33,7 @@ Segment Routing (SR)是一种源路由机制。SR支持在源节点往数据报�
 
 ![SR-MPLS](http://wx3.sinaimg.cn/mw690/7f593341ly1fwlyjl3qa1j21kw0ttdnf.jpg)
 
-[Ref:Huawei Document:IPv4 Segment Routing](http://support.huawei.com/enterprise/zh/doc/DOC1000173014?section=j004)
+[Ref:Huawei Document:IPv6 Segment Routing](http://support.huawei.com/enterprise/zh/doc/DOC1000173014?section=j004)
 
 Segment／Label可能是具有全局意义的，也可能是具有本地意义的。在SR-MPLS中，每一个节点会配置对应本地标签块SRLB（Segment Routing Local Block）和SRGB（Segment Routing Global Block)。从SRLB中的标签值具有本地意义，从SRGB中的标签值具有全局意义。
 
