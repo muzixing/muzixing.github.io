@@ -1,4 +1,4 @@
-date:2017-4-6
+date:2019-2-12
 title:About me
 category:Life
 tags:about me
@@ -21,13 +21,19 @@ Email:licheng185408@qq.com
 
 ## Publish
 
-* Book: [“Refactoring Network: Architecture and Implementation of SDN”](http://item.jd.com/12160066.html), Cheng Li, Zewei Yang
-* Paper: “OXP: An Efficient Protocol for Scaling SDN-based Ad Hoc Network”  (IJRA, SCI)
+* Book: [“Refactoring Network: Architecture and Implementation of SDN”](http://item.jd.com/12160066.html), Zewei Yang, Cheng Li
+* IETF drafts: [SRv6/SR-MPLS, PCEP/PCECC, BGP, IGP, MPLS, SFC, IOAM, OAM](http://www.arkko.com/tools/allstats/chengli.html)
+* IETF 103 T-shirt: [T-shirt Designs](https://github.com/muzixing/ietf103-tshirt)
 
+## Work
+* **Huawei IP Technology Research Department —— IP Tech Research and Standards (2017.5 - present)**
+    * SRv6/SR-MPLS OAM: Path Segment, OAM, Light IOAM...
+    * SFC: SR based SFC, NSH based SFC...
+    * PCEP: Extensions of SRv6, Path Segment, Binding Segment, Path MTU...
 
 ## Internship
 
-*   **Chief Technology and Architecture Office of CISCO——OSDNA (2016.8 - 2017.2)**
+*   **Chief Technology and Architecture Office of CISCO——OSDNA (2016.8 - 2017.5)**
     *   Scan physical and virtual network elements in OpenStack environment including host, OVS and VM.
     *   Store network topology data into MongoDB for visualizing and Troubleshooting.
 
@@ -139,12 +145,20 @@ Email:licheng185408@qq.com
 
 ## 发表作品
 
-*   书籍：[《重构网络：SDN架构与实现》](http://item.jd.com/12160066.html)——李呈、杨泽卫
-*   论文：OXP: An Efficient Protocol for Scaling SDN-based Ad Hoc Network--IJRA（SCI检索）
+*   书籍： [《重构网络：SDN架构与实现》](http://item.jd.com/12160066.html)——杨泽卫、李呈
+*   IETF drafts: [SRv6/SR-MPLS, PCEP/PCECC, BGP, IGP, MPLS, SFC, IOAM, OAM](http://www.arkko.com/tools/allstats/chengli.html)
+*   IETF 103 T-shirt: [T-shirt Designs](https://github.com/muzixing/ietf103-tshirt)
+
+
+## 工作
+* **华为IP技术研究部——IP技术研究与标准化 (2017.5 - present)**
+    * SRv6/SR-MPLS OAM: Path Segment, OAM, Light IOAM...
+    * SFC: SR based SFC, NSH based SFC...
+    * PCEP: Extensions of SRv6, Path Segment, Binding Segment, Path MTU...
 
 ## 实习经历
 
-*   **Cisco美国总部·Chief Technology and Architecture Office  ——OSDNA (2016.8 - 2017.2)**
+*   **Cisco美国总部·Chief Technology and Architecture Office  ——OSDNA (2016.8 - 2017.5)**
 
     *   探测发现OpenStack中虚拟网络的拓扑等信息，实现网络信息可视化
     *   基于网络信息，对网络信息进行分析，提供OpenStack网络保障方案
