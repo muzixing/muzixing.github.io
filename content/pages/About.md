@@ -19,7 +19,7 @@ Email:licheng185408@qq.com
     *   M.E.   Software Defined Networking  (2014 - 2017)
     *   B.E.   Communication Engineering                                             GPA: 3.5/4 (2010 - 2014)
 
-## Publish
+## Publications
 
 * Book: [“Refactoring Network: Architecture and Implementation of SDN”](http://item.jd.com/12160066.html), Zewei Yang, Cheng Li
 * IETF drafts: [SRv6/SR-MPLS, PCEP/PCECC, BGP, IGP, MPLS, SFC, IOAM, OAM](https://datatracker.ietf.org/person/cheng%20li)
