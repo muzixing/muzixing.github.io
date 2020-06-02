@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Muzixing</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 06 Aug 2019 00:00:00 +0800</lastBuildDate><item><title>Cheng Li in IETF</title><link>http://www.muzixing.com/pages/2019/08/06/cheng-li-in-ietf.html</link><description>&lt;p&gt;Hi guys,&lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Muzixing</title><link>http://www.muzixing.com/</link><description></description><atom:link href="http://www.muzixing.com/feeds/all.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 02 Jun 2020 00:00:00 +0800</lastBuildDate><item><title>2018/2019总结：推开世界的门</title><link>http://www.muzixing.com/pages/2020/06/02/20182019zong-jie-tui-kai-shi-jie-de-men.html</link><description>&lt;h2&gt;我不会用vim了&lt;/h2&gt;
+&lt;p&gt;突然，&lt;/p&gt;
+&lt;p&gt;我发现我已经不会用vim了，&lt;/p&gt;
+&lt;p&gt;我忘记快捷键了，&lt;/p&gt;
+&lt;p&gt;我忘记Markdown了，&lt;/p&gt;
+&lt;p&gt;我忘记怎么编辑博客了，&lt;/p&gt;
+&lt;p&gt;曾经那么引以为豪的东西，&lt;/p&gt;
+&lt;p&gt;就这样慢慢忘了。&lt;/p&gt;
+&lt;p&gt;由于微博图床不再支持外挂图片，我已经放弃了修复博客里的文章，还好在SDNLAB.com上发表过，有备份。也因为工作的原因，不方便再继续发表技术博客，所以大概，我放弃了继续写博客吧。&lt;/p&gt;
+&lt;p&gt;客观的讲，写博客对我的加成已经不大了，但依然舍不得这个曾经陪伴自己青春的地方。所以还是来这里更新一下自己的年终总结吧。&lt;/p&gt;
+&lt;h2&gt;2018+2019总结：20个月，十个故事，一段人生&lt;/h2&gt;
+&lt;p&gt;2018年的总结由于太忙，放弃了，所以只好写了2018到2019年20个月的生活总结，也算对得起岁月与时光。&lt;/p&gt;
+&lt;p&gt;2018+2019: &lt;a href="https://www.jianshu.com/p/057a8d572dbd"&gt;《廿月谈：大世界与小世界》&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;一个关于推开世界的门，遇见自己的生活总结吧。&lt;/p&gt;
+&lt;p&gt;===================================&lt;/p&gt;
+&lt;p&gt;顺便附上往年的总结：&lt;/p&gt;
+&lt;p&gt;2017: &lt;a href="http://www.muzixing.com/pages/2018/06/03/chi-dao-de-2017zong-jie-qi-feng-liao-li-ming.html"&gt;迟到的2017总结：《起风了，黎明》&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;2016: &lt;a href="http://www.muzixing.com/pages/2017/03/25/2016zong-jie-sha-si-na-ge-tian-zhen-de-zi-ji.html"&gt;2016总结：杀死那个天真的自己&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;2015: &lt;a href="http://www.muzixing.com/pages/2016/02/24/deng-feng-lai-chi-dao-de-2015nian-zhong-zong-jie.html"&gt;等风来——迟到的2015年终总结&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;2014: &lt;a href="http://www.muzixing.com/pages/2015/03/08/zhan-zai-shi-zi-lu-kou-de-nian.html"&gt;站在十字路口的一年&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;2013: &lt;a href="http://www.muzixing.com/pages/2014/01/01/shu-yu-wo-de-2013he-2014.html"&gt;属于我的2013和2014&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;人生啊，真奇妙，回头看，才知道。&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">muzi</dc:creator><pubDate>Tue, 02 Jun 2020 00:00:00 +0800</pubDate><guid>tag:www.muzixing.com,2020-06-02:pages/2020/06/02/20182019zong-jie-tui-kai-shi-jie-de-men.html</guid><category>story，life</category><category>ietf</category></item><item><title>Cheng Li in IETF</title><link>http://www.muzixing.com/pages/2019/08/06/cheng-li-in-ietf.html</link><description>&lt;p&gt;Hi guys,&lt;/p&gt;
 &lt;p&gt;I am so sorry that I did not update my blog in past two years. But thank you for visiting here for anything.&lt;/p&gt;
 &lt;p&gt;Work is always so busy, and it is not easy to publish technology articles considering Huawei's confidential policy.&lt;/p&gt;
 &lt;p&gt;I am working on IP technology research and standards in Huawei since I joined Huawei, so I will publish some &lt;a href="https:datatracker.ietf.org/person/cheng%20li"&gt;IETF drafts&lt;/a&gt;, which mainly focus on SRv6, SR, PCEP, SFC, etc. Welcome to review my drafts, and looking forward to seeing you in IETF. &lt;/p&gt;
